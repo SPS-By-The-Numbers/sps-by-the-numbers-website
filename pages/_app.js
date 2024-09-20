@@ -1,6 +1,9 @@
 import styles from '../styles/globals.scss'
 import Head from 'next/head'
 import Nav from '../components/Nav'
+import CssBaseline from '@mui/material/CssBaseline';
+import InitColorSchemeScript from '@mui/material/InitColorSchemeScript';
+import { Experimental_CssVarsProvider as CssVarsProvider } from '@mui/material/styles';
 
 import { useEffect } from 'react';
 import TagManager from 'react-gtm-module';
