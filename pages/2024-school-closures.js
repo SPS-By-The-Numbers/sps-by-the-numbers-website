@@ -18,7 +18,7 @@ if (typeof window !== `undefined`) {
     highchartsAccessibility(Highcharts);
 }
 
-import RawData from '../data/2023-06-18-sps-demographic-data.json'
+import RawData from '../data/2024-06-18-sps-demographic-data.json'
 
 const AllData = RawData.rows.map(
   (row, id) => {
@@ -223,7 +223,6 @@ function OneGraph({data, categories, changeType, title, ylabel}) {
         const combined_percent = Math.round(combineCategories(entry, categories, '%') * 1000)/10;
         const combined_num = combineCategories(entry, categories, '#');
         const all_num = entry['All Students'];
-        console.log(combined_num);
         return {
           x: idx,
           y: combined_percent,
@@ -298,7 +297,8 @@ export function DemographicGraph() {
       style={{ padding: "1px" }}
       spacing={2}>
       <Card>
-        <b>There is a data table too! Scroll down.</b>
+        <b>Data from <a href="https://data.wa.gov/education/Report-Card-Enrollment-2023-24-School-Year/q4ba-s3jc/about_data">OSPI Enrollment Report Card for 2023-2024</a>. There is a data table too! Scroll down.</b> 
+        <p>{'Red schools are slated for closure for selected Closure Type. "Closure A,B" means closed in both A & B.  "Program A,B" means reconfigured in both A & B. Close A, Close B, Program A means only closed in A, only closed in B, and only reconfigured in A. No school is only reconfigured in B.'}</p>
         <Stack style={{padding: "1px"}} spacing={2} direction="row">
             <label>
               RegionType: 
