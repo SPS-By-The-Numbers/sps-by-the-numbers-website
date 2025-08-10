@@ -14,7 +14,9 @@
   "devDependencies": {
     "@mdx-js/loader": "^3.0.1",
     "@mdx-js/react": "^3.0.1",
+    "@mui/material-nextjs": "^7.3.0",
     "@mui/x-data-grid": "^8.10.0",
+    "@mui/x-date-pickers": "^8.10.0",
     "@next/mdx": "15.4.6",
     "@types/react": "19.1.9",
     "@types/react-dom": "19.1.7",
