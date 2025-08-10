@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "next dev",
+    "dev": "next dev --turbopack",
     "deploy": "firebase deploy --only hosting:apps",
     "postbuild": "next-sitemap",
     "lint": "next lint",
@@ -14,10 +14,10 @@
   "devDependencies": {
     "@mdx-js/loader": "^3.0.1",
     "@mdx-js/react": "^3.0.1",
-    "@next/mdx": "^14.2.3",
-    "@types/react": "^18.2.37",
-    "@types/react-dom": "^18.2.15",
-    "@visx/visx": "^3.10.4",
+    "@mui/x-data-grid": "^8.10.0",
+    "@next/mdx": "15.4.6",
+    "@types/react": "19.1.9",
+    "@types/react-dom": "19.1.7",
     "accessibility": "^6.0.3",
     "autoprefixer": "^10.4.6",
     "csv-parse": "^5.5.6",
@@ -25,7 +25,7 @@
     "csv-stringify": "^6.5.0",
     "csv-writer": "^1.6.0",
     "eslint": "^8.57.1",
-    "eslint-config-next": "^14.2.3",
+    "eslint-config-next": "15.4.6",
     "firebase": "^10.12.2",
     "firebase-admin": "^12.0.0",
     "firebase-tools": "^13.10.1",
@@ -37,7 +37,6 @@
     "react-gtm-module": "^2.0.11",
     "react-html-id": "^0.1.5",
     "react-measure": "^2.5.2",
-    "react-select": "^5.3.1",
     "react-youtube": "^10.1.0",
     "sass": "^1.51.0",
     "tailwindcss": "^3.0.24"
@@ -46,15 +45,18 @@
     "@emotion/styled": "^11.13.0",
     "@mui/material": "^6.1.1",
     "@mui/styled-engine-sc": "^6.1.1",
-    "@mui/x-data-grid": "^7.18.0",
     "@types/jest": "^29.5.8",
     "@types/node": "^22.5.5",
     "date-fns": "^4.1.0",
     "distinct-colors": "^3.0.0",
     "fast-xml-parser": "^4.5.0",
-    "next": "^14.0.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "next": "15.4.6",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
     "typescript": "^5.2.2"
+  },
+  "overrides": {
+    "@types/react": "19.1.9",
+    "@types/react-dom": "19.1.7"
   }
 }
