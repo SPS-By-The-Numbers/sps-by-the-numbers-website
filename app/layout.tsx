@@ -1,6 +1,8 @@
 import * as Constants from 'config/constants'
+
 import Box from '@mui/material/Box';
 import CssBaseline from '@mui/material/CssBaseline';
+import HighchartsProvider from 'components/providers/HighchartsProvider';
 import InitColorSchemeScript from '@mui/material/InitColorSchemeScript';
 import MuiProviders from './MuiProviders';
 import Script from 'next/script'
@@ -36,16 +38,18 @@ export default function RootLayout({ children }: {children: React.ReactNode}) {
           `}
         </Script>
         <MuiProviders>
-          <CssBaseline />
-          <InitColorSchemeScript attribute="class"/>
-          <Box sx={{
-            marginTop: "0.5ex",
-            height: "100%",
-            maxWidth: "120ch",
-            marginX: 'auto',
-            }}>
-            {children}
-          </Box>
+          <HighchartsProvider>
+            <CssBaseline />
+            <InitColorSchemeScript attribute="class"/>
+            <Box sx={{
+              marginTop: "0.5ex",
+              height: "100%",
+              maxWidth: "120ch",
+              marginX: 'auto',
+              }}>
+              {children}
+            </Box>
+          </HighchartsProvider>
         </MuiProviders>
       </body>
     </html>
