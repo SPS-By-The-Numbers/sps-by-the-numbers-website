@@ -26,6 +26,7 @@
     "csv-reader": "^1.0.8",
     "csv-stringify": "^6.5.0",
     "csv-writer": "^1.6.0",
+    "danfojs": "^1.2.0",
     "eslint": "^8.57.1",
     "eslint-config-next": "15.4.6",
     "firebase": "^10.12.2",
