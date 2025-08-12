@@ -1,17 +1,11 @@
 'use client'
 
-import Highcharts from 'highcharts'
-import highchartsAccessibility from "highcharts/modules/accessibility";
-import HighchartsReact from 'highcharts-react-official'
 
-import PAOExplorer from 'components/finance/PAOExplorer';
-
-if (typeof window !== `undefined`) {
-    highchartsAccessibility(Highcharts);
-}
+//import PAOExplorer from 'components/finance/PAOExplorer';
+import DistrictDashboard from 'components/finance/DistrictDashboard';
 
 export default function Styled() {
   return (
-      <PAOExplorer  />
+    <DistrictDashboard />
   )
 }
