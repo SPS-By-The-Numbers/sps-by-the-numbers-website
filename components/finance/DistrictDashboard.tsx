@@ -1,10 +1,12 @@
 'use client'
 
+import dynamic from 'next/dynamic'
+
+
 import "styles/finance-dashboard.css"
 import { useEffect } from 'react';
 
 import Highcharts from 'highcharts'
-import HighchartsReact from 'highcharts-react-official'
 import highchartsAccessibility from "highcharts/modules/accessibility";
 
 //import Dashboards from '@highcharts/dashboards';
@@ -13,11 +15,6 @@ import highchartsAccessibility from "highcharts/modules/accessibility";
 import Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
 import '@highcharts/dashboards/es-modules/masters/modules/layout.src.js';
 import DataGrid from '@highcharts/dashboards/datagrid';
-
-Dashboards.HighchartsPlugin.custom.connectHighcharts(Highcharts);
-Dashboards.GridPlugin.custom.connectGrid(DataGrid);
-Dashboards.PluginHandler.addPlugin(Dashboards.HighchartsPlugin);
-Dashboards.PluginHandler.addPlugin(Dashboards.GridPlugin);
 
 import Paper from '@mui/material/Paper';
 
@@ -29,23 +26,89 @@ if (typeof window !== `undefined`) {
   Dashboards.PluginHandler.addPlugin(Dashboards.GridPlugin);
 }
 
-const config = {
-  dataPool: {
+function makeEnrollmentSeries() {
+  const columnAssignment = [];
+  for (const grade of ['total'].reverse()) {
+    columnAssignment.push(
+      {
+        seriesId: grade,
+        data: ['year', grade],
+      }
+    );
+  }
+  return columnAssignment;
+}
+
+function makeDashboardDatapool() {
+  return {
     connectors: [
       {
-        id: 'micro-element',
-        type: 'JSON',
+        id: 'c-enrollment',
+        type: 'CSV',
         options: {
-          firstRowAsNames: false,
-          columnNames: ['Food', 'Vitamin A', 'Iron'],
-          data: [
-            ['Beef Liver', 6421, 6.5],
-            ['Lamb Liver', 2122, 6.5],
-            ['Cod Liver Oil', 1350, 0.9],
-            ['Mackerel', 388, 1],
-            ['Tuna', 214, 0.6],
-          ],
+          csvURL: 'http://localhost:3000/_TEMP_enrollment_17001.csv'
         },
+        dataModifier: {
+            type: 'Math',
+            columnFormulas: [{
+                column: 'Total',
+                formula: 'A2+A3+A4+A5+A6+A7+A8+A9+A10+A11+A12+A13',
+            }]
+        },
+      },
+      {
+        id: 'c-gfe',
+        type: 'CSV',
+        options: {
+          csvURL: 'http://localhost:3000/_TEMP_gfe_17001.csv'
+        }
+      },
+      {
+        id: 'c-gfe-total',
+        type: 'CSV',
+        options: {
+          csvURL: 'http://localhost:3000/_TEMP_gfe_total_17001.csv'
+        }
+      },
+      {
+        id: 'c-gfr',
+        type: 'CSV',
+        options: {
+          csvURL: 'http://localhost:3000/_TEMP_gfr_17001.csv'
+        }
+      },
+      {
+        id: 'c-revenues-expenditures',
+        type: 'DataTable',
+        sync: async function (connector, table) {
+          const c_gfe = await connector.dataPool.getConnectorTable('c-gfe');
+          const c_gfr = await connector.dataPool.getConnectorTable('c-gfr');
+
+          // Convert Highcharts DataTables to Danfo DataFrames
+          const expenditures = new dfd.DataFrame(
+            Object.fromEntries(c_gfe.getColumnNames().map(name => [
+              name, c_gfe.getColumn(name)
+            ]))
+          );
+          const revenues = new dfd.DataFrame(
+            Object.fromEntries(c_gfr.getColumnNames().map(name => [
+              name, c_gfr.getColumn(name)
+            ]))
+          );
+
+          // Merge on "year" (adjust to your key)
+          const mergedDF = df1.merge({ right: df2, on: 'year', how: 'inner' });
+
+          // Convert merged Danfo DF back to Highcharts DataTable
+          const mergedTable = new Highcharts.DataTable();
+          mergedTable.setColumns([
+            mergedDF.columns,
+            ...mergedDF.values
+          ]);
+
+          // Replace this connector's table
+          table.setTable(mergedTable);
+        }
       },
       {
         id: 'c-spend-type',
@@ -75,7 +138,386 @@ const config = {
         },
       },
     ],
-  },
+  };
+}
+
+// Main question per district is how it has changed over time.
+//
+//   // How much should the district be taking up
+//   Key inputs: Enrollment
+//
+//   // How does that translate to money.
+//   Revenue vs Expenditures (with variance)
+//
+//   // What is District-Office overhead as % of expenditure over time.
+//   GF Balance with (with variance)
+//
+//   // Per-pupil spend with breakout of District Office vs non and sub-breakout
+//   // of purchased services vs compensation.
+//   Per-pupil spend graph.
+//
+//   // Detailed expenditure examination of comp vs non-comp (% of expenditrue).
+//   * Split to break down by activity, program, etc.
+function makeDashboardGui() {
+  return {
+    layouts: [
+      {
+        rows: [
+          {
+            cells: [
+              {
+                id: 'enrollment',
+              },
+            ]
+          },
+          {
+            cells: [
+              {
+                id: 'cashflow',
+              },
+            ]
+          },
+          {
+            cells: [
+              {
+                id: 'gf-balance',
+              },
+            ]
+          },
+          {
+            cells: [
+              {
+                id: 'per-pupil-expenditure',
+              },
+            ]
+          },
+          {
+            cells: [
+              {
+                id: 'expenditure-detail',
+              },
+            ]
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function makeSpendTypeComponent() {
+  return {
+    sync: {
+      visibility: true,
+      highlight: true,
+      extremes: true,
+    },
+    connector: {
+      id: 'c-spend-type',
+    },
+    cell: 'spend-type',
+    type: 'Highcharts',
+    chartOptions: {
+      xAxis: {
+        type: 'category',
+        accessibility: {
+          description: 'Spending Type',
+        },
+      },
+      yAxis: {
+        title: {
+          text: 'Amount ($)',
+        },
+      },
+      credits: {
+        enabled: false,
+      },
+      plotOptions: {
+        series: {
+          marker: {
+            radius: 8,
+          },
+        },
+      },
+      legend: {
+        enabled: true,
+        verticalAlign: 'top',
+      },
+      chart: {
+        animation: false,
+        styledMode: true,
+        type: 'bar',
+        spacing: [30, 30, 30, 20],
+      },
+      title: {
+        text: 'Spending Allocation',
+      },
+      tooltip: {
+        valuePrefix: '$',
+        stickOnContact: true,
+      },
+      lang: {
+        accessibility: {
+          chartContainerLabel:
+            'Spending breakdown for district into non-compensation, ' +
+            'school-allocated, and district-office staffing. ' +
+            'Highcharts Interactive Chart.',
+        },
+      },
+      accessibility: {
+        description: `The chart is displays the budgeted versus actual
+        amount of spending in the district broken down by
+        non-compensation, school-allocated staffing, and
+        non-school allocated staffing.`,
+        point: {
+          valuePrefix: '$',
+        },
+      },
+    },
+  };
+}
+
+function makeMockComponent(target_id) {
+  return {
+    sync: {
+      visibility: true,
+      highlight: true,
+      extremes: true,
+    },
+    connector: {
+      id: 'c-spend-type',
+    },
+    cell: target_id,
+    type: 'Highcharts',
+    chartOptions: {
+      xAxis: {
+        type: 'category',
+        accessibility: {
+          description: 'Spending Type',
+        },
+      },
+      yAxis: {
+        title: {
+          text: 'Amount ($)',
+        },
+      },
+      credits: {
+        enabled: false,
+      },
+      plotOptions: {
+        series: {
+          marker: {
+            radius: 8,
+          },
+        },
+      },
+      legend: {
+        enabled: true,
+        verticalAlign: 'top',
+      },
+      chart: {
+        animation: false,
+        styledMode: true,
+        type: 'bar',
+        spacing: [30, 30, 30, 20],
+      },
+      title: {
+        text: 'Spending Allocation',
+      },
+      tooltip: {
+        valuePrefix: '$',
+        stickOnContact: true,
+      },
+    },
+  };
+}
+
+function makeEnrollmentGraph(target_id) {
+  return {
+    sync: {
+      visibility: true,
+      highlight: true,
+      extremes: true,
+    },
+    connector: {
+      id: 'c-enrollment',
+      columnAssignment: makeEnrollmentSeries(),
+    },
+    cell: target_id,
+    type: 'Highcharts',
+    chartOptions: {
+      chart: {
+        type: 'column',
+        animation: false,
+        styledMode: true,
+      },
+      xAxis: {
+        type: 'category',
+        accessibility: {
+          description: 'school year for data',
+        },
+      },
+      yAxis: {
+        title: {
+          text: 'AFTE',
+        },
+      },
+      title: {
+        text: "Historical Enrollment",
+      },
+      credits: {
+        enabled: false,
+      },
+      plotOptions: {
+        series: {
+          groupPadding: 0,
+          stacking: 'normal',
+          label: {
+            enabled: true,
+            useHTML: true
+          }
+        }
+      },
+      legend: {
+        enabled: true,
+        verticalAlign: 'top',
+      },
+      tooltip: {
+        valueSuffix: ' AFTE',
+        stickOnContact: true,
+      },
+    },
+  };
+}
+
+function makeCashflowGraph(target_id) {
+  return {
+    sync: {
+      visibility: true,
+      highlight: true,
+      extremes: true,
+    },
+    connector: {
+      id: 'c-gfe-total',
+      columnAssignment: [
+        {
+          seriesId: 'actuals',
+          data: ['year', 'actuals'],
+        },
+        {
+          seriesId: 'budget',
+          data: ['year', 'budget'],
+        },
+      ]
+    },
+    cell: target_id,
+    type: 'Highcharts',
+    chartOptions: {
+      chart: {
+        type: 'column',
+        animation: false,
+        styledMode: true,
+      },
+      xAxis: {
+        type: 'category',
+        accessibility: {
+          description: 'school year for data',
+        },
+      },
+      yAxis: {
+        title: {
+          text: '$',
+        },
+      },
+      title: {
+        text: "Expenditures",
+      },
+      credits: {
+        enabled: false,
+      },
+      plotOptions: {
+        series: {
+          groupPadding: 0,
+          label: {
+            enabled: true,
+            useHTML: true
+          }
+        }
+      },
+      legend: {
+        enabled: true,
+        verticalAlign: 'top',
+      },
+      tooltip: {
+        valuePrefix: '$',
+        stickOnContact: true,
+      },
+    },
+  };
+}
+
+function makeGeneralFundBalanceComponent() {
+  return {
+    connector: {
+      id: 'c-general-fund-balance',
+    },
+    cell: 'general-fund-balance',
+    type: 'Highcharts',
+    chartOptions: {
+      xAxis: {
+        type: 'category',
+        accessibility: {
+          description: 'Balance item',
+        },
+      },
+      yAxis: {
+        title: {
+          text: 'Amount ($)',
+        },
+      },
+      credits: {
+        enabled: false,
+      },
+      plotOptions: {
+        series: {
+          marker: {
+            radius: 8,
+          },
+        },
+      },
+      legend: {
+        enabled: true,
+        verticalAlign: 'top',
+      },
+      chart: {
+        animation: false,
+        styledMode: true,
+        inverted: true,
+        type: 'bar',
+        spacing: [30, 30, 30, 20],
+      },
+      title: {
+        text: 'Cashflow',
+      },
+      tooltip: {
+        valuePrefix: '$',
+        stickOnContact: true,
+      },
+      lang: {
+        accessibility: {
+          chartContainerLabel: 'TODO',
+        },
+      },
+      accessibility: {
+        description: 'TODO',
+        point: {
+          valuePrefix: '$',
+        },
+      },
+    },
+  };
+}
+
+const config = {
   editMode: {
     enabled: true,
     contextMenu: {
@@ -83,395 +525,14 @@ const config = {
       items: ['editMode'],
     },
   },
-  gui: {
-    layouts: [
-      {
-        rows: [
-          // Row 1
-          {
-            cells: [
-              {
-                id: 'spend-type',
-              },
-              {
-                id: 'general-fund-balance',
-              },
-            ]
-          },
-          // Row 1
-          {
-            cells: [
-              {
-                id: 'kpi-wrapper',
-                layout: {
-                  rows: [
-                    {
-                      cells: [
-                        {
-                          id: 'kpi-vitamin-a',
-                        },
-                        {
-                          id: 'kpi-iron',
-                        },
-                      ],
-                    },
-                  ],
-                },
-              },
-              {
-                id: 'dashboard-col-0',
-              },
-              {
-                id: 'dashboard-col-1',
-              },
-            ],
-          },
-          // %row 2
-          {
-            cells: [
-              {
-                id: 'dashboard-col-2',
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
+  dataPool: makeDashboardDatapool(),
+  gui: makeDashboardGui(),
   components: [
-    {
-      sync: {
-        visibility: true,
-        highlight: true,
-        extremes: true,
-      },
-      connector: {
-        id: 'c-spend-type',
-      },
-      cell: 'spend-type',
-      type: 'Highcharts',
-      chartOptions: {
-        xAxis: {
-          type: 'category',
-          accessibility: {
-            description: 'Spending Type',
-          },
-        },
-        yAxis: {
-          title: {
-            text: 'Amount ($)',
-          },
-        },
-        credits: {
-          enabled: false,
-        },
-        plotOptions: {
-          series: {
-            marker: {
-              radius: 8,
-            },
-          },
-        },
-        legend: {
-          enabled: true,
-          verticalAlign: 'top',
-        },
-        chart: {
-          animation: false,
-          styledMode: true,
-          type: 'bar',
-          spacing: [30, 30, 30, 20],
-        },
-        title: {
-          text: 'Spending Allocation',
-        },
-        tooltip: {
-          valuePrefix: '$',
-          stickOnContact: true,
-        },
-        lang: {
-          accessibility: {
-            chartContainerLabel:
-              'Spending breakdown for district into non-compensation, ' +
-              'school-allocated, and district-office staffing. ' +
-              'Highcharts Interactive Chart.',
-          },
-        },
-        accessibility: {
-          description: `The chart is displays the budgeted versus actual
-              amount of spending in the district broken down by
-              non-compensation, school-allocated staffing, and
-              non-school allocated staffing.`,
-          point: {
-            valuePrefix: '$',
-          },
-        },
-      },
-    },
-    {
-      connector: {
-        id: 'c-general-fund-balance',
-      },
-      cell: 'general-fund-balance',
-      type: 'Highcharts',
-      chartOptions: {
-        xAxis: {
-          type: 'category',
-          accessibility: {
-            description: 'Balance item',
-          },
-        },
-        yAxis: {
-          title: {
-            text: 'Amount ($)',
-          },
-        },
-        credits: {
-          enabled: false,
-        },
-        plotOptions: {
-          series: {
-            marker: {
-              radius: 8,
-            },
-          },
-        },
-        legend: {
-          enabled: true,
-          verticalAlign: 'top',
-        },
-        chart: {
-          animation: false,
-          styledMode: true,
-          inverted: true,
-          type: 'bar',
-          spacing: [30, 30, 30, 20],
-        },
-        title: {
-          text: 'Cashflow',
-        },
-        tooltip: {
-          valuePrefix: '$',
-          stickOnContact: true,
-        },
-        lang: {
-          accessibility: {
-            chartContainerLabel: 'TODO',
-          },
-        },
-        accessibility: {
-          description: 'TODO',
-          point: {
-            valuePrefix: '$',
-          },
-        },
-      },
-    },
-    {
-      type: 'KPI',
-      cell: 'kpi-vitamin-a',
-      value: 900,
-      valueFormat: '{value}',
-      title: 'Vitamin A',
-      subtitle: 'daily recommended dose',
-    },
-    {
-      type: 'KPI',
-      cell: 'kpi-iron',
-      value: 8,
-      title: 'Iron',
-      valueFormat: '{value}',
-      subtitle: 'daily recommended dose',
-    },
-    {
-      cell: 'title',
-      type: 'HTML',
-      elements: [
-        {
-          tagName: 'h1',
-          textContent: 'MicroElement amount in Foods',
-        },
-      ],
-    },
-    {
-      sync: {
-        visibility: true,
-        highlight: true,
-        extremes: true,
-      },
-      connector: {
-        id: 'micro-element',
-      },
-      cell: 'dashboard-col-0',
-      type: 'Highcharts',
-      columnAssignment: {
-        Food: 'x',
-        'Vitamin A': 'value',
-      },
-      chartOptions: {
-        xAxis: {
-          type: 'category',
-          accessibility: {
-            description: 'Groceries',
-          },
-        },
-        yAxis: {
-          title: {
-            text: 'mcg',
-          },
-          plotLines: [
-            {
-              value: 900,
-              zIndex: 7,
-              dashStyle: 'shortDash',
-              label: {
-                text: 'RDA',
-                align: 'right',
-                style: {
-                  color: '#B73C28',
-                },
-              },
-            },
-          ],
-        },
-        credits: {
-          enabled: false,
-        },
-        plotOptions: {
-          series: {
-            marker: {
-              radius: 6,
-            },
-          },
-        },
-        legend: {
-          enabled: true,
-          verticalAlign: 'top',
-        },
-        chart: {
-          animation: false,
-          type: 'column',
-          spacing: [30, 30, 30, 20],
-        },
-        title: {
-          text: '',
-        },
-        tooltip: {
-          valueSuffix: ' mcg',
-          stickOnContact: true,
-        },
-        lang: {
-          accessibility: {
-            chartContainerLabel:
-              'Vitamin A in food. Highcharts Interactive Chart.',
-          },
-        },
-        accessibility: {
-          description: `The chart is displaying the Vitamin A amount in
-              micrograms for some groceries. There is a plotLine demonstrating
-              the daily Recommended Dietary Allowance (RDA) of 900
-              micrograms.`,
-          point: {
-            valueSuffix: ' mcg',
-          },
-        },
-      },
-    },
-    {
-      cell: 'dashboard-col-1',
-      sync: {
-        visibility: true,
-        highlight: true,
-        extremes: true,
-      },
-      connector: {
-        id: 'micro-element',
-      },
-      type: 'Highcharts',
-      columnAssignment: {
-        Food: 'x',
-        Iron: 'y',
-      },
-      chartOptions: {
-        xAxis: {
-          type: 'category',
-          accessibility: {
-            description: 'Groceries',
-          },
-        },
-        yAxis: {
-          title: {
-            text: 'mcg',
-          },
-          max: 8,
-          plotLines: [
-            {
-              value: 8,
-              dashStyle: 'shortDash',
-              label: {
-                text: 'RDA',
-                align: 'right',
-                style: {
-                  color: '#B73C28',
-                },
-              },
-            },
-          ],
-        },
-        credits: {
-          enabled: false,
-        },
-        plotOptions: {
-          series: {
-            marker: {
-              radius: 6,
-            },
-          },
-        },
-        title: {
-          text: '',
-        },
-        legend: {
-          enabled: true,
-          verticalAlign: 'top',
-        },
-        chart: {
-          animation: false,
-          type: 'column',
-          spacing: [30, 30, 30, 20],
-        },
-        tooltip: {
-          valueSuffix: ' mcg',
-          stickOnContact: true,
-        },
-        lang: {
-          accessibility: {
-            chartContainerLabel: 'Iron in food. Highcharts Interactive Chart.',
-          },
-        },
-        accessibility: {
-          description: `The chart is displaying the Iron amount in
-              micrograms for some groceries. There is a plotLine demonstrating
-              the daily Recommended Dietary Allowance (RDA) of 8
-              micrograms.`,
-          point: {
-            valueSuffix: ' mcg',
-          },
-        },
-      },
-    },
-    {
-      cell: 'dashboard-col-2',
-      connector: {
-        id: 'micro-element',
-      },
-      type: 'DataGrid',
-      editable: true,
-      sync: {
-        highlight: true,
-        visibility: true,
-      },
-    },
+    makeEnrollmentGraph('enrollment'),
+    makeCashflowGraph('cashflow'),
+    makeMockComponent('gf-balance'),
+    makeMockComponent('per-pupil-expenditure'),
+    makeMockComponent('expenditure-detail'),
   ],
 };
 
@@ -479,7 +540,8 @@ const config = {
 export default function DistrictDashboard() {
   useEffect(() => {
     Dashboards.board('container', config);
-  }, [config]);
+  },
+  [config]);
   return (
       <div id="container" />
   );

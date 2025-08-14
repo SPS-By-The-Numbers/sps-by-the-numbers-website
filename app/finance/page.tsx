@@ -1,8 +1,9 @@
 'use client'
 
+import dynamic from 'next/dynamic';
 
-//import PAOExplorer from 'components/finance/PAOExplorer';
-import DistrictDashboard from 'components/finance/DistrictDashboard';
+const DistrictDashboard = dynamic(() => import('components/finance/DistrictDashboard'),
+                           {ssr: false});
 
 export default function Styled() {
   return (
