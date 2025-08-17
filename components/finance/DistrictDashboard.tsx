@@ -1,22 +1,20 @@
 'use client'
 
-import dynamic from 'next/dynamic'
-
-
 import "styles/finance-dashboard.css"
 import { useEffect } from 'react';
 
+import * as dfd from "danfojs";
+
 import Highcharts from 'highcharts'
 import highchartsAccessibility from "highcharts/modules/accessibility";
-
-//import Dashboards from '@highcharts/dashboards';
-//import DataGrid from '@highcharts/dashboards/datagrid';
 
 import Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
 import '@highcharts/dashboards/es-modules/masters/modules/layout.src.js';
 import DataGrid from '@highcharts/dashboards/datagrid';
 
 import Paper from '@mui/material/Paper';
+
+import DistrictData from "utilities/DistrictData";
 
 if (typeof window !== `undefined`) {
     highchartsAccessibility(Highcharts);
@@ -39,7 +37,17 @@ function makeEnrollmentSeries() {
   return columnAssignment;
 }
 
-function makeDashboardDatapool() {
+// Converts a danfo dataframe into a set of rows for a Highcharts DataTable.
+function danfoToJsonOptions(df: dfd.DataFrame) {
+  return {
+    firstRowAsNames: false,
+    columnNames: df.columns,
+    data: df.values
+  };
+}
+
+function makeDashboardDatapool(districtData: DistrictData) {
+
   return {
     connectors: [
       {
@@ -78,37 +86,9 @@ function makeDashboardDatapool() {
         }
       },
       {
-        id: 'c-revenues-expenditures',
-        type: 'DataTable',
-        sync: async function (connector, table) {
-          const c_gfe = await connector.dataPool.getConnectorTable('c-gfe');
-          const c_gfr = await connector.dataPool.getConnectorTable('c-gfr');
-
-          // Convert Highcharts DataTables to Danfo DataFrames
-          const expenditures = new dfd.DataFrame(
-            Object.fromEntries(c_gfe.getColumnNames().map(name => [
-              name, c_gfe.getColumn(name)
-            ]))
-          );
-          const revenues = new dfd.DataFrame(
-            Object.fromEntries(c_gfr.getColumnNames().map(name => [
-              name, c_gfr.getColumn(name)
-            ]))
-          );
-
-          // Merge on "year" (adjust to your key)
-          const mergedDF = df1.merge({ right: df2, on: 'year', how: 'inner' });
-
-          // Convert merged Danfo DF back to Highcharts DataTable
-          const mergedTable = new Highcharts.DataTable();
-          mergedTable.setColumns([
-            mergedDF.columns,
-            ...mergedDF.values
-          ]);
-
-          // Replace this connector's table
-          table.setTable(mergedTable);
-        }
+        id: 'c-cashflow',
+        type: 'JSON',
+        options: danfoToJsonOptions(districtData.cashflow()),
       },
       {
         id: 'c-spend-type',
@@ -397,15 +377,11 @@ function makeCashflowGraph(target_id) {
       extremes: true,
     },
     connector: {
-      id: 'c-gfe-total',
+      id: 'c-cashflow',
       columnAssignment: [
         {
           seriesId: 'actuals',
-          data: ['year', 'actuals'],
-        },
-        {
-          seriesId: 'budget',
-          data: ['year', 'budget'],
+          data: ['school_starting_year', 'actuals'],
         },
       ]
     },
@@ -517,33 +493,37 @@ function makeGeneralFundBalanceComponent() {
   };
 }
 
-const config = {
-  editMode: {
-    enabled: true,
-    contextMenu: {
+function makeDashboardConfig(districtData : DistrictData) {
+  return {
+    editMode: {
       enabled: true,
-      items: ['editMode'],
+      contextMenu: {
+        enabled: true,
+        items: ['editMode'],
+      },
     },
-  },
-  dataPool: makeDashboardDatapool(),
-  gui: makeDashboardGui(),
-  components: [
-    makeEnrollmentGraph('enrollment'),
-    makeCashflowGraph('cashflow'),
-    makeMockComponent('gf-balance'),
-    makeMockComponent('per-pupil-expenditure'),
-    makeMockComponent('expenditure-detail'),
-  ],
-};
+    dataPool: makeDashboardDatapool(districtData),
+    gui: makeDashboardGui(),
+    components: [
+      makeEnrollmentGraph('enrollment'),
+      makeCashflowGraph('cashflow'),
+      makeMockComponent('gf-balance'),
+      makeMockComponent('per-pupil-expenditure'),
+      makeMockComponent('expenditure-detail'),
+    ],
+  };
+}
 
+async function loadData() {
+  const districtData = await DistrictData.loadFromGcs(dfd, 17001);
+  Dashboards.board('container', makeDashboardConfig(districtData));
+}
 
 export default function DistrictDashboard() {
   useEffect(() => {
-    Dashboards.board('container', config);
+    loadData()
   },
-  [config]);
-  return (
-      <div id="container" />
-  );
+  []);
+  return (<div id="container" />);
 }
 
