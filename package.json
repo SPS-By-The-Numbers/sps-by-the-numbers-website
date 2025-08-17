@@ -51,6 +51,7 @@
     "@mui/styled-engine-sc": "^6.1.1",
     "@types/jest": "^29.5.8",
     "@types/node": "^22.5.5",
+    "danfojs-node": "^1.2.0",
     "date-fns": "^4.1.0",
     "distinct-colors": "^3.0.0",
     "fast-xml-parser": "^4.5.0",
