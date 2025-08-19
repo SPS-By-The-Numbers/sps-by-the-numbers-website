@@ -1,5 +1,7 @@
 'use client'
 
+import merge from 'lodash.merge';
+
 import "styles/finance-dashboard.css"
 import { useEffect } from 'react';
 
@@ -11,6 +13,7 @@ import highchartsAccessibility from "highcharts/modules/accessibility";
 import Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
 import '@highcharts/dashboards/es-modules/masters/modules/layout.src.js';
 import DataGrid from '@highcharts/dashboards/datagrid';
+
 
 import Paper from '@mui/material/Paper';
 
@@ -24,25 +27,49 @@ if (typeof window !== `undefined`) {
   Dashboards.PluginHandler.addPlugin(Dashboards.GridPlugin);
 }
 
-function makeEnrollmentSeries() {
-  const columnAssignment = [];
-  for (const grade of ['total'].reverse()) {
-    columnAssignment.push(
-      {
-        seriesId: grade,
-        data: ['year', grade],
+
+const baselineClassOfChartOptions = {
+  chart: {
+    type: 'column',
+    animation: false,
+    styledMode: true,
+    zooming: {
+      type: 'x'
+    }
+  },
+  xAxis: {
+    type: 'category',
+    accessibility: {
+      description: 'Class of',
+    },
+  },
+  credits: {
+    enabled: false,
+  },
+  plotOptions: {
+    series: {
+      groupPadding: 0,
+      label: {
+        enabled: true,
+        useHTML: true
       }
-    );
-  }
-  return columnAssignment;
-}
+    }
+  },
+  legend: {
+    enabled: true,
+    verticalAlign: 'bottom',
+  },
+  tooltip: {
+    stickOnContact: true,
+  },
+};
 
 // Converts a danfo dataframe into a set of rows for a Highcharts DataTable.
 function danfoToJsonOptions(df: dfd.DataFrame) {
   return {
     firstRowAsNames: false,
     columnNames: df.columns,
-    data: df.values
+    data: df.round(2).values
   };
 }
 
@@ -65,30 +92,9 @@ function makeDashboardDatapool(districtData: DistrictData) {
         },
       },
       {
-        id: 'c-gfe',
-        type: 'CSV',
-        options: {
-          csvURL: 'http://localhost:3000/_TEMP_gfe_17001.csv'
-        }
-      },
-      {
-        id: 'c-gfe-total',
-        type: 'CSV',
-        options: {
-          csvURL: 'http://localhost:3000/_TEMP_gfe_total_17001.csv'
-        }
-      },
-      {
-        id: 'c-gfr',
-        type: 'CSV',
-        options: {
-          csvURL: 'http://localhost:3000/_TEMP_gfr_17001.csv'
-        }
-      },
-      {
-        id: 'c-cashflow',
+        id: 'c-toplevel-metrics',
         type: 'JSON',
-        options: danfoToJsonOptions(districtData.cashflow()),
+        options: danfoToJsonOptions(districtData.toplevel_metrics()),
       },
       {
         id: 'c-spend-type',
@@ -100,20 +106,6 @@ function makeDashboardDatapool(districtData: DistrictData) {
             ['Non-Compensation Spending', 175420766.00, 204390909.24],
             ['School-allocated Staffing', 634579723.00, 620153637.87],
             ['"District Office" Staffing', 362568512.00, 313743583.96],
-          ],
-        },
-      },
-      {
-        id: 'c-general-fund-balance',
-        type: 'JSON',
-        options: {
-          firstRowAsNames: false,
-          columnNames: ["Balance Type", "Budget", "Actuals"],
-          data: [
-            ['Beginning Balance', 98568313.00, 134179376.00],
-            ['Ending Balance', 19043604.00, 121226917.00],
-            ['Revenues', 1093044292.00, 1125335672.03],
-            ['Expenditures', 1172569001.00, 1138288131.07],
           ],
         },
       },
@@ -160,7 +152,7 @@ function makeDashboardGui() {
           {
             cells: [
               {
-                id: 'gf-balance',
+                id: 'key-expenditures',
               },
             ]
           },
@@ -181,78 +173,6 @@ function makeDashboardGui() {
         ],
       },
     ],
-  };
-}
-
-function makeSpendTypeComponent() {
-  return {
-    sync: {
-      visibility: true,
-      highlight: true,
-      extremes: true,
-    },
-    connector: {
-      id: 'c-spend-type',
-    },
-    cell: 'spend-type',
-    type: 'Highcharts',
-    chartOptions: {
-      xAxis: {
-        type: 'category',
-        accessibility: {
-          description: 'Spending Type',
-        },
-      },
-      yAxis: {
-        title: {
-          text: 'Amount ($)',
-        },
-      },
-      credits: {
-        enabled: false,
-      },
-      plotOptions: {
-        series: {
-          marker: {
-            radius: 8,
-          },
-        },
-      },
-      legend: {
-        enabled: true,
-        verticalAlign: 'top',
-      },
-      chart: {
-        animation: false,
-        styledMode: true,
-        type: 'bar',
-        spacing: [30, 30, 30, 20],
-      },
-      title: {
-        text: 'Spending Allocation',
-      },
-      tooltip: {
-        valuePrefix: '$',
-        stickOnContact: true,
-      },
-      lang: {
-        accessibility: {
-          chartContainerLabel:
-            'Spending breakdown for district into non-compensation, ' +
-            'school-allocated, and district-office staffing. ' +
-            'Highcharts Interactive Chart.',
-        },
-      },
-      accessibility: {
-        description: `The chart is displays the budgeted versus actual
-        amount of spending in the district broken down by
-        non-compensation, school-allocated staffing, and
-        non-school allocated staffing.`,
-        point: {
-          valuePrefix: '$',
-        },
-      },
-    },
   };
 }
 
@@ -313,29 +233,23 @@ function makeMockComponent(target_id) {
 
 function makeEnrollmentGraph(target_id) {
   return {
+    cell: target_id,
+    type: 'Highcharts',
     sync: {
       visibility: true,
       highlight: true,
       extremes: true,
     },
     connector: {
-      id: 'c-enrollment',
-      columnAssignment: makeEnrollmentSeries(),
+      id: 'c-toplevel-metrics',
+      columnAssignment: [
+        {
+          seriesId: 'total_enrollment',
+          data: ['school_starting_year', 'total_enrollment'],
+        }
+      ],
     },
-    cell: target_id,
-    type: 'Highcharts',
-    chartOptions: {
-      chart: {
-        type: 'column',
-        animation: false,
-        styledMode: true,
-      },
-      xAxis: {
-        type: 'category',
-        accessibility: {
-          description: 'school year for data',
-        },
-      },
+    chartOptions: merge({}, baselineClassOfChartOptions, {
       yAxis: {
         title: {
           text: 'AFTE',
@@ -344,28 +258,17 @@ function makeEnrollmentGraph(target_id) {
       title: {
         text: "Historical Enrollment",
       },
-      credits: {
-        enabled: false,
-      },
-      plotOptions: {
-        series: {
-          groupPadding: 0,
-          stacking: 'normal',
-          label: {
-            enabled: true,
-            useHTML: true
-          }
+      series: [
+        {
+          id: 'total_enrollment',
+          name: 'Total Enrollment in AAFTE',
+          colorIndex: 1,
         }
-      },
-      legend: {
-        enabled: true,
-        verticalAlign: 'top',
-      },
+      ],
       tooltip: {
         valueSuffix: ' AFTE',
-        stickOnContact: true,
       },
-    },
+    }),
   };
 }
 
@@ -377,119 +280,111 @@ function makeCashflowGraph(target_id) {
       extremes: true,
     },
     connector: {
-      id: 'c-cashflow',
+      id: 'c-toplevel-metrics',
       columnAssignment: [
+        {
+          seriesId: 'budget',
+          data: ['school_starting_year', 'budget'],
+        },
         {
           seriesId: 'actuals',
           data: ['school_starting_year', 'actuals'],
+          zIndex: 2,
         },
       ]
     },
     cell: target_id,
     type: 'Highcharts',
-    chartOptions: {
-      chart: {
-        type: 'column',
-        animation: false,
-        styledMode: true,
-      },
-      xAxis: {
-        type: 'category',
-        accessibility: {
-          description: 'school year for data',
-        },
-      },
+    chartOptions: merge({}, baselineClassOfChartOptions, {
       yAxis: {
         title: {
           text: '$',
         },
       },
       title: {
-        text: "Expenditures",
+        text: "Cashflow (positive means General Fund Balance increases)",
       },
-      credits: {
-        enabled: false,
-      },
+      series: [
+        {
+          id: 'budget',
+          name: 'Budget Cashflow',
+          colorIndex: 0,
+        },
+        {
+          id: 'actuals',
+          name: 'Actual Cashflow',
+          colorIndex: 2,
+          pointPadding: 0.25,
+        },
+      ],
       plotOptions: {
         series: {
-          groupPadding: 0,
-          label: {
-            enabled: true,
-            useHTML: true
-          }
+          grouping: false,
+          shadow: false,
+          borderWidth: 0,
         }
-      },
-      legend: {
-        enabled: true,
-        verticalAlign: 'top',
       },
       tooltip: {
         valuePrefix: '$',
-        stickOnContact: true,
       },
-    },
+    }),
   };
 }
 
-function makeGeneralFundBalanceComponent() {
+function makeKeyExpenditures(target_id) {
   return {
-    connector: {
-      id: 'c-general-fund-balance',
+    sync: {
+      visibility: true,
+      highlight: true,
+      extremes: true,
     },
-    cell: 'general-fund-balance',
-    type: 'Highcharts',
-    chartOptions: {
-      xAxis: {
-        type: 'category',
-        accessibility: {
-          description: 'Balance item',
+    connector: {
+      id: 'c-toplevel-metrics',
+      columnAssignment: [
+        {
+          seriesId: 'teaching_related_comp',
+          data: ['school_starting_year', 'teaching_related_comp'],
         },
-      },
+        {
+          seriesId: 'other_comp',
+          data: ['school_starting_year', 'other_comp'],
+          zIndex: 2,
+        },
+      ]
+    },
+    cell: target_id,
+    type: 'Highcharts',
+    chartOptions: merge({}, baselineClassOfChartOptions, {
       yAxis: {
         title: {
-          text: 'Amount ($)',
+          text: '$',
         },
-      },
-      credits: {
-        enabled: false,
-      },
-      plotOptions: {
-        series: {
-          marker: {
-            radius: 8,
-          },
-        },
-      },
-      legend: {
-        enabled: true,
-        verticalAlign: 'top',
-      },
-      chart: {
-        animation: false,
-        styledMode: true,
-        inverted: true,
-        type: 'bar',
-        spacing: [30, 30, 30, 20],
       },
       title: {
-        text: 'Cashflow',
+        text: "Expenditures by Big categories",
+      },
+      series: [
+        {
+          id: 'other_comp',
+          name: 'Other compensation',
+          colorIndex: 0,
+        },
+        {
+          id: 'teaching_related_comp',
+          name: 'Teaching Related Comp',
+          colorIndex: 2,
+        },
+      ],
+      plotOptions: {
+        series: {
+          shadow: false,
+          borderWidth: 0,
+        }
       },
       tooltip: {
         valuePrefix: '$',
-        stickOnContact: true,
       },
-      lang: {
-        accessibility: {
-          chartContainerLabel: 'TODO',
-        },
-      },
-      accessibility: {
-        description: 'TODO',
-        point: {
-          valuePrefix: '$',
-        },
-      },
-    },
+    }),
   };
 }
 
@@ -507,7 +402,7 @@ function makeDashboardConfig(districtData : DistrictData) {
     components: [
       makeEnrollmentGraph('enrollment'),
       makeCashflowGraph('cashflow'),
-      makeMockComponent('gf-balance'),
+      makeKeyExpenditures('key-expenditures'),
       makeMockComponent('per-pupil-expenditure'),
       makeMockComponent('expenditure-detail'),
     ],
@@ -515,6 +410,11 @@ function makeDashboardConfig(districtData : DistrictData) {
 }
 
 async function loadData() {
+  Highcharts.setOptions({
+    lang: {
+        thousandsSep: ','
+    }
+  });
   const districtData = await DistrictData.loadFromGcs(dfd, 17001);
   Dashboards.board('container', makeDashboardConfig(districtData));
 }
