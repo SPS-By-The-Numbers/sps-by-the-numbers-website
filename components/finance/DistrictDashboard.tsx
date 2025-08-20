@@ -2,79 +2,15 @@
 
 import merge from 'lodash.merge';
 
-import "styles/district-dashboard.scss"
-import { useEffect } from 'react';
-
-import * as dfd from "danfojs";
-
-import Highcharts from 'highcharts'
-import highchartsAccessibility from "highcharts/modules/accessibility";
-
-import Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
 import '@highcharts/dashboards/es-modules/masters/modules/layout.src.js';
-import DataGrid from '@highcharts/dashboards/datagrid';
-
-const HTMLComponent = Dashboards.ComponentRegistry.types.HTML;
-
-import Paper from '@mui/material/Paper';
-
+import { useEffect } from 'react';
+import { useHighcharts } from 'components/providers/HighchartsProvider';
+import * as dfd from "danfojs";
 import DistrictData from "utilities/DistrictData";
 
-if (typeof window !== `undefined`) {
-    highchartsAccessibility(Highcharts);
-  Dashboards.HighchartsPlugin.custom.connectHighcharts(Highcharts);
-  Dashboards.GridPlugin.custom.connectGrid(DataGrid);
-  Dashboards.PluginHandler.addPlugin(Dashboards.HighchartsPlugin);
-  Dashboards.PluginHandler.addPlugin(Dashboards.GridPlugin);
-}
+import type Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
 
-
-class KeyStatsComponent extends HTMLComponent {
-  constructor(board, options) {
-    super(board, options);
-    this.type = 'KeyStatsComponent';
-    return this;
-  }
-
-  // Called whenever data or component state changes
-  async load() {
-    await super.load();
-    const table = await this.getFirstConnector().table;
-    const series = new dfd.Series(table.getColumn(this.options['columnName']));
-
-    this.element.innerHTML = `
-      <div class="key-stats-box">
-        <text class="key-stats-header">${this.options['title']}</text>
-        <div class="key-stats-primary">
-          <div class="key-stats-item">
-            <div class="key-stats-value">${series.values[series.values.length - 1]}</div>
-            <div class="key-stats-label">Current</div>
-          </div>
-        </div>
-        <div class="key-stats-secondary">
-          <div class="key-stats-item">
-            <div class="key-stats-value">${series.min()}</div>
-            <div class="key-stats-label">Min</div>
-          </div>
-          <div class="key-stats-item">
-            <div class="key-stats-value">${series.max()}</div>
-            <div class="key-stats-label">Max</div>
-          </div>
-          <div class="key-stats-item">
-            <div class="key-stats-value">${series.mean().toFixed(0)}</div>
-            <div class="key-stats-label">Average</div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    this.render();
-  }
-}
-
-// 2) Register the component
-Dashboards.ComponentRegistry.registerComponent('KeyStats', KeyStatsComponent);
-
+import "styles/district-dashboard.scss"
 
 const baselineClassOfChartOptions = {
   chart: {
@@ -480,19 +416,15 @@ function makeDashboardConfig(districtData : DistrictData) {
   };
 }
 
-async function loadData() {
-  Highcharts.setOptions({
-    lang: {
-        thousandsSep: ','
-    }
-  });
+async function loadData(dashboards) {
   const districtData = await DistrictData.loadFromGcs(dfd, 17001);
-  Dashboards.board('container', makeDashboardConfig(districtData));
+  dashboards.board('container', makeDashboardConfig(districtData));
 }
 
 export default function DistrictDashboard() {
+  const { highchartsObjs } = useHighcharts();
   useEffect(() => {
-    loadData()
+    loadData(highchartsObjs['dashboards'])
   },
   []);
   return (<div id="container" />);
