@@ -14,6 +14,7 @@ import Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src
 import '@highcharts/dashboards/es-modules/masters/modules/layout.src.js';
 import DataGrid from '@highcharts/dashboards/datagrid';
 
+const HTMLComponent = Dashboards.ComponentRegistry.types.HTML;
 
 import Paper from '@mui/material/Paper';
 
@@ -26,6 +27,53 @@ if (typeof window !== `undefined`) {
   Dashboards.PluginHandler.addPlugin(Dashboards.HighchartsPlugin);
   Dashboards.PluginHandler.addPlugin(Dashboards.GridPlugin);
 }
+
+
+class KeyStatsComponent extends HTMLComponent {
+  constructor(board, options) {
+    super(board, options);
+    this.type = 'KeyStatsComponent';
+    return this;
+  }
+
+  // Called whenever data or component state changes
+  async load() {
+    await super.load();
+    const table = await this.getFirstConnector().table;
+    const series = new dfd.Series(table.getColumn(this.options['columnName']));
+
+    this.element.innerHTML = `
+      <div class="key-stats-box">
+        <text class="key-stats-header">${this.options['title']}</text>
+        <div class="key-stats-primary">
+          <div class="key-stats-item">
+            <div class="key-stats-value">${series.values[series.values.length - 1]}</div>
+            <div class="key-stats-label">Current</div>
+          </div>
+        </div>
+        <div class="key-stats-secondary">
+          <div class="key-stats-item">
+            <div class="key-stats-value">${series.min()}</div>
+            <div class="key-stats-label">Min</div>
+          </div>
+          <div class="key-stats-item">
+            <div class="key-stats-value">${series.max()}</div>
+            <div class="key-stats-label">Max</div>
+          </div>
+          <div class="key-stats-item">
+            <div class="key-stats-value">${series.mean().toFixed(0)}</div>
+            <div class="key-stats-label">Average</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.render();
+  }
+}
+
+// 2) Register the component
+Dashboards.ComponentRegistry.registerComponent('KeyStats', KeyStatsComponent);
 
 
 const baselineClassOfChartOptions = {
@@ -83,20 +131,6 @@ function makeDashboardDatapool(districtData: DistrictData) {
   return {
     connectors: [
       {
-        id: 'c-enrollment',
-        type: 'CSV',
-        options: {
-          csvURL: 'http://localhost:3000/_TEMP_enrollment_17001.csv'
-        },
-        dataModifier: {
-            type: 'Math',
-            columnFormulas: [{
-                column: 'Total',
-                formula: 'A2+A3+A4+A5+A6+A7+A8+A9+A10+A11+A12+A13',
-            }]
-        },
-      },
-      {
         id: 'c-toplevel-metrics',
         type: 'JSON',
         options: danfoToJsonOptions(districtData.toplevel_metrics()),
@@ -143,6 +177,12 @@ function makeDashboardGui() {
           {
             cells: [
               {
+                id: 'enrollment-key-stats',
+                style: {
+                  maxWidth: '15em',
+                }
+              },
+              {
                 id: 'enrollment',
               },
             ]
@@ -155,12 +195,14 @@ function makeDashboardGui() {
             ]
           },
           {
-            cells: [{
-              id: 'key-expenditures-amt',
-            },
-            {
-              id: 'key-expenditures-pct',
-            }],
+            cells: [
+              {
+                id: 'key-expenditures-amt',
+              },
+              {
+                id: 'key-expenditures-pct',
+              }
+            ],
           },
           {
             cells: [
@@ -419,6 +461,15 @@ function makeDashboardConfig(districtData : DistrictData) {
     dataPool: makeDashboardDatapool(districtData),
     gui: makeDashboardGui(),
     components: [
+      {
+        cell: 'enrollment-key-stats',
+        title: 'Enrollment',
+        type: 'KeyStats',
+        columnName: 'total_enrollment',
+        connector: {
+            id: 'c-toplevel-metrics',
+        },
+      },
       makeEnrollmentGraph('enrollment'),
       makeCashflowGraph('cashflow'),
       makeExpenditureGraph('key-expenditures-amt', 'amt'),

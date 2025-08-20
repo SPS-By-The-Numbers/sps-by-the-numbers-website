@@ -12,20 +12,64 @@ h1#title {
   color: #fff;
 }
 
-#enrollment {
-  height: $chart-height;
+// Make all charts short..
+.highcharts-container {
+  height: 250px;
 }
 
-#cashflow {
-  height: $chart-height;
+.key-stats-box {
+  text-decoration: none !important;
+  display: flex;
+  flex-direction: column;
+  padding: 1ex 1ex 1ex 1ex;
 }
 
-#key-expenditures-amt {
-  height: $chart-height;
+.key-stats-header {
+  text-align: center;
+  font-size: 1.8em;
+  font-weight: bold;
+  margin-bottom: 1ex;
+  border-bottom: 1px dashed;
 }
 
-#key-expenditures-pct {
-  height: $chart-height;
+.key-stats-item {
+  display: flex;
+  flex-direction: column;
+
+  text-align: center;
+
+  line-height: 1.1;
+  padding-bottom: 1ex;
+}
+
+.key-stats-value {
+  font-size: 1em;
+}
+
+.key-stats-label {
+  font-size: .6em;
+}
+
+.key-stats-primary {
+  text-align: center;
+  font-size: xx-large;
+  margin-bottom: 0.25ex;
+}
+
+.key-stats-primary {
+  color: red;
+}
+
+.key-stats-secondary {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+
+  gap: 1em;
+
+  justify-content: space-between;
+
+  color: grey;
 }
 
 .highcharts-plot-line {

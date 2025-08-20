@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 const DistrictDashboard = dynamic(() => import('components/finance/DistrictDashboard'),
                            {ssr: false});
 
-export default function Styled() {
+export default function FinancePage() {
   return (
     <DistrictDashboard />
   )
