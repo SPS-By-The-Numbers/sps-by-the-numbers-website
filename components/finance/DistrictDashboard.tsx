@@ -7,51 +7,12 @@ import { useEffect } from 'react';
 import { useHighcharts } from 'components/providers/HighchartsProvider';
 import * as dfd from "danfojs";
 import DistrictData from "utilities/DistrictData";
+import * as MetricHistoryPanel from "utilities/highcharts/panels/MetricHistoryPanel";
+import { baselineClassOfChartOptions } from "utilities/highcharts/defaults";
 
 import type Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
 
 import "styles/district-dashboard.scss"
-
-const baselineClassOfChartOptions = {
-  chart: {
-    type: 'column',
-    animation: false,
-    styledMode: true,
-    zooming: {
-      type: 'x'
-    }
-  },
-  yAxis: {
-    endOnTick: false,
-    minorTickInterval: "auto",
-    minorTickInterval: "auto",
-  },
-  xAxis: {
-    type: 'category',
-    accessibility: {
-      description: 'Class of',
-    },
-  },
-  credits: {
-    enabled: false,
-  },
-  plotOptions: {
-    series: {
-      groupPadding: 0,
-      label: {
-        enabled: true,
-        useHTML: true
-      }
-    }
-  },
-  legend: {
-    enabled: true,
-    verticalAlign: 'bottom',
-  },
-  tooltip: {
-    stickOnContact: true,
-  },
-};
 
 // Converts a danfo dataframe into a set of rows for a Highcharts DataTable.
 function danfoToJsonOptions(df: dfd.DataFrame) {
@@ -110,19 +71,8 @@ function makeDashboardGui() {
     layouts: [
       {
         rows: [
-          {
-            cells: [
-              {
-                id: 'enrollment-key-stats',
-                style: {
-                  maxWidth: '15em',
-                }
-              },
-              {
-                id: 'enrollment',
-              },
-            ]
-          },
+          MetricHistoryPanel.makeGui('enrollment'),
+          MetricHistoryPanel.makeGui('cashflow'),
           {
             cells: [
               {
@@ -397,16 +347,10 @@ function makeDashboardConfig(districtData : DistrictData) {
     dataPool: makeDashboardDatapool(districtData),
     gui: makeDashboardGui(),
     components: [
-      {
-        cell: 'enrollment-key-stats',
-        title: 'Enrollment',
-        type: 'KeyStats',
-        columnName: 'total_enrollment',
-        connector: {
-            id: 'c-toplevel-metrics',
-        },
-      },
-      makeEnrollmentGraph('enrollment'),
+      ...MetricHistoryPanel.makeComponents('enrollment', 'Enrollment History', 'total_enrollment',
+                                           'c-toplevel-metrics'),
+      ...MetricHistoryPanel.makeComponents('cashflow', 'Cashflow History', 'budget',
+                                           'c-toplevel-metrics'),
       makeCashflowGraph('cashflow'),
       makeExpenditureGraph('key-expenditures-amt', 'amt'),
       makeExpenditureGraph('key-expenditures-pct', 'pct_expenditure'),

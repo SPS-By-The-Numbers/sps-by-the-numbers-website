@@ -12,16 +12,33 @@ h1#title {
   color: #fff;
 }
 
+.highcharts-plot-line {
+  stroke-dasharray: 2px;
+  stroke: var(--highcharts-color-3);
+}
+
+.highcharts-plot-line-label {
+  fill: var(--highcharts-color-3);
+}
+
+.highcharts-description {
+  padding: 0 20px;
+}
+
+.highcharts-axis-labels.highcharts-xaxis-labels {
+  font-size: x-small;
+}
 // Make all charts short..
 .highcharts-container {
   height: 250px;
 }
 
 .key-stats-box {
-  text-decoration: none !important;
   display: flex;
   flex-direction: column;
   padding: 1ex 1ex 1ex 1ex;
+  align-items: center;
+  height: 100%;
 }
 
 .key-stats-header {
@@ -72,19 +89,18 @@ h1#title {
   color: grey;
 }
 
-.highcharts-plot-line {
-  stroke-dasharray: 2px;
-  stroke: var(--highcharts-color-3);
+.metric-history-header h1 {
+  text-align: center;
+  background-color: lightgrey;
+  font-size: 1.8em;
+  font-weight: bold;
 }
 
-.highcharts-plot-line-label {
-  fill: var(--highcharts-color-3);
+.metric-history-cell .highcharts-dashboards-component {
+  box-shadow: none;
 }
 
-.highcharts-description {
-  padding: 0 20px;
-}
-
-.highcharts-axis-labels.highcharts-xaxis-labels {
-  font-size: x-small;
+.metric-history-row.highcharts-dashboards-layout {
+  box-shadow: 1px 2px 2px grey;
+  margin: 0.5ex;
 }
