@@ -1,4 +1,5 @@
-const FINANCE_GROUP_BY = ["data_type", "school_starting_year"];
+const YEAR_GROUP_BY = ["school_starting_year"];
+const FINANCE_GROUP_BY = ["data_type", ...YEAR_GROUP_BY];
 
 const COMP_OBJECT_CODES = [
   2,  // Certificated Salary
@@ -116,50 +117,44 @@ export default class DistrictData {
       this.cashflow(),
       this.enrollment().loc({columns: ["school_starting_year", "total_enrollment"]})
     );
-    merged_df = this.merge(
-      merged_df,
-      this.key_expenditures().loc({
-        columns: ["school_starting_year", "teaching_related_comp", "non_comp"]}));
+    merged_df = this.merge(merged_df, this.key_expenditures());
 
     return merged_df;
   }
 
   key_expenditures() {
+    const key_metric = 'c_pct_expenditure';
     const comp_only = doQuery(
       this.gfe_df,
       inMask(this.gfe_df, "object_code", COMP_OBJECT_CODES)
     );
 
-    const non_comp_df = financeGroupSumAmount(
+    let non_comp_df = this.expenditureSum(
       "non_comp",
       doQuery(
         this.gfe_df,
         notInMask(this.gfe_df, "object_code", COMP_OBJECT_CODES)
-      ),
-      'c_pct_expenditure'
+      )
     );
 
-    const teaching_related_comp = financeGroupSumAmount(
+    let teaching_related_comp = this.expenditureSum(
       "teaching_related_comp",
       doQuery(
         comp_only,
-        inMask(comp_only, "activity_code", TEACHING_CODES)),
-      'c_pct_expenditure'
+        inMask(comp_only, "activity_code", TEACHING_CODES))
     );
 
-    const other_comp = financeGroupSumAmount(
+    let other_comp = this.expenditureSum(
       "other_comp",
       doQuery(
         comp_only,
-        notInMask(comp_only, "activity_code", TEACHING_CODES)),
-      'c_pct_expenditure'
+        notInMask(comp_only, "activity_code", TEACHING_CODES))
     );
 
     let result = this.merge(
       non_comp_df,
-      teaching_related_comp,
-      FINANCE_GROUP_BY);
-    result = this.merge(result, other_comp, FINANCE_GROUP_BY);
+      teaching_related_comp);
+    result = this.merge(result, other_comp);
     return this.fillYears(result);
   }
 
@@ -186,7 +181,10 @@ export default class DistrictData {
     actuals_cashflow_df.rename({ "cashflow": "actuals" }, { axis: 1, inplace: true });
     budget_cashflow_df.rename({ "cashflow": "budget" }, { axis: 1, inplace: true });
 
-    let cashflows = this.merge(actuals_cashflow_df, budget_cashflow_df);
+    let cashflows = this.merge(actuals_cashflow_df,
+                               budget_cashflow_df,
+                               ["school_starting_year"],
+                               "outer");
 
     // Add missing years to all things have the same axis.
     return this.fillYears(cashflows);
@@ -214,6 +212,36 @@ export default class DistrictData {
         on: ["school_starting_year"],
         how: "left"
       });
+  }
+
+  pivotBudgetActuals(col_name, df, preserverd_cols) {
+    const actuals_df = df.loc({
+      rows: df['data_type'].eq('actuals'),
+      columns: [...preserverd_cols, col_name]
+    });
+    const budget_df = df.loc({
+      rows: df['data_type'].eq('budget'),
+      columns: [...preserverd_cols, col_name]
+    });
+
+    actuals_df.rename({ [col_name]: `${col_name}_actuals` }, { axis: 1, inplace: true });
+    budget_df.rename({ [col_name]: `${col_name}_budget` }, { axis: 1, inplace: true });
+    return this.merge(actuals_df, budget_df);
+  }
+
+  // Returns sums of amount and c_pct_expenditure columns for
+  // budget and actuals ia given dataframe.
+  expenditureSum(new_col_prefix, df) {
+    const amt_col_name = `${new_col_prefix}_amt`;
+
+    let amt = financeGroupSumAmount(amt_col_name, df, "amount");
+    amt = this.pivotBudgetActuals(amt_col_name, amt, YEAR_GROUP_BY);
+
+    const pct_col_name = `${new_col_prefix}_pct_expenditure`;
+    let pct_expenditure = financeGroupSumAmount(pct_col_name, df, "c_pct_expenditure");
+    pct_expenditure = this.pivotBudgetActuals(pct_col_name, pct_expenditure, YEAR_GROUP_BY);
+
+    return this.merge(amt, pct_expenditure);
   }
 
 };
