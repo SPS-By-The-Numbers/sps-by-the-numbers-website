@@ -2,12 +2,30 @@
 @import url('https://code.highcharts.com/dashboards/css/datagrid.css');
 @import url('https://code.highcharts.com/dashboards/css/dashboards.css');
 
+$chart-height: 250px;
+
 h1#title {
   padding-top: 10px;
   margin: 0;
   background-color: #3d3d3d;
   text-align: center;
   color: #fff;
+}
+
+#enrollment {
+  height: $chart-height;
+}
+
+#cashflow {
+  height: $chart-height;
+}
+
+#key-expenditures-amt {
+  height: $chart-height;
+}
+
+#key-expenditures-pct {
+  height: $chart-height;
 }
 
 .highcharts-plot-line {
@@ -21,4 +39,8 @@ h1#title {
 
 .highcharts-description {
   padding: 0 20px;
+}
+
+.highcharts-axis-labels.highcharts-xaxis-labels {
+  font-size: x-small;
 }

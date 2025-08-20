@@ -2,7 +2,7 @@
 
 import merge from 'lodash.merge';
 
-import "styles/finance-dashboard.css"
+import "styles/district-dashboard.scss"
 import { useEffect } from 'react';
 
 import * as dfd from "danfojs";
@@ -36,6 +36,11 @@ const baselineClassOfChartOptions = {
     zooming: {
       type: 'x'
     }
+  },
+  yAxis: {
+    endOnTick: false,
+    minorTickInterval: "auto",
+    minorTickInterval: "auto",
   },
   xAxis: {
     type: 'category',
@@ -150,11 +155,12 @@ function makeDashboardGui() {
             ]
           },
           {
-            cells: [
-              {
-                id: 'key-expenditures',
-              },
-            ]
+            cells: [{
+              id: 'key-expenditures-amt',
+            },
+            {
+              id: 'key-expenditures-pct',
+            }],
           },
           {
             cells: [
@@ -178,13 +184,13 @@ function makeDashboardGui() {
 
 function makeMockComponent(target_id) {
   return {
+    connector: {
+      id: 'c-spend-type',
+    },
     sync: {
       visibility: true,
       highlight: true,
       extremes: true,
-    },
-    connector: {
-      id: 'c-spend-type',
     },
     cell: target_id,
     type: 'Highcharts',
@@ -268,6 +274,9 @@ function makeEnrollmentGraph(target_id) {
       tooltip: {
         valueSuffix: ' AFTE',
       },
+      legend: {
+        enabled: false,
+      },
     }),
   };
 }
@@ -331,59 +340,69 @@ function makeCashflowGraph(target_id) {
   };
 }
 
-function makeKeyExpenditures(target_id) {
+function pctFormater() {
+  return (this.value * 100) + '%';
+}
+
+function makeExpenditureGraph(target_id, pct_or_amt) {
+  const yAxis = {};
+  const tooltip = {};
+  if (pct_or_amt == 'pct_expenditure') {
+    yAxis['min'] = 0;
+    yAxis['max'] = 1;
+    yAxis['title'] = {'text': "% of Expenditure"};
+    yAxis['labels'] = {'formatter': pctFormater };
+    tooltip['formatter'] = function() { return `${(this.y * 100).toFixed(1)}%` };
+  } else {
+    yAxis['title'] = {'text': "$"};
+    tooltip['valuePrefix'] = '$';
+  }
+
   return {
+    connector: {
+      id: 'c-toplevel-metrics',
+      columnAssignment: [
+        {
+          seriesId: `teaching_related_comp_${pct_or_amt}_budget`,
+          data: ['school_starting_year', `teaching_related_comp_${pct_or_amt}_budget`],
+        },
+        {
+          seriesId: `teaching_related_comp_${pct_or_amt}_actuals`,
+          data: ['school_starting_year', `teaching_related_comp_${pct_or_amt}_actuals`],
+        },
+      ]
+    },
     sync: {
       visibility: true,
       highlight: true,
       extremes: true,
     },
-    connector: {
-      id: 'c-toplevel-metrics',
-      columnAssignment: [
-        {
-          seriesId: 'teaching_related_comp',
-          data: ['school_starting_year', 'teaching_related_comp'],
-        },
-        {
-          seriesId: 'other_comp',
-          data: ['school_starting_year', 'other_comp'],
-          zIndex: 2,
-        },
-      ]
-    },
     cell: target_id,
     type: 'Highcharts',
     chartOptions: merge({}, baselineClassOfChartOptions, {
-      yAxis: {
-        title: {
-          text: '$',
-        },
-      },
+      yAxis,
       title: {
         text: "Expenditures by Big categories",
       },
       series: [
         {
-          id: 'other_comp',
-          name: 'Other compensation',
-          colorIndex: 0,
+          id: `teaching_related_comp_${pct_or_amt}_budget`,
+          name: 'Teaching Related Comp (Budget)',
         },
         {
-          id: 'teaching_related_comp',
-          name: 'Teaching Related Comp',
-          colorIndex: 2,
+          id: `teaching_related_comp_${pct_or_amt}_actuals`,
+          name: 'Teaching Related Comp (Actuals)',
+          pointPadding: 0.27,
         },
       ],
       plotOptions: {
         series: {
+          grouping: false,
           shadow: false,
           borderWidth: 0,
         }
       },
-      tooltip: {
-        valuePrefix: '$',
-      },
+      tooltip,
     }),
   };
 }
@@ -402,7 +421,8 @@ function makeDashboardConfig(districtData : DistrictData) {
     components: [
       makeEnrollmentGraph('enrollment'),
       makeCashflowGraph('cashflow'),
-      makeKeyExpenditures('key-expenditures'),
+      makeExpenditureGraph('key-expenditures-amt', 'amt'),
+      makeExpenditureGraph('key-expenditures-pct', 'pct_expenditure'),
       makeMockComponent('per-pupil-expenditure'),
       makeMockComponent('expenditure-detail'),
     ],
