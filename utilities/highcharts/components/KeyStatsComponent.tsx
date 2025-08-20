@@ -18,7 +18,6 @@ export default class KeyStatsComponent extends Dashboards.ComponentRegistry.type
 
     this.element.innerHTML = `
       <div class="key-stats-box">
-        <text class="key-stats-header">${this.options['title']}</text>
         <div class="key-stats-primary">
           <div class="key-stats-item">
             <div class="key-stats-value">${series.values[series.values.length - 1]}</div>
