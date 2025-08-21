@@ -5,14 +5,35 @@ import merge from 'lodash.merge';
 import '@highcharts/dashboards/es-modules/masters/modules/layout.src.js';
 import { useEffect } from 'react';
 import { useHighcharts } from 'components/providers/HighchartsProvider';
+import { baselineClassOfChartOptions } from "utilities/highcharts/defaults";
 import * as dfd from "danfojs";
 import DistrictData from "utilities/DistrictData";
-import * as MetricHistoryPanel from "utilities/highcharts/panels/MetricHistoryPanel";
-import { baselineClassOfChartOptions } from "utilities/highcharts/defaults";
+import MetricHistoryPanelFactory from "utilities/highcharts/panels/MetricHistoryPanelFactory";
 
 import type Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
 
 import "styles/district-dashboard.scss"
+
+const enrollmentPanelFactory = new MetricHistoryPanelFactory(
+  {
+    metricName: 'enrollment',
+    title: 'Enrollment History',
+    columnName: 'total_enrollment',
+    xAxisName: 'school_starting_year',
+    connectorId: 'c-toplevel-metrics',
+    seriesName: 'Total Enrollment (AFTE)',
+    yUnits: 'Annual Full-Time Enrolled (AFTE)',
+  });
+
+const cashflowPanelFactory = new MetricHistoryPanelFactory(
+  {
+    metricName: 'cashflow',
+    title: 'Cashflow History',
+    columnName: 'budget',
+    xAxisName: 'school_starting_year',
+    connectorId: 'c-toplevel-metrics',
+  });
+
 
 // Converts a danfo dataframe into a set of rows for a Highcharts DataTable.
 function danfoToJsonOptions(df: dfd.DataFrame) {
@@ -71,8 +92,8 @@ function makeDashboardGui() {
     layouts: [
       {
         rows: [
-          MetricHistoryPanel.makeGui('enrollment'),
-          MetricHistoryPanel.makeGui('cashflow'),
+          enrollmentPanelFactory.makeLayout(),
+          cashflowPanelFactory.makeLayout(),
           {
             cells: [
               {
@@ -347,10 +368,8 @@ function makeDashboardConfig(districtData : DistrictData) {
     dataPool: makeDashboardDatapool(districtData),
     gui: makeDashboardGui(),
     components: [
-      ...MetricHistoryPanel.makeComponents('enrollment', 'Enrollment History', 'total_enrollment',
-                                           'c-toplevel-metrics'),
-      ...MetricHistoryPanel.makeComponents('cashflow', 'Cashflow History', 'budget',
-                                           'c-toplevel-metrics'),
+      ...enrollmentPanelFactory.makeComponents(),
+      ...cashflowPanelFactory.makeComponents(),
       makeCashflowGraph('cashflow'),
       makeExpenditureGraph('key-expenditures-amt', 'amt'),
       makeExpenditureGraph('key-expenditures-pct', 'pct_expenditure'),
