@@ -39,14 +39,7 @@ h1#title {
   padding: 1ex 1ex 1ex 1ex;
   align-items: center;
   height: 100%;
-}
-
-.key-stats-header {
-  text-align: center;
-  font-size: 1.8em;
-  font-weight: bold;
-  margin-bottom: 1ex;
-  border-bottom: 1px dashed;
+  border-right: 1px dashed;
 }
 
 .key-stats-item {
@@ -89,9 +82,14 @@ h1#title {
   color: grey;
 }
 
+.metric-history-header.highcharts-dashboards-component {
+  border-radius: 0px;
+  border-bottom: 1px solid lightgrey;
+  margin: 0px 0px 0px 0px;
+}
+
 .metric-history-header h1 {
   text-align: center;
-  background-color: lightgrey;
   font-size: 1.8em;
   font-weight: bold;
 }
@@ -100,7 +98,16 @@ h1#title {
   box-shadow: none;
 }
 
+.metric-history-cell.highcharts-dashboards-cell {
+  box-shadow: none;
+  border: none;
+}
+
 .metric-history-row.highcharts-dashboards-layout {
-  box-shadow: 1px 2px 2px grey;
   margin: 0.5ex;
+}
+
+.metric-history-row.highcharts-dashboards-layout {
+  margin-bottom: 0px;
+  margin-top: 0px;
 }
