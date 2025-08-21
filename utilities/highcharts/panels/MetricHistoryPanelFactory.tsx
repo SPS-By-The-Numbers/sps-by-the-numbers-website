@@ -1,36 +1,36 @@
-import merge from 'lodash.merge';
-
-import { baselineClassOfChartOptions } from "utilities/highcharts/defaults";
-
 type MetricHistoryPanelFactoryOptions = {
   metricName : string;
   title : string;
-  xAxisName : string;
-  columnName : string;
-  connectorId : string;
+};
+
+type MetricHistoryComponents = {
+  keyStatsCell: object;
+  chartCell: object;
 };
 
 export default class MetricHistoryPanelFactory {
-  constructor(options : MetricHistoryPanelFactoryOptions) {
-    this.options = options;
+  constructor(options : MetricHistoryPanelFactoryOptions, components: MetricHistoryComponents) {
+    this.metricName = options.metricName;
+    this.title = options.title;
+    this.components = components;
   }
 
   // Produces a composite entry for a highchart dashboard layout cell.
   makeLayout() {
     return {
       cells: [{
-        id: `${this.options.metricName}-panel`,
+        id: `${this.metricName}-panel`,
         layout: {
-          cellClassName: `metric-history-cell ${this.options.metricName}-metric-history-cell`,
-          rowClassName: `metric-history-row ${this.options.metricName}-metric-history-row`,
+          cellClassName: `metric-history-cell ${this.metricName}-metric-history-cell`,
+          rowClassName: `metric-history-row ${this.metricName}-metric-history-row`,
           rows: [
             {
-              cells: [{ id: `${this.options.metricName}-metric-history-header` }]
+              cells: [{ id: `${this.metricName}-metric-history-header` }]
             },
             {
               cells: [
-                { id: `${this.options.metricName}-metric-history-key-stats`, style: { maxWidth: '15em' } },
-                { id: `${this.options.metricName}-metric-history-chart`, },
+                { id: `${this.metricName}-metric-history-key-stats`, style: { maxWidth: '15em' } },
+                { id: `${this.metricName}-metric-history-chart`, },
               ]
             },
           ],
@@ -42,66 +42,25 @@ export default class MetricHistoryPanelFactory {
   makeComponents() {
     return [
         {
-          cell: `${this.options.metricName}-metric-history-header`,
+          cell: `${this.metricName}-metric-history-header`,
           type: 'HTML',
           className: 'metric-history-header',
           elements: [{
             tagName: 'h1',
-            textContent: this.options.title,
+            textContent: this.title,
             attributes: {
-              id: `${this.options.metricName}-metric-history-title`,
+              id: `${this.metricName}-metric-history-title`,
             }
           }]
         },
         {
-          cell: `${this.options.metricName}-metric-history-key-stats`,
-          type: 'KeyStats',
-          columnName: this.options.columnName,
-          connector: {
-              id: this.options.connectorId,
-          },
+          cell: `${this.metricName}-metric-history-key-stats`,
+          ...this.components.keyStatsCell,
         },
         {
-          cell: `${this.options.metricName}-metric-history-chart`,
-          type: 'Highcharts',
-          sync: {
-            visibility: true,
-            highlight: true,
-            extremes: true,
-          },
-          connector: {
-            id: this.options.connectorId,
-            columnAssignment: [
-              {
-                seriesId: this.options.columnName,
-                data: [this.options.xAxisName, this.options.columnName],
-              }
-            ],
-          },
-          chartOptions: merge({}, baselineClassOfChartOptions, this.makeDefaultChartOptions()),
+          cell: `${this.metricName}-metric-history-chart`,
+          ...this.components.chartCell,
         }
     ];
   }
-
-  private makeDefaultChartOptions() : Object {
-    return {
-      title: null,
-      yAxis: {
-        title: {
-          text: this.options.yUnits
-        },
-      },
-      series: [
-        {
-          id: this.options.columnName,
-          name: this.options.seriesName,
-          colorIndex: 1,
-        }
-      ],
-      legend: {
-        enabled: false,
-      },
-    };
-  }
-
 }
