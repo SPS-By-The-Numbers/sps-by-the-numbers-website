@@ -9,6 +9,7 @@ import { baselineClassOfChartOptions } from "utilities/highcharts/defaults";
 import * as dfd from "danfojs";
 import DistrictData from "utilities/DistrictData";
 import MetricHistoryPanelFactory from "utilities/highcharts/panels/MetricHistoryPanelFactory";
+import SingleMetricHistoryComponents from "utilities/highcharts/panels/SingleMetricHistoryComponents";
 
 import type Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
 
@@ -18,21 +19,27 @@ const enrollmentPanelFactory = new MetricHistoryPanelFactory(
   {
     metricName: 'enrollment',
     title: 'Enrollment History',
+  },
+  new SingleMetricHistoryComponents({
     columnName: 'total_enrollment',
     xAxisName: 'school_starting_year',
     connectorId: 'c-toplevel-metrics',
     seriesName: 'Total Enrollment (AFTE)',
     yUnits: 'Annual Full-Time Enrolled (AFTE)',
-  });
+  })
+);
 
 const cashflowPanelFactory = new MetricHistoryPanelFactory(
   {
     metricName: 'cashflow',
     title: 'Cashflow History',
+  },
+  new SingleMetricHistoryComponents({
     columnName: 'budget',
     xAxisName: 'school_starting_year',
     connectorId: 'c-toplevel-metrics',
-  });
+  })
+);
 
 
 // Converts a danfo dataframe into a set of rows for a Highcharts DataTable.
