@@ -20,6 +20,7 @@ export default class KeyStatsComponent extends Dashboards.ComponentRegistry.type
     super(board, options);
     this.type = 'KeyStatsComponent';
     this.xAxisName = options.xAxisName;
+    this.title = options.title;
 
     this.mode = options.mode ?? SINGLE_MODE;
     // TODO: Generalize to list of columns.
@@ -41,6 +42,11 @@ export default class KeyStatsComponent extends Dashboards.ComponentRegistry.type
 
     this.element.innerHTML = `
       <div class="key-stats-box">
+        <div class="key-stats-title">
+            <h2>
+              ${this.title}
+            </h2>
+        </div>
         <div class="key-stats-primary">
             ${this.primaryValueHtml(df)}
         </div>
@@ -58,7 +64,7 @@ export default class KeyStatsComponent extends Dashboards.ComponentRegistry.type
       const lastRow = df.iloc({ rows: [df.shape[0] - 1] });
       return (`
         <div class="key-stats-item">
-          <div class="key-stats-value">
+          <div class="key-stats-value-actuals">
           ${lastRow[this.columnName].iat(0, 0).toLocaleString()}
           </div>
           <div class="key-stats-label">(${lastRow[this.xAxisName].iat(0, 0)})</div>
@@ -70,14 +76,14 @@ export default class KeyStatsComponent extends Dashboards.ComponentRegistry.type
       return (`
         <div class="key-stats-item-row">
           <div class="key-stats-item">
-            <div class="key-stats-value">
+            <div class="key-stats-value-actuals">
               ${currencyFormatter(lastRow[this.actualsColumn].iat(0, 0))}
             </div>
             <div class="key-stats-label">Actual</div>
           </div>
 
           <div class="key-stats-item key-stats-subvalue">
-            <div class="key-stats-value">
+            <div class="key-stats-value-budget">
               ${currencyFormatter(lastRow[this.budgetColumn].iat(0, 0))}
             </div>
             <div class="key-stats-label">Budget</div>

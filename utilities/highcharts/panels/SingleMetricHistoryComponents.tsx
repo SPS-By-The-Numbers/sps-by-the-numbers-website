@@ -20,6 +20,7 @@ export default class SingleMetricHistoryComponents {
   private makeKeyStats(options) {
     return {
       type: 'KeyStats',
+      title: options.title,
       columnName: options.columnName,
       xAxisName: options.xAxisName,
       connector: {

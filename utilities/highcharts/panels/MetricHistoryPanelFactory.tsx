@@ -42,18 +42,6 @@ export default class MetricHistoryPanelFactory {
   makeComponents() {
     return [
         {
-          cell: `${this.metricName}-metric-history-header`,
-          type: 'HTML',
-          className: 'metric-history-header',
-          elements: [{
-            tagName: 'h1',
-            textContent: this.title,
-            attributes: {
-              id: `${this.metricName}-metric-history-title`,
-            }
-          }]
-        },
-        {
           cell: `${this.metricName}-metric-history-key-stats`,
           ...this.components.keyStatsCell,
         },

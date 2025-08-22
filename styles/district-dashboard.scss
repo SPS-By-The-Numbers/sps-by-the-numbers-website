@@ -2,7 +2,7 @@
 @import url('https://code.highcharts.com/dashboards/css/datagrid.css');
 @import url('https://code.highcharts.com/dashboards/css/dashboards.css');
 
-$chart-height: 15em;
+$chart-height: 25ex;
 
 h1#title {
   padding-top: 10px;
@@ -72,20 +72,18 @@ h1#title {
   color: #f4d06f;
 }
 
-.key-stats-subvalue .key-stats-value {
-}
-
-.key-stats-subvalue .key-stats-label {
-}
-
 .key-stats-primary {
   text-align: center;
-  font-size: xx-large;
+  font-size: 1.6em;
   margin-bottom: 0.25ex;
 }
 
-.key-stats-primary {
-  color: #ff8811;
+.key-stats-value-actuals {
+  color: var(--highcharts-color-0);
+}
+
+.key-stats-value-budget {
+  color: var(--highcharts-color-2);
 }
 
 .key-stats-secondary {
@@ -106,9 +104,9 @@ h1#title {
   margin: 0px 0px 0px 0px;
 }
 
-.metric-history-header h1 {
+.key-stats-title {
   text-align: center;
-  font-size: 1.5em;
+  font-size: 1.4em;
   font-weight: bold;
 }
 
@@ -122,10 +120,7 @@ h1#title {
 }
 
 .metric-history-row.highcharts-dashboards-layout {
-  margin: 0.5ex;
-}
-
-.metric-history-row.highcharts-dashboards-layout {
+  box-shadow: 0 2px 2px -2px gray;
   margin-bottom: 0px;
   margin-top: 0px;
 }

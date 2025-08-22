@@ -19,9 +19,9 @@ import "styles/district-dashboard.scss"
 const enrollmentPanelFactory = new MetricHistoryPanelFactory(
   {
     metricName: 'enrollment',
-    title: 'Enrollment History',
   },
   new SingleMetricHistoryComponents({
+    title: 'Enrollment',
     columnName: 'total_enrollment',
     xAxisName: 'school_starting_year',
     connectorId: 'c-toplevel-metrics',
@@ -33,9 +33,9 @@ const enrollmentPanelFactory = new MetricHistoryPanelFactory(
 const cashflowPanelFactory = new MetricHistoryPanelFactory(
   {
     metricName: 'cashflow',
-    title: 'Cashflow History',
   },
   new BudgetActualsHistoryComponents({
+    title: 'Cashflow',
     seriesLabel: 'Cashflow',
     metricColumnRoot: 'cashflow',
     xAxisName: 'school_starting_year',
@@ -239,65 +239,6 @@ function makeEnrollmentGraph(target_id) {
   };
 }
 
-function makeCashflowGraph(target_id) {
-  return {
-    sync: {
-      visibility: true,
-      highlight: true,
-      extremes: true,
-    },
-    connector: {
-      id: 'c-toplevel-metrics',
-      columnAssignment: [
-        {
-          seriesId: 'budget',
-          data: ['school_starting_year', 'budget'],
-        },
-        {
-          seriesId: 'actuals',
-          data: ['school_starting_year', 'actuals'],
-          zIndex: 2,
-        },
-      ]
-    },
-    cell: target_id,
-    type: 'Highcharts',
-    chartOptions: merge({}, baselineClassOfChartOptions, {
-      yAxis: {
-        title: {
-          text: '$',
-        },
-      },
-      title: {
-        text: "Cashflow (positive means General Fund Balance increases)",
-      },
-      series: [
-        {
-          id: 'budget',
-          name: 'Budget Cashflow',
-          colorIndex: 0,
-        },
-        {
-          id: 'actuals',
-          name: 'Actual Cashflow',
-          colorIndex: 2,
-          pointPadding: 0.25,
-        },
-      ],
-      plotOptions: {
-        series: {
-          grouping: false,
-          shadow: false,
-          borderWidth: 0,
-        }
-      },
-      tooltip: {
-        valuePrefix: '$',
-      },
-    }),
-  };
-}
-
 function pctFormater() {
   return (this.value * 100) + '%';
 }
@@ -379,11 +320,10 @@ function makeDashboardConfig(districtData : DistrictData) {
     components: [
       ...enrollmentPanelFactory.makeComponents(),
       ...cashflowPanelFactory.makeComponents(),
-      makeCashflowGraph('cashflow'),
       makeExpenditureGraph('key-expenditures-amt', 'amt'),
       makeExpenditureGraph('key-expenditures-pct', 'pct_expenditure'),
-      makeMockComponent('per-pupil-expenditure'),
-      makeMockComponent('expenditure-detail'),
+//      makeMockComponent('per-pupil-expenditure'),
+//      makeMockComponent('expenditure-detail'),
     ],
   };
 }

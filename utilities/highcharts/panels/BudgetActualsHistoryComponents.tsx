@@ -4,6 +4,7 @@ import { BUDGET_ACTUALS_MODE } from 'utilities/highcharts/components/KeyStatsCom
 import { baselineHighchartsCell } from "utilities/highcharts/defaults";
 
 export type BudgetActualsHistoryComponentsOptions = {
+  title : string;
   xAxisName : string;
   metricName: string;
   connectorId : string;
@@ -24,6 +25,7 @@ export default class BudgetActualsHistoryComponents {
     return {
       type: 'KeyStats',
       mode: BUDGET_ACTUALS_MODE,
+      title: options.title,
 
       budgetColumn,
       actualsColumn,
