@@ -167,24 +167,7 @@ export default class DistrictData {
 
     // Calculate cashflow.
     merged_df = merged_df.addColumn("cashflow", merged_df["revenues"].sub(merged_df["expenditures"]));
-
-    const actuals_cashflow_df = merged_df.loc({
-      rows: merged_df['data_type'].eq('actuals'),
-      columns: ["school_starting_year", "cashflow"]
-    });
-
-    const budget_cashflow_df = merged_df.loc({
-      rows: merged_df['data_type'].eq('budget'),
-      columns: ["school_starting_year", "cashflow"]
-    });
-
-    actuals_cashflow_df.rename({ "cashflow": "actuals" }, { axis: 1, inplace: true });
-    budget_cashflow_df.rename({ "cashflow": "budget" }, { axis: 1, inplace: true });
-
-    let cashflows = this.merge(actuals_cashflow_df,
-                               budget_cashflow_df,
-                               ["school_starting_year"],
-                               "outer");
+    const cashflows = this.pivotBudgetActuals("cashflow", merged_df, YEAR_GROUP_BY);
 
     // Add missing years to all things have the same axis.
     return this.fillYears(cashflows);

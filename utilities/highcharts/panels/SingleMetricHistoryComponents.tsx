@@ -1,6 +1,6 @@
 import merge from 'lodash.merge';
 
-import { baselineClassOfChartOptions } from "utilities/highcharts/defaults";
+import { baselineHighchartsCell } from "utilities/highcharts/defaults";
 
 export type SingleMetricHistoryComponentsOptions = {
   xAxisName : string;
@@ -21,6 +21,7 @@ export default class SingleMetricHistoryComponents {
     return {
       type: 'KeyStats',
       columnName: options.columnName,
+      xAxisName: options.xAxisName,
       connector: {
         id: options.connectorId,
       },
@@ -28,46 +29,38 @@ export default class SingleMetricHistoryComponents {
   }
 
   private makeChartCell(options : MetricHistoryPanelFactoryOptions) {
-    return {
-      type: 'Highcharts',
-      sync: {
-        visibility: true,
-        highlight: true,
-        extremes: true,
-      },
-      connector: {
-        id: options.connectorId,
-        columnAssignment: [
-          {
-            seriesId: options.columnName,
-            data: [options.xAxisName, options.columnName],
-          }
-        ],
-      },
-      chartOptions: merge({},
-                          baselineClassOfChartOptions,
-                          this.makeChartOptions(options)),
-    }
-  }
-
-  private makeChartOptions(options : MetricHistoryPanelFactoryOptions) {
-    return {
-      title: null,
-      yAxis: {
-        title: {
-          text: options.yUnits
+    return merge(
+      {},
+      baselineHighchartsCell,
+      {
+        connector: {
+          id: options.connectorId,
+          columnAssignment: [
+            {
+              seriesId: options.columnName,
+              data: [options.xAxisName, options.columnName],
+            }
+          ],
         },
-      },
-      series: [
-        {
-          id: options.columnName,
-          name: options.seriesName,
-          colorIndex: 1,
+        chartOptions: {
+          title: null,
+          yAxis: {
+            title: {
+              text: options.yUnits
+            },
+          },
+          series: [
+            {
+              id: options.columnName,
+              name: options.seriesLabel,
+              colorIndex: 1,
+            }
+          ],
+          legend: {
+            enabled: false,
+          },
         }
-      ],
-      legend: {
-        enabled: false,
-      },
-    };
+      }
+    );
   }
 }

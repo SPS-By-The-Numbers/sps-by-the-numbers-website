@@ -8,7 +8,6 @@ export const baselineClassOfChartOptions = {
     }
   },
   yAxis: {
-    endOnTick: false,
     minorTickInterval: "auto",
     minorTickInterval: "auto",
   },
@@ -37,4 +36,14 @@ export const baselineClassOfChartOptions = {
   tooltip: {
     stickOnContact: true,
   },
+};
+
+export const baselineHighchartsCell = {
+  type: 'Highcharts',
+  sync: {
+    visibility: true,
+    highlight: true,
+    extremes: true,
+  },
+  chartOptions: baselineClassOfChartOptions,
 };

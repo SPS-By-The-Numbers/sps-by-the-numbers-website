@@ -3,10 +3,11 @@
 import merge from 'lodash.merge';
 
 import '@highcharts/dashboards/es-modules/masters/modules/layout.src.js';
+import { baselineClassOfChartOptions } from "utilities/highcharts/defaults";
 import { useEffect } from 'react';
 import { useHighcharts } from 'components/providers/HighchartsProvider';
-import { baselineClassOfChartOptions } from "utilities/highcharts/defaults";
 import * as dfd from "danfojs";
+import BudgetActualsHistoryComponents from "utilities/highcharts/panels/BudgetActualsHistoryComponents";
 import DistrictData from "utilities/DistrictData";
 import MetricHistoryPanelFactory from "utilities/highcharts/panels/MetricHistoryPanelFactory";
 import SingleMetricHistoryComponents from "utilities/highcharts/panels/SingleMetricHistoryComponents";
@@ -24,7 +25,7 @@ const enrollmentPanelFactory = new MetricHistoryPanelFactory(
     columnName: 'total_enrollment',
     xAxisName: 'school_starting_year',
     connectorId: 'c-toplevel-metrics',
-    seriesName: 'Total Enrollment (AFTE)',
+    seriesLabel: 'Total Enrollment (AFTE)',
     yUnits: 'Annual Full-Time Enrolled (AFTE)',
   })
 );
@@ -34,8 +35,9 @@ const cashflowPanelFactory = new MetricHistoryPanelFactory(
     metricName: 'cashflow',
     title: 'Cashflow History',
   },
-  new SingleMetricHistoryComponents({
-    columnName: 'budget',
+  new BudgetActualsHistoryComponents({
+    seriesLabel: 'Cashflow',
+    metricColumnRoot: 'cashflow',
     xAxisName: 'school_starting_year',
     connectorId: 'c-toplevel-metrics',
   })

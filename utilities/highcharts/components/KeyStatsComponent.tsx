@@ -2,11 +2,34 @@ import Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src
 
 import * as dfd from "danfojs";
 
+export const SINGLE_MODE = 'single';
+export const BUDGET_ACTUALS_MODE = 'budget_actuals';
+
+
+const currencyFormatter  = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  notation: 'compact',
+  compactDisplay: 'short',
+  maximumFractionDigits: 0,
+}).format;
+
 // Show key historical metric with min/max/average.
 export default class KeyStatsComponent extends Dashboards.ComponentRegistry.types.HTML {
   constructor(board, options) {
     super(board, options);
     this.type = 'KeyStatsComponent';
+    this.xAxisName = options.xAxisName;
+
+    this.mode = options.mode ?? SINGLE_MODE;
+    // TODO: Generalize to list of columns.
+    if (this.mode == SINGLE_MODE) {
+      this.columnName = options.columnName;
+    } else if (this.mode == BUDGET_ACTUALS_MODE) {
+      this.budgetColumn = options.budgetColumn;
+      this.actualsColumn = options.actualsColumn;
+    }
+
     return this;
   }
 
@@ -14,41 +37,94 @@ export default class KeyStatsComponent extends Dashboards.ComponentRegistry.type
   async load() {
     await super.load();
     const table = await this.getFirstConnector().table;
-    const series = new dfd.Series(table.getColumn(this.options['columnName']));
+    const df = new dfd.DataFrame(table.getRowObjects());
 
     this.element.innerHTML = `
       <div class="key-stats-box">
         <div class="key-stats-primary">
-          <div class="key-stats-item">
-            <div class="key-stats-value">
-              ${series.values[series.values.length - 1].toLocaleString()}
-            </div>
-            <div class="key-stats-label">Current</div>
-          </div>
+            ${this.primaryValueHtml(df)}
         </div>
         <div class="key-stats-secondary">
-          <div class="key-stats-item">
-            <div class="key-stats-value">
-            ${series.min().toLocaleString()}
-            </div>
-            <div class="key-stats-label">Min</div>
-          </div>
-          <div class="key-stats-item">
-            <div class="key-stats-value">
-            ${Number(series.mean().toFixed(0)).toLocaleString()}
-            </div>
-            <div class="key-stats-label">Average</div>
-          </div>
-          <div class="key-stats-item">
-            <div class="key-stats-value">
-            ${series.max().toLocaleString()}
-            </div>
-            <div class="key-stats-label">Max</div>
-          </div>
+          ${this.secondaryValueHtml(df)}
         </div>
       </div>
     `;
 
     this.render();
+  }
+
+  private primaryValueHtml(df) : string {
+    if (this.mode === SINGLE_MODE) {
+      const lastRow = df.iloc({ rows: [df.shape[0] - 1] });
+      return (`
+        <div class="key-stats-item">
+          <div class="key-stats-value">
+          ${lastRow[this.columnName].iat(0, 0).toLocaleString()}
+          </div>
+          <div class="key-stats-label">(${lastRow[this.xAxisName].iat(0, 0)})</div>
+        </div>
+      `);
+    } else if (this.mode === BUDGET_ACTUALS_MODE) {
+      const complete_df = df.loc({columns: [this.xAxisName, this.budgetColumn, this.actualsColumn]}).dropNa();
+      const lastRow = complete_df.iloc({ rows: [complete_df.shape[0] - 1] });
+      return (`
+        <div class="key-stats-item-row">
+          <div class="key-stats-item">
+            <div class="key-stats-value">
+              ${currencyFormatter(lastRow[this.actualsColumn].iat(0, 0))}
+            </div>
+            <div class="key-stats-label">Actual</div>
+          </div>
+
+          <div class="key-stats-item key-stats-subvalue">
+            <div class="key-stats-value">
+              ${currencyFormatter(lastRow[this.budgetColumn].iat(0, 0))}
+            </div>
+            <div class="key-stats-label">Budget</div>
+          </div>
+        </div>
+      `);
+    } else {
+      return 'Unknown Mode';
+    }
+  }
+
+  private secondaryValueHtml(df) : string {
+    if (this.mode === SINGLE_MODE) {
+      const minIdx = df[this.columnName].argMin();
+      const maxIdx = df[this.columnName].argMax();
+      const average = df[this.columnName].mean();
+      const minVal = df[this.columnName].iat(minIdx, 0);
+      const minXVal = df[this.xAxisName].iat(minIdx, 0);
+      const maxVal = df[this.columnName].iat(maxIdx, 0);
+      const maxXVal = df[this.xAxisName].iat(maxIdx, 0);
+
+      return (`
+        <div class="key-stats-item">
+          <div class="key-stats-value">
+          ${minVal.toLocaleString()}
+          </div>
+          <div class="key-stats-label">Min (${minXVal})</div>
+        </div>
+        <div class="key-stats-item">
+          <div class="key-stats-value">
+          ${Number(average.toFixed(0)).toLocaleString()}
+          </div>
+          <div class="key-stats-label">Average</div>
+        </div>
+        <div class="key-stats-item">
+          <div class="key-stats-value">
+          ${maxVal.toLocaleString()}
+          </div>
+          <div class="key-stats-label">Max (${maxXVal})</div>
+        </div>
+      `);
+    } else if (this.mode === BUDGET_ACTUALS_MODE) {
+      return (
+        `<div class="key-stats-value">
+        </div>`);
+    } else {
+      return 'Unknown Mode';
+    }
   }
 }

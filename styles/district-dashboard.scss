@@ -2,7 +2,7 @@
 @import url('https://code.highcharts.com/dashboards/css/datagrid.css');
 @import url('https://code.highcharts.com/dashboards/css/dashboards.css');
 
-$chart-height: 250px;
+$chart-height: 15em;
 
 h1#title {
   padding-top: 10px;
@@ -28,9 +28,10 @@ h1#title {
 .highcharts-axis-labels.highcharts-xaxis-labels {
   font-size: x-small;
 }
+
 // Make all charts short..
 .highcharts-container {
-  height: 250px;
+  height: $chart-height;
 }
 
 .key-stats-box {
@@ -40,6 +41,13 @@ h1#title {
   align-items: center;
   height: 100%;
   border-right: 1px dashed;
+}
+
+.key-stats-item-row {
+  gap: 1ex;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
 }
 
 .key-stats-item {
@@ -53,11 +61,21 @@ h1#title {
 }
 
 .key-stats-value {
-  font-size: 1em;
+  font-size: .8em;
 }
 
 .key-stats-label {
-  font-size: .6em;
+  font-size: .5em;
+}
+
+.key-stats-subvalue {
+  color: #f4d06f;
+}
+
+.key-stats-subvalue .key-stats-value {
+}
+
+.key-stats-subvalue .key-stats-label {
 }
 
 .key-stats-primary {
@@ -67,7 +85,7 @@ h1#title {
 }
 
 .key-stats-primary {
-  color: red;
+  color: #ff8811;
 }
 
 .key-stats-secondary {
@@ -90,7 +108,7 @@ h1#title {
 
 .metric-history-header h1 {
   text-align: center;
-  font-size: 1.8em;
+  font-size: 1.5em;
   font-weight: bold;
 }
 
