@@ -1,20 +1,40 @@
 import { BigQuery } from '@google-cloud/bigquery';
+import { Storage } from '@google-cloud/storage';
 import { jsonOnRequest, makeResponseJson } from "./utils";
 import * as Constants from 'config/constants';
 import crypto from 'node:crypto';
+
+const CACHE_BUCKET = "sps-by-the-numbers.appspot.com";
+
+const bigqueryClient = new BigQuery();
+const storageClient = new Storage();
+
 
 function sha256(str) {
   return crypto.createHash('sha256').update(str).digest('hex');
 }
 
-function makeCachePaths(ccddd, query) {
+function makeCachePaths(ccddd, dataset, query) {
   const hash = sha256(query);
-  const relativePathRoot = `sps-by-the-numbers.appspot.com/cache/scratch/${ccddd}/${hash}_`;
-  const gsExportPath = `gs://${relativePathRoot}_*.csv.gz`;
 
-  // Expect all dumps to be just 1 file. If there is more, well, that'd be very odd.
-  const publicUrl = `https://storage.googleapis.com/${relativePathRoot}_000000000000.csv.gz`;
-  return { gsExportPath, publicUrl };
+  const bucket = CACHE_BUCKET;
+  const relativePathRoot = `cache/scratch/${ccddd}/${dataset}/${hash.substr(0, 8)}_`;
+  const gsUrlRoot = `gs://${bucket}`;
+  const exportWildcardPath = `${relativePathRoot}_*.csv.gz`;
+  const publicUrlRoot = `https://storage.googleapis.com/${bucket}`;
+
+  // Assume there is only 1 file output from the dump.
+  const cacheFilePath = `${relativePathRoot}_000000000000.csv.gz`;
+
+  const publicUrl = `${publicUrlRoot}/${cacheFilePath}`;
+  const gsExportPath = `${gsUrlRoot}/${exportWildcardPath}`;
+
+  return {
+    bucket,
+    cacheFilePath,
+    publicUrl,
+    gsExportPath
+  };
 }
 
 function prefixWithExport(path, query) {
@@ -61,21 +81,29 @@ function getExpenditures(ccddd) {
   `;
 }
 
-const bigqueryClient = new BigQuery();
+async function cacheExists(cachePaths) {
+   const [exists] = await storageClient.bucket(cachePaths.bucket).file(cachePaths.cacheFilePath).exists();
+   return exists;
+}
 
 async function ensureTopLevelMetrics(ccddd) {
   const query = getExpenditures(ccddd);
-  const cachePaths = makeCachePaths(ccddd, query);
-  const export_query = prefixWithExport(cachePaths.gsExportPath, query);
+  const cachePaths = makeCachePaths(ccddd, 'top-level-metrics', query);
 
-  const options = {
-    query: export_query,
-    compression: 'GZIP',
-    location: Constants.GCP_REGION,
-  };
+  if (! await cacheExists(cachePaths)) {
+    console.info(`No cache found for top-level-metrics in ${ccddd}. Doing SQL dump.`);
+    const export_query = prefixWithExport(cachePaths.gsExportPath, query);
 
-  // Await the results.
-  await bigqueryClient.query(options);
+    const options = {
+      query: export_query,
+      compression: 'GZIP',
+      location: Constants.GCP_REGION,
+    };
+
+    // Await the results.
+    await bigqueryClient.query(options);
+  }
+
   return cachePaths.publicUrl;
 }
 
