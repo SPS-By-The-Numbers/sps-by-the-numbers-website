@@ -23,7 +23,7 @@ const enrollmentPanelFactory = new MetricHistoryPanelFactory(
   new SingleMetricHistoryComponents({
     title: 'Enrollment',
     columnName: 'total_enrollment',
-    xAxisName: 'school_starting_year',
+    xAxisName: 'class_of',
     connectorId: 'c-toplevel-metrics',
     seriesLabel: 'Total Enrollment (AFTE)',
     yUnits: 'Annual Full-Time Enrolled (AFTE)',
@@ -38,7 +38,7 @@ const cashflowPanelFactory = new MetricHistoryPanelFactory(
     title: 'Cashflow',
     seriesLabel: 'Cashflow',
     metricColumnRoot: 'cashflow',
-    xAxisName: 'school_starting_year',
+    xAxisName: 'class_of',
     connectorId: 'c-toplevel-metrics',
   })
 );
@@ -209,7 +209,7 @@ function makeEnrollmentGraph(target_id) {
       columnAssignment: [
         {
           seriesId: 'total_enrollment',
-          data: ['school_starting_year', 'total_enrollment'],
+          data: ['class_of', 'total_enrollment'],
         }
       ],
     },
@@ -263,11 +263,11 @@ function makeExpenditureGraph(target_id, pct_or_amt) {
       columnAssignment: [
         {
           seriesId: `teaching_related_comp_${pct_or_amt}_budget`,
-          data: ['school_starting_year', `teaching_related_comp_${pct_or_amt}_budget`],
+          data: ['class_of', `teaching_related_comp_${pct_or_amt}_budget`],
         },
         {
           seriesId: `teaching_related_comp_${pct_or_amt}_actuals`,
-          data: ['school_starting_year', `teaching_related_comp_${pct_or_amt}_actuals`],
+          data: ['class_of', `teaching_related_comp_${pct_or_amt}_actuals`],
         },
       ]
     },

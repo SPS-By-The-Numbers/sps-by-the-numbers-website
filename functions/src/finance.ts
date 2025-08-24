@@ -4,7 +4,7 @@ import { jsonOnRequest, makeResponseJson } from "./utils";
 import * as Constants from 'config/constants';
 import crypto from 'node:crypto';
 
-const CACHE_BUCKET = "sps-by-the-numbers.appspot.com";
+const CACHE_BUCKET = "sps-by-the-numbers-public";
 
 const bigqueryClient = new BigQuery();
 const storageClient = new Storage();
@@ -42,11 +42,32 @@ function prefixWithExport(path, query) {
     EXPORT DATA OPTIONS(
     uri='${path}',
     format='CSV',
+    compression='GZIP',
     overwrite=true,
     header=true) AS
     ${query}
-    LIMIT 999999999999 -- Force to one worker.
+    LIMIT 999999999999 -- Force to one worker to create 1 file.
   `;
+}
+
+function getEnrollment(ccddd) {
+  return `
+  SELECT
+    report_type,
+    school_year,
+    class_of,
+    ccddd,
+    enrollment_domain,
+    grade_category,
+    amount,
+  FROM
+    sps-btn-data.safs_enrollment.enrollment
+  WHERE ccddd=${ccddd}
+  `;
+}
+
+function getDomain(domain) {
+  return `SELECT * FROM sps-btn-data.safs_domains.d_${domain}`;
 }
 
 function getExpenditures(ccddd) {
@@ -54,7 +75,7 @@ function getExpenditures(ccddd) {
   SELECT
     data_type,
     school_year,
-    school_starting_year,
+    class_of,
     program_code,
     program,
     activity_code,
@@ -68,27 +89,65 @@ function getExpenditures(ccddd) {
     sps-btn-data.safs_f19x.general_fund_expenditures
   WHERE ccddd=${ccddd}
   GROUP BY
+    data_type,
     school_year,
-    school_starting_year,
-    is_district_office,
+    class_of,
     program_code,
     program,
     activity_code,
     activity,
     object_code,
-    object,
-    data_type
+    object
   `;
 }
+
+function getRevenues(ccddd) {
+  return `
+  SELECT
+    data_type,
+    school_year,
+    class_of,
+    fund_code,
+    fund,
+    revenue_code,
+    revenue,
+    category_code,
+    category,
+    program_code,
+    program,
+    amount
+  FROM
+    sps-btn-data.safs_f19x.general_fund_revenues
+  WHERE ccddd=${ccddd}
+  `;
+}
+
 
 async function cacheExists(cachePaths) {
    const [exists] = await storageClient.bucket(cachePaths.bucket).file(cachePaths.cacheFilePath).exists();
    return exists;
 }
 
-async function ensureTopLevelMetrics(ccddd) {
-  const query = getExpenditures(ccddd);
-  const cachePaths = makeCachePaths(ccddd, 'top-level-metrics', query);
+function getQueryForDataset(ccddd, dataset) {
+  if (dataset === 'enrollment') {
+    return getEnrollment(ccddd);
+  } else if (dataset === 'gf_expenditures') {
+    return getExpenditures(ccddd);
+  } else if (dataset === 'gf_revenues') {
+    return getRevenues(ccddd);
+  } else if (dataset === 'd_ccddd') {
+    return getDomain('ccddd');
+  }
+  return null;
+}
+
+async function ensureDataset(ccddd, dataset) {
+  const query = getQueryForDataset(ccddd, dataset);
+  if (query === null) {
+    return null;
+  }
+
+  const cachePaths = makeCachePaths(ccddd, dataset, query);
 
   if (! await cacheExists(cachePaths)) {
     console.info(`No cache found for top-level-metrics in ${ccddd}. Doing SQL dump.`);
@@ -96,7 +155,6 @@ async function ensureTopLevelMetrics(ccddd) {
 
     const options = {
       query: export_query,
-      compression: 'GZIP',
       location: Constants.GCP_REGION,
     };
 
@@ -115,12 +173,13 @@ async function getDistrictData(req, res) {
 
   const dataset = req.query.dataset;
 
-  if (dataset === "top-level-metrics") {
-    const dataUrl = await ensureTopLevelMetrics(ccddd);
-    return res.status(200).send(makeResponseJson(true, "ok", {dataUrl}));
-  } else {
-    return res.status(400).send(makeResponseJson(false, "Invalid Dataset"));
+  const dataUrl = await ensureDataset(ccddd, dataset);
+  if (dataUrl === null) {
+    return res.status(400).send(
+      makeResponseJson(false,
+                       `Invalid Dataset (${dataset}) or cccddd (${ccddd})`));
   }
+  return res.status(200).send(makeResponseJson(true, "ok", {dataUrl}));
 }
 
 export const finance = jsonOnRequest(

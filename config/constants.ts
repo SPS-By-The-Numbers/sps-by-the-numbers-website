@@ -82,12 +82,7 @@ export const RECAPTCHA_KEY = '6LfukwApAAAAAOysCMfJontBc36O2vly91NWpip8';
 
 // Generate URLs for use in fetch() calls based on envrionment type.
 const ENDPOINT_NAMES = [
-  'metadata',
-  'sentences',
-  'speakerinfo',
-  'vast',
-  'video_queue',
-  'transcript',
+  'finance',
 ];
 
 // List of production endpoint names.

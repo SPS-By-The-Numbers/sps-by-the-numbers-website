@@ -1,4 +1,6 @@
-const YEAR_GROUP_BY = ["school_starting_year"];
+import { fetchEndpoint } from 'utilities/client/endpoint';
+
+const YEAR_GROUP_BY = ["class_of"];
 const FINANCE_GROUP_BY = ["data_type", ...YEAR_GROUP_BY];
 
 const COMP_OBJECT_CODES = [
@@ -55,7 +57,19 @@ function notInMask(df, field, values) {
 
 async function fetchDataset(dfd, ccddd, dataset) {
   // Pass in dfd so that this code can be reused by nodejs or browser entrypoints.
-  return dfd.readCSV(`http://localhost:3000/_TEMP_${dataset}_${ccddd}.csv`);
+  const datasetResponse = await fetchEndpoint('finance', 'GET', {ccddd, dataset});
+  if (!datasetResponse.ok) {
+    console.error(datasetResponse);
+    return new dfd.DataFrame({});
+  }
+
+  const csvBlob = await new Response(
+    (await fetch(datasetResponse.data.dataUrl))
+    .body.pipeThrough(new DecompressionStream('gzip')))
+    .blob();
+
+
+  return dfd.readCSV(new File([csvBlob], `${dataset}-${ccddd}.csv`, { type: 'text/csv' }));
 }
 
 function fieldFoldl(dataframes, field, f, initial) {
@@ -72,37 +86,37 @@ export default class DistrictData {
     this.dfd = dfd;
 
     this.enrollment_df = enrollment_df;
-    this.enrollment_df.rename({ "year": "school_starting_year" }, { axis: 1, inplace: true });
+    this.enrollment_df.rename({ "year": "class_of" }, { axis: 1, inplace: true });
     this.enrollment_df.rename({ "total": "total_enrollment" }, { axis: 1, inplace: true });
     this.gfe_df = gfe_df;
     this.gfr_df = gfr_df;
 
     let all_school_years_df = this.dfd.concat({
       dfList: [
-        this.enrollment_df["school_starting_year"],
-        this.gfe_df["school_starting_year"],
-        this.gfr_df["school_starting_year"],
+        this.enrollment_df["class_of"],
+        this.gfe_df["class_of"],
+        this.gfr_df["class_of"],
       ],
       axis: 1
     });
     
-    const minYear = all_school_years_df["school_starting_year"].min();
-    const maxYear = all_school_years_df["school_starting_year"].max();
+    const minYear = all_school_years_df["class_of"].min();
+    const maxYear = all_school_years_df["class_of"].max();
 
     const all_school_years = [];
     for (let year = minYear; year <= maxYear; year++) {
       all_school_years.push(year);
     }
 
-    this.all_school_years_df = new this.dfd.DataFrame({"school_starting_year": all_school_years})
+    this.all_school_years_df = new this.dfd.DataFrame({"class_of": all_school_years})
   }
 
   static async loadFromGcs(dfd, ccddd) {
     const [enrollment_df, gfe_df, gfr_df] = await Promise.all(
       [
         fetchDataset(dfd, ccddd, "enrollment"),
-        fetchDataset(dfd, ccddd, "gfe"),
-        fetchDataset(dfd, ccddd, "gfr"),
+        fetchDataset(dfd, ccddd, "gf_expenditures"),
+        fetchDataset(dfd, ccddd, "gf_revenues"),
       ]
     );
     return new DistrictData(dfd, enrollment_df, gfe_df, gfr_df);
@@ -115,7 +129,7 @@ export default class DistrictData {
   toplevel_metrics() {
     let merged_df = this.merge(
       this.cashflow(),
-      this.enrollment().loc({columns: ["school_starting_year", "total_enrollment"]})
+      this.enrollment().loc({columns: ["class_of", "total_enrollment"]})
     );
     merged_df = this.merge(merged_df, this.key_expenditures());
 
@@ -174,7 +188,13 @@ export default class DistrictData {
   }
 
   enrollment() {
-    return this.fillYears(this.enrollment_df);
+    const k12Enrollment = this.enrollment_df.query(
+      this.enrollment_df['enrollment_domain'].eq('K-12 FTE').or(
+        this.enrollment_df['enrollment_domain'].eq('K-12 FTE - Includes ALE')))
+        .groupby(['class_of']).col(['amount'])
+        .sum();
+    k12Enrollment.rename({ 'amount_sum': `total_enrollment` }, { axis: 1, inplace: true });
+    return this.fillYears(k12Enrollment);
   }
 
   debug() {
@@ -183,7 +203,7 @@ export default class DistrictData {
     this.gfr_df.head().print();
   }
 
-  merge(left, right, on=["school_starting_year"], how="inner") {
+  merge(left, right, on=["class_of"], how="inner") {
     return this.dfd.merge({left, right, on, how});
   }
 
@@ -192,7 +212,7 @@ export default class DistrictData {
       {
         left: this.all_school_years_df,
         right: df,
-        on: ["school_starting_year"],
+        on: ["class_of"],
         how: "left"
       });
   }
