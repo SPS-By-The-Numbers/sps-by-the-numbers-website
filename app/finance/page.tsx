@@ -1,12 +1,21 @@
-'use client'
+import DistrictDashboard from 'components/finance/DistrictDashboard';
+import { fetchDatasetStream } from 'utilities/DistrictData';
+import { parse } from "csv-parse/sync";
 
-import dynamic from 'next/dynamic';
+export default async function FinancePage() {
+  const csvString = await new Response(await fetchDatasetStream('domain', 'ccddd')).text();
+  const districtRecords = parse(csvString, { columns: true, skip_empty_lines: true});
 
-const DistrictDashboard = dynamic(() => import('components/finance/DistrictDashboard'),
-                           {ssr: false});
+  const districts = {};
+  for (const r of districtRecords) {
+    districts[r['ccddd']] = {
+      district: r['district'],
+      county_code: r.county_code,
+      district_code: r.district_code,
+    }
+  }
 
-export default function FinancePage() {
   return (
-    <DistrictDashboard />
+    <DistrictDashboard districts={districts} />
   )
 }

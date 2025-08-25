@@ -67,6 +67,7 @@ function getEnrollment(ccddd) {
 }
 
 function getDomain(domain) {
+  console.error('boo: ' + domain);
   return `SELECT * FROM sps-btn-data.safs_domains.d_${domain}`;
 }
 
@@ -129,14 +130,16 @@ async function cacheExists(cachePaths) {
 }
 
 function getQueryForDataset(ccddd, dataset) {
-  if (dataset === 'enrollment') {
-    return getEnrollment(ccddd);
-  } else if (dataset === 'gf_expenditures') {
-    return getExpenditures(ccddd);
-  } else if (dataset === 'gf_revenues') {
-    return getRevenues(ccddd);
-  } else if (dataset === 'd_ccddd') {
-    return getDomain('ccddd');
+  if (ccddd === 'domain') {
+    return getDomain(dataset);
+  } else {
+    if (dataset === 'enrollment') {
+      return getEnrollment(ccddd);
+    } else if (dataset === 'gf_expenditures') {
+      return getExpenditures(ccddd);
+    } else if (dataset === 'gf_revenues') {
+      return getRevenues(ccddd);
+    }
   }
   return null;
 }
@@ -150,7 +153,7 @@ async function ensureDataset(ccddd, dataset) {
   const cachePaths = makeCachePaths(ccddd, dataset, query);
 
   if (! await cacheExists(cachePaths)) {
-    console.info(`No cache found for top-level-metrics in ${ccddd}. Doing SQL dump.`);
+    console.info(`No cache found for ${dataset} in ${ccddd}. Doing SQL dump.`);
     const export_query = prefixWithExport(cachePaths.gsExportPath, query);
 
     const options = {
@@ -167,7 +170,7 @@ async function ensureDataset(ccddd, dataset) {
 
 async function getDistrictData(req, res) {
   const ccddd = req.query.ccddd;
-  if (!ccddd || ccddd.length != 5) {
+  if (!ccddd || ccddd.length < 4 || (ccddd.length > 5 && ccddd !== 'domain')) {
     return res.status(400).send(makeResponseJson(false, `Invalid ccddd: ${ccddd}`));
   }
 

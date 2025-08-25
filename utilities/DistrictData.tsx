@@ -55,20 +55,20 @@ function notInMask(df, field, values) {
   return mask;
 }
 
-async function fetchDataset(dfd, ccddd, dataset) {
+
+export async function fetchDatasetStream(ccddd, dataset) {
   // Pass in dfd so that this code can be reused by nodejs or browser entrypoints.
   const datasetResponse = await fetchEndpoint('finance', 'GET', {ccddd, dataset});
   if (!datasetResponse.ok) {
     console.error(datasetResponse);
-    return new dfd.DataFrame({});
+    return '';
   }
 
-  const csvBlob = await new Response(
-    (await fetch(datasetResponse.data.dataUrl))
-    .body.pipeThrough(new DecompressionStream('gzip')))
-    .blob();
+  return (await fetch(datasetResponse.data.dataUrl)).body.pipeThrough(new DecompressionStream('gzip'));
+}
 
-
+export async function fetchDataset(dfd, ccddd, dataset) {
+  const csvBlob = await new Response(await fetchDatasetStream(ccddd, dataset)).blob();
   return dfd.readCSV(new File([csvBlob], `${dataset}-${ccddd}.csv`, { type: 'text/csv' }));
 }
 
