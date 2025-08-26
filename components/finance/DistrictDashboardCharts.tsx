@@ -338,7 +338,9 @@ export default function DistrictDashboardCharts({ccddd}) {
   const { highchartsObjs } = useHighcharts();
   const { dfd } = useDanfo();
   useEffect(() => {
-    loadData(dfd, highchartsObjs['dashboards'], ccddd)
+    if (dfd.hasOwnProperty('readCSV')) {
+      loadData(dfd, highchartsObjs['dashboards'], ccddd);
+    }
   },
   [ccddd, highchartsObjs, dfd]);
   return (<div id="dashboard-charts-container" />);
