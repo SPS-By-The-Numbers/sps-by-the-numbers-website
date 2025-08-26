@@ -16,7 +16,6 @@ export function getEndpointUrl(endpoint : string, parameters? : Record<string,st
 export async function fetchEndpoint(endpoint : string, method: string, parameters : Record<string,string> | object) : Promise<ApiResponse> {
   if (method === 'GET') {
     const fullUrl = getEndpointUrl(endpoint, <Record<string, string>>parameters);
-    console.log(fullUrl);
     return await (await fetch(fullUrl, { next: { revalidate: 300 } } )).json();
   }
 

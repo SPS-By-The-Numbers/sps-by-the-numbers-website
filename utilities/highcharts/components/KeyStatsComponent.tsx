@@ -17,9 +17,16 @@ const currencyFormatter  = new Intl.NumberFormat("en-US", {
 // Show key historical metric with min/max/average.
 export default class KeyStatsComponent extends
     Dashboards.ComponentRegistry.types.HTML {
+
+  private xAxisName: string;
+  private title: string;
+  private columnName: string;
+  private budgetColumn: string;
+  private actualsColumn: string;
+  private mode: string;
+
   constructor(board, options) {
     super(board, options);
-    this.type = 'KeyStatsComponent';
     this.xAxisName = options.xAxisName;
     this.title = options.title;
 
@@ -38,7 +45,12 @@ export default class KeyStatsComponent extends
   // Called whenever data or component state changes
   async load() {
     await super.load();
-    const table = await this.getFirstConnector().table;
+    const connector = await this.getFirstConnector();
+    if (!connector) {
+      console.error("No first connector!");
+      return this;
+    }
+    const table = connector.table;
     const df = new g_dfd.DataFrame(table.getRowObjects());
 
     this.element.innerHTML = `
@@ -58,6 +70,7 @@ export default class KeyStatsComponent extends
     `;
 
     this.render();
+    return this;
   }
 
   private primaryValueHtml(df) : string {
