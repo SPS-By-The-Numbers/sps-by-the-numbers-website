@@ -1,6 +1,5 @@
 type MetricHistoryPanelFactoryOptions = {
   metricName : string;
-  title : string;
 };
 
 type MetricHistoryComponents = {
@@ -9,9 +8,12 @@ type MetricHistoryComponents = {
 };
 
 export default class MetricHistoryPanelFactory {
+  private metricName: string;
+  private title: string;
+  private components: MetricHistoryComponents;
+
   constructor(options : MetricHistoryPanelFactoryOptions, components: MetricHistoryComponents) {
     this.metricName = options.metricName;
-    this.title = options.title;
     this.components = components;
   }
 

@@ -3,9 +3,12 @@ import merge from 'lodash.merge';
 import { baselineHighchartsCell } from "utilities/highcharts/defaults";
 
 export type SingleMetricHistoryComponentsOptions = {
+  title : string;
   xAxisName : string;
   columnName : string;
   connectorId : string;
+  seriesLabel : string;
+  yUnits : string;
 };
 
 export default class SingleMetricHistoryComponents {
@@ -29,7 +32,7 @@ export default class SingleMetricHistoryComponents {
     };
   }
 
-  private makeChartCell(options : MetricHistoryPanelFactoryOptions) {
+  private makeChartCell(options : SingleMetricHistoryComponentsOptions) {
     return merge(
       {},
       baselineHighchartsCell,

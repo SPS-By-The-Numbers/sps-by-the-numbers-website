@@ -8,16 +8,17 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 
-import type { SxProps } from '@mui/material';
+import type { SxProps, Theme } from '@mui/material';
+import type { DistrictsMap } from 'components/finance/DistrictDashboard';
 
 type Params = {
-  districts: Array<Record<string, object>>,
-  ccddd: int;
+  districts: DistrictsMap;
+  ccddd: number;
   onCcdddChange: (int) => void;
   sx?: SxProps<Theme>;
 };
 
-function makeDistrictOptions(districts) {
+function makeDistrictOptions(districts : DistrictsMap) {
   const options = Object.entries(districts).map(
     ([ccddd, info]) => ({label: info.district, value: ccddd}));
 
@@ -54,9 +55,9 @@ export default function FinanceNav({districts, ccddd, onCcdddChange, sx=[]} : Pa
 
         <Autocomplete
           disableClearable
-          value={{label:districts[ccddd].district,  value:ccddd}}
+          value={{label: districts[ccddd].district,  value: String(ccddd)}}
           options={ districtOptions }
-          onChange={(_event, newValue) => onCcdddChange(newValue.value)}
+          onChange={(_event, newValue) => onCcdddChange(parseInt(newValue.value))}
           renderInput={
             (params) => (
               <TextField

@@ -1,3 +1,5 @@
+const path = require("path");
+
 /** @type {import('next').NextConfig} */
 const withMDX = require('@next/mdx')({
   extension: /\.mdx?$/,
@@ -17,7 +19,7 @@ const nextConfig = {
   images: {
     loader: 'akamai',
     path: '',
-  },
+  }
 }
 
 module.exports = withMDX(nextConfig)

@@ -1,5 +1,7 @@
 import { fetchEndpoint } from 'utilities/client/endpoint';
 
+import type { DataFrame } from 'danfojs';
+
 const YEAR_GROUP_BY = ["class_of"];
 const FINANCE_GROUP_BY = ["data_type", ...YEAR_GROUP_BY];
 
@@ -30,7 +32,7 @@ function doQuery(df, query) {
 }
 
 function inMask(df, field, values) {
-  let mask = null;
+  let mask : any = null;
   for (const v of values) {
     if (mask === null) {
       mask = df[field].eq(v);
@@ -43,7 +45,7 @@ function inMask(df, field, values) {
 }
 
 function notInMask(df, field, values) {
-  let mask = null;
+  let mask : any = null;
   for (const v of values) {
     if (mask === null) {
       mask = df[field].ne(v);
@@ -64,7 +66,13 @@ export async function fetchDatasetStream(ccddd, dataset) {
     return '';
   }
 
-  return (await fetch(datasetResponse.data.dataUrl)).body.pipeThrough(new DecompressionStream('gzip'));
+  const csvResponse = await fetch(datasetResponse.data.dataUrl);
+  if (csvResponse === null || csvResponse.status !== 200 || csvResponse.body === null) {
+    console.error('fetch failed: ', csvResponse);
+    throw 'fetch failed';
+  }
+
+  return csvResponse.body.pipeThrough(new DecompressionStream('gzip'));
 }
 
 export async function fetchDataset(dfd, ccddd, dataset) {
@@ -81,6 +89,11 @@ function fieldFoldl(dataframes, field, f, initial) {
 }
 
 export default class DistrictData {
+  private dfd : any;
+  private enrollment_df : DataFrame;
+  private gfe_df : DataFrame;
+  private gfr_df : DataFrame;
+  private all_school_years_df : DataFrame;
 
   constructor(dfd, enrollment_df, gfe_df, gfr_df) {
     this.dfd = dfd;
@@ -103,7 +116,7 @@ export default class DistrictData {
     const minYear = all_school_years_df["class_of"].min();
     const maxYear = all_school_years_df["class_of"].max();
 
-    const all_school_years = [];
+    const all_school_years = new Array<number>();
     for (let year = minYear; year <= maxYear; year++) {
       all_school_years.push(year);
     }

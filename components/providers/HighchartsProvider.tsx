@@ -2,15 +2,12 @@
 
 import { useState, useEffect, useMemo, createContext, useContext } from 'react';
 
-import type Highcharts from 'highcharts';
 import type Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
 
-import dynamic from 'next/dynamic';
-
 type HighchartsObjects ={
-  highcharts: Highcharts;
-  dashboards: Dashboards
-}
+  highcharts: any;
+  dashboards: any;
+};
 
 type HighchartsContextType = {
   highchartsObjs: HighchartsObjects;
@@ -21,6 +18,17 @@ type HighchartsProviderParams = {
   children: React.ReactNode;
 };
 
+const DEFAULT_OBJECT = {
+  highcharts: {},
+  dashboards: {}
+};
+
+// This export circumvents React's Context system and doesn't follow the lifecycle
+// guarantees. However, it provides an easy reference from the Highcharts-style
+// non-react "components".  It should be safe to use as long as Highcharts is
+// invoked within the lifespan of this provider component. Use outside that lifespan
+// will probably work too but it's not well defined.
+export let g_highchartsObjs : HighchartsObjects = DEFAULT_OBJECT;
 
 async function loadHighchartsModules() {
   const Highcharts = (await import('highcharts')).default;
@@ -43,10 +51,11 @@ async function loadHighchartsModules() {
   Dashboards.PluginHandler.addPlugin(Dashboards.GridPlugin);
 
   registerHighchartsComponents(Dashboards);
-  return { highcharts: Highcharts, dashboards: Dashboards };
+  g_highchartsObjs = { highcharts: Highcharts, dashboards: Dashboards };
+  return g_highchartsObjs;
 }
 
-const HighchartsContext = createContext<HighchartsContext | undefined>(undefined);
+const HighchartsContext = createContext<HighchartsContextType | undefined>(undefined);
 
 export function useHighcharts() {
   const context = useContext(HighchartsContext);
@@ -58,7 +67,7 @@ export function useHighcharts() {
 }
 
 export default function HighchartsProvider({ children }) {
-  const [highchartsObjs, setHighchartsObjs] = useState<HighchartsObjects | null>(null);
+  const [highchartsObjs, setHighchartsObjs] = useState<HighchartsObjects>(DEFAULT_OBJECT);
 
   const value = useMemo(() => ({highchartsObjs, setHighchartsObjs}), [highchartsObjs]);
 

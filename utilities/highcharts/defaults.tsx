@@ -9,7 +9,6 @@ export const baselineClassOfChartOptions = {
   },
   yAxis: {
     minorTickInterval: "auto",
-    minorTickInterval: "auto",
   },
   xAxis: {
     type: 'category',

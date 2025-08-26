@@ -4,15 +4,17 @@ import merge from 'lodash.merge';
 
 import '@highcharts/dashboards/es-modules/masters/modules/layout.src.js';
 import { baselineClassOfChartOptions } from "utilities/highcharts/defaults";
+import { useDanfo } from 'components/providers/DanfoProvider';
 import { useEffect } from 'react';
 import { useHighcharts } from 'components/providers/HighchartsProvider';
-import * as dfd from "danfojs";
 import BudgetActualsHistoryComponents from "utilities/highcharts/panels/BudgetActualsHistoryComponents";
 import DistrictData from "utilities/DistrictData";
 import MetricHistoryPanelFactory from "utilities/highcharts/panels/MetricHistoryPanelFactory";
 import SingleMetricHistoryComponents from "utilities/highcharts/panels/SingleMetricHistoryComponents";
 
 import type Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
+
+import type { DataFrame } from "danfojs";
 
 import "styles/district-dashboard.scss"
 
@@ -45,7 +47,7 @@ const cashflowPanelFactory = new MetricHistoryPanelFactory(
 
 
 // Converts a danfo dataframe into a set of rows for a Highcharts DataTable.
-function danfoToJsonOptions(df: dfd.DataFrame) {
+function danfoToJsonOptions(df: DataFrame) {
   return {
     firstRowAsNames: false,
     columnNames: df.columns,
@@ -328,17 +330,18 @@ function makeDashboardConfig(districtData : DistrictData) {
   };
 }
 
-async function loadData(dashboards, ccddd) {
+async function loadData(dfd, dashboards, ccddd) {
   const districtData = await DistrictData.loadFromGcs(dfd, ccddd);
   dashboards.board('dashboard-charts-container', makeDashboardConfig(districtData));
 }
 
 export default function DistrictDashboardCharts({ccddd}) {
   const { highchartsObjs } = useHighcharts();
+  const { dfd } = useDanfo();
   useEffect(() => {
-    loadData(highchartsObjs['dashboards'], ccddd)
+    loadData(dfd, highchartsObjs['dashboards'], ccddd)
   },
-  [ccddd]);
+  [ccddd, highchartsObjs, dfd]);
   return (<div id="dashboard-charts-container" />);
 }
 

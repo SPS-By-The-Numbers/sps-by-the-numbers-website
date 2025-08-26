@@ -6,8 +6,9 @@ import { baselineHighchartsCell } from "utilities/highcharts/defaults";
 export type BudgetActualsHistoryComponentsOptions = {
   title : string;
   xAxisName : string;
-  metricName: string;
+  metricColumnRoot: string;
   connectorId : string;
+  seriesLabel : string;
 };
 
 export default class BudgetActualsHistoryComponents {
@@ -61,7 +62,7 @@ export default class BudgetActualsHistoryComponents {
           title: null,
           yAxis: {
             title: {
-              text: options.yUnits
+              text: '$'
             },
           },
           series: [
