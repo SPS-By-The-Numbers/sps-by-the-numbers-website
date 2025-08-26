@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import Select from 'react-select'
+import Autocomplete from '@mui/material/Autocomplete';
+import TextField from '@mui/material/TextField';
 
 const ListItem = ({ itemId, active, name, toggleActive, color }) => {
   const handleChange = useCallback(() => toggleActive(itemId), [itemId, toggleActive]);
@@ -45,14 +46,21 @@ export default function ItemList({
         {Object.values(items).filter(d => d.type === 'option').map(({itemId, name, options, value}, i) => (
           <div key={`${itemId}-option`} style={{ background: 'cyan' }}>
             <label htmlFor={itemId}>{name}</label>
-            <Select
-              isMulti={true}
-              className="filter-select"
+            <Autocomplete
+              multiple
               key={itemId}
-              onChange={newValue => onOption(itemId, newValue)}
               options={options}
               value={value}
-              />
+              onChange={(_, newValue) => onOption(itemId, newValue)}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  className="filter-select"
+                  variant="outlined"
+                  label="Select options"
+                />
+              )}
+            />
           </div>
         ))}
       </ul>
