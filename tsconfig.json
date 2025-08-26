@@ -19,6 +19,9 @@
       "config/*": [
         "./config/*"
       ],
+      "data/*": [
+        "./data/*"
+      ],
       "utilities/*": [
         "./utilities/*"
       ]

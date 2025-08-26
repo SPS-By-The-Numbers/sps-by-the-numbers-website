@@ -2,7 +2,6 @@
 
 import merge from 'lodash.merge';
 
-import '@highcharts/dashboards/es-modules/masters/modules/layout.src.js';
 import { baselineClassOfChartOptions } from "utilities/highcharts/defaults";
 import { useDanfo } from 'components/providers/DanfoProvider';
 import { useEffect } from 'react';

@@ -1,24 +1,15 @@
-import Highcharts from 'highcharts'
-import highchartsAccessibility from "highcharts/modules/accessibility";
+'use client';
+
 import HighchartsReact from 'highcharts-react-official'
 import Stack from '@mui/material/Stack';
-import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 
-import CssBaseline from '@mui/material/CssBaseline';
-import InitColorSchemeScript from '@mui/material/InitColorSchemeScript';
-import theme from '../components/theme';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { Experimental_CssVarsProvider as CssVarsProvider } from '@mui/material/styles';
-import { ReactNode, useState } from 'react';
+import { useState } from 'react';
+import { useHighcharts } from 'components/providers/HighchartsProvider';
 import { useSearchParams } from "next/navigation";
-import { useRouter } from 'next/router';
 
-if (typeof window !== `undefined`) {
-    highchartsAccessibility(Highcharts);
-}
-
-import RawData from '../data/2024-06-18-sps-demographic-data.json'
+import RawData from 'data/2024-06-18-sps-demographic-data.json'
 
 const AllData = RawData.rows.map(
   (row, id) => {
@@ -240,7 +231,7 @@ function OneGraph({data, categories, changeType, title, ylabel}) {
   return (
     <HighchartsReact
       containerProps={{ style: { height: "100%" } }}
-      highcharts={Highcharts}
+      highcharts={highchartsObjs.highcharts}
       options={options}
     />
   );
@@ -258,7 +249,9 @@ function makeRegionOptions(regionType) {
   return options;
 }
 
-export function DemographicGraph() {
+export default  function DemographicGraph() {
+  const { highchartsObjs } = useHighcharts();
+
   const searchParams = useSearchParams();
   const [regionType, setRegionType] = useState(sanitizeRegionType(searchParams.get('regionType')));
   const [regions, setRegions] = useState(sanitizeRegions(searchParams.getAll('regions')));
@@ -294,7 +287,7 @@ export function DemographicGraph() {
 
   return (
     <Stack
-      style={{ padding: "1px" }}
+      style={{padding: "1px", mx: "4rex", mt: "1ex"}}
       spacing={2}>
       <Card>
         <b>Data from <a href="https://data.wa.gov/education/Report-Card-Enrollment-2023-24-School-Year/q4ba-s3jc/about_data">OSPI Enrollment Report Card for 2023-2024</a>. There is a data table too! Scroll down.</b> 
@@ -377,13 +370,4 @@ export function DemographicGraph() {
       </Card>
     </Stack>
   );
-}
-
-export default function Styled() {
-  return (<CssVarsProvider theme={theme}>
-    <CssBaseline />
-    <Box mx="4rex" mt="1ex" >
-      <DemographicGraph  />
-    </Box>
-  </CssVarsProvider>);
 }

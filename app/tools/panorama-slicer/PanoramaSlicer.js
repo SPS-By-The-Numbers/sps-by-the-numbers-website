@@ -1,13 +1,13 @@
-import React from 'react'
+'use client';
 
-import Highcharts from 'highcharts'
-import HighchartsExporting from 'highcharts/modules/exporting'
 import HighchartsReact from 'highcharts-react-official'
+import { useHighcharts } from 'components/providers/HighchartsProvider';
+import { useState } from 'react';
 
-import DataControl from '../../components/DataControl'
-import Histogram from '../../components/Histogram'
-import data2022 from '../../data/panorama/2022.json'
-import data2023 from '../../data/panorama/2023.json'
+import DataControl from 'components/DataControl'
+import Histogram from 'components/Histogram'
+import data2022 from 'data/panorama/2022.json'
+import data2023 from 'data/panorama/2023.json'
 
 // This specifies the sort order for answers. The min and max values
 // also double as the mix/max of the graph. The exact value of other
@@ -36,81 +36,61 @@ const AnswerSortOrder = {
   "Always": 1,
 };
 
-class App extends React.Component {
-  constructor(props) {
-    super(props);
-    // The length determines how many subjects can be compared.
-    this.initial_selected_subjects = ["Adams", "Cascadia", "", ""];
-    this.state = {
-      reports: null,
-      stacked: false,
-      selected_report_type: "",
-      selected_survey: "",
-      selected_subjects: this.initial_selected_subjects
-    };
+const INITIAL_SELECTED_SUBJECTS = ["Adams", "Cascadia", "", ""];
+export default function PanoramaSlicer() {
+  const { highchartsObjs } = useHighcharts();
 
-    this.handleChange = this.handleChange.bind(this);
-    this.loadData = this.loadData.bind(this);
-  }
+  // Default to 2023.
+  const [year, setYear] = useState(2023);
 
-  handleChange(event) {
+  const [reports, setReports] = useState(null);
+  const [stacked, setStacked] = useState(false);
+  const [selectedReportType, setSelectedReportType] = useState("");
+  const [selectedSurvey, setSelectedSurvey] = useState("");
+  const [selectedSubjects, setSelectedSubjects] = useState(INITIAL_SELECTED_SUBJECTS);
+
+  const loadData = (newYear) => {
+    let data = null;
+    if (newYear == 2023) {
+      data = data2023;
+    } else if (newYear == 2022) {
+      data = data2022;
+    } else {
+      // Default to 2023.
+      newYear = 2023;
+      data = data2023;
+    }
+
+    // Set the state.
+    const curReports = data['reports'];
+    setYear(newYear);
+    setReports(curReports);
+    setSelectedReportType(curReports[0]);
+    setSelectedSubjects(INITIAL_SELECTED_SUBJECTS);
+  };
+
+  const handleChange = (event) => {
     const target = event.target;
     const type = target.dataset.type;
     if (type === "report") {
-      this.setState({
-        selected_report_type: target.value,
-        selected_survey: "",
-        selected_subjects: this.initial_selected_subjects
-      });
+      setSelectedReportType(target.value);
+      setSelectedSurvey("");
+      setSelectedSubjects(INITIAL_SELECTED_SUBJECTS);
     } else if (type === "survey") {
-      this.setState({
-        selected_survey: target.value,
-        selected_subjects: this.initial_selected_subjects
-      });
+      setSelectedSurvey(target.value);
+      setSelectedSubjects(INITIAL_SELECTED_SUBJECTS);
     } else if (type === "stacked") {
-      this.setState({
-        stacked: target.checked
-      });
+      setStacked(target.checked);
     } else if (type === "subject") {
-      const selected_subjects = [...this.state.selected_subjects];
-      selected_subjects[parseInt(target.dataset.ordinal)] = event.target.value;
-      this.setState({ selected_subjects });
+      const newSelectedSubjects = [...selectedSubjects];
+      newSelectedSubjects[parseInt(target.dataset.ordinal)] = event.target.value;
+      setSelectedSubjects(newSelectedSubjects);
     } if (type === "year") {
-      this.loadData(target.value);
+      loadData(target.value);
     }
-  }
+  };
 
-  loadData(year) {
-    let data = null;
-    if (year == 2023) {
-      data = data2023;
-    } else if (year == 2022) {
-      data = data2022;
-    } else {
-      // Default ot current year.
-      year=2023;
-      data = data2023;
-    }
-
-    const new_state = {
-        year,
-        reports: data['reports'],
-        selected_report_type: Object.keys(data['reports'])[0],
-        selected_subjects: [...this.initial_selected_subjects]
-    };
-    new_state.selected_survey = Object.keys(new_state.reports[new_state.selected_report_type])[0];
-    const subjects = Object.keys(new_state.reports[new_state.selected_report_type][new_state.selected_survey]);
-    //    new_state.selected_subjects[0] = subjects[0];
-    //    new_state.selected_subjects[1] = subjects[1];
-
-    this.setState(new_state);
-  }
-
-  componentDidMount() {
-    this.loadData(2023);
-  }
-
-  calculateDistictivenessScore(series) {
+  const calculateDistictivenessScore = (series) => {
     let score = 0;
     const to_process = [...series];
     const num_series = to_process.length;
@@ -124,9 +104,9 @@ class App extends React.Component {
       });
     }
     return score;
-  }
+  };
 
-  makeGraphs(reports, stacked) {
+  const makeGraphs = (reports, stacked) => {
     const graphs = [];
     if (reports === null) {
       graphs.push(<div key="ruh-roh">Data loading. please wait.</div>);
@@ -136,10 +116,10 @@ class App extends React.Component {
 
       // Iterate over all selected schools and group data by question
       // into all_question_data.
-      this.state.selected_subjects.forEach(school => {
-        const report = reports[this.state.selected_report_type];
+      selectedSubjects.forEach(school => {
+        const report = reports[selectedReportType];
         if (!report) return;
-        const survey = report[this.state.selected_survey];
+        const survey = report[selectedSurvey];
         if (!survey) return;
         const school_data = survey[school];
         if (!school_data) return;
@@ -201,10 +181,11 @@ class App extends React.Component {
                 arr.data.push(d.data[idx]);
             });
           });
-                                   if (q.question.search("OSPI") !== -1) {
-                 console.log("wut");
-                 debugger;
-               }
+
+          if (q.question.search("OSPI") !== -1) {
+            console.log("wut");
+            debugger;
+          }
 
           // Now we have all the data. Sort the buckets and center on 0.
           const sortOrderMap = {};
@@ -254,7 +235,7 @@ class App extends React.Component {
             <div className="h-90 flex overflow-hidden">
               <figure className="p-2 m-1 flex flex-col w-full bg-gray-100 histogram">
                   <HighchartsReact
-                    highcharts={Highcharts}
+                    highcharts={highchartsObjs.highcharts}
                     options={options}
                   />
               </figure>
@@ -270,40 +251,38 @@ class App extends React.Component {
       });
     }
     return graphs;
-  }
+  };
 
-  render() {
-    const graphs = this.makeGraphs(this.state.reports, this.state.stacked);
-    return (
-      <main className="app-main">
-        <header className="p-2 h-full w-full min-h-screen items-stretch justify-items-stretch bg-gray-300 space-x-1">
-          <h4 className="p-2 font-bold">Seattle Public Schools Panorama Comparison Tool, 2022-2023 data (<a href="https://sps-panorama.web.app/">2019 here</a>)</h4>
-          <section className="p-2 whitespace-normal tracking-normal space-x-1">
-              <p>Data taken scraped using <a href="https://github.com/awong-dev/sps-by-the-numbers/blob/main/tools/scrape-panorama.js">a javascript blob</a> run on Panorama data viewer portal linked from the 
-              <a href="https://www.seattleschools.org/departments/rea/district-surveys/">SPS District Survey</a> page.  Note in 2022, not every survey had a lot of responses. Hover over bar graphs to check the &quot;n&quot;.
-              </p>
-              <p>Graphs are in pecentages. Hover over data series for population size. When multiple series are selected, graphs are sorted to show questions with *most different* responses first. <a target="_blank" href="https://github.com/awong-dev/sps-by-the-numbers">[source]</a> <a target="_blank" href="https://github.com/awong-dev/sps-by-the-numbers/issues">[submit bug/feedback]</a>
-              </p>
 
-          </section>
-          <DataControl
-            data={this.state.reports}
-            year={this.state.year}
-            report_type={this.state.selected_report_type}
-            survey={this.state.selected_survey}
-            stacked={this.state.stacked}
-            subjects={this.state.selected_subjects}
-            onChange={this.handleChange}
-          />
-        </header>
-        <div className="">
-          <section className="p-2 text-sm min-h-screen flex flex-row flex-wrap items-stretch justify-items-stretch bg-gray-300 space-x-1">
-          {graphs}
-          </section>
-        </div>
-      </main>
-    );
-  }
+  const graphs = makeGraphs(reports, stacked);
+
+  return (
+    <main className="app-main">
+      <header className="p-2 h-full w-full min-h-screen items-stretch justify-items-stretch bg-gray-300 space-x-1">
+        <h4 className="p-2 font-bold">Seattle Public Schools Panorama Comparison Tool, 2022-2023 data (<a href="https://sps-panorama.web.app/">2019 here</a>)</h4>
+        <section className="p-2 whitespace-normal tracking-normal space-x-1">
+            <p>Data taken scraped using <a href="https://github.com/awong-dev/sps-by-the-numbers/blob/main/tools/scrape-panorama.js">a javascript blob</a> run on Panorama data viewer portal linked from the 
+            <a href="https://www.seattleschools.org/departments/rea/district-surveys/">SPS District Survey</a> page.  Note in 2022, not every survey had a lot of responses. Hover over bar graphs to check the &quot;n&quot;.
+            </p>
+            <p>Graphs are in pecentages. Hover over data series for population size. When multiple series are selected, graphs are sorted to show questions with *most different* responses first. <a target="_blank" href="https://github.com/awong-dev/sps-by-the-numbers">[source]</a> <a target="_blank" href="https://github.com/awong-dev/sps-by-the-numbers/issues">[submit bug/feedback]</a>
+            </p>
+
+        </section>
+        <DataControl
+          data={reports}
+          year={year}
+          report_type={selectedReportType}
+          survey={selectedSurvey}
+          stacked={stacked}
+          subjects={selectedSubjects}
+          onChange={handleChange}
+        />
+      </header>
+      <div className="">
+        <section className="p-2 text-sm min-h-screen flex flex-row flex-wrap items-stretch justify-items-stretch bg-gray-300 space-x-1">
+        {graphs}
+        </section>
+      </div>
+    </main>
+  );
 }
-
-export default App;

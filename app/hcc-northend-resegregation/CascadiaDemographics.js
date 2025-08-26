@@ -1,10 +1,7 @@
-import React from 'react'
+import Histogram from 'components/Histogram';
+import styles from 'styles/Home.module.css'
 
-import Histogram from '../components/Histogram';
-import HccRace from '../data/hcc-northend-resegregation.json';
-import styles from '../styles/Home.module.css'
-
-export default function Cascadia({ hccRace }) {
+export default function CascadiaDemographics({ hccRace }) {
   const raceData = {
     nat: [],
     asian: [],
@@ -145,10 +142,4 @@ export default function Cascadia({ hccRace }) {
   );
 }
 
-export async function getStaticProps() {
-  return {
-    props: {
-      hccRace: HccRace,
-    }
-  };
-}
+
