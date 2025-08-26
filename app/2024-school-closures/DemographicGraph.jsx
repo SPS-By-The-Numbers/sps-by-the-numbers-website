@@ -170,7 +170,7 @@ function combineCategories(entry, categories, type) {
   return categories.reduce((a, cat) => a + parseFloat(entry[`${type} ${cat}`]), 0);
 }
 
-function OneGraph({data, categories, changeType, title, ylabel}) {
+function OneGraph({data, categories, changeType, title, ylabel, highcharts}) {
   const column_name = `% ${categories}`;
 
   data.sort((x,y) => {
@@ -231,7 +231,7 @@ function OneGraph({data, categories, changeType, title, ylabel}) {
   return (
     <HighchartsReact
       containerProps={{ style: { height: "100%" } }}
-      highcharts={highchartsObjs.highcharts}
+      highcharts={highcharts}
       options={options}
     />
   );
@@ -249,7 +249,7 @@ function makeRegionOptions(regionType) {
   return options;
 }
 
-export default  function DemographicGraph() {
+export default function DemographicGraph() {
   const { highchartsObjs } = useHighcharts();
 
   const searchParams = useSearchParams();
@@ -350,6 +350,7 @@ export default  function DemographicGraph() {
           changeType={changeTypes}
           data={data}
           ylabel="%"
+          highcharts={highchartsObjs.highcharts}
         />
       </Card>
       <Card>

@@ -15,7 +15,7 @@ type DanfoContextType = {
 export let g_dfd : any = {};
 
 async function loadDfd() {
-  g_dfd = (await import('danfojs')).default;
+  g_dfd = (await import('danfojs'));
   return g_dfd;
 }
 

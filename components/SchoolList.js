@@ -4,6 +4,7 @@ const SchoolListItem = ({ schoolId, active, name, toggleActive, color }) => {
   const handleChange = useCallback(() => toggleActive(schoolId), [schoolId, toggleActive]);
   return (
     <li
+      key={name}
       className="flex items-stretch justify-items-stretch text-sm"
       style={{ background: color }}
     >

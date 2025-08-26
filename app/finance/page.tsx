@@ -5,10 +5,7 @@ import { parse } from "csv-parse/sync";
 import type { DistrictsMap } from 'components/finance/DistrictDashboard';
 
 export default async function FinancePage() {
-  const csvString = `district,ccddd,county_code,district_code
-Seattle,17001,17,1
-`;
-  //await new Response(await fetchDatasetStream('domain', 'ccddd')).text();
+  const csvString = await new Response(await fetchDatasetStream('domain', 'ccddd')).text();
   const districtRecords = parse(csvString, { columns: true, skip_empty_lines: true});
 
   const districts = {} as DistrictsMap;

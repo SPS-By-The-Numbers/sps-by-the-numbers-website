@@ -1,5 +1,6 @@
 import { g_dfd } from 'components/providers/DanfoProvider';
 import { g_highchartsObjs } from 'components/providers/HighchartsProvider';
+import Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
 
 export const SINGLE_MODE = 'single';
 export const BUDGET_ACTUALS_MODE = 'budget_actuals';
@@ -15,7 +16,7 @@ const currencyFormatter  = new Intl.NumberFormat("en-US", {
 
 // Show key historical metric with min/max/average.
 export default class KeyStatsComponent extends
-    g_highchartsObjs.dashboards.ComponentRegistry.types.HTML {
+    Dashboards.ComponentRegistry.types.HTML {
   constructor(board, options) {
     super(board, options);
     this.type = 'KeyStatsComponent';
