@@ -9,11 +9,11 @@ export default async function FinancePage() {
   const districtRecords = parse(csvString, { columns: true, skip_empty_lines: true});
 
   const districts = {} as DistrictsMap;
-  for (const r of districtRecords) {
+  for (const r of districtRecords as Array<any>) {
     districts[r['ccddd']] = {
       district: r['district'],
-      county_code: r.county_code,
-      district_code: r.district_code,
+      county_code: r['county_code'],
+      district_code: r['district_code'],
     }
   }
 

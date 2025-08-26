@@ -19,6 +19,17 @@ const nextConfig = {
   images: {
     loader: 'akamai',
     path: '',
+  },
+  webpack: (config) => {
+      config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      danfojs: path.resolve(
+        __dirname,
+        "node_modules/danfojs/dist/danfojs-browser/src"
+      ),
+    };
+
+    return config;
   }
 }
 

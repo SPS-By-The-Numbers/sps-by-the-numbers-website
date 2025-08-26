@@ -8,6 +8,7 @@ import InitColorSchemeScript from '@mui/material/InitColorSchemeScript';
 import MuiProviders from './MuiProviders';
 import Script from 'next/script'
 import { Metadata } from 'next'
+import { Roboto } from 'next/font/google'
 
 import '../styles/globals.scss';
 
@@ -16,17 +17,11 @@ export const metadata: Metadata = {
   description: `Transcriptions of ${Object.entries(Constants.CATEGORY_CHANNEL_MAP).map(([k,info]) => info.name).join(', ')}`,
 };
 
+const roboto = Roboto({subsets: ['latin'],});
+
 export default function RootLayout({ children }: {children: React.ReactNode}) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
-        />
-      </head>
+    <html lang="en" className={roboto.className} suppressHydrationWarning>
       <body>
         <Script src={`https://www.googletagmanager.com/gtag/js?id=${Constants.GA_MEASUREMENT_ID}`} />
         <Script id="google-analytics">

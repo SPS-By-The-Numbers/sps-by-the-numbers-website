@@ -32,7 +32,7 @@ export let g_highchartsObjs : HighchartsObjects = DEFAULT_OBJECT;
 
 async function loadHighchartsModules() {
   const Highcharts = (await import('highcharts')).default;
-  const highchartsAccessibility = (await import("highcharts/modules/accessibility")).default;
+  const highchartsAccessibility = (await import("highcharts/modules/accessibility")).default as any;
   const Dashboards = (await import(
     '@highcharts/dashboards/es-modules/masters/dashboards.src.js')).default;
   const DataGrid = (await import('@highcharts/dashboards/datagrid')).default;
