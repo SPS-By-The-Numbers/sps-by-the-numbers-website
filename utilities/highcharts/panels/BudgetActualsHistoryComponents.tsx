@@ -8,9 +8,10 @@ export type BudgetActualsHistoryComponentsOptions = {
   xAxisName : string;
   metricColumnRoot: string;
   connectorId : string;
-  seriesLabel : string;
   yUnits : string;
   keyStatFormat: 'currency' | 'decimal' | 'passthru';
+  seriesLabel?: string;
+  tooltip?: object;
 };
 
 export default class BudgetActualsHistoryComponents {

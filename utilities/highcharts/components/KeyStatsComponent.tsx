@@ -27,7 +27,7 @@ export default class KeyStatsComponent extends
   private budgetColumn: string;
   private actualsColumn: string;
   private mode: string;
-  private formatter: (v) => string;
+  private valueFormatter: (v) => string;
 
   constructor(board, options) {
     super(board, options);
