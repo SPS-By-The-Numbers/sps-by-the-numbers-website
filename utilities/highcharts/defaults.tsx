@@ -8,6 +8,7 @@ export const baselineClassOfChartOptions = {
     }
   },
   yAxis: {
+    crosshair: true,
     minorTickInterval: "auto",
   },
   xAxis: {

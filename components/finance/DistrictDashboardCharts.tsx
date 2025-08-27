@@ -21,13 +21,16 @@ const enrollmentPanelFactory = new MetricHistoryPanelFactory(
   {
     metricName: 'enrollment',
   },
-  new SingleMetricHistoryComponents({
+  new BudgetActualsHistoryComponents({
     title: 'Enrollment',
-    columnName: 'total_enrollment',
+    metricColumnRoot: 'enrollment',
+    keyStatFormat: 'decimal',
     xAxisName: 'class_of',
     connectorId: 'c-toplevel-metrics',
-    seriesLabel: 'Total Enrollment (AFTE)',
-    yUnits: 'Annual Full-Time Enrolled (AFTE)',
+    yUnits: 'AFTE',
+    tooltip: {
+      valueDecimals: 2
+    },
   })
 );
 
@@ -37,10 +40,32 @@ const cashflowPanelFactory = new MetricHistoryPanelFactory(
   },
   new BudgetActualsHistoryComponents({
     title: 'Cashflow',
-    seriesLabel: 'Cashflow',
     metricColumnRoot: 'cashflow',
+    keyStatFormat: 'currency',
     xAxisName: 'class_of',
     connectorId: 'c-toplevel-metrics',
+    yUnits: '$',
+    tooltip: {
+      valuePrefix: "$",
+      valueDecimals: 2
+    },
+  })
+);
+
+const staffingPanelFactory = new MetricHistoryPanelFactory(
+  {
+    metricName: 'staff_fte',
+  },
+  new BudgetActualsHistoryComponents({
+    title: 'Staffing',
+    metricColumnRoot: 'staff_fte',
+    keyStatFormat: 'decimal',
+    xAxisName: 'class_of',
+    connectorId: 'c-toplevel-metrics',
+    yUnits: 'FTE',
+    tooltip: {
+      valueDecimals: 2
+    },
   })
 );
 
@@ -104,6 +129,7 @@ function makeDashboardGui() {
         rows: [
           enrollmentPanelFactory.makeLayout(),
           cashflowPanelFactory.makeLayout(),
+          staffingPanelFactory.makeLayout(),
           {
             cells: [
               {
@@ -177,6 +203,7 @@ function makeMockComponent(target_id) {
       },
       legend: {
         enabled: true,
+        floating: true,
         verticalAlign: 'top',
       },
       chart: {
@@ -193,50 +220,6 @@ function makeMockComponent(target_id) {
         stickOnContact: true,
       },
     },
-  };
-}
-
-function makeEnrollmentGraph(target_id) {
-  return {
-    cell: target_id,
-    type: 'Highcharts',
-    sync: {
-      visibility: true,
-      highlight: true,
-      extremes: true,
-    },
-    connector: {
-      id: 'c-toplevel-metrics',
-      columnAssignment: [
-        {
-          seriesId: 'total_enrollment',
-          data: ['class_of', 'total_enrollment'],
-        }
-      ],
-    },
-    chartOptions: merge({}, baselineClassOfChartOptions, {
-      yAxis: {
-        title: {
-          text: 'AFTE',
-        },
-      },
-      title: {
-        text: "Historical Enrollment",
-      },
-      series: [
-        {
-          id: 'total_enrollment',
-          name: 'Total Enrollment in AAFTE',
-          colorIndex: 1,
-        }
-      ],
-      tooltip: {
-        valueSuffix: ' AFTE',
-      },
-      legend: {
-        enabled: false,
-      },
-    }),
   };
 }
 
@@ -321,6 +304,7 @@ function makeDashboardConfig(districtData : DistrictData) {
     components: [
       ...enrollmentPanelFactory.makeComponents(),
       ...cashflowPanelFactory.makeComponents(),
+      ...staffingPanelFactory.makeComponents(),
       makeExpenditureGraph('key-expenditures-amt', 'amt'),
       makeExpenditureGraph('key-expenditures-pct', 'pct_expenditure'),
 //      makeMockComponent('per-pupil-expenditure'),

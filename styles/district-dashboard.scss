@@ -2,6 +2,12 @@
 @import url('https://code.highcharts.com/dashboards/css/datagrid.css');
 @import url('https://code.highcharts.com/dashboards/css/dashboards.css');
 
+:root {
+      /* Colors for data series and points */
+  --highcharts-color-1: #38b9ff;
+  --highcharts-color-2: #9c9c9c;
+}
+
 $chart-height: 25ex;
 
 h1#title {
@@ -12,17 +18,15 @@ h1#title {
   color: #fff;
 }
 
-.highcharts-plot-line {
-  stroke-dasharray: 2px;
-  stroke: var(--highcharts-color-3);
-}
-
-.highcharts-plot-line-label {
-  fill: var(--highcharts-color-3);
+.highcharts-crosshair {
 }
 
 .highcharts-description {
   padding: 0 20px;
+}
+
+.highcharts-crosshair {
+  stroke: violet;
 }
 
 .highcharts-axis-labels.highcharts-xaxis-labels {
@@ -48,6 +52,7 @@ h1#title {
   display: flex;
   flex-direction: row;
   align-items: flex-end;
+  text-align: 'center';
 }
 
 .key-stats-item {
@@ -70,20 +75,32 @@ h1#title {
 
 .key-stats-subvalue {
   color: #f4d06f;
+  width: 100%;
+}
+
+.key-stats-variance-positive {
+  color: #00cc00;
+}
+
+.key-stats-variance-negative {
+  color: #e60000;
 }
 
 .key-stats-primary {
   text-align: center;
-  font-size: 1.6em;
+  font-size: 1.3em;
   margin-bottom: 0.25ex;
 }
 
 .key-stats-value-actuals {
-  color: var(--highcharts-color-0);
+  color: var(--highcharts-color-1);
 }
 
 .key-stats-value-budget {
   color: var(--highcharts-color-2);
+}
+
+.key-stats-value-variance {
 }
 
 .key-stats-secondary {

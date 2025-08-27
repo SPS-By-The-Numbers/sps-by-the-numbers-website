@@ -91,24 +91,29 @@ function fieldFoldl(dataframes, field, f, initial) {
 export default class DistrictData {
   private dfd : any;
   private enrollment_df : DataFrame;
-  private gfe_df : DataFrame;
-  private gfr_df : DataFrame;
+  private gf_expenditure_df : DataFrame;
+  private gf_revenue_df : DataFrame;
+  private budget_items_df : DataFrame;
+  private actuals_items_df : DataFrame;
+  private s275_summary_df : DataFrame;
   private all_school_years_df : DataFrame;
 
-  constructor(dfd, enrollment_df, gfe_df, gfr_df) {
+  constructor(dfd, enrollment_df, gf_expenditure_df, gf_revenue_df,
+              budget_items_df, actuals_items_df, s275_summary_df) {
     this.dfd = dfd;
 
     this.enrollment_df = enrollment_df;
-    this.enrollment_df.rename({ "year": "class_of" }, { axis: 1, inplace: true });
-    this.enrollment_df.rename({ "total": "total_enrollment" }, { axis: 1, inplace: true });
-    this.gfe_df = gfe_df;
-    this.gfr_df = gfr_df;
+    this.gf_expenditure_df = gf_expenditure_df;
+    this.gf_revenue_df = gf_revenue_df;
+    this.budget_items_df = budget_items_df;
+    this.actuals_items_df = actuals_items_df;
+    this.s275_summary_df = s275_summary_df;
 
     let all_school_years_df = this.dfd.concat({
       dfList: [
         this.enrollment_df["class_of"],
-        this.gfe_df["class_of"],
-        this.gfr_df["class_of"],
+        this.gf_expenditure_df["class_of"],
+        this.gf_revenue_df["class_of"],
       ],
       axis: 1
     });
@@ -125,14 +130,19 @@ export default class DistrictData {
   }
 
   static async loadFromGcs(dfd, ccddd) {
-    const [enrollment_df, gfe_df, gfr_df] = await Promise.all(
+    const [enrollment_df, gf_expenditure_df, gf_revenue_df,
+           budget_items_df, actuals_items_df, s275_summary_df] = await Promise.all(
       [
         fetchDataset(dfd, ccddd, "enrollment"),
         fetchDataset(dfd, ccddd, "gf_expenditures"),
         fetchDataset(dfd, ccddd, "gf_revenues"),
+        fetchDataset(dfd, ccddd, "budget_items"),
+        fetchDataset(dfd, ccddd, "actuals_items"),
+        fetchDataset(dfd, ccddd, "s275_summary"),
       ]
     );
-    return new DistrictData(dfd, enrollment_df, gfe_df, gfr_df);
+    return new DistrictData(dfd, enrollment_df, gf_expenditure_df, gf_revenue_df,
+                           budget_items_df, actuals_items_df, s275_summary_df);
   }
 
   static async loadTest(real_dfd) {
@@ -142,25 +152,47 @@ export default class DistrictData {
   toplevel_metrics() {
     let merged_df = this.merge(
       this.cashflow(),
-      this.enrollment().loc({columns: ["class_of", "total_enrollment"]})
+      this.enrollment().loc({columns: ["class_of", "enrollment_actuals", "enrollment_budget"]}),
     );
     merged_df = this.merge(merged_df, this.key_expenditures());
+    merged_df = this.merge(merged_df, this.staffing());
 
     return merged_df;
+  }
+
+  staffing() {
+    const staffFteActuals = this.s275_summary_df.groupby(['class_of']).
+      col(['fte_in_assignment']).
+      sum().
+      rename({fte_in_assignment_sum: 'staff_fte_actuals'}, {axis:1});
+
+    const staffFteBudget = this.budget_items_df.query(
+      // 317 is certificated FTE counts
+      // 318 is classified FTE counts.
+      this.budget_items_df['item_code'].eq(317).or(
+        this.budget_items_df['item_code'].eq(318))
+    ).groupby(['class_of']).
+      col(['amount']).
+      sum().
+      rename({amount_sum: 'staff_fte_budget'}, {axis:1});
+
+    const staff_fte = this.merge(staffFteActuals, staffFteBudget,
+                                 ["class_of"], "outer");
+    return this.fillYears(staff_fte);
   }
 
   key_expenditures() {
     const key_metric = 'c_pct_expenditure';
     const comp_only = doQuery(
-      this.gfe_df,
-      inMask(this.gfe_df, "object_code", COMP_OBJECT_CODES)
+      this.gf_expenditure_df,
+      inMask(this.gf_expenditure_df, "object_code", COMP_OBJECT_CODES)
     );
 
     let non_comp_df = this.expenditureSum(
       "non_comp",
       doQuery(
-        this.gfe_df,
-        notInMask(this.gfe_df, "object_code", COMP_OBJECT_CODES)
+        this.gf_expenditure_df,
+        notInMask(this.gf_expenditure_df, "object_code", COMP_OBJECT_CODES)
       )
     );
 
@@ -186,8 +218,8 @@ export default class DistrictData {
   }
 
   cashflow() {
-    const expenditures_df = financeGroupSumAmount("expenditures", this.gfe_df);
-    const revenues_df = financeGroupSumAmount("revenues", this.gfr_df);
+    const expenditures_df = financeGroupSumAmount("expenditures", this.gf_expenditure_df);
+    const revenues_df = financeGroupSumAmount("revenues", this.gf_revenue_df);
 
     // Put expenses + revenues onto one sheet dropping missing years.
     let merged_df = this.merge(expenditures_df, revenues_df, FINANCE_GROUP_BY);
@@ -201,19 +233,23 @@ export default class DistrictData {
   }
 
   enrollment() {
-    const k12Enrollment = this.enrollment_df.query(
+    const k12EnrollmentActuals = this.enrollment_df.query(
       this.enrollment_df['enrollment_domain'].eq('K-12 FTE').or(
         this.enrollment_df['enrollment_domain'].eq('K-12 FTE - Includes ALE')))
         .groupby(['class_of']).col(['amount'])
         .sum();
-    k12Enrollment.rename({ 'amount_sum': `total_enrollment` }, { axis: 1, inplace: true });
-    return this.fillYears(k12Enrollment);
-  }
+    k12EnrollmentActuals.rename({ 'amount_sum': `enrollment_actuals` }, { axis: 1, inplace: true });
 
-  debug() {
-    this.enrollment_df.head().print();
-    this.gfe_df.head().print();
-    this.gfr_df.head().print();
+    // 314 is the item code for total K-12 enrollment FTE in the F195.
+    const k12EnrollmentBudget = this.budget_items_df.query(
+      this.budget_items_df['item_code'].eq(314)).
+        loc({columns: ['amount', 'class_of']}).
+        rename({amount: 'enrollment_budget'}, {axis:1});
+
+    const k12Enrollment = this.merge(k12EnrollmentActuals, k12EnrollmentBudget,
+                                     ["class_of"], "outer");
+
+    return this.fillYears(k12Enrollment);
   }
 
   merge(left, right, on=["class_of"], how="inner") {

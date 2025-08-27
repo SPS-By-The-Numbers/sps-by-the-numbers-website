@@ -5,14 +5,17 @@ import Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src
 export const SINGLE_MODE = 'single';
 export const BUDGET_ACTUALS_MODE = 'budget_actuals';
 
-
-const currencyFormatter  = new Intl.NumberFormat("en-US", {
+const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
   notation: 'compact',
   compactDisplay: 'short',
   maximumFractionDigits: 0,
 }).format;
+
+function decimalFormatter(value) {
+  return value.toFixed(2).toLocaleString();
+}
 
 // Show key historical metric with min/max/average.
 export default class KeyStatsComponent extends
@@ -24,6 +27,7 @@ export default class KeyStatsComponent extends
   private budgetColumn: string;
   private actualsColumn: string;
   private mode: string;
+  private formatter: (v) => string;
 
   constructor(board, options) {
     super(board, options);
@@ -38,6 +42,14 @@ export default class KeyStatsComponent extends
       this.budgetColumn = options.budgetColumn;
       this.actualsColumn = options.actualsColumn;
     }
+
+   if (options.keyStatFormat === 'currency') {
+     this.valueFormatter = currencyFormatter;
+   } else if (options.keyStatFormat === 'decimal') {
+     this.valueFormatter = decimalFormatter;
+   } else {
+     this.valueFormatter = (x) => x;
+   }
 
     return this;
   }
@@ -87,20 +99,36 @@ export default class KeyStatsComponent extends
     } else if (this.mode === BUDGET_ACTUALS_MODE) {
       const complete_df = df.loc({columns: [this.xAxisName, this.budgetColumn, this.actualsColumn]}).dropNa();
       const lastRow = complete_df.iloc({ rows: [complete_df.shape[0] - 1] });
+      const actualVal = lastRow[this.actualsColumn].iat(0, 0);
+      const budgetVal = lastRow[this.budgetColumn].iat(0, 0);
+      const varianceVal = budgetVal - actualVal;
+      const varainceClass = (varianceVal >= 0) ? 'key-stats-variance-positive' : 'key-stats-variance-negative';
+
       return (`
         <div class="key-stats-item-row">
-          <div class="key-stats-item">
-            <div class="key-stats-value-actuals">
-              ${currencyFormatter(lastRow[this.actualsColumn].iat(0, 0))}
+          <div class="key-stats-item key-stats-subvalue key-stats-value-actuals">
+            <div>
+              ${this.valueFormatter(actualVal)}
             </div>
             <div class="key-stats-label">Actual</div>
           </div>
+        </div>
 
-          <div class="key-stats-item key-stats-subvalue">
-            <div class="key-stats-value-budget">
-              ${currencyFormatter(lastRow[this.budgetColumn].iat(0, 0))}
+        <div class="key-stats-item-row">
+          <div class="key-stats-item key-stats-subvalue key-stats-value-budget">
+            <div>
+              ${this.valueFormatter(budgetVal)}
             </div>
             <div class="key-stats-label">Budget</div>
+          </div>
+        </div>
+
+        <div class="key-stats-item-row">
+          <div class="key-stats-item key-stats-subvalue key-stats-value-variance ${varainceClass}">
+            <div>
+              ${this.valueFormatter(varianceVal)}
+            </div>
+            <div class="key-stats-label">Variance</div>
           </div>
         </div>
       `);

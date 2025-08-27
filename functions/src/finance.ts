@@ -123,6 +123,60 @@ function getRevenues(ccddd) {
   `;
 }
 
+function getBudgetItems(ccddd) {
+  return `
+  SELECT
+    school_year,
+    class_of,
+    fund_code,
+    fund,
+    item_code,
+    item,
+    amount
+  FROM
+    sps-btn-data.safs_f19x.budget_items
+  WHERE ccddd=${ccddd}
+  `;
+}
+
+function getActualsItems(ccddd) {
+  return `
+  SELECT
+    school_year,
+    class_of,
+    fund_code,
+    fund,
+    item_code,
+    item,
+    general_ledger_code_list,
+    amount
+  FROM
+    sps-btn-data.safs_f19x.actuals_items
+  WHERE ccddd=${ccddd}
+  `;
+}
+
+function getS275Summary(ccddd) {
+  return `
+  SELECT
+    r.school_year,
+    SPLIT(r.school_year, '-')[1] class_of,
+    a.program_code,
+    a.activity_code,
+    sum(a.fte_in_assignment) fte_in_assignment
+  FROM
+    sps-btn-data.safs_s275.assignment a
+    JOIN sps-btn-data.safs_s275.report r ON (a.report_id = r.report_id)
+    WHERE
+    r.report_type = 'final' AND
+    r.ccddd = ${ccddd}
+  GROUP BY
+    school_year,
+    class_of,
+    program_code,
+    activity_code
+  `;
+}
 
 async function cacheExists(cachePaths) {
    const [exists] = await storageClient.bucket(cachePaths.bucket).file(cachePaths.cacheFilePath).exists();
@@ -139,6 +193,12 @@ function getQueryForDataset(ccddd, dataset) {
       return getExpenditures(ccddd);
     } else if (dataset === 'gf_revenues') {
       return getRevenues(ccddd);
+    } else if (dataset === 'budget_items') {
+      return getBudgetItems(ccddd);
+    } else if (dataset === 'actuals_items') {
+      return getActualsItems(ccddd);
+    } else if (dataset === 's275_summary') {
+      return getS275Summary(ccddd);
     }
   }
   return null;

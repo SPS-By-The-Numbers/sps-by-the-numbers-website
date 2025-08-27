@@ -9,6 +9,8 @@ export type BudgetActualsHistoryComponentsOptions = {
   metricColumnRoot: string;
   connectorId : string;
   seriesLabel : string;
+  yUnits : string;
+  keyStatFormat: 'currency' | 'decimal' | 'passthru';
 };
 
 export default class BudgetActualsHistoryComponents {
@@ -27,6 +29,7 @@ export default class BudgetActualsHistoryComponents {
       type: 'KeyStats',
       mode: BUDGET_ACTUALS_MODE,
       title: options.title,
+      keyStatFormat: options.keyStatFormat,
 
       budgetColumn,
       actualsColumn,
@@ -50,11 +53,11 @@ export default class BudgetActualsHistoryComponents {
           columnAssignment: [
             {
               seriesId: 'budget',
-              data: ['school_starting_year', budgetColumn],
+              data: [options.xAxisName, budgetColumn],
             },
             {
               seriesId: 'actuals',
-              data: ['school_starting_year', actualsColumn],
+              data: [options.xAxisName, actualsColumn],
             },
           ],
         },
@@ -62,24 +65,27 @@ export default class BudgetActualsHistoryComponents {
           title: null,
           yAxis: {
             title: {
-              text: '$'
+              text: options.yUnits
             },
           },
           series: [
             {
               id: 'budget',
-              name: `${options.seriesLabel} (Budget)`,
-              colorIndex: 0,
+              name: `Budget ${options.seriesLabel ?? ''}`,
+              colorIndex: 2,
             },
             {
               id: 'actuals',
-              name: `${options.seriesLabel} (Actual)`,
-              colorIndex: 2,
+              name: `Actual ${options.seriesLabel ?? ''}`,
+              colorIndex: 1,
               pointPadding: 0.25,
             },
           ],
           legend: {
-            enabled: false,
+            layout: 'horizontal',
+            verticalAlign: 'top',
+            align: 'left',
+            enabled: true,
           },
           plotOptions: {
             series: {
@@ -89,8 +95,9 @@ export default class BudgetActualsHistoryComponents {
             }
           },
           tooltip: {
-            valuePrefix: "$",
-          },
+            shared: true,
+            ...options.tooltip
+          }
         }
       }
     );
