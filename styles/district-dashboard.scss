@@ -93,14 +93,18 @@ h1#title {
 }
 
 .key-stats-value-actuals {
+  font-size: 2.5ex;
+  font-weight: bold;
   color: var(--highcharts-color-1);
 }
 
 .key-stats-value-budget {
+  font-size: 1.8ex;
   color: var(--highcharts-color-2);
 }
 
 .key-stats-value-variance {
+  font-size: 1.8ex;
 }
 
 .key-stats-secondary {
@@ -125,6 +129,9 @@ h1#title {
   text-align: center;
   font-size: 1.4em;
   font-weight: bold;
+  padding-bottom: 0px;
+  margin-bottom: 0.75ex;
+  border-bottom: 1px solid grey;
 }
 
 .metric-history-cell .highcharts-dashboards-component {

@@ -32,6 +32,8 @@ export const baselineClassOfChartOptions = {
   legend: {
     enabled: true,
     verticalAlign: 'bottom',
+    floating: true,
+    x: 80,
   },
   tooltip: {
     stickOnContact: true,

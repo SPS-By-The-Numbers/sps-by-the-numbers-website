@@ -167,62 +167,6 @@ function makeDashboardGui() {
   };
 }
 
-function makeMockComponent(target_id) {
-  return {
-    connector: {
-      id: 'c-spend-type',
-    },
-    sync: {
-      visibility: true,
-      highlight: true,
-      extremes: true,
-    },
-    cell: target_id,
-    type: 'Highcharts',
-    chartOptions: {
-      xAxis: {
-        type: 'category',
-        accessibility: {
-          description: 'Spending Type',
-        },
-      },
-      yAxis: {
-        title: {
-          text: 'Amount ($)',
-        },
-      },
-      credits: {
-        enabled: false,
-      },
-      plotOptions: {
-        series: {
-          marker: {
-            radius: 8,
-          },
-        },
-      },
-      legend: {
-        enabled: true,
-        floating: true,
-        verticalAlign: 'top',
-      },
-      chart: {
-        animation: false,
-        styledMode: true,
-        type: 'bar',
-        spacing: [30, 30, 30, 20],
-      },
-      title: {
-        text: 'Spending Allocation',
-      },
-      tooltip: {
-        valuePrefix: '$',
-        stickOnContact: true,
-      },
-    },
-  };
-}
-
 function pctFormater() {
   return (this.value * 100) + '%';
 }
