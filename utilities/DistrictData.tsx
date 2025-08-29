@@ -136,6 +136,9 @@ export default class DistrictData {
     const maxYear = all_school_years_df["class_of"].max();
 
     const all_school_years = new Array<number>();
+    for (let year = minYear; year <= maxYear; year++) {
+      all_school_years.push(year);
+    }
 
     this.all_school_years_df = new this.dfd.DataFrame({"class_of": all_school_years});
   }
