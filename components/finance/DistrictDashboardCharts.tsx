@@ -72,10 +72,25 @@ const staffingPanelFactory = new MetricHistoryPanelFactory(
 
 // Converts a danfo dataframe into a set of rows for a Highcharts DataTable.
 function danfoToJsonOptions(df: DataFrame) {
+  const new_df = df.round(2);
+  new_df.addColumn(
+    'covid_shape',
+    new_df["class_of"].apply((year) => {
+      if (year < 2020) {
+        return 'triangle-down';
+      } else if (year < 2022) {
+        return 'square';
+      } else {
+        return 'triangle';
+      }
+    }),
+    { inplace: true }
+  );
+
   return {
     firstRowAsNames: false,
-    columnNames: df.columns,
-    data: df.round(2).values
+    columnNames: new_df.columns,
+    data: new_df.values,
   };
 }
 
@@ -136,6 +151,36 @@ function makeDashboardGui() {
                 id: 'cashflow',
               },
             ]
+          },
+          {
+            cells: [
+              {
+                id: 'deficit-enrollment-correlation',
+              },
+              {
+                id: 'deficit-teaching-fte-correlation',
+              },
+            ],
+          },
+          {
+            cells: [
+              {
+                id: 'deficit-non-teaching-fte-correlation',
+              },
+              {
+                id: 'deficit-student-support-fte-correlation',
+              },
+            ]
+          },
+          {
+            cells: [
+              {
+                id: 'deficit-building-support-fte-correlation',
+              },
+              {
+                id: 'deficit-other-fte-correlation',
+              },
+            ],
           },
           {
             cells: [
@@ -234,6 +279,97 @@ function makeExpenditureGraph(target_id, pct_or_amt) {
   };
 }
 
+function makeCorrelationGraph(target_id, title, yMetric, xMetric,
+                              ySeriesIds=['budget', 'actuals'],
+                              xSeriesIds=['budget', 'actuals'],
+                              colorIndexMap={
+                                actuals: 1,
+                                budget: 2,
+                              }) {
+  const result = {
+    connector: {
+      id: 'c-toplevel-metrics',
+      columnAssignment: [] as Array<object>,
+    },
+    sync: {
+      visibility: true,
+      highlight: true,
+      extremes: true,
+    },
+    cell: target_id,
+    type: 'Highcharts',
+    chartOptions: merge({}, baselineClassOfChartOptions, {
+      chart: {
+        type:'scatter',
+      },
+      yAxis: {
+        startOnTick: true,
+        endOnTick: true,
+        showLastLabel: true,
+      },
+      xAxis: {
+        type: 'linear',
+        startOnTick: true,
+        endOnTick: true,
+        showLastLabel: true,
+      },
+      title: {
+        text: title,
+      },
+      series: [] as Array<object>,
+      legend: {
+        floating: false,
+      },
+      plotOptions: {
+        scatter: {
+          opacity: 0.5,
+          marker: {
+            radius: 2.5,
+            symbol: "circle",
+            states: {
+              hover: {
+                enabled: true,
+                lineColor: "rgb(100,100,100)"
+              }
+            }
+          },
+        },
+      },
+    }),
+  };
+
+  for (const yKind of ySeriesIds) {
+    for (const xKind of xSeriesIds) {
+      result.connector.columnAssignment.push(
+        {
+          seriesId: yKind,
+          data: {
+            x: `${xMetric}_${xKind}`,
+            y: `${yMetric}_${yKind}`,
+            class_of: 'class_of',
+            'marker.radius': 'covid_type',
+            'marker.symbol': 'covid_shape',
+          },
+        }
+      );
+      result.chartOptions.series.push(
+          {
+            id: yKind,
+            name: yKind,
+            colorIndex: colorIndexMap[yKind],
+            dataLabels: {
+              enabled: true,
+              format: '{point.class_of}'
+            }
+          }
+      );
+    }
+  }
+  console.log(result);
+
+  return result;
+}
+
 function makeDashboardConfig(districtData : DistrictData) {
   return {
     editMode: {
@@ -249,10 +385,20 @@ function makeDashboardConfig(districtData : DistrictData) {
       ...enrollmentPanelFactory.makeComponents(),
       ...cashflowPanelFactory.makeComponents(),
       ...staffingPanelFactory.makeComponents(),
+      makeCorrelationGraph('deficit-enrollment-correlation', 'Deficit-Enrollment Correlation',
+                           'cashflow', 'enrollment'),
+      makeCorrelationGraph('deficit-teaching-fte-correlation', 'Deficit-Teaching FTE Correlation',
+                           'cashflow', 'teaching_fte', ['actuals'], ['actuals']),
+
+      makeCorrelationGraph('deficit-non-teaching-fte-correlation', 'Deficit-Other Staff FTE Correlation',
+                           'cashflow', 'non_teaching_fte', ['actuals'], ['actuals']),
+
+      makeCorrelationGraph('deficit-student-support-fte-correlation', 'Deficit-Student Support FTE Correlation',
+                           'cashflow', 'student_support_fte', ['actuals'], ['actuals']),
+      makeCorrelationGraph('deficit-building-support-fte-correlation', 'Deficit-Building Support FTE Correlation',
+                           'cashflow', 'building_support_fte', ['actuals'], ['actuals']),
       makeExpenditureGraph('key-expenditures-amt', 'amt'),
       makeExpenditureGraph('key-expenditures-pct', 'pct_expenditure'),
-//      makeMockComponent('per-pupil-expenditure'),
-//      makeMockComponent('expenditure-detail'),
     ],
   };
 }

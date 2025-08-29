@@ -17,6 +17,20 @@ const TEACHING_CODES = [
   34,  // Professional Learning - State (funds part of teacher salary. Not all budget systems can account for it but it shows up in actuals)
 ];
 
+const STUDENT_SUPPORT_CODES = [
+  23,  // Principal's Office
+  24,  // Guidance and Counseling
+  25,  // Pupil Management and Safety
+  26,  // Health and Related Services
+  84,  // Principal
+];
+
+const BUILDING_SUPPORT = [
+  62,  // Grounds Maintenanceko
+  63,  // Operations of Building
+  64,  // Maintenance
+];
+
 function financeGroupSumAmount(new_col_name, df, col_to_sum="amount") {
   const grouped = df.groupby(FINANCE_GROUP_BY).col([col_to_sum]).sum();
   grouped.rename({ [`${col_to_sum}_sum`]: new_col_name }, { axis: 1, inplace: true });
@@ -122,11 +136,8 @@ export default class DistrictData {
     const maxYear = all_school_years_df["class_of"].max();
 
     const all_school_years = new Array<number>();
-    for (let year = minYear; year <= maxYear; year++) {
-      all_school_years.push(year);
-    }
 
-    this.all_school_years_df = new this.dfd.DataFrame({"class_of": all_school_years})
+    this.all_school_years_df = new this.dfd.DataFrame({"class_of": all_school_years});
   }
 
   static async loadFromGcs(dfd, ccddd) {
@@ -157,11 +168,27 @@ export default class DistrictData {
     merged_df = this.merge(merged_df, this.key_expenditures());
     merged_df = this.merge(merged_df, this.staffing());
 
+    // Label covid type.
+    merged_df.addColumn(
+      'covid_type',
+      merged_df["class_of"].apply((year) => {
+        if (year < 2020) {
+          return 4;
+        } else if (year < 2022) {
+          return 2;
+        } else {
+          return 8;
+        }
+      }),
+      { inplace: true }
+    );
+
     return merged_df;
   }
 
   staffing() {
-    const staffFteActuals = this.s275_summary_df.groupby(['class_of']).
+    const staffFteActuals = this.s275_summary_df.
+      groupby(['class_of']).
       col(['fte_in_assignment']).
       sum().
       rename({fte_in_assignment_sum: 'staff_fte_actuals'}, {axis:1});
@@ -176,8 +203,43 @@ export default class DistrictData {
       sum().
       rename({amount_sum: 'staff_fte_budget'}, {axis:1});
 
-    const staff_fte = this.merge(staffFteActuals, staffFteBudget,
+    let staff_fte = this.merge(staffFteActuals, staffFteBudget,
                                  ["class_of"], "outer");
+
+    const add_data = (name_root, codes, target_df) => {
+      const result = doQuery(
+        this.s275_summary_df,
+        inMask(this.s275_summary_df, "activity_code", codes)
+      ).
+        groupby(['class_of']).
+        col(['fte_in_assignment']).
+        sum().
+        rename({fte_in_assignment_sum: `${name_root}_actuals`}, {axis:1});
+
+      return this.merge(target_df, result,
+                        ["class_of"], "outer");
+
+    };
+    staff_fte = add_data('teaching_fte', TEACHING_CODES, staff_fte);
+    staff_fte = add_data('student_support_fte', STUDENT_SUPPORT_CODES, staff_fte);
+    staff_fte = add_data('building_support_fte', BUILDING_SUPPORT, staff_fte);
+
+    const non_teaching_fte =
+      doQuery(
+        this.s275_summary_df,
+        notInMask(this.s275_summary_df, "activity_code", [
+          ...TEACHING_CODES,
+          ...STUDENT_SUPPORT_CODES,
+          ...BUILDING_SUPPORT])
+      ).
+      groupby(['class_of']).
+      col(['fte_in_assignment']).
+      sum().
+      rename({fte_in_assignment_sum: 'non_teaching_fte_actuals'}, {axis:1});
+    staff_fte = this.merge(staff_fte, non_teaching_fte,
+                           ["class_of"], "outer");
+
+
     return this.fillYears(staff_fte);
   }
 
@@ -257,13 +319,7 @@ export default class DistrictData {
   }
 
   fillYears(df) {
-    return this.dfd.merge(
-      {
-        left: this.all_school_years_df,
-        right: df,
-        on: ["class_of"],
-        how: "left"
-      });
+    return this.merge(this.all_school_years_df, df, ["class_of"], "left");
   }
 
   pivotBudgetActuals(col_name, df, preserverd_cols) {

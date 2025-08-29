@@ -8,7 +8,8 @@
   --highcharts-color-2: #9c9c9c;
 }
 
-$chart-height: 25ex;
+// $chart-height: 30ex;
+$chart-height: 50ex;
 
 h1#title {
   padding-top: 10px;
@@ -41,10 +42,11 @@ h1#title {
 .key-stats-box {
   display: flex;
   flex-direction: column;
-  padding: 1ex 1ex 1ex 1ex;
+  padding: 0.5ex 0ex 0ex 0ex;
   align-items: center;
   height: 100%;
   border-right: 1px dashed;
+  width: 18ex;
 }
 
 .key-stats-item-row {
@@ -88,23 +90,23 @@ h1#title {
 
 .key-stats-primary {
   text-align: center;
-  font-size: 1.3em;
+  font-size: 1.3rem;
   margin-bottom: 0.25ex;
 }
 
 .key-stats-value-actuals {
-  font-size: 2.5ex;
+  font-size: 1.2rem;
   font-weight: bold;
   color: var(--highcharts-color-1);
 }
 
 .key-stats-value-budget {
-  font-size: 1.8ex;
+  font-size: 1.2rem;
   color: var(--highcharts-color-2);
 }
 
 .key-stats-value-variance {
-  font-size: 1.8ex;
+  font-size: 1.2rem;
 }
 
 .key-stats-secondary {
