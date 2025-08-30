@@ -9,9 +9,12 @@ const CACHE_BUCKET = "sps-by-the-numbers-public";
 const bigqueryClient = new BigQuery();
 const storageClient = new Storage();
 
+// Change this to force cache invalidaiton of results for queries.
+const CACHE_BREAK_SALT = 'a';
+
 
 function sha256(str) {
-  return crypto.createHash('sha256').update(str).digest('hex');
+  return crypto.createHash('sha256').update(str + CACHE_BREAK_SALT).digest('hex');
 }
 
 function makeCachePaths(ccddd, dataset, query) {

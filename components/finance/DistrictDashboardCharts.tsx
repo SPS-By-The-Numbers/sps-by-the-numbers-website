@@ -95,26 +95,12 @@ function danfoToJsonOptions(df: DataFrame) {
 }
 
 function makeDashboardDatapool(districtData: DistrictData) {
-
   return {
     connectors: [
       {
         id: 'c-toplevel-metrics',
         type: 'JSON',
         options: danfoToJsonOptions(districtData.toplevel_metrics()),
-      },
-      {
-        id: 'c-spend-type',
-        type: 'JSON',
-        options: {
-          firstRowAsNames: false,
-          columnNames: ["Spend Type", "Budget", "Actuals"],
-          data: [
-            ['Non-Compensation Spending', 175420766.00, 204390909.24],
-            ['School-allocated Staffing', 634579723.00, 620153637.87],
-            ['"District Office" Staffing', 362568512.00, 313743583.96],
-          ],
-        },
       },
     ],
   };
@@ -165,18 +151,15 @@ function makeDashboardGui() {
           {
             cells: [
               {
-                id: 'deficit-non-teaching-fte-correlation',
+                id: 'deficit-student-support-fte-correlation',
               },
               {
-                id: 'deficit-student-support-fte-correlation',
+                id: 'deficit-building-support-fte-correlation',
               },
             ]
           },
           {
             cells: [
-              {
-                id: 'deficit-building-support-fte-correlation',
-              },
               {
                 id: 'deficit-other-fte-correlation',
               },
@@ -191,20 +174,6 @@ function makeDashboardGui() {
                 id: 'key-expenditures-pct',
               }
             ],
-          },
-          {
-            cells: [
-              {
-                id: 'per-pupil-expenditure',
-              },
-            ]
-          },
-          {
-            cells: [
-              {
-                id: 'expenditure-detail',
-              },
-            ]
           },
         ],
       },
@@ -303,6 +272,7 @@ function makeCorrelationGraph(target_id, title, yMetric, xMetric,
         type:'scatter',
       },
       yAxis: {
+        title: { text: '# students Headcount maybe?'},
         startOnTick: true,
         endOnTick: true,
         showLastLabel: true,
@@ -365,8 +335,6 @@ function makeCorrelationGraph(target_id, title, yMetric, xMetric,
       );
     }
   }
-  console.log(result);
-
   return result;
 }
 
@@ -388,15 +356,15 @@ function makeDashboardConfig(districtData : DistrictData) {
       makeCorrelationGraph('deficit-enrollment-correlation', 'Deficit-Enrollment Correlation',
                            'cashflow', 'enrollment'),
       makeCorrelationGraph('deficit-teaching-fte-correlation', 'Deficit-Teaching FTE Correlation',
-                           'cashflow', 'teaching_fte', ['actuals'], ['actuals']),
-
-      makeCorrelationGraph('deficit-non-teaching-fte-correlation', 'Deficit-Other Staff FTE Correlation',
-                           'cashflow', 'non_teaching_fte', ['actuals'], ['actuals']),
+                           'enrollment', 'teaching_fte', ['actuals'], ['actuals']),
 
       makeCorrelationGraph('deficit-student-support-fte-correlation', 'Deficit-Student Support FTE Correlation',
-                           'cashflow', 'student_support_fte', ['actuals'], ['actuals']),
+                           'enrollment', 'student_support_fte', ['actuals'], ['actuals']),
       makeCorrelationGraph('deficit-building-support-fte-correlation', 'Deficit-Building Support FTE Correlation',
-                           'cashflow', 'building_support_fte', ['actuals'], ['actuals']),
+                           'enrollment', 'building_support_fte', ['actuals'], ['actuals']),
+      makeCorrelationGraph('deficit-other-fte-correlation', 'Deficit-Other Staff FTE Correlation',
+                           'enrollment', 'non_teaching_fte', ['actuals'], ['actuals']),
+
       makeExpenditureGraph('key-expenditures-amt', 'amt'),
       makeExpenditureGraph('key-expenditures-pct', 'pct_expenditure'),
     ],

@@ -286,8 +286,8 @@ export default class DistrictData {
     const expenditures_df = financeGroupSumAmount("expenditures", this.gf_expenditure_df);
     const revenues_df = financeGroupSumAmount("revenues", this.gf_revenue_df);
 
-    // Put expenses + revenues onto one sheet dropping missing years.
-    let merged_df = this.merge(expenditures_df, revenues_df, FINANCE_GROUP_BY);
+    // Put expenses + revenues onto one sheet preserving incomplete years.
+    let merged_df = this.merge(expenditures_df, revenues_df, FINANCE_GROUP_BY, 'outer');
 
     // Calculate cashflow.
     merged_df = merged_df.addColumn("cashflow", merged_df["revenues"].sub(merged_df["expenditures"]));
@@ -305,11 +305,20 @@ export default class DistrictData {
         .sum();
     k12EnrollmentActuals.rename({ 'amount_sum': `enrollment_actuals` }, { axis: 1, inplace: true });
 
-    // 314 is the item code for total K-12 enrollment FTE in the F195.
+    // K-12 FTE from the p223 confusingly is NOT the
+    // "Total K-12 FTE Enrollment Counts" (item code 314) in the F195.
+    //
+    // Item 314 in F195 includes also the Running Start and Drop Out Reengagement.
+    //
+    // The equivalent number from the F195 is actually the sum of these two item codes
+    //  327 - Subtotal K-12
+    //  148 - ALE Enrollment
     const k12EnrollmentBudget = this.budget_items_df.query(
-      this.budget_items_df['item_code'].eq(314)).
-        loc({columns: ['amount', 'class_of']}).
-        rename({amount: 'enrollment_budget'}, {axis:1});
+      this.budget_items_df['item_code'].eq(327).or(
+          this.budget_items_df['item_code'].eq(148)))
+        .groupby(['class_of']).col(['amount'])
+        .sum()
+        .rename({amount_sum: 'enrollment_budget'}, {axis:1});
 
     const k12Enrollment = this.merge(k12EnrollmentActuals, k12EnrollmentBudget,
                                      ["class_of"], "outer");
