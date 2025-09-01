@@ -5,6 +5,7 @@ import merge from 'lodash.merge';
 import { baselineClassOfChartOptions } from "utilities/highcharts/defaults";
 import { useDanfo } from 'components/providers/DanfoProvider';
 import { useEffect } from 'react';
+import { useFinanceNavState } from 'components/providers/FinanceNavStateProvider';
 import { useHighcharts } from 'components/providers/HighchartsProvider';
 import BudgetActualsHistoryComponents from "utilities/highcharts/panels/BudgetActualsHistoryComponents";
 import DistrictData from "utilities/DistrictData";
@@ -376,7 +377,8 @@ async function loadData(dfd, dashboards, ccddd) {
   dashboards.board('dashboard-charts-container', makeDashboardConfig(districtData));
 }
 
-export default function DistrictDashboardCharts({ccddd}) {
+export default function DistrictDashboardCharts() {
+  const {ccddd} = useFinanceNavState();
   const { highchartsObjs } = useHighcharts();
   const { dfd } = useDanfo();
   useEffect(() => {

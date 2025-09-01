@@ -21,12 +21,10 @@ type Params = {
 };
 
 export default function DistrictDashboard({districts} : Params) {
-  const [ccddd, setCcddd] = useState<number>(17001);
-
   return (
     <>
-      <FinanceNav districts={districts} ccddd={ccddd} onCcdddChange={v => setCcddd(v)} />
-      <DistrictDashboardCharts ccddd={ccddd} />
+      <FinanceNav districts={districts} />
+      <DistrictDashboardCharts />
     </>
   )
 }

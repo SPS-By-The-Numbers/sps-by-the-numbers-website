@@ -1,6 +1,7 @@
-import DistrictDashboard from 'components/finance/DistrictDashboard';
 import { fetchDatasetStream } from 'utilities/DistrictData';
 import { parse } from "csv-parse/sync";
+import DistrictDashboard from 'components/finance/DistrictDashboard';
+import FinanceNavStateProvider from 'components/providers/FinanceNavStateProvider';
 
 import type { DistrictsMap } from 'components/finance/DistrictDashboard';
 
@@ -18,6 +19,8 @@ export default async function FinancePage() {
   }
 
   return (
-    <DistrictDashboard districts={districts} />
+    <FinanceNavStateProvider initialCcddd={17001}>
+      <DistrictDashboard districts={districts} />
+    </FinanceNavStateProvider>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react';
+import { useFinanceNavState } from 'components/providers/FinanceNavStateProvider';
 import AppBar from '@mui/material/AppBar';
 import Autocomplete from '@mui/material/Autocomplete';
 import FormControl from '@mui/material/FormControl';
@@ -14,8 +15,6 @@ import type { DistrictsMap } from 'components/finance/DistrictDashboard';
 
 type Params = {
   districts: DistrictsMap;
-  ccddd: number;
-  onCcdddChange: (int) => void;
   sx?: SxProps<Theme>;
 };
 
@@ -37,7 +36,8 @@ function makeDistrictOptions(districts : DistrictsMap) {
   return options;
 }
 
-export default function FinanceNav({districts, ccddd, onCcdddChange, sx=[]} : Params) {
+export default function FinanceNav({districts, sx=[]} : Params) {
+  const {ccddd, setCcddd} = useFinanceNavState();
   const districtOptions = makeDistrictOptions(districts);
   const districtsByName = Object.fromEntries(
     Object.entries(districts).map(([k, v]) => [v['district'], k]));
