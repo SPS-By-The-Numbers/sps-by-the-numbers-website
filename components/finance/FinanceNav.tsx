@@ -4,6 +4,7 @@ import { useState } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Autocomplete from '@mui/material/Autocomplete';
 import FormControl from '@mui/material/FormControl';
+import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
@@ -52,30 +53,39 @@ export default function FinanceNav({districts, ccddd, onCcdddChange, sx=[]} : Pa
             alignItems: "center",
             justifyContent: "space-between",
           }}>
-
-        <Autocomplete
-          disableClearable
-          value={{label: districts[ccddd].district,  value: String(ccddd)}}
-          options={ districtOptions }
-          onChange={(_event, newValue) => onCcdddChange(parseInt(newValue.value))}
-          renderInput={
-            (params) => (
-              <TextField
-                sx={{input: {textAlign: "center"}}}
-                {...params}
-              />)
-          }
-          sx={[
-            {
-              width: "100%",
-              bgcolor: 'primary.main',
-              "& .MuiOutlinedInput-root": {
-                color: 'primary.contrastText',
+        <Stack direction="row" spacing={4}>
+          <div>
+            Summary
+          </div>
+          <div>
+            Enrollment
+          </div>
+          <Autocomplete
+            disableClearable
+            value={{label: districts[ccddd].district,  value: String(ccddd)}}
+            options={ districtOptions }
+            onChange={(_event, newValue) => onCcdddChange(parseInt(newValue.value))}
+            renderInput={
+              (params) => (
+                <TextField
+                  sx={{input: {textAlign: "center"}}}
+                  {...params}
+                />
+              )
+            }
+            sx={[
+              {
+                width: "100%",
+                minWidth: "40rex",
+                bgcolor: 'primary.main',
+                "& .MuiOutlinedInput-root": {
+                  color: 'primary.contrastText',
+                },
               },
-            },
-            ...(Array.isArray(sx) ? sx : [sx])
-          ]}
-        />
+              ...(Array.isArray(sx) ? sx : [sx])
+            ]}
+          />
+        </Stack>
       </Toolbar>
     </AppBar>
   );
