@@ -53,7 +53,7 @@ export default function FinanceNav({districts, ccddd, onCcdddChange, sx=[]} : Pa
             alignItems: "center",
             justifyContent: "space-between",
           }}>
-        <Stack direction="row" spacing={4}>
+        <Stack direction="row" spacing={4} sx={{alignItems: "center"}}>
           <div>
             Summary
           </div>
