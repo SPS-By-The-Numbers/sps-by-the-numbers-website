@@ -1,4 +1,4 @@
-export const isProduction = process.env.NODE_ENV === 'production';
+export const isProduction = true;
 
 export const SITE_ROOT_URL = 'https://app.sps-by-the-numbers.com';
 export const HOME_URL = 'https://sps-by-the-numbers.com';
