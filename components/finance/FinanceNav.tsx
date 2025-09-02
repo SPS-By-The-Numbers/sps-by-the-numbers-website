@@ -53,7 +53,7 @@ export default function FinanceNav({sx=[]} : Params) {
             alignItems: "center",
             justifyContent: "space-between",
           }}>
-        <Stack direction="row" spacing={4}>
+        <Stack direction="row" spacing={4} sx={{alignItems: "center"}}>
           <div>
             Summary
           </div>
