@@ -1,7 +1,8 @@
-import merge from 'lodash.merge';
-import { BUDGET_ACTUALS_MODE } from 'utilities/highcharts/components/KeyStatsComponent';
-
+import ReactDOMServer from 'react-dom/server';
+import BudgetActualsStats from "components/finance/BudgetActualsStats";
 import { baselineHighchartsCell } from "utilities/highcharts/defaults";
+import { BUDGET_ACTUALS_MODE } from 'utilities/highcharts/components/KeyStatsComponent';
+import merge from 'lodash.merge';
 
 export type BudgetActualsHistoryComponentsOptions = {
   title : string;
@@ -43,6 +44,10 @@ export default class BudgetActualsHistoryComponents {
   }
 
   private makeChartCell(options : BudgetActualsHistoryComponentsOptions) {
+    const myDiv = document.createElement('div');
+    const captionHtml = ReactDOMServer.renderToStaticMarkup(<BudgetActualsStats />);
+
+
     const budgetColumn = `${options.metricColumnRoot}_budget`;
     const actualsColumn = `${options.metricColumnRoot}_actuals`;
     return merge(
@@ -63,7 +68,9 @@ export default class BudgetActualsHistoryComponents {
           ],
         },
         chartOptions: {
-          title: null,
+          title: {
+            text: options.title
+          },
           yAxis: {
             title: {
               text: options.yUnits
@@ -84,7 +91,7 @@ export default class BudgetActualsHistoryComponents {
           ],
           legend: {
             layout: 'horizontal',
-            verticalAlign: 'top',
+            verticalAlign: 'bottom',
             align: 'left',
             enabled: true,
           },
@@ -98,9 +105,14 @@ export default class BudgetActualsHistoryComponents {
           tooltip: {
             shared: true,
             ...options.tooltip
+          },
+          caption: {
+            text: captionHtml,
+            useHTML: true,
+            align: 'right', // or 'center', 'right'
           }
         }
-      }
+      },
     );
   }
 }

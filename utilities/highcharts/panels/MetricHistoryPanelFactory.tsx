@@ -9,7 +9,6 @@ type MetricHistoryComponents = {
 
 export default class MetricHistoryPanelFactory {
   private metricName: string;
-  private title: string;
   private components: MetricHistoryComponents;
 
   constructor(options : MetricHistoryPanelFactoryOptions, components: MetricHistoryComponents) {
@@ -27,14 +26,10 @@ export default class MetricHistoryPanelFactory {
           rowClassName: `metric-history-row ${this.metricName}-metric-history-row`,
           rows: [
             {
-              cells: [{ id: `${this.metricName}-metric-history-header` }]
-            },
-            {
               cells: [
-                { id: `${this.metricName}-metric-history-key-stats`, style: { maxWidth: '15em' } },
                 { id: `${this.metricName}-metric-history-chart`, },
               ]
-            },
+            }
           ],
         },
       }],
@@ -43,10 +38,6 @@ export default class MetricHistoryPanelFactory {
 
   makeComponents() {
     return [
-        {
-          cell: `${this.metricName}-metric-history-key-stats`,
-          ...this.components.keyStatsCell,
-        },
         {
           cell: `${this.metricName}-metric-history-chart`,
           ...this.components.chartCell,

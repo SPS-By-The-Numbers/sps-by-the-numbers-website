@@ -1,3 +1,6 @@
+@use "budget-actuals-stats.scss";
+@use "hc-metric-history-panel.scss";
+
 @import url('https://code.highcharts.com/css/highcharts.css');
 @import url('https://code.highcharts.com/dashboards/css/datagrid.css');
 @import url('https://code.highcharts.com/dashboards/css/dashboards.css');
@@ -7,9 +10,6 @@
   --highcharts-color-1: #38b9ff;
   --highcharts-color-2: #9c9c9c;
 }
-
-// $chart-height: 30ex;
-$chart-height: 45ex;
 
 h1#title {
   padding-top: 10px;
@@ -36,117 +36,6 @@ h1#title {
 
 // Make all charts short..
 .highcharts-container {
-  height: $chart-height;
+  height: 35ex;
 }
 
-.key-stats-box {
-  display: flex;
-  flex-direction: column;
-  padding: 0.5ex 0ex 0ex 0ex;
-  align-items: center;
-  height: 100%;
-  border-right: 1px dashed;
-  width: 18ex;
-}
-
-.key-stats-item-row {
-  gap: 1ex;
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  text-align: 'center';
-}
-
-.key-stats-item {
-  display: flex;
-  flex-direction: column;
-
-  text-align: center;
-
-  line-height: 1.1;
-  padding-bottom: 1ex;
-}
-
-.key-stats-value {
-  font-size: .8em;
-}
-
-.key-stats-label {
-  font-size: .5em;
-}
-
-.key-stats-subvalue {
-  color: #f4d06f;
-  width: 100%;
-}
-
-.key-stats-variance-positive {
-  color: #00cc00;
-}
-
-.key-stats-variance-negative {
-  color: #e60000;
-}
-
-.key-stats-primary {
-  text-align: center;
-  font-size: 1.3rem;
-  margin-bottom: 0.25ex;
-}
-
-.key-stats-value-actuals {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: var(--highcharts-color-1);
-}
-
-.key-stats-value-budget {
-  font-size: 1.2rem;
-  color: var(--highcharts-color-2);
-}
-
-.key-stats-value-variance {
-  font-size: 1.2rem;
-}
-
-.key-stats-secondary {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-
-  gap: 1em;
-
-  justify-content: space-between;
-
-  color: grey;
-}
-
-.metric-history-header.highcharts-dashboards-component {
-  border-radius: 0px;
-  border-bottom: 1px solid lightgrey;
-  margin: 0px 0px 0px 0px;
-}
-
-.key-stats-title {
-  text-align: center;
-  font-size: 1.4em;
-  font-weight: bold;
-  padding-bottom: 0px;
-  margin-bottom: 0.75ex;
-  border-bottom: 1px solid grey;
-}
-
-.metric-history-cell .highcharts-dashboards-component {
-  box-shadow: none;
-}
-
-.metric-history-cell.highcharts-dashboards-cell {
-  box-shadow: none;
-  border: none;
-}
-
-.metric-history-row.highcharts-dashboards-layout {
-  box-shadow: 0 2px 2px -2px gray;
-  margin-bottom: 0px;
-  margin-top: 0px;
-}
