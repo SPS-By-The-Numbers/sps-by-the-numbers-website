@@ -36,8 +36,8 @@ function makeDistrictOptions(districts : DistrictsMap) {
   return options;
 }
 
-export default function FinanceNav({districts, sx=[]} : Params) {
-  const {ccddd, setCcddd} = useFinanceNavState();
+export default function FinanceNav({sx=[]} : Params) {
+  const {ccddd, setCcddd, districts} = useFinanceNavState();
   const districtOptions = makeDistrictOptions(districts);
   const districtsByName = Object.fromEntries(
     Object.entries(districts).map(([k, v]) => [v['district'], k]));

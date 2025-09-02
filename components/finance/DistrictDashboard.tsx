@@ -14,18 +14,14 @@ type DistrictInfo = {
   district_code: number;
 };
 
-export type DistrictsMap = Map<number, DistrictInfo>;
 
 type Params = {
   districts: DistrictsMap;
 };
 
-export default function DistrictDashboard({districts} : Params) {
+export default function DistrictDashboard() {
   return (
-    <>
-      <FinanceNav districts={districts} />
-      <DistrictDashboardCharts />
-    </>
+    <DistrictDashboardCharts />
   )
 }
 

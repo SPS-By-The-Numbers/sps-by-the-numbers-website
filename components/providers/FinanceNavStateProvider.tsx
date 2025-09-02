@@ -4,12 +4,17 @@ import { createContext, useContext, useState, useMemo } from 'react';
 
 import type { React } from 'react';
 
+export type DistrictsMap = Map<number, DistrictInfo>;
+
 type FinanceNavStateContextType = {
   ccddd: number;
   setCcddd: (ccddd: number) => void;
+  districts: DistrictsMap,
 };
 
 type FinanceNavStateProviderParams = {
+  initialCcddd: number;
+  districts: DistrictsMap;
   children: React.ReactNode;
 };
 
@@ -25,10 +30,10 @@ export function useFinanceNavState() {
   return context;
 }
 
-export default function FinanceNavStateProvider({initialCcddd, children}: FinanceNavStateProviderParams) {
+export default function FinanceNavStateProvider({initialCcddd, districts, children}: FinanceNavStateProviderParams) {
   const [ccddd, setCcddd] = useState<CcdddId>(initialCcddd);
 
-  const value = useMemo(() => ({ccddd, setCcddd}), [ccddd]);
+  const value = useMemo(() => ({ccddd, setCcddd, districts}), [ccddd, districts]);
  
   return (
     <FinanceNavStateContext.Provider value={value}>
