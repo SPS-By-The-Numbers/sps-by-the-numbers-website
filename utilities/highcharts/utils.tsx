@@ -1,14 +1,16 @@
-export const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  notation: 'compact',
-  compactDisplay: 'short',
-  maximumFractionDigits: 0,
-}).format;
+export function makeCurrencyFormatter(precision) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    notation: 'compact',
+    compactDisplay: 'short',
+    maximumFractionDigits: precision,
+  }).format;
+}
 
 // Converts a danfo dataframe into a set of rows for a Highcharts DataTable.
-export function danfoToJsonOptions(df: DataFrame) {
-  const new_df = df.round(2);
+export function danfoToJsonOptions(df: DataFrame, precision: number) {
+  const new_df = df.round(precision);
   new_df.addColumn(
     'covid_shape',
     new_df["class_of"].apply((year) => {
