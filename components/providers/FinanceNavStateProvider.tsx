@@ -2,7 +2,13 @@
  
 import { createContext, useContext, useState, useMemo } from 'react';
 
-import type { React } from 'react';
+import type { ReactNode } from 'react';
+
+export type DistrictInfo = {
+  district: string;
+  county_code: number;
+  district_code: number;
+};
 
 export type DistrictsMap = Map<number, DistrictInfo>;
 
@@ -15,7 +21,7 @@ type FinanceNavStateContextType = {
 type FinanceNavStateProviderParams = {
   initialCcddd: number;
   districts: DistrictsMap;
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 // Pattern from https://stackoverflow.com/a/74174425
@@ -31,7 +37,7 @@ export function useFinanceNavState() {
 }
 
 export default function FinanceNavStateProvider({initialCcddd, districts, children}: FinanceNavStateProviderParams) {
-  const [ccddd, setCcddd] = useState<CcdddId>(initialCcddd);
+  const [ccddd, setCcddd] = useState<number>(initialCcddd);
 
   const value = useMemo(() => ({ccddd, setCcddd, districts}), [ccddd, districts]);
  

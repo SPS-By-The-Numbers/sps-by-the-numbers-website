@@ -1,6 +1,7 @@
 'use client'
 
 import { baselineClassOfChartOptions } from "utilities/highcharts/defaults";
+import { danfoToJsonOptions } from "utilities/highcharts/utils";
 import { useDanfo } from 'components/providers/DanfoProvider';
 import { useEffect } from 'react';
 import { useFinanceNavState } from 'components/providers/FinanceNavStateProvider';
@@ -11,16 +12,19 @@ import DistrictData from "utilities/DistrictData";
 import merge from 'lodash.merge';
 
 import type { DataFrame } from "danfojs";
+import type { BudgetActualsChartOptions } from "utilities/highcharts/cells/BudgetActualsChart";
+import type { PctAmtChartOptions } from "utilities/highcharts/cells/PctAmtChart";
 import type Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
 
 import "styles/hc-ba-history.scss"
 
+// TODO: This needs dedupping with DistrictData.
 const DEFAULT_PRECISION = 2;
 
-const rowCellConfigs = [
+const rowCellConfigs : Array<BudgetActualsChartOptions> = [
   {
     title: 'Enrollment',
-    cellId: 'enrollment-ba-history-chart',
+    renderTo: 'enrollment-ba-history-chart',
     metricColumnRoot: 'enrollment',
     connectorId: 'c-toplevel-metrics',
     xDataColumn: 'class_of',
@@ -31,12 +35,13 @@ const rowCellConfigs = [
   },
   {
     title: 'Cashflow',
-    cellId: 'cashflow-ba-history-chart',
+    renderTo: 'cashflow-ba-history-chart',
     metricColumnRoot: 'cashflow',
     connectorId: 'c-toplevel-metrics',
     xDataColumn: 'class_of',
 
     valueFormat: 'currency',
+    precision: DEFAULT_PRECISION,
     yUnits: '$',
 
     tooltip: {
@@ -45,64 +50,30 @@ const rowCellConfigs = [
   },
   {
     title: 'Staffing',
-    cellId: 'staffing-ba-history-chart',
+    renderTo: 'staffing-ba-history-chart',
     metricColumnRoot: 'staff_fte',
     connectorId: 'c-toplevel-metrics',
     xDataColumn: 'class_of',
 
     valueFormat: 'decimal',
+    precision: DEFAULT_PRECISION,
     yUnits: 'FTE',
   },
 ];
 
-const pctAmtRowCellConfigs = [
+const pctAmtRowCellConfigs : Array<PctAmtChartOptions> = [
   {
     title: 'Teaching Related Comp',
-    cellId: 'teaching-related-ba-history-chart',
+    renderTo: 'teaching-related-ba-history-chart',
     metricColumnRoot: 'teaching_related_comp',
     connectorId: 'c-toplevel-metrics',
     xDataColumn: 'class_of',
 
     valueFormat: 'percentage',
+    precision: DEFAULT_PRECISION,
     yUnits: 'FTE',
   },
 ];
-
-// Converts a danfo dataframe into a set of rows for a Highcharts DataTable.
-function danfoToJsonOptions(df: DataFrame) {
-  const new_df = df.round(2);
-  new_df.addColumn(
-    'covid_shape',
-    new_df["class_of"].apply((year) => {
-      if (year < 2020) {
-        return 'triangle-down';
-      } else if (year < 2022) {
-        return 'square';
-      } else {
-        return 'triangle';
-      }
-    }),
-    { inplace: true }
-  );
-
-  return {
-    firstRowAsNames: false,
-    columnNames: new_df.columns,
-    data: new_df.values,
-  };
-}
-
-function makeDashboardDatapool(districtData: DistrictData) {
-  return {
-    connectors: [
-      {
-        id: 'c-toplevel-metrics',
-        type: 'JSON',
-        options: danfoToJsonOptions(districtData.toplevel_metrics(), DEFAULT_PRECISION),
-      },
-    ],
-  };
-}
 
 // Main question per district is how it has changed over time.
 //
@@ -126,12 +97,12 @@ function makeDashboardGui() {
     layouts: [
       {
         rows: [
-          ...rowCellConfigs.map(c => ({cells:[{id:c.cellId}]})),
+          ...rowCellConfigs.map(c => ({cells:[{id:c.renderTo}]})),
           ...pctAmtRowCellConfigs.map(c => (
             {
               cells:[
-                {id: `${c.cellId}-pct`},
-                {id: `${c.cellId}-amt`},
+                {id: `${c.renderTo}-pct`},
+                {id: `${c.renderTo}-amt`},
               ]
             })),
         ],
@@ -153,7 +124,7 @@ function makeDashboardConfig(districtData : DistrictData) {
         items: ['editMode'],
       },
     },
-    dataPool: makeDashboardDatapool(districtData),
+    dataPool: districtData.toplevel_metrics_datapool(),
     gui: makeDashboardGui(),
     components: [
       ...rowCellConfigs.map(c => makeBudgetActualsChart(c)),
@@ -180,3 +151,17 @@ export default function SummaryDashboard() {
   return (<div id="dashboard-charts-container" />);
 }
 
+/*
+ * -  const yAxis = {};
+-  const tooltip = {};
+-  if (pct_or_amt == 'pct_expenditure') {
+-    yAxis['min'] = 0;
+-    yAxis['max'] = 1;
+-    yAxis['title'] = {'text': "% of Expenditure"};
+-    yAxis['labels'] = {'formatter': pctFormater };
+-    tooltip['formatter'] = function() { return `${(this.y * 100).toFixed(1)}%` };
+-  } else {
+-    yAxis['title'] = {'text': "$"};
+-    tooltip['valuePrefix'] = '$';
+-  }
+*/

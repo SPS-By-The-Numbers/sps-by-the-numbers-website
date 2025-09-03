@@ -1,22 +1,22 @@
 import makeBudgetActualsChart from "utilities/highcharts/cells/BudgetActualsChart";
 
-import type { BudgetActualsHistoryOptions } from "utilities/highcharts/cells/BudgetActualsChart";
+import type { BudgetActualsChartOptions } from "utilities/highcharts/cells/BudgetActualsChart";
 
-type PctAmtOptions = BudgetActualsHistoryOptions;
+export type PctAmtChartOptions = BudgetActualsChartOptions;
 
-export default function makePctAmtChart(options : PctAmtOptions) {
+export default function makePctAmtChart(options : PctAmtChartOptions) {
   return [
     makeBudgetActualsChart(
       {
         ...options,
-        cellId: `${options.cellId}-amt`,
+        renderTo: `${options.renderTo}-amt`,
         metricSuffix: 'amt'
       }),
     makeBudgetActualsChart(
       {
         ...options,
-        cellId: `${options.cellId}-pct`,
-        metricSuffix: 'pct_expenditure'
+        renderTo: `${options.renderTo}-pct`,
+        metricSuffix: 'pct_expenditure',
       }),
   ];
 }

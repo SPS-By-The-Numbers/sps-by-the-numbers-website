@@ -6,12 +6,13 @@ import merge from 'lodash.merge';
 
 type ValueFormat =  'currency' | 'decimal' | 'passthru' | 'percentage';
 
-export type BudgetActualsHistoryOptions = {
+export type BudgetActualsChartOptions = {
   title : string;
   metricColumnRoot: string;
   connectorId : string;
   xDataColumn : string;
   metricSuffix?: string;
+  renderTo: string;
 
   precision: number;
   valueFormat: ValueFormat;
@@ -42,7 +43,7 @@ function getSeriesAsDf(series, name, xMin, xMax) {
 
 // Generate a <td> labeled based on the stat value.
 function generateColoredTd(value, valueFormatter) {
-  const classes = [];
+  const classes = new Array<string>;
   if (value > 0) {
     classes.push('ba-chartstats-good');
   } else if (value < 0) {
@@ -94,11 +95,11 @@ function generateVarianceCaption(name, series, valueFormatter, minX, maxX) {
 function getFormatter(format : ValueFormat, precision) {
   switch(format) {
     case 'decimal':
-      return d => Math.round(d, precision);
+      return d => d.toFixed(precision);
     case 'currency':
       return makeCurrencyFormatter(precision);
     case 'percentage':
-      return d => Math.round(d * 100, precision);
+      return d => (d * 100).toFixed(precision);
     case 'passthru':
       return x => x;
   }
@@ -113,7 +114,7 @@ function getColumnName(metricColumnRoot, suffix) {
 }
 
 // Create the a chart cell definition graphic budgets vs actuals.
-export default function makeBudgetActualsChart(options : BudgetActualsHistoryOptions) {
+export default function makeBudgetActualsChart(options : BudgetActualsChartOptions) {
   const {budgetColumn, actualsColumn} = getColumnName(options.metricColumnRoot, options.metricSuffix);
 
   const valueFormatter = getFormatter(options.valueFormat, options.precision);
@@ -122,7 +123,7 @@ export default function makeBudgetActualsChart(options : BudgetActualsHistoryOpt
     {},
     baselineHighchartsCell,
     {
-      renderTo: options.cellId,
+      renderTo: options.renderTo,
       connector: {
         id: options.connectorId,
         columnAssignment: [

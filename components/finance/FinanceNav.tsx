@@ -12,10 +12,9 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 
 import type { SxProps, Theme } from '@mui/material';
-import type { DistrictsMap } from 'components/finance/DistrictDashboard';
+import type { DistrictsMap } from 'components/providers/FinanceNavStateProvider';
 
 type Params = {
-  districts: DistrictsMap;
   sx?: SxProps<Theme>;
 };
 

@@ -1,4 +1,6 @@
-export function makeCurrencyFormatter(precision) {
+import type { DataFrame } from 'danfojs';
+
+export function makeCurrencyFormatter(precision : number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",

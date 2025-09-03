@@ -3,6 +3,9 @@ import { fetchEndpoint } from 'utilities/client/endpoint';
 
 import type { DataFrame } from 'danfojs';
 
+// TODO: This needs dedupping with SummaryDashboard.
+const DEFAULT_PRECISION = 2;
+
 const YEAR_GROUP_BY = ["class_of"];
 const FINANCE_GROUP_BY = ["data_type", ...YEAR_GROUP_BY];
 
@@ -371,7 +374,7 @@ export default class DistrictData {
         {
           id: 'c-toplevel-metrics',
           type: 'JSON',
-          options: danfoToJsonOptions(this.toplevel_metrics()),
+          options: danfoToJsonOptions(this.toplevel_metrics(), DEFAULT_PRECISION),
         },
       ],
     };
