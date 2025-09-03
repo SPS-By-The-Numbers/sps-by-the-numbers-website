@@ -6,6 +6,10 @@ import FinanceNavStateProvider from 'components/providers/FinanceNavStateProvide
 import type { ReactNode } from 'react';
 import type { DistrictsMap } from 'components/providers/FinanceNavStateProvider.tsx';
 
+export async function generateStaticParams() {
+  return [{ ccddd: '17001' }];
+}
+
 export default async function FinanceLayout({ children }: {children: ReactNode}) {
   const csvString = await new Response(await fetchDatasetStream('domain', 'ccddd')).text();
   const districtRecords = parse(csvString, { columns: true, skip_empty_lines: true});
