@@ -5,7 +5,7 @@ import { useFinanceNavState } from 'components/providers/FinanceNavStateProvider
 import AppBar from '@mui/material/AppBar';
 import Autocomplete from '@mui/material/Autocomplete';
 import FormControl from '@mui/material/FormControl';
-import Link from 'next/link';
+import NavLink from 'components/NavLink';
 import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -55,10 +55,13 @@ export default function FinanceNav({sx=[]} : Params) {
           }}>
         <Stack direction="row" spacing={4} sx={{alignItems: "center"}}>
           <div>
-            <Link href={`/finance/${ccddd}/summary`}>Summary</Link>
+            <NavLink href={`/finance/${ccddd}/summary`}>Summary</NavLink>
           </div>
           <div>
-            <Link href={`/finance/${ccddd}/enrollment`}>Enrollment</Link>
+            <NavLink href={`/finance/${ccddd}/enrollment`}>Enrollment</NavLink>
+          </div>
+          <div>
+            <NavLink href={`/finance/${ccddd}/expenditures`}>Expenditures</NavLink>
           </div>
           <Autocomplete
             disableClearable
