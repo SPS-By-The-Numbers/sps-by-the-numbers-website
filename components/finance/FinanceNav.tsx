@@ -5,6 +5,7 @@ import { useFinanceNavState } from 'components/providers/FinanceNavStateProvider
 import AppBar from '@mui/material/AppBar';
 import Autocomplete from '@mui/material/Autocomplete';
 import FormControl from '@mui/material/FormControl';
+import Link from 'next/link';
 import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -55,16 +56,16 @@ export default function FinanceNav({sx=[]} : Params) {
           }}>
         <Stack direction="row" spacing={4} sx={{alignItems: "center"}}>
           <div>
-            Summary
+            <Link href={`/finance/${ccddd}/summary`}>Summary</Link>
           </div>
           <div>
-            Enrollment
+            <Link href={`/finance/${ccddd}/enrollment`}>Enrollment</Link>
           </div>
           <Autocomplete
             disableClearable
             value={{label: districts[ccddd].district,  value: String(ccddd)}}
             options={ districtOptions }
-            onChange={(_event, newValue) => onCcdddChange(parseInt(newValue.value))}
+            onChange={(_event, newValue) => setCcddd(parseInt(newValue.value))}
             renderInput={
               (params) => (
                 <TextField

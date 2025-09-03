@@ -1,17 +1,18 @@
-type MetricHistoryPanelFactoryOptions = {
+type BudgetActualsHistoryPanelFactoryOptions = {
   metricName : string;
 };
 
-type MetricHistoryComponents = {
+type PanelConfig = {
   keyStatsCell: object;
   chartCell: object;
 };
 
-export default class MetricHistoryPanelFactory {
+// A BudgetActualsHistoryPanel is one row representing a metric.
+export default class BudgetActualsHistoryPanelFactory {
   private metricName: string;
-  private components: MetricHistoryComponents;
+  private components: PanelConfig;
 
-  constructor(options : MetricHistoryPanelFactoryOptions, components: MetricHistoryComponents) {
+  constructor(options : BudgetActualsHistoryPanelFactoryOptions, components: PanelConfig) {
     this.metricName = options.metricName;
     this.components = components;
   }
@@ -22,12 +23,12 @@ export default class MetricHistoryPanelFactory {
       cells: [{
         id: `${this.metricName}-panel`,
         layout: {
-          cellClassName: `metric-history-cell ${this.metricName}-metric-history-cell`,
-          rowClassName: `metric-history-row ${this.metricName}-metric-history-row`,
+          cellClassName: `ba-history-cell ${this.metricName}-ba-history-cell`,
+          rowClassName: `ba-history-row ${this.metricName}-ba-history-row`,
           rows: [
             {
               cells: [
-                { id: `${this.metricName}-metric-history-chart`, },
+                { id: `${this.metricName}-ba-history-chart`, },
               ]
             }
           ],
@@ -39,7 +40,7 @@ export default class MetricHistoryPanelFactory {
   makeComponents() {
     return [
         {
-          cell: `${this.metricName}-metric-history-chart`,
+          cell: `${this.metricName}-ba-history-chart`,
           ...this.components.chartCell,
         }
     ];

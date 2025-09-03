@@ -1,3 +1,4 @@
+import { danfoToJsonOptions } from "utilities/highcharts/utils";
 import { fetchEndpoint } from 'utilities/client/endpoint';
 
 import type { DataFrame } from 'danfojs';
@@ -362,6 +363,18 @@ export default class DistrictData {
     pct_expenditure = this.pivotBudgetActuals(pct_col_name, pct_expenditure, YEAR_GROUP_BY);
 
     return this.merge(amt, pct_expenditure);
+  }
+
+  toplevel_metrics_datapool() {
+    return {
+      connectors: [
+        {
+          id: 'c-toplevel-metrics',
+          type: 'JSON',
+          options: danfoToJsonOptions(this.toplevel_metrics()),
+        },
+      ],
+    };
   }
 
 };

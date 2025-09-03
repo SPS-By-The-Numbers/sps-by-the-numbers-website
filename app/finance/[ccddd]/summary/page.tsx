@@ -1,9 +1,7 @@
-import DistrictDashboard from 'components/finance/DistrictDashboard';
+import SummaryDashboard from './SummaryDashboard';
 
-export default async function SummaryPage({ params }: { params: Promise<{ ccddd: string }> }) {
-  const { ccddd } = await params;
-
+export default async function SummaryPage() {
   return (
-    <DistrictDashboard />
+    <SummaryDashboard />
   )
 }

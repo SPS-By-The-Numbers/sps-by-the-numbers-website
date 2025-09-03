@@ -19,8 +19,8 @@ type HighchartsProviderParams = {
 };
 
 const DEFAULT_OBJECT = {
-  highcharts: {},
-  dashboards: {}
+  highcharts: undefined,
+  dashboards: undefined
 };
 
 // This export circumvents React's Context system and doesn't follow the lifecycle
@@ -37,8 +37,6 @@ async function loadHighchartsModules() {
   const Dashboards = (await import(
     '@highcharts/dashboards/es-modules/masters/dashboards.src.js')).default;
   const DataGrid = (await import('@highcharts/dashboards/datagrid')).default;
-  const registerHighchartsComponents = (await import(
-    'utilities/highcharts/components/registerHighchartsComponents')).default;
 
   await import('@highcharts/dashboards/es-modules/masters/modules/layout.src.js');
 
@@ -54,7 +52,6 @@ async function loadHighchartsModules() {
   Dashboards.PluginHandler.addPlugin(Dashboards.HighchartsPlugin);
   Dashboards.PluginHandler.addPlugin(Dashboards.GridPlugin);
 
-  registerHighchartsComponents(Dashboards);
   g_highchartsObjs = { highcharts: Highcharts, dashboards: Dashboards };
   return g_highchartsObjs;
 }
@@ -73,14 +70,14 @@ export function useHighcharts() {
 export default function HighchartsProvider({ children }) {
   const [highchartsObjs, setHighchartsObjs] = useState<HighchartsObjects>(DEFAULT_OBJECT);
 
-  const value = useMemo(() => ({highchartsObjs, setHighchartsObjs}), [highchartsObjs]);
-
   useEffect(() => {
-    loadHighchartsModules().then(highchartsObjs => {
-      setHighchartsObjs(highchartsObjs);
+    loadHighchartsModules().then(objs => {
+      setHighchartsObjs(objs);
     });
   },
   []);
+
+  const value = useMemo(() => ({highchartsObjs, setHighchartsObjs}), [highchartsObjs]);
 
   return (
     <HighchartsContext.Provider value={value}>

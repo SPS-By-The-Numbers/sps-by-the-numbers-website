@@ -1,28 +1,26 @@
 'use client'
 
-import merge from 'lodash.merge';
-
 import { baselineClassOfChartOptions } from "utilities/highcharts/defaults";
 import { useDanfo } from 'components/providers/DanfoProvider';
 import { useEffect } from 'react';
 import { useFinanceNavState } from 'components/providers/FinanceNavStateProvider';
 import { useHighcharts } from 'components/providers/HighchartsProvider';
-import BudgetActualsHistoryComponents from "utilities/highcharts/panels/BudgetActualsHistoryComponents";
+import AmountOnlyBudgetActualsHistory from "utilities/highcharts/panels/AmountOnlyBudgetActualsHistory";
+import BudgetActualsHistoryPanel from "utilities/highcharts/panels/BudgetActualsHistoryPanel";
 import DistrictData from "utilities/DistrictData";
-import MetricHistoryPanelFactory from "utilities/highcharts/panels/MetricHistoryPanelFactory";
+import merge from 'lodash.merge';
 import SingleMetricHistoryComponents from "utilities/highcharts/panels/SingleMetricHistoryComponents";
 
+import type { DataFrame } from "danfojs";
 import type Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
 
-import type { DataFrame } from "danfojs";
+import "styles/hc-ba-history.scss"
 
-import "styles/district-dashboard.scss"
-
-const enrollmentPanelFactory = new MetricHistoryPanelFactory(
+const enrollmentPanelFactory = new BudgetActualsHistoryPanel(
   {
     metricName: 'enrollment',
   },
-  new BudgetActualsHistoryComponents({
+  new AmountOnlyBudgetActualsHistory({
     title: 'Enrollment',
     metricColumnRoot: 'enrollment',
     keyStatFormat: 'decimal',
@@ -35,11 +33,11 @@ const enrollmentPanelFactory = new MetricHistoryPanelFactory(
   })
 );
 
-const cashflowPanelFactory = new MetricHistoryPanelFactory(
+const cashflowPanelFactory = new BudgetActualsHistoryPanel(
   {
     metricName: 'cashflow',
   },
-  new BudgetActualsHistoryComponents({
+  new AmountOnlyBudgetActualsHistory({
     title: 'Cashflow',
     metricColumnRoot: 'cashflow',
     keyStatFormat: 'currency',
@@ -53,11 +51,11 @@ const cashflowPanelFactory = new MetricHistoryPanelFactory(
   })
 );
 
-const staffingPanelFactory = new MetricHistoryPanelFactory(
+const staffingPanelFactory = new BudgetActualsHistoryPanel(
   {
     metricName: 'staff_fte',
   },
-  new BudgetActualsHistoryComponents({
+  new AmountOnlyBudgetActualsHistory({
     title: 'Staffing',
     metricColumnRoot: 'staff_fte',
     keyStatFormat: 'decimal',
@@ -132,40 +130,6 @@ function makeDashboardGui() {
           enrollmentPanelFactory.makeLayout(),
           cashflowPanelFactory.makeLayout(),
           staffingPanelFactory.makeLayout(),
-          {
-            cells: [
-              {
-                id: 'cashflow',
-              },
-            ]
-          },
-          {
-            cells: [
-              {
-                id: 'deficit-enrollment-correlation',
-              },
-              {
-                id: 'deficit-teaching-fte-correlation',
-              },
-            ],
-          },
-          {
-            cells: [
-              {
-                id: 'deficit-student-support-fte-correlation',
-              },
-              {
-                id: 'deficit-building-support-fte-correlation',
-              },
-            ]
-          },
-          {
-            cells: [
-              {
-                id: 'deficit-other-fte-correlation',
-              },
-            ],
-          },
           {
             cells: [
               {
@@ -249,96 +213,6 @@ function makeExpenditureGraph(target_id, pct_or_amt) {
   };
 }
 
-function makeCorrelationGraph(target_id, title, yMetric, xMetric,
-                              ySeriesIds=['budget', 'actuals'],
-                              xSeriesIds=['budget', 'actuals'],
-                              colorIndexMap={
-                                actuals: 1,
-                                budget: 2,
-                              }) {
-  const result = {
-    connector: {
-      id: 'c-toplevel-metrics',
-      columnAssignment: [] as Array<object>,
-    },
-    sync: {
-      visibility: true,
-      highlight: true,
-      extremes: true,
-    },
-    cell: target_id,
-    type: 'Highcharts',
-    chartOptions: merge({}, baselineClassOfChartOptions, {
-      chart: {
-        type:'scatter',
-      },
-      yAxis: {
-        title: { text: '# students Headcount maybe?'},
-        startOnTick: true,
-        endOnTick: true,
-        showLastLabel: true,
-      },
-      xAxis: {
-        type: 'linear',
-        startOnTick: true,
-        endOnTick: true,
-        showLastLabel: true,
-      },
-      title: {
-        text: title,
-      },
-      series: [] as Array<object>,
-      legend: {
-        floating: false,
-      },
-      plotOptions: {
-        scatter: {
-          opacity: 0.5,
-          marker: {
-            radius: 2.5,
-            symbol: "circle",
-            states: {
-              hover: {
-                enabled: true,
-                lineColor: "rgb(100,100,100)"
-              }
-            }
-          },
-        },
-      },
-    }),
-  };
-
-  for (const yKind of ySeriesIds) {
-    for (const xKind of xSeriesIds) {
-      result.connector.columnAssignment.push(
-        {
-          seriesId: yKind,
-          data: {
-            x: `${xMetric}_${xKind}`,
-            y: `${yMetric}_${yKind}`,
-            class_of: 'class_of',
-            'marker.radius': 'covid_type',
-            'marker.symbol': 'covid_shape',
-          },
-        }
-      );
-      result.chartOptions.series.push(
-          {
-            id: yKind,
-            name: yKind,
-            colorIndex: colorIndexMap[yKind],
-            dataLabels: {
-              enabled: true,
-              format: '{point.class_of}'
-            }
-          }
-      );
-    }
-  }
-  return result;
-}
-
 function makeDashboardConfig(districtData : DistrictData) {
   return {
     editMode: {
@@ -354,17 +228,6 @@ function makeDashboardConfig(districtData : DistrictData) {
       ...enrollmentPanelFactory.makeComponents(),
       ...cashflowPanelFactory.makeComponents(),
       ...staffingPanelFactory.makeComponents(),
-      makeCorrelationGraph('deficit-enrollment-correlation', 'Deficit-Enrollment Correlation',
-                           'cashflow', 'enrollment'),
-      makeCorrelationGraph('deficit-teaching-fte-correlation', 'Deficit-Teaching FTE Correlation',
-                           'enrollment', 'teaching_fte', ['actuals'], ['actuals']),
-
-      makeCorrelationGraph('deficit-student-support-fte-correlation', 'Deficit-Student Support FTE Correlation',
-                           'enrollment', 'student_support_fte', ['actuals'], ['actuals']),
-      makeCorrelationGraph('deficit-building-support-fte-correlation', 'Deficit-Building Support FTE Correlation',
-                           'enrollment', 'building_support_fte', ['actuals'], ['actuals']),
-      makeCorrelationGraph('deficit-other-fte-correlation', 'Deficit-Other Staff FTE Correlation',
-                           'enrollment', 'non_teaching_fte', ['actuals'], ['actuals']),
 
       makeExpenditureGraph('key-expenditures-amt', 'amt'),
       makeExpenditureGraph('key-expenditures-pct', 'pct_expenditure'),
@@ -377,16 +240,17 @@ async function loadData(dfd, dashboards, ccddd) {
   dashboards.board('dashboard-charts-container', makeDashboardConfig(districtData));
 }
 
-export default function DistrictDashboardCharts() {
+export default function SummaryDashboard() {
   const {ccddd} = useFinanceNavState();
   const { highchartsObjs } = useHighcharts();
   const { dfd } = useDanfo();
   useEffect(() => {
-    if (dfd.hasOwnProperty('readCSV')) {
+    if (dfd.hasOwnProperty('readCSV') && highchartsObjs['dashboards']) {
       loadData(dfd, highchartsObjs['dashboards'], ccddd);
     }
   },
   [ccddd, highchartsObjs, dfd]);
   return (<div id="dashboard-charts-container" />);
 }
+
 

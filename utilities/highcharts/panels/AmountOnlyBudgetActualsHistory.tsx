@@ -1,6 +1,5 @@
 import ReactDOMServer from 'react-dom/server';
 import { baselineHighchartsCell } from "utilities/highcharts/defaults";
-import { BUDGET_ACTUALS_MODE } from 'utilities/highcharts/components/KeyStatsComponent';
 import { g_dfd } from 'components/providers/DanfoProvider';
 import merge from 'lodash.merge';
 import { currencyFormatter } from 'utilities/highcharts/utils';
@@ -38,9 +37,9 @@ function getSeriesAsDf(series, name, xMin, xMax) {
 function generateColoredTd(value) {
   const classes = [];
   if (value > 0) {
-    classes.push('chartstats-positive');
+    classes.push('ba-chartstats-good');
   } else if (value < 0) {
-    classes.push('chartstats-negative');
+    classes.push('ba-chartstats-bad');
   }
 
   return `<td class="${classes.join(' ')}">${value.toFixed(1)}</td>`;
@@ -68,7 +67,7 @@ function generateVarianceCaption(name, series, minX, maxX) {
   const mean = variances_df['variance'].mean();
 
   return `
-  <table class="chartstats-table">
+  <table class="ba-chartstats-table">
     <tr>
       <td>${name}</td>
       ${generateColoredTd(latest)}
@@ -90,32 +89,10 @@ export default class BudgetActualsHistoryComponents {
   public chartCell: object;
 
   constructor(options : BudgetActualsHistoryComponentsOptions) {
-    this.keyStatsCell = this.makeKeyStats(options);
     this.chartCell = this.makeChartCell(options);
   }
 
-  private makeKeyStats(options) {
-    const budgetColumn = `${options.metricColumnRoot}_budget`;
-    const actualsColumn = `${options.metricColumnRoot}_actuals`;
-    return {
-      type: 'KeyStats',
-      mode: BUDGET_ACTUALS_MODE,
-      title: options.title,
-      keyStatFormat: options.keyStatFormat,
-
-      budgetColumn,
-      actualsColumn,
-      xAxisName: options.xAxisName,
-
-      connector: {
-        id: options.connectorId,
-      },
-    };
-  }
-
   private makeChartCell(options : BudgetActualsHistoryComponentsOptions) {
-    const myDiv = document.createElement('div');
-
     const budgetColumn = `${options.metricColumnRoot}_budget`;
     const actualsColumn = `${options.metricColumnRoot}_actuals`;
     return merge(

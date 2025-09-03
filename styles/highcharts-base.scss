@@ -1,6 +1,3 @@
-@use "budget-actuals-stats.scss";
-@use "hc-metric-history-panel.scss";
-
 @import url('https://code.highcharts.com/css/highcharts.css');
 @import url('https://code.highcharts.com/dashboards/css/datagrid.css');
 @import url('https://code.highcharts.com/dashboards/css/dashboards.css');
@@ -34,8 +31,7 @@ h1#title {
   font-size: x-small;
 }
 
-// Make all charts short..
-.highcharts-container {
-  height: 35ex;
+.highcharts-dashboards-cell {
+  min-width: 400px;
 }
 
