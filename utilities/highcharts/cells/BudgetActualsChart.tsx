@@ -4,14 +4,14 @@ import { makeCurrencyFormatter } from "utilities/highcharts/utils";
 import { g_dfd } from 'components/providers/DanfoProvider';
 import merge from 'lodash.merge';
 
-type ValueFormat =  'currency' | 'decimal' | 'passthru';
+type ValueFormat =  'currency' | 'decimal' | 'passthru' | 'percentage';
 
-export type AmountOnlyBudgetActualsHistoryOptions = {
+export type BudgetActualsHistoryOptions = {
   title : string;
   metricColumnRoot: string;
   connectorId : string;
   xDataColumn : string;
-
+  metricSuffix?: string;
 
   precision: number;
   valueFormat: ValueFormat;
@@ -97,15 +97,24 @@ function getFormatter(format : ValueFormat, precision) {
       return d => Math.round(d, precision);
     case 'currency':
       return makeCurrencyFormatter(precision);
+    case 'percentage':
+      return d => Math.round(d * 100, precision);
     case 'passthru':
       return x => x;
   }
 }
 
+function getColumnName(metricColumnRoot, suffix) {
+  const real_suffix = suffix ? `_${suffix}` : '';
+  return {
+    budgetColumn: `${metricColumnRoot}${real_suffix}_budget`,
+    actualsColumn: `${metricColumnRoot}${real_suffix}_actuals`,
+  }
+}
+
 // Create the a chart cell definition graphic budgets vs actuals.
-export default function makeBudgetActualsChart(options : AmountOnlyBudgetActualsHistoryOptions) {
-  const budgetColumn = `${options.metricColumnRoot}_budget`;
-  const actualsColumn = `${options.metricColumnRoot}_actuals`;
+export default function makeBudgetActualsChart(options : BudgetActualsHistoryOptions) {
+  const {budgetColumn, actualsColumn} = getColumnName(options.metricColumnRoot, options.metricSuffix);
 
   const valueFormatter = getFormatter(options.valueFormat, options.precision);
 
@@ -188,7 +197,7 @@ export default function makeBudgetActualsChart(options : AmountOnlyBudgetActuals
         },
         caption: {
           useHTML: true,
-          align: 'right', // or 'center', 'right'
+          align: 'right',
         }
       }
     },

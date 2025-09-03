@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { useFinanceNavState } from 'components/providers/FinanceNavStateProvider';
 import { useHighcharts } from 'components/providers/HighchartsProvider';
 import makeBudgetActualsChart from "utilities/highcharts/cells/BudgetActualsChart";
+import makePctAmtChart from "utilities/highcharts/cells/PctAmtChart";
 import DistrictData from "utilities/DistrictData";
 import merge from 'lodash.merge';
 
@@ -50,6 +51,19 @@ const rowCellConfigs = [
     xDataColumn: 'class_of',
 
     valueFormat: 'decimal',
+    yUnits: 'FTE',
+  },
+];
+
+const pctAmtRowCellConfigs = [
+  {
+    title: 'Teaching Related Comp',
+    cellId: 'teaching-related-ba-history-chart',
+    metricColumnRoot: 'teaching_related_comp',
+    connectorId: 'c-toplevel-metrics',
+    xDataColumn: 'class_of',
+
+    valueFormat: 'percentage',
     yUnits: 'FTE',
   },
 ];
@@ -113,16 +127,13 @@ function makeDashboardGui() {
       {
         rows: [
           ...rowCellConfigs.map(c => ({cells:[{id:c.cellId}]})),
-          {
-            cells: [
-              {
-                id: 'key-expenditures-amt',
-              },
-              {
-                id: 'key-expenditures-pct',
-              }
-            ],
-          },
+          ...pctAmtRowCellConfigs.map(c => (
+            {
+              cells:[
+                {id: `${c.cellId}-pct`},
+                {id: `${c.cellId}-amt`},
+              ]
+            })),
         ],
       },
     ],
@@ -131,69 +142,6 @@ function makeDashboardGui() {
 
 function pctFormater() {
   return (this.value * 100) + '%';
-}
-
-function makeExpenditureGraph(target_id, pct_or_amt) {
-  const yAxis = {};
-  const tooltip = {};
-  if (pct_or_amt == 'pct_expenditure') {
-    yAxis['min'] = 0;
-    yAxis['max'] = 1;
-    yAxis['title'] = {'text': "% of Expenditure"};
-    yAxis['labels'] = {'formatter': pctFormater };
-    tooltip['formatter'] = function() { return `${(this.y * 100).toFixed(1)}%` };
-  } else {
-    yAxis['title'] = {'text': "$"};
-    tooltip['valuePrefix'] = '$';
-  }
-
-  return {
-    connector: {
-      id: 'c-toplevel-metrics',
-      columnAssignment: [
-        {
-          seriesId: `teaching_related_comp_${pct_or_amt}_budget`,
-          data: ['class_of', `teaching_related_comp_${pct_or_amt}_budget`],
-        },
-        {
-          seriesId: `teaching_related_comp_${pct_or_amt}_actuals`,
-          data: ['class_of', `teaching_related_comp_${pct_or_amt}_actuals`],
-        },
-      ]
-    },
-    sync: {
-      visibility: true,
-      highlight: true,
-      extremes: true,
-    },
-    cell: target_id,
-    type: 'Highcharts',
-    chartOptions: merge({}, baselineClassOfChartOptions, {
-      yAxis,
-      title: {
-        text: "Teaching Related",
-      },
-      series: [
-        {
-          id: `teaching_related_comp_${pct_or_amt}_budget`,
-          name: 'Teaching Related Comp (Budget)',
-        },
-        {
-          id: `teaching_related_comp_${pct_or_amt}_actuals`,
-          name: 'Teaching Related Comp (Actuals)',
-          pointPadding: 0.27,
-        },
-      ],
-      plotOptions: {
-        series: {
-          grouping: false,
-          shadow: false,
-          borderWidth: 0,
-        }
-      },
-      tooltip,
-    }),
-  };
 }
 
 function makeDashboardConfig(districtData : DistrictData) {
@@ -209,9 +157,7 @@ function makeDashboardConfig(districtData : DistrictData) {
     gui: makeDashboardGui(),
     components: [
       ...rowCellConfigs.map(c => makeBudgetActualsChart(c)),
-
-      makeExpenditureGraph('key-expenditures-amt', 'amt'),
-      makeExpenditureGraph('key-expenditures-pct', 'pct_expenditure'),
+      ...pctAmtRowCellConfigs.flatMap(c => makePctAmtChart(c)),
     ],
   };
 }
