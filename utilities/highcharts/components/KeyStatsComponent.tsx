@@ -1,17 +1,10 @@
 import { g_dfd } from 'components/providers/DanfoProvider';
 import { g_highchartsObjs } from 'components/providers/HighchartsProvider';
 import Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
+import { currencyFormatter } from 'utilities/highcharts/utils';
 
 export const SINGLE_MODE = 'single';
 export const BUDGET_ACTUALS_MODE = 'budget_actuals';
-
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  notation: 'compact',
-  compactDisplay: 'short',
-  maximumFractionDigits: 0,
-}).format;
 
 function decimalFormatter(value) {
   return value.toFixed(2).toLocaleString();

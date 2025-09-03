@@ -1,12 +1,23 @@
-.budget-actuals-stats {
+.chartstats-table {
 }
-.budget-actuals-stats th {
+
+.chartstats-negative {
+  color: red;
+}
+
+.chartstats-positive {
+  color: lightgreen;
+}
+
+.chartstats-table td {
   font-size: .8rem;
-  text-align: right;
-  padding-left: 1rem;
-  font-weight: bold;
+  text-align: center;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
 }
-.budget-actuals-stats td {
-  font-size: 0.65rem;
-  text-align: right;
+
+.chartstats-table th {
+  font-size: .6rem;
+  text-align: center;
+  font-weight: normal;
 }
