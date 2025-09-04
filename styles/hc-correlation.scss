@@ -4,3 +4,15 @@
   min-width: 400px;
   min-height: 450px;
 }
+
+.hc-tooltip-header {
+  text-align: center;
+  font-weight: bold;
+  border-bottom: 1px dashed; 
+  padding-bottom: 0.1rem;
+  margin-bottom: 0.2rem;
+}
+
+.hc-tooltip-data {
+  text-align: right;
+}

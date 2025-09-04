@@ -1,14 +1,12 @@
 'use client'
 
 import { baselineClassOfChartOptions } from "utilities/highcharts/defaults";
-import { useDanfo } from 'components/providers/DanfoProvider';
 import { useEffect } from 'react';
 import { useFinanceNavState } from 'components/providers/FinanceNavStateProvider';
 import { useHighcharts } from 'components/providers/HighchartsProvider';
 import DistrictData from "utilities/DistrictData";
 import merge from 'lodash.merge';
 
-import type { DataFrame } from "danfojs";
 import type Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
 
 import "styles/hc-correlation.scss"
@@ -106,12 +104,22 @@ function makeCorrelationGraph(target_id, title, yMetric, xMetric,
       legend: {
         floating: false,
       },
+      tooltip: {
+        useHTML: true,
+        formatter: function() {
+          return `
+          <h2 class="hc-tooltip-header">${this.point.name}</h2>
+          <table>
+          <tr><th>${yMetric}<th><td class="hc-tooltip-data">${this.point.x.toLocaleString()}<td></tr>
+          <tr><th>${xMetric}<th><td class="hc-tooltip-data">${this.point.y.toLocaleString()}<td></tr>
+          </table>
+          `;
+        }
+      },
       plotOptions: {
         scatter: {
           opacity: 0.5,
           marker: {
-            radius: 2.5,
-            symbol: "circle",
             states: {
               hover: {
                 enabled: true,
@@ -132,8 +140,8 @@ function makeCorrelationGraph(target_id, title, yMetric, xMetric,
           data: {
             x: `${xMetric}_${xKind}`,
             y: `${yMetric}_${yKind}`,
-            class_of: 'class_of',
-            'marker.radius': 'covid_type',
+            name: 'class_of',
+            'marker.radius': 'marker_radius',
             'marker.symbol': 'covid_shape',
           },
         }
@@ -145,12 +153,16 @@ function makeCorrelationGraph(target_id, title, yMetric, xMetric,
             colorIndex: colorIndexMap[yKind],
             dataLabels: {
               enabled: true,
-              format: '{point.class_of}'
+              format: '{point.name}',
+              crop: false,
+              overflow: 'allow',
+              allowOverlap: true,
             }
           }
       );
     }
   }
+  console.log(result.connector);
   return result;
 }
 
@@ -171,30 +183,33 @@ function makeDashboardConfig(districtData : DistrictData) {
 
       makeCorrelationGraph('enrollment-student-support-fte-correlation', 'Enrollment-Student Support FTE Correlation',
                            'enrollment', 'student_support_fte', ['actuals'], ['actuals']),
+
       makeCorrelationGraph('enrollment-building-support-fte-correlation', 'Enrollment-Building Support FTE Correlation',
                            'enrollment', 'building_support_fte', ['actuals'], ['actuals']),
+
       makeCorrelationGraph('enrollment-other-fte-correlation', 'Enrollment-Other Staff FTE Correlation',
-                           'enrollment', 'non_teaching_fte', ['actuals'], ['actuals']),
+                           'enrollment', 'other_fte', ['actuals'], ['actuals']),
 
     ],
   };
 }
 
-async function loadData(dfd, dashboards, ccddd) {
-  const districtData = await DistrictData.loadFromGcs(dfd, ccddd);
+async function loadData(dashboards, ccddd) {
+  const districtData = await DistrictData.loadFromGcs(ccddd);
   dashboards.board('dashboard-charts-container', makeDashboardConfig(districtData));
+  window.districtData = districtData;
+  window.dashboards = dashboards;
 }
 
 export default function EnrollmentDashboard() {
   const { ccddd } = useFinanceNavState();
   const { highchartsObjs } = useHighcharts();
-  const { dfd } = useDanfo();
   useEffect(() => {
-    if (dfd.hasOwnProperty('readCSV') && highchartsObjs['dashboards']) {
-      loadData(dfd, highchartsObjs['dashboards'], ccddd);
+    if (highchartsObjs['dashboards']) {
+      loadData(highchartsObjs['dashboards'], ccddd);
     }
   },
-  [ccddd, highchartsObjs, dfd]);
+  [ccddd, highchartsObjs]);
   return (<div id="dashboard-charts-container" />);
 }
 

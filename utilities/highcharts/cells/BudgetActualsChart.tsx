@@ -1,10 +1,11 @@
-import ReactDOMServer from 'react-dom/server';
 import { baselineHighchartsCell } from "utilities/highcharts/defaults";
 import { makeCurrencyFormatter } from "utilities/highcharts/utils";
-import { g_dfd } from 'components/providers/DanfoProvider';
+import * as aq from 'arquero';
+import { op } from 'arquero';
 import merge from 'lodash.merge';
+import ReactDOMServer from 'react-dom/server';
 
-type ValueFormat =  'currency' | 'decimal' | 'passthru' | 'percentage';
+export type ValueFormat =  'currency' | 'decimal' | 'passthru' | 'percentage';
 
 export type BudgetActualsChartOptions = {
   title : string;
@@ -25,15 +26,10 @@ export type BudgetActualsChartOptions = {
 function getSeriesAsDf(series, name, xMin, xMax) {
   for (const s of series) {
     if (s.userOptions.id === name) {
-      const df = new g_dfd.DataFrame(s.userOptions.data).rename(
-        {
-          0: "x",
-          1: name,
-        },
-        { axis:1 }
-      );
+      // HACK: This is borken.
+      const df = aq.fromJSON(s.userOptions.data);
 
-      return df.query(df['x'].ge(xMin).and(df['x'].le(xMax)));
+      return df.filter(aq.escape(d => d['x'] >= xMin && d['x'] <= xMax));
     }
   }
 
@@ -58,21 +54,16 @@ function generateColoredTd(value, valueFormatter) {
 function generateVarianceCaption(name, series, valueFormatter, minX, maxX) {
   const budget_df = getSeriesAsDf(series, 'budget', minX, maxX);
   const actuals_df = getSeriesAsDf(series, 'actuals', minX, maxX);
-  const variances_df = g_dfd.merge(
-    {
-      left: budget_df,
-      right: actuals_df,
-      on: ["x"],
-      how: "inner"
-    });
-  variances_df.addColumn(
-    'variance',
-    variances_df['budget'].sub(variances_df['actuals']),
-    { inplace: true }
-  );
-  const latest = variances_df['variance'].values.at(-1);
-  const median = variances_df['variance'].median();
-  const mean = variances_df['variance'].mean();
+  const variances_df = budget_df.join(actuals_df)
+    .derive({variance: d => d.budget - d.actuals});
+  
+  const latest = variances_df.array('variance').at(-1);
+  const stats = variances_df.rollup({
+    median: d => op.median(d.variance),
+    mean: d => op.median(d.variance),
+  });
+  const median = stats.get('median', 0);
+  const mean = stats.get('mean', 0);
 
   return `
   <table class="ba-chartstats-table">

@@ -1,7 +1,46 @@
-import { danfoToJsonOptions } from "utilities/highcharts/utils";
 import { fetchEndpoint } from 'utilities/client/endpoint';
+import * as aq from 'arquero';
+import { op } from 'arquero';
+import type { ColumnTable } from 'arquero';
 
-import type { DataFrame } from 'danfojs';
+function dfToJSONConnectorOptions(df : ColumnTable, precision: number) {
+  const newDf = df.derive({
+    covid_shape: d => {
+      if (d.class_of < 2020) {
+        return 'triangle-down';
+      } else if (d.class_of < 2022) {
+        return 'square';
+      } else {
+        return 'triangle';
+      }
+    }})
+    .derive({
+      marker_radius: d => {
+        if (d.class_of < 2020) {
+          return 4;
+        } else if (d.class_of < 2022) {
+          return 2;
+        } else {
+          return 6;
+        }
+      }});
+
+   const undefinedToNull = newDf.columnNames().reduce((acc, col) => {
+     acc[col] = aq.escape(d => d[col] === undefined ? null : d[col]);
+     return acc;
+   }, {});
+
+   const roundNumbers = newDf.columnNames().reduce((acc, col) => {
+     acc[col] = aq.escape(
+       d => typeof d[col] === "number" ? op.round(d[col] * (10**precision))/(10**precision): d[col]);
+     return acc;
+   }, {});
+
+  return {
+    firstRowAsNames: false,
+    data: newDf.derive(undefinedToNull).derive(roundNumbers).objects(),
+  };
+}
 
 // TODO: This needs dedupping with SummaryDashboard.
 const DEFAULT_PRECISION = 2;
@@ -35,53 +74,17 @@ const BUILDING_SUPPORT = [
   64,  // Maintenance
 ];
 
-function financeGroupSumAmount(new_col_name, df, col_to_sum="amount") {
-  const grouped = df.groupby(FINANCE_GROUP_BY).col([col_to_sum]).sum();
-  grouped.rename({ [`${col_to_sum}_sum`]: new_col_name }, { axis: 1, inplace: true });
-  return grouped;
+function financeGroupSumAmount(new_col_name, df, col_to_sum) {
+  return df
+      .groupby(['data_type', 'class_of'])
+      .rollup({[new_col_name]: op.sum(col_to_sum)});
 }
 
-function doQuery(df, query) {
-  // HACK: danfo query chaining seems to break unless the index is reset.
-  // This wrapper makes sure queries can be chained.
-  const result = df.query(query);
-  result.resetIndex({inplace: true});
-  return result;
-}
-
-function inMask(df, field, values) {
-  let mask : any = null;
-  for (const v of values) {
-    if (mask === null) {
-      mask = df[field].eq(v);
-    } else {
-      mask = mask.or(df[field].eq(v));
-    }
-  }
-
-  return mask;
-}
-
-function notInMask(df, field, values) {
-  let mask : any = null;
-  for (const v of values) {
-    if (mask === null) {
-      mask = df[field].ne(v);
-    } else {
-      mask = mask.and(df[field].ne(v));
-    }
-  }
-
-  return mask;
-}
-
-
-export async function fetchDatasetStream(ccddd, dataset) {
-  // Pass in dfd so that this code can be reused by nodejs or browser entrypoints.
+export async function fetchDatasetStream(ccddd : string, dataset : string) {
   const datasetResponse = await fetchEndpoint('finance', 'GET', {ccddd, dataset});
   if (!datasetResponse.ok) {
     console.error(datasetResponse);
-    return '';
+    throw "Unable to read data";
   }
 
   const csvResponse = await fetch(datasetResponse.data.dataUrl);
@@ -93,33 +96,38 @@ export async function fetchDatasetStream(ccddd, dataset) {
   return csvResponse.body.pipeThrough(new DecompressionStream('gzip'));
 }
 
-export async function fetchDataset(dfd, ccddd, dataset) {
-  const csvBlob = await new Response(await fetchDatasetStream(ccddd, dataset)).blob();
-  return dfd.readCSV(new File([csvBlob], `${dataset}-${ccddd}.csv`, { type: 'text/csv' }));
+export async function fetchDataset(ccddd, dataset) {
+  const byteStream = await fetchDatasetStream(ccddd, dataset);
+  return aq.fromCSVStream(byteStream.pipeThrough(new TextDecoderStream()));
 }
 
-function fieldFoldl(dataframes, field, f, initial) {
-  let ret = initial;
-  for (const df of dataframes) {
-    ret = f(ret, df[field].count());
-  }
-  return ret;
+function minMaxClassOf(df) {
+  return df.select('class_of').rollup({min: op.min('class_of'), max: op.max('class_of')});
 }
 
+// Fetches the dataset for one district.
+//
+// Final data is returned with one entry in toe "class_of" column for each year and most column
+// representing one chartable metric or aggregation.
+//
+// Columns representing a chartable metric has a column name with this format:
+//
+//   ${ccddd]_${metric_name}_${aggregation}_${budget_actual}
+//
+// Columns providing more info on the row itself do not follow
+// any specific form. An example of such a column is "covid_type"
+// which lists of the year is before, during, or after covid.
 export default class DistrictData {
-  private dfd : any;
-  private enrollment_df : DataFrame;
-  private gf_expenditure_df : DataFrame;
-  private gf_revenue_df : DataFrame;
-  private budget_items_df : DataFrame;
-  private actuals_items_df : DataFrame;
-  private s275_summary_df : DataFrame;
-  private all_school_years_df : DataFrame;
+  private enrollment_df : ColumnTable;
+  private gf_expenditure_df : ColumnTable;
+  private gf_revenue_df : ColumnTable;
+  private budget_items_df : ColumnTable;
+  private actuals_items_df : ColumnTable;
+  private s275_summary_df : ColumnTable;
+  private all_class_ofs_df : ColumnTable;
 
-  constructor(dfd, enrollment_df, gf_expenditure_df, gf_revenue_df,
+  constructor(enrollment_df, gf_expenditure_df, gf_revenue_df,
               budget_items_df, actuals_items_df, s275_summary_df) {
-    this.dfd = dfd;
-
     this.enrollment_df = enrollment_df;
     this.gf_expenditure_df = gf_expenditure_df;
     this.gf_revenue_df = gf_revenue_df;
@@ -127,187 +135,110 @@ export default class DistrictData {
     this.actuals_items_df = actuals_items_df;
     this.s275_summary_df = s275_summary_df;
 
-    let all_school_years_df = this.dfd.concat({
-      dfList: [
-        this.enrollment_df["class_of"],
-        this.gf_expenditure_df["class_of"],
-        this.gf_revenue_df["class_of"],
-      ],
-      axis: 1
-    });
-    
-    const minYear = all_school_years_df["class_of"].min();
-    const maxYear = all_school_years_df["class_of"].max();
+    const minMaxDf = minMaxClassOf(this.enrollment_df)
+        .concat(minMaxClassOf(this.gf_expenditure_df))
+        .concat(minMaxClassOf(this.gf_revenue_df))
+        .rollup({min: op.min('min'), max: op.max('max')});
 
-    const all_school_years = new Array<number>();
+    const minYear = minMaxDf.get('min', 0);
+    const maxYear = minMaxDf.get('max', 0);
+
+    const all_class_ofs = new Array<number>();
     for (let year = minYear; year <= maxYear; year++) {
-      all_school_years.push(year);
+      all_class_ofs.push(year);
     }
 
-    this.all_school_years_df = new this.dfd.DataFrame({"class_of": all_school_years});
+    this.all_class_ofs_df = aq.table({'class_of': all_class_ofs});
   }
 
-  static async loadFromGcs(dfd, ccddd) {
+  static async loadFromGcs(ccddd) {
     const [enrollment_df, gf_expenditure_df, gf_revenue_df,
            budget_items_df, actuals_items_df, s275_summary_df] = await Promise.all(
       [
-        fetchDataset(dfd, ccddd, "enrollment"),
-        fetchDataset(dfd, ccddd, "gf_expenditures"),
-        fetchDataset(dfd, ccddd, "gf_revenues"),
-        fetchDataset(dfd, ccddd, "budget_items"),
-        fetchDataset(dfd, ccddd, "actuals_items"),
-        fetchDataset(dfd, ccddd, "s275_summary"),
+        fetchDataset(ccddd, "enrollment"),
+        fetchDataset(ccddd, "gf_expenditures"),
+        fetchDataset(ccddd, "gf_revenues"),
+        fetchDataset(ccddd, "budget_items"),
+        fetchDataset(ccddd, "actuals_items"),
+        fetchDataset(ccddd, "s275_summary"),
       ]
     );
-    return new DistrictData(dfd, enrollment_df, gf_expenditure_df, gf_revenue_df,
+    return new DistrictData(enrollment_df, gf_expenditure_df, gf_revenue_df,
                            budget_items_df, actuals_items_df, s275_summary_df);
   }
 
-  static async loadTest(real_dfd) {
-    return await DistrictData.loadFromGcs(real_dfd, 17001);
-  }
-
   toplevel_metrics() {
-    let merged_df = this.merge(
-      this.cashflow(),
-      this.enrollment().loc({columns: ["class_of", "enrollment_actuals", "enrollment_budget"]}),
-    );
-    merged_df = this.merge(merged_df, this.key_expenditures());
-    merged_df = this.merge(merged_df, this.staffing());
-
-    // Label covid type.
-    merged_df.addColumn(
-      'covid_type',
-      merged_df["class_of"].apply((year) => {
-        if (year < 2020) {
-          return 4;
-        } else if (year < 2022) {
-          return 2;
-        } else {
-          return 8;
-        }
-      }),
-      { inplace: true }
-    );
-
+    const merged_df = this.cashflow()
+      .join_full(this.enrollment())
+      .join_full(this.staffing());
     return merged_df;
   }
 
   staffing() {
-    const staffFteActuals = this.s275_summary_df.
-      groupby(['class_of']).
-      col(['fte_in_assignment']).
-      sum().
-      rename({fte_in_assignment_sum: 'staff_fte_actuals'}, {axis:1});
+    const staffFteActuals = this.s275_summary_df
+      .groupby(['class_of'])
+      .rollup({'staff_fte_actuals': op.sum('fte_in_assignment')});
 
-    const staffFteBudget = this.budget_items_df.query(
-      // 317 is certificated FTE counts
-      // 318 is classified FTE counts.
-      this.budget_items_df['item_code'].eq(317).or(
-        this.budget_items_df['item_code'].eq(318))
-    ).groupby(['class_of']).
-      col(['amount']).
-      sum().
-      rename({amount_sum: 'staff_fte_budget'}, {axis:1});
+    // 317 is certificated FTE counts
+    // 318 is classified FTE counts.
+    const staffFteBudget = this.budget_items_df.filter(
+      d => op.includes(['317', '318'], d.item_code))
+      .groupby('class_of')
+      .rollup({'staff_fte_budget': op.sum('amount')});
 
-    let staff_fte = this.merge(staffFteActuals, staffFteBudget,
-                                 ["class_of"], "outer");
+    const teachingFte = this.s275_summary_df
+        .filter(aq.escape(d => op.includes(TEACHING_CODES, d.activity_code)))
+        .groupby('class_of')
+        .rollup({teaching_fte_actuals: op.sum('fte_in_assignment')});
 
-    const add_data = (name_root, codes, target_df) => {
-      const result = doQuery(
-        this.s275_summary_df,
-        inMask(this.s275_summary_df, "activity_code", codes)
-      ).
-        groupby(['class_of']).
-        col(['fte_in_assignment']).
-        sum().
-        rename({fte_in_assignment_sum: `${name_root}_actuals`}, {axis:1});
+    const studentSupportFte = this.s275_summary_df
+        .filter(aq.escape(d => op.includes(STUDENT_SUPPORT_CODES, d.activity_code)))
+        .groupby('class_of')
+        .rollup({student_support_fte_actuals: op.sum('fte_in_assignment')});
 
-      return this.merge(target_df, result,
-                        ["class_of"], "outer");
+    const buildingSupportFte = this.s275_summary_df
+        .filter(aq.escape(d => op.includes(BUILDING_SUPPORT, d.activity_code)))
+        .groupby('class_of')
+        .rollup({building_support_fte_actuals: op.sum('fte_in_assignment')});
 
-    };
-    staff_fte = add_data('teaching_fte', TEACHING_CODES, staff_fte);
-    staff_fte = add_data('student_support_fte', STUDENT_SUPPORT_CODES, staff_fte);
-    staff_fte = add_data('building_support_fte', BUILDING_SUPPORT, staff_fte);
+    const otherFte = this.s275_summary_df
+        .filter(aq.escape(d => !op.includes([
+            ...TEACHING_CODES,
+            ...STUDENT_SUPPORT_CODES,
+            ...BUILDING_SUPPORT],
+            d.activity_code)))
+        .groupby('class_of')
+        .rollup({other_fte_actuals: op.sum('fte_in_assignment')});
 
-    const non_teaching_fte =
-      doQuery(
-        this.s275_summary_df,
-        notInMask(this.s275_summary_df, "activity_code", [
-          ...TEACHING_CODES,
-          ...STUDENT_SUPPORT_CODES,
-          ...BUILDING_SUPPORT])
-      ).
-      groupby(['class_of']).
-      col(['fte_in_assignment']).
-      sum().
-      rename({fte_in_assignment_sum: 'non_teaching_fte_actuals'}, {axis:1});
-    staff_fte = this.merge(staff_fte, non_teaching_fte,
-                           ["class_of"], "outer");
-
-
-    return this.fillYears(staff_fte);
-  }
-
-  key_expenditures() {
-    const key_metric = 'c_pct_expenditure';
-    const comp_only = doQuery(
-      this.gf_expenditure_df,
-      inMask(this.gf_expenditure_df, "object_code", COMP_OBJECT_CODES)
-    );
-
-    let non_comp_df = this.expenditureSum(
-      "non_comp",
-      doQuery(
-        this.gf_expenditure_df,
-        notInMask(this.gf_expenditure_df, "object_code", COMP_OBJECT_CODES)
-      )
-    );
-
-    let teaching_related_comp = this.expenditureSum(
-      "teaching_related_comp",
-      doQuery(
-        comp_only,
-        inMask(comp_only, "activity_code", TEACHING_CODES))
-    );
-
-    let other_comp = this.expenditureSum(
-      "other_comp",
-      doQuery(
-        comp_only,
-        notInMask(comp_only, "activity_code", TEACHING_CODES))
-    );
-
-    let result = this.merge(
-      non_comp_df,
-      teaching_related_comp);
-    result = this.merge(result, other_comp);
-    return this.fillYears(result);
+    return staffFteActuals
+        .join_full(staffFteBudget)
+        .join_full(teachingFte)
+        .join_full(studentSupportFte)
+        .join_full(buildingSupportFte)
+        .join_full(otherFte);
   }
 
   cashflow() {
-    const expenditures_df = financeGroupSumAmount("expenditures", this.gf_expenditure_df);
-    const revenues_df = financeGroupSumAmount("revenues", this.gf_revenue_df);
+    const expenditures_df = financeGroupSumAmount("expenditures", this.gf_expenditure_df, "amount");
+    const revenues_df = financeGroupSumAmount("revenues", this.gf_revenue_df, "amount");
 
-    // Put expenses + revenues onto one sheet preserving incomplete years.
-    let merged_df = this.merge(expenditures_df, revenues_df, FINANCE_GROUP_BY, 'outer');
+    // Put expenses + revenues onto one sheet preserving incomplete years
+    // and calculate cashflow.
+    const merged_df = expenditures_df.join_full(revenues_df)
+      .derive({cashflow: d => d.revenues - d.expenditures});
 
-    // Calculate cashflow.
-    merged_df = merged_df.addColumn("cashflow", merged_df["revenues"].sub(merged_df["expenditures"]));
-    const cashflows = this.pivotBudgetActuals("cashflow", merged_df, YEAR_GROUP_BY);
-
-    // Add missing years to all things have the same axis.
-    return this.fillYears(cashflows);
+    // Pivot out the data_type so the index is just class_of.
+    return merged_df.groupby('class_of').pivot('data_type', ['cashflow', 'revenues', 'expenditures'])
+    .join_full(this.all_class_ofs_df);
   }
 
   enrollment() {
-    const k12EnrollmentActuals = this.enrollment_df.query(
-      this.enrollment_df['enrollment_domain'].eq('K-12 FTE').or(
-        this.enrollment_df['enrollment_domain'].eq('K-12 FTE - Includes ALE')))
-        .groupby(['class_of']).col(['amount'])
-        .sum();
-    k12EnrollmentActuals.rename({ 'amount_sum': `enrollment_actuals` }, { axis: 1, inplace: true });
+    const k12EnrollmentActuals =
+      this.enrollment_df.filter(
+        d => op.includes(['K-12 FTE', 'K-12 FTE - Includes ALE'], d.enrollment_domain)
+    )
+    .groupby('class_of')
+    .rollup({'enrollment_actuals': op.sum('amount')});
 
     // K-12 FTE from the p223 confusingly is NOT the
     // "Total K-12 FTE Enrollment Counts" (item code 314) in the F195.
@@ -317,55 +248,15 @@ export default class DistrictData {
     // The equivalent number from the F195 is actually the sum of these two item codes
     //  327 - Subtotal K-12
     //  148 - ALE Enrollment
-    const k12EnrollmentBudget = this.budget_items_df.query(
-      this.budget_items_df['item_code'].eq(327).or(
-          this.budget_items_df['item_code'].eq(148)))
-        .groupby(['class_of']).col(['amount'])
-        .sum()
-        .rename({amount_sum: 'enrollment_budget'}, {axis:1});
+    const k12EnrollmentBudget = this.budget_items_df.filter(
+        d => op.includes(['327', '148'], d.item_code)
+    )
+    .groupby('class_of')
+    .rollup({'enrollment_budget': op.sum('amount')});
 
-    const k12Enrollment = this.merge(k12EnrollmentActuals, k12EnrollmentBudget,
-                                     ["class_of"], "outer");
-
-    return this.fillYears(k12Enrollment);
-  }
-
-  merge(left, right, on=["class_of"], how="inner") {
-    return this.dfd.merge({left, right, on, how});
-  }
-
-  fillYears(df) {
-    return this.merge(this.all_school_years_df, df, ["class_of"], "left");
-  }
-
-  pivotBudgetActuals(col_name, df, preserverd_cols) {
-    const actuals_df = df.loc({
-      rows: df['data_type'].eq('actuals'),
-      columns: [...preserverd_cols, col_name]
-    });
-    const budget_df = df.loc({
-      rows: df['data_type'].eq('budget'),
-      columns: [...preserverd_cols, col_name]
-    });
-
-    actuals_df.rename({ [col_name]: `${col_name}_actuals` }, { axis: 1, inplace: true });
-    budget_df.rename({ [col_name]: `${col_name}_budget` }, { axis: 1, inplace: true });
-    return this.merge(actuals_df, budget_df);
-  }
-
-  // Returns sums of amount and c_pct_expenditure columns for
-  // budget and actuals ia given dataframe.
-  expenditureSum(new_col_prefix, df) {
-    const amt_col_name = `${new_col_prefix}_amt`;
-
-    let amt = financeGroupSumAmount(amt_col_name, df, "amount");
-    amt = this.pivotBudgetActuals(amt_col_name, amt, YEAR_GROUP_BY);
-
-    const pct_col_name = `${new_col_prefix}_pct_expenditure`;
-    let pct_expenditure = financeGroupSumAmount(pct_col_name, df, "c_pct_expenditure");
-    pct_expenditure = this.pivotBudgetActuals(pct_col_name, pct_expenditure, YEAR_GROUP_BY);
-
-    return this.merge(amt, pct_expenditure);
+    return k12EnrollmentActuals
+      .join_full(k12EnrollmentBudget)
+      .join_full(this.all_class_ofs_df);
   }
 
   toplevel_metrics_datapool() {
@@ -374,7 +265,35 @@ export default class DistrictData {
         {
           id: 'c-toplevel-metrics',
           type: 'JSON',
-          options: danfoToJsonOptions(this.toplevel_metrics(), DEFAULT_PRECISION),
+          options: dfToJSONConnectorOptions(this.toplevel_metrics(), DEFAULT_PRECISION),
+        },
+      ],
+    };
+  }
+
+  allActivities() {
+    return this.gf_expenditure_df.groupby('activity_code', 'activity').rollup();
+  }
+
+  expendituresByActivity() {
+    return this.gf_expenditure_df
+      .groupby('class_of', 'data_type', 'activity_code', 'activity')
+      .rollup({
+        amount: op.sum('amount'),
+        c_pct_expenditure: op.sum('c_pct_expenditure'),
+        c_pct_revenue: op.sum('c_pct_revenue'),
+      })
+      .groupby('class_of', 'activity_code', 'activity')
+      .pivot('data_type', ['amount', 'c_pct_expenditure', 'c_pct_revenue']);
+  }
+
+  expenditures_datapool() {
+    return {
+      connectors: [
+        {
+          id: 'c-gf-exp-by-activity',
+          type: 'JSON',
+          options: dfToJSONConnectorOptions(this.expendituresByActivity(), DEFAULT_PRECISION),
         },
       ],
     };

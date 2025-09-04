@@ -1,8 +1,6 @@
 'use client'
 
 import { baselineClassOfChartOptions } from "utilities/highcharts/defaults";
-import { danfoToJsonOptions } from "utilities/highcharts/utils";
-import { useDanfo } from 'components/providers/DanfoProvider';
 import { useEffect } from 'react';
 import { useFinanceNavState } from 'components/providers/FinanceNavStateProvider';
 import { useHighcharts } from 'components/providers/HighchartsProvider';
@@ -11,8 +9,7 @@ import makePctAmtChart from "utilities/highcharts/cells/PctAmtChart";
 import DistrictData from "utilities/DistrictData";
 import merge from 'lodash.merge';
 
-import type { DataFrame } from "danfojs";
-import type { BudgetActualsChartOptions } from "utilities/highcharts/cells/BudgetActualsChart";
+import type { BudgetActualsChartOptions, ValueFormat } from "utilities/highcharts/cells/BudgetActualsChart";
 import type { PctAmtChartOptions } from "utilities/highcharts/cells/PctAmtChart";
 import type Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
 
@@ -26,7 +23,7 @@ const rowCellConfigs : Array<BudgetActualsChartOptions> = [
     title: 'Enrollment',
     renderTo: 'enrollment-ba-history-chart',
     metricColumnRoot: 'enrollment',
-    connectorId: 'c-toplevel-metrics',
+    connectorId: 'c-gf-exp-by-activity',
     xDataColumn: 'class_of',
 
     precision: DEFAULT_PRECISION,
@@ -35,34 +32,17 @@ const rowCellConfigs : Array<BudgetActualsChartOptions> = [
   },
 ];
 
-// Main question per district is how it has changed over time.
-//
-//   // How much should the district be taking up
-//   Key inputs: Enrollment
-//
-//   // How does that translate to money.
-//   Revenue vs Expenditures (with variance)
-//
-//   // What is District-Office overhead as % of expenditure over time.
-//   GF Balance with (with variance)
-//
-//   // Per-pupil spend with breakout of District Office vs non and sub-breakout
-//   // of purchased services vs compensation.
-//   Per-pupil spend graph.
-//
-//   // Detailed expenditure examination of comp vs non-comp (% of expenditrue).
-//   * Split to break down by activity, program, etc.
-function makeDashboardGui(allActivityCodes) {
+function makeDashboardGui(allActivitiesDf) {
   const r = {
     layouts: [
       {
         rows: [
           ...rowCellConfigs.map(c => ({cells:[{id:c.renderTo}]})),
-          ...allActivityCodes.map(activityCode => (
+          ...allActivitiesDf.objects().map(info => (
             {
               cells:[
-                {id: `act-${activityCode}-chart-pct`},
-                {id: `act-${activityCode}-chart-amt`},
+                {id: `act-${info.activity_code}-chart-pct`},
+                {id: `act-${info.activity_code}-chart-amt`},
               ]
             })),
         ],
@@ -70,22 +50,20 @@ function makeDashboardGui(allActivityCodes) {
     ],
   };
 
-  console.log('r', r);
-
   return r;
 }
 
-function makeActivityCells(allActivityCodes) {
+function makeActivityCells(allActivitiesDf) {
   const results = new Array<PctAmtChartOptions>;
-  for (const activityCode of allActivityCodes) {
+  for (const info of allActivitiesDf.objects()) {
     const options = {
-      title: `Activity ${activityCode}`,
-      renderTo: `act-${activityCode}-chart`,
-      metricColumnRoot: 'teaching_related_comp',
-      connectorId: 'c-toplevel-metrics',
+      title: `Activity ${info.activity}`,
+      renderTo: `act-${info.activity_code}-chart`,
+      metricColumnRoot: 'amount',
+      connectorId: 'c-gf-exp-by-activity',
       xDataColumn: 'class_of',
 
-      valueFormat: 'percentage',
+      valueFormat: 'percentage' as ValueFormat,
       precision: DEFAULT_PRECISION,
       yUnits: 'FTE',
     };
@@ -95,7 +73,7 @@ function makeActivityCells(allActivityCodes) {
 }
 
 function makeDashboardConfig(districtData : DistrictData) {
-  const allActivityCodes = districtData.gf_expenditure_df['activity_code'].unique().values;
+  const allActivitiesDf = districtData.allActivities();
 
   return {
     editMode: {
@@ -105,30 +83,29 @@ function makeDashboardConfig(districtData : DistrictData) {
         items: ['editMode'],
       },
     },
-    dataPool: districtData.toplevel_metrics_datapool(),
-    gui: makeDashboardGui(allActivityCodes),
+    dataPool: districtData.expenditures_datapool(),
+    gui: makeDashboardGui(allActivitiesDf),
     components: [
       ...rowCellConfigs.map(c => makeBudgetActualsChart(c)),
-      ...makeActivityCells(allActivityCodes),
+      ...makeActivityCells(allActivitiesDf),
     ],
   };
 }
 
-async function loadData(dfd, dashboards, ccddd) {
-  const districtData = await DistrictData.loadFromGcs(dfd, ccddd);
+async function loadData(dashboards, ccddd) {
+  const districtData = await DistrictData.loadFromGcs(ccddd);
   dashboards.board('dashboard-charts-container', makeDashboardConfig(districtData));
 }
 
 export default function ExpendituresDashboard() {
   const { ccddd } = useFinanceNavState();
   const { highchartsObjs } = useHighcharts();
-  const { dfd } = useDanfo();
   useEffect(() => {
-    if (dfd.hasOwnProperty('readCSV') && highchartsObjs['dashboards']) {
-      loadData(dfd, highchartsObjs['dashboards'], ccddd);
+    if (highchartsObjs['dashboards']) {
+      loadData(highchartsObjs['dashboards'], ccddd);
     }
   },
-  [ccddd, highchartsObjs, dfd]);
+  [ccddd, highchartsObjs]);
   return (<div id="dashboard-charts-container" />);
 }
 
