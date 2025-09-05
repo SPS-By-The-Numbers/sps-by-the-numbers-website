@@ -67,8 +67,6 @@ const pctAmtRowCellConfigs : Array<PctAmtChartOptions> = [
     xDataColumn: 'class_of',
 
     valueFormat: 'percentage',
-    precision: DEFAULT_PRECISION,
-    yUnits: 'FTE',
   },
 ];
 

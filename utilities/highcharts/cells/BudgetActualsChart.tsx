@@ -26,10 +26,20 @@ export type BudgetActualsChartOptions = {
 function getSeriesAsDf(series, name, xMin, xMax) {
   for (const s of series) {
     if (s.userOptions.id === name) {
-      // HACK: This is borken.
-      const df = aq.fromJSON(s.userOptions.data);
+      let df = aq.fromJSON(s.userOptions.data);
 
-      return df.filter(aq.escape(d => d['x'] >= xMin && d['x'] <= xMax));
+      if (df.numCols() <  2) {
+        throw "Series missing y column.";
+      }
+
+      // First column is x.
+      const result = df
+          .rename({0:'x', 1: name})
+          .filter(aq.escape(d =>
+                            d['x'] >= xMin &&
+                            d['x'] <= xMax &&
+                            op.compact(d[name])))
+      return result;
     }
   }
 
@@ -55,12 +65,14 @@ function generateVarianceCaption(name, series, valueFormatter, minX, maxX) {
   const budget_df = getSeriesAsDf(series, 'budget', minX, maxX);
   const actuals_df = getSeriesAsDf(series, 'actuals', minX, maxX);
   const variances_df = budget_df.join(actuals_df)
-    .derive({variance: d => d.budget - d.actuals});
+    .derive({variance: d => d.budget - d.actuals})
+    .orderby('x');
   
+  const xVal = variances_df.array('x').at(-1);
   const latest = variances_df.array('variance').at(-1);
   const stats = variances_df.rollup({
     median: d => op.median(d.variance),
-    mean: d => op.median(d.variance),
+    mean: d => op.mean(d.variance),
   });
   const median = stats.get('median', 0);
   const mean = stats.get('mean', 0);
@@ -75,7 +87,7 @@ function generateVarianceCaption(name, series, valueFormatter, minX, maxX) {
     </tr>
     <tr>
       <th></th>
-      <th>latest</th>
+      <th>${xVal}</th>
       <th>median</th>
       <th>mean</th>
     </tr>
@@ -90,7 +102,7 @@ function getFormatter(format : ValueFormat, precision) {
     case 'currency':
       return makeCurrencyFormatter(precision);
     case 'percentage':
-      return d => (d * 100).toFixed(precision);
+      return d => `${d.toFixed(precision)}%`;
     case 'passthru':
       return x => x;
   }
@@ -104,11 +116,45 @@ function getColumnName(metricColumnRoot, suffix) {
   }
 }
 
+function inferUnits(valueFormat : ValueFormat) {
+  switch (options.valueFormat) {
+    case 'currency':
+      return '$';
+
+    case 'decimal':
+      return undefined;
+
+    case 'passthru':
+      return undefined;
+
+    case 'percentage':
+      return '%';
+  }
+}
+
 // Create the a chart cell definition graphic budgets vs actuals.
 export default function makeBudgetActualsChart(options : BudgetActualsChartOptions) {
   const {budgetColumn, actualsColumn} = getColumnName(options.metricColumnRoot, options.metricSuffix);
 
   const valueFormatter = getFormatter(options.valueFormat, options.precision);
+
+  const yAxis = {
+    title: {
+      text: options.yUnits ?? inferUnits(options.valueFormat)
+    },
+  };
+
+  const tooltip = {
+    shared: true,
+    valueDecimals: options.precision,
+    ...options.tooltip
+  };
+
+  if (options.valueFormat === 'percentage') {
+    // Fix the y-axis
+    yAxis.min = 0;
+    yAxis.max = 100;
+  }
 
   return merge(
     {},
@@ -144,6 +190,7 @@ export default function makeBudgetActualsChart(options : BudgetActualsChartOptio
                                         event.max)
                 });
               } catch(e) {
+                console.error('Failed calculating stats:', e);
                 this.chart.setCaption({
                   text: '[Stat error]'
                 });
@@ -151,11 +198,7 @@ export default function makeBudgetActualsChart(options : BudgetActualsChartOptio
             },
           }
         },
-        yAxis: {
-          title: {
-            text: options.yUnits
-          },
-        },
+        yAxis,
         series: [
           {
             id: 'budget',
@@ -166,7 +209,7 @@ export default function makeBudgetActualsChart(options : BudgetActualsChartOptio
             id: 'actuals',
             name: `Actuals${options.seriesLabel ?? ''}`,
             colorIndex: 1,
-            pointPadding: 0.25,
+            pointPadding: 0.27,
           },
         ],
         legend: {
@@ -182,11 +225,7 @@ export default function makeBudgetActualsChart(options : BudgetActualsChartOptio
             borderWidth: 0,
           }
         },
-        tooltip: {
-          shared: true,
-          valueDecimals: options.precision,
-          ...options.tooltip
-        },
+        tooltip,
         caption: {
           useHTML: true,
           align: 'right',

@@ -112,7 +112,11 @@ function minMaxClassOf(df) {
 //
 // Columns representing a chartable metric has a column name with this format:
 //
-//   ${ccddd]_${metric_name}_${aggregation}_${budget_actual}
+//   ${ccddd]_${metric_name}_${facet}_${budget/actual}
+//
+//  Example for amount of activity_code 11 in actuals for 17001 would be:
+//
+//    17001_amount_11_actuals
 //
 // Columns providing more info on the row itself do not follow
 // any specific form. An example of such a column is "covid_type"
@@ -277,23 +281,29 @@ export default class DistrictData {
 
   expendituresByActivity() {
     return this.gf_expenditure_df
-      .groupby('class_of', 'data_type', 'activity_code', 'activity')
+      .filter(d => d.includes([2,3,4], d.object_code))
+      .groupby('class_of', 'data_type', 'activity_code')
       .rollup({
         amount: op.sum('amount'),
-        c_pct_expenditure: op.sum('c_pct_expenditure'),
-        c_pct_revenue: op.sum('c_pct_revenue'),
+        pctexp: op.sum('c_pct_expenditure'),
+        pctrev: op.sum('c_pct_revenue'),
       })
-      .groupby('class_of', 'activity_code', 'activity')
-      .pivot('data_type', ['amount', 'c_pct_expenditure', 'c_pct_revenue']);
+      .groupby('class_of')
+      .pivot(['activity_code', 'data_type'], {
+        amount: d => op.sum(d.amount),
+        pctexp: d => op.sum(d.pctexp) * 100,
+        pctrev: d => op.sum(d.pctrev) * 100,
+      });
   }
 
   expenditures_datapool() {
+    const data = this.expendituresByActivity().join(this.enrollment());
     return {
       connectors: [
         {
           id: 'c-gf-exp-by-activity',
           type: 'JSON',
-          options: dfToJSONConnectorOptions(this.expendituresByActivity(), DEFAULT_PRECISION),
+          options: dfToJSONConnectorOptions(data, DEFAULT_PRECISION),
         },
       ],
     };

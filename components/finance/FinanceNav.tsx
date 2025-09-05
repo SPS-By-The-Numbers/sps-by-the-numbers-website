@@ -61,7 +61,7 @@ export default function FinanceNav({sx=[]} : Params) {
             <NavLink href={`/finance/${ccddd}/enrollment`}>Enrollment</NavLink>
           </div>
           <div>
-            <NavLink href={`/finance/${ccddd}/expenditures`}>Expenditures</NavLink>
+            <NavLink href={`/finance/${ccddd}/expenditures`}>Staffing Expenditures</NavLink>
           </div>
           <Autocomplete
             disableClearable

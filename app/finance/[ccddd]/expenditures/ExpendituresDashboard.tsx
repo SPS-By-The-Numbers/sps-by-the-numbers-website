@@ -9,7 +9,7 @@ import makePctAmtChart from "utilities/highcharts/cells/PctAmtChart";
 import DistrictData from "utilities/DistrictData";
 import merge from 'lodash.merge';
 
-import type { BudgetActualsChartOptions, ValueFormat } from "utilities/highcharts/cells/BudgetActualsChart";
+import type { BudgetActualsChartOptions } from "utilities/highcharts/cells/BudgetActualsChart";
 import type { PctAmtChartOptions } from "utilities/highcharts/cells/PctAmtChart";
 import type Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
 
@@ -57,15 +57,12 @@ function makeActivityCells(allActivitiesDf) {
   const results = new Array<PctAmtChartOptions>;
   for (const info of allActivitiesDf.objects()) {
     const options = {
-      title: `Activity ${info.activity}`,
+      title: `${info.activity}`,
       renderTo: `act-${info.activity_code}-chart`,
-      metricColumnRoot: 'amount',
+      metricSuffix: info.activity_code,
       connectorId: 'c-gf-exp-by-activity',
       xDataColumn: 'class_of',
-
-      valueFormat: 'percentage' as ValueFormat,
       precision: DEFAULT_PRECISION,
-      yUnits: 'FTE',
     };
     results.push(...makePctAmtChart(options));
   }
@@ -95,6 +92,7 @@ function makeDashboardConfig(districtData : DistrictData) {
 async function loadData(dashboards, ccddd) {
   const districtData = await DistrictData.loadFromGcs(ccddd);
   dashboards.board('dashboard-charts-container', makeDashboardConfig(districtData));
+  window.districtData = districtData;
 }
 
 export default function ExpendituresDashboard() {

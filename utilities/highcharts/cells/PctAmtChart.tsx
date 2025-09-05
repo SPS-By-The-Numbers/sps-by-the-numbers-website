@@ -1,6 +1,6 @@
 import makeBudgetActualsChart from "utilities/highcharts/cells/BudgetActualsChart";
 
-import type { BudgetActualsChartOptions } from "utilities/highcharts/cells/BudgetActualsChart";
+import type { BudgetActualsChartOptions, ValueFormat } from "utilities/highcharts/cells/BudgetActualsChart";
 
 export type PctAmtChartOptions = BudgetActualsChartOptions;
 
@@ -9,14 +9,19 @@ export default function makePctAmtChart(options : PctAmtChartOptions) {
     makeBudgetActualsChart(
       {
         ...options,
-        renderTo: `${options.renderTo}-amt`,
-        metricSuffix: 'amt'
+        title: `${options.title} [% exp]`,
+        renderTo: `${options.renderTo}-pct`,
+        metricColumnRoot: 'pctexp',
+        valueFormat: 'percentage' as ValueFormat,
+        yUnits: '%',
       }),
     makeBudgetActualsChart(
       {
         ...options,
-        renderTo: `${options.renderTo}-pct`,
-        metricSuffix: 'pct_expenditure',
+        renderTo: `${options.renderTo}-amt`,
+        metricColumnRoot: 'amount',
+        valueFormat: 'currency' as ValueFormat,
+        yUnits: '$',
       }),
   ];
 }
