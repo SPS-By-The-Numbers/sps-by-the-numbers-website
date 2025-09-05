@@ -62,11 +62,9 @@ const pctAmtRowCellConfigs : Array<PctAmtChartOptions> = [
   {
     title: 'Teaching Related Comp',
     renderTo: 'teaching-related-ba-history-chart',
-    metricColumnRoot: 'teaching_related_comp',
+    metricSuffix: 'teaching_related_comp',
     connectorId: 'c-toplevel-metrics',
     xDataColumn: 'class_of',
-
-    valueFormat: 'percentage',
   },
 ];
 

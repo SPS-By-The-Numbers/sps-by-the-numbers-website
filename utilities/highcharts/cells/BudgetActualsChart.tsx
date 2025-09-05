@@ -117,7 +117,7 @@ function getColumnName(metricColumnRoot, suffix) {
 }
 
 function inferUnits(valueFormat : ValueFormat) {
-  switch (options.valueFormat) {
+  switch (valueFormat) {
     case 'currency':
       return '$';
 
@@ -142,7 +142,7 @@ export default function makeBudgetActualsChart(options : BudgetActualsChartOptio
     title: {
       text: options.yUnits ?? inferUnits(options.valueFormat)
     },
-  };
+  } as any;
 
   const tooltip = {
     shared: true,

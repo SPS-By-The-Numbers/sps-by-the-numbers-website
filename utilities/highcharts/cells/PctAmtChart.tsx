@@ -2,7 +2,17 @@ import makeBudgetActualsChart from "utilities/highcharts/cells/BudgetActualsChar
 
 import type { BudgetActualsChartOptions, ValueFormat } from "utilities/highcharts/cells/BudgetActualsChart";
 
-export type PctAmtChartOptions = BudgetActualsChartOptions;
+export type PctAmtChartOptions = {
+  title : string;
+  connectorId : string;
+  xDataColumn : string;
+  metricSuffix?: string;
+  renderTo: string;
+
+  seriesLabel?: string;
+
+  tooltip?: object;
+}
 
 export default function makePctAmtChart(options : PctAmtChartOptions) {
   return [
@@ -14,6 +24,7 @@ export default function makePctAmtChart(options : PctAmtChartOptions) {
         metricColumnRoot: 'pctexp',
         valueFormat: 'percentage' as ValueFormat,
         yUnits: '%',
+        precision: 2, // HACK
       }),
     makeBudgetActualsChart(
       {
@@ -22,6 +33,7 @@ export default function makePctAmtChart(options : PctAmtChartOptions) {
         metricColumnRoot: 'amount',
         valueFormat: 'currency' as ValueFormat,
         yUnits: '$',
+        precision: 2, // HACK
       }),
   ];
 }
