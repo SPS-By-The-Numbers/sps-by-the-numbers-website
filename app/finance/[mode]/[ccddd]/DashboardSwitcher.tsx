@@ -1,11 +1,12 @@
 'use client';
 
 import { useDistrictData } from '../../DistrictDataProvider';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useHighcharts } from 'components/providers/HighchartsProvider';
 import makeEnrollmentConfig from './EnrollmentConfig';
 import makeExpendituresConfig from './ExpendituresConfig';
 import makeSummaryConfig from './SummaryConfig';
+import ExpenditureFilter from 'app/finance/ExpenditureFilter';
 import Paper from '@mui/material/Paper';
 import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
@@ -33,7 +34,7 @@ function getTitle(mode) {
   return "[error]";
 }
 
-function updateChart(dashboards, mode, districtData) {
+function updateChart(dashboards, mode, districtData, filterState) {
   if (mode === 'summary') {
     dashboards.board('dashboard-charts-container',
                      makeSummaryConfig(districtData));
@@ -42,11 +43,15 @@ function updateChart(dashboards, mode, districtData) {
                      makeEnrollmentConfig(districtData));
   } else if (mode === 'expenditures') {
     dashboards.board('dashboard-charts-container',
-                     makeExpendituresConfig(districtData));
+                     makeExpendituresConfig(districtData, filterState));
   }
 }
 
 export default function DashboardSwitcher({ccddd, mode} : Params) {
+  const [selectedObjects, setSelectedObjects] = useState<string[]>(['obj-2', 'obj-3']);
+  const [selectedActivities, setSelectedActivities] = useState<string[]>(['act-4']);
+  const [selectedPrograms, setSelectedPrograms] = useState<string[]>(['obj-4']);
+
   const { highchartsObjs } = useHighcharts();
   const { districtDataMap, loadCcddd } = useDistrictData();
 
@@ -56,39 +61,57 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
         loadCcddd(ccddd)
       }
 
+      const filterSelection = {
+        selectedObjects,
+        selectedActivities,
+        selectedPrograms,
+      };
+
       if (highchartsObjs.dashboards && ccddd in districtDataMap) {
         const dashboards = highchartsObjs.dashboards;
         const districtData = districtDataMap[ccddd];
 
-        updateChart(dashboards, mode, districtData);
+        updateChart(dashboards, mode, districtData, filterSelection);
       }
     },
-    [ccddd, districtDataMap, highchartsObjs, loadCcddd, mode]
+    [ccddd, districtDataMap, highchartsObjs, loadCcddd, mode,
+      selectedObjects, selectedPrograms, selectedActivities]
   );
 
   const title = getTitle(mode);
 
   return (
-    <Stack component="main">
+    <Stack component="main" gap="0.2rem" paddingTop="0.3rem">
       <Paper sx={{ paddingTop: "0.5rem", paddingBottom: "0.5rem" }}>
-      <Typography component="h1" variant="h1" textAlign="center" style={{fontSize: "2.5rem"}}>{title} Dashboard</Typography>
+        <Typography component="h1" variant="h1" textAlign="center" style={{fontSize: "2.5rem"}}>{title} Dashboard</Typography>
       </Paper>
+      <ExpenditureFilter
+        filterState={
+          {
+            selectedObjects,
+            setSelectedObjects,
+            selectedActivities,
+            setSelectedActivities,
+            selectedPrograms,
+            setSelectedPrograms
+          }}
+      />
       <div id="dashboard-charts-container">
         <LinearProgress />
-          <Paper>
-            <Typography
-              component="h2"
-              variant="h2"
-              textAlign="center"
-              style={{
-                paddingTop: "1rem",
-                paddingBottom: "1rem",
-                fontSize: "1.5rem",
-              }}
-            >
-              Loading...
-            </Typography>
-          </Paper>
+        <Paper>
+          <Typography
+            component="h2"
+            variant="h2"
+            textAlign="center"
+            style={{
+              paddingTop: "1rem",
+              paddingBottom: "1rem",
+              fontSize: "1.5rem",
+            }}
+          >
+            Loading...
+          </Typography>
+        </Paper>
       </div>
     </Stack>
   );

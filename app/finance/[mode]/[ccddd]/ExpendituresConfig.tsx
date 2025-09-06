@@ -6,6 +6,7 @@ import makeBudgetActualsChart from "utilities/highcharts/cells/BudgetActualsChar
 import makePctAmtChart from "utilities/highcharts/cells/PctAmtChart";
 import merge from 'lodash.merge';
 
+import type { ExpenditureFilterState } from "app/finance/ExpenditureFilter";
 import type { BudgetActualsChartOptions } from "utilities/highcharts/cells/BudgetActualsChart";
 import type { PctAmtChartOptions } from "utilities/highcharts/cells/PctAmtChart";
 import type DistrictData from "utilities/DistrictData";
@@ -61,11 +62,24 @@ function makeActivityCells(allActivitiesDf) {
   return results;
 }
 
-export default function makeExpendituresConfig(districtData : DistrictData) {
-  // TODO: Hack on object_codes.
-  const expendituresDf = districtData.filteredExpenditures([2,3,4]);
+export type FilterSelection = {
+  selectedObjects: string[],
+  selectedActivities: string[],
+  selectedPrograms: string[],
+};
 
+export default function makeExpendituresConfig(districtData : DistrictData, filterSelection : FilterSelection) {
 
+  const selectedObjectCodes = new Array<number>;
+  for (const id of filterSelection.selectedObjects) {
+    const parts = id.split('-');
+    if (parts.length === 2 && parts[0] === 'obj') {
+      selectedObjectCodes.push(parseInt(parts[1]));
+    }
+  }
+  console.log(selectedObjectCodes);
+
+  const expendituresDf = districtData.filteredExpenditures(selectedObjectCodes);
   const allActivitiesDf = expendituresDf.groupby('activity_code', 'activity').rollup();
 
   const data = expendituresDf.groupby('class_of', 'data_type', 'activity_code')

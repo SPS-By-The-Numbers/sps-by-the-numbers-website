@@ -49,6 +49,7 @@
     "@emotion/styled": "^11.13.0",
     "@mui/material": "^7.3.1",
     "@mui/styled-engine-sc": "^7.3.1",
+    "@mui/x-tree-view": "^8.11.1",
     "@types/jest": "^29.5.8",
     "@types/node": "^24.3.0",
     "arquero": "^8.0.3",
