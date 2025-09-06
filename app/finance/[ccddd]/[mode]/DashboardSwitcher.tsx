@@ -63,7 +63,7 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
         updateChart(dashboards, mode, districtData);
       }
     },
-    [ccddd, districtDataMap, highchartsObjs, loadCcddd]
+    [ccddd, districtDataMap, highchartsObjs, loadCcddd, mode]
   );
 
   const title = getTitle(mode);

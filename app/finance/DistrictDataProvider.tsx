@@ -30,16 +30,16 @@ export function useDistrictData() {
 }
 
 export default function DistrictDataProvider({children}: DistrictDataProviderParams) {
-  // Use loadedCcddds to keep track of requests to prevent double-loading the dataset.
-  const [loadedCcddds, setLoadedCcddds] = useState<Set<Ccddd>>(new Set<Ccddd>);
+  // Use previouslyLoadedCcddds to keep track of requests to prevent double-loading the dataset.
+  const [previouslyLoadedCcddds, setPreviouslyLoadedCcddds] = useState<Set<Ccddd>>(new Set<Ccddd>);
   const [districtDataMap, setDistrictDataMap] = useState<DistrictDataMap>({} as DistrictDataMap);
 
   const value = useMemo(
     () => {
       // Used to signal a new data fetch.
       const loadCcddd = async (ccddd: Ccddd) => {
-        if (!loadedCcddds.has(ccddd)) {
-          setLoadedCcddds(new Set(loadedCcddds).add(ccddd));
+        if (!previouslyLoadedCcddds.has(ccddd)) {
+          setPreviouslyLoadedCcddds(new Set(previouslyLoadedCcddds).add(ccddd));
           const newDistrictDataMap = Object.assign({}, districtDataMap);
           newDistrictDataMap[ccddd] = await DistrictData.loadFromGcs(ccddd);
           setDistrictDataMap(newDistrictDataMap);
@@ -47,7 +47,7 @@ export default function DistrictDataProvider({children}: DistrictDataProviderPar
       };
       return {districtDataMap, loadCcddd};
     },
-    [districtDataMap]);
+    [districtDataMap, previouslyLoadedCcddds]);
 
   return (
     <DistrictDataContext.Provider value={value}>

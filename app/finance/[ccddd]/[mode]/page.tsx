@@ -3,17 +3,13 @@ import FinanceNav from 'components/finance/FinanceNav';
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: "Washington State School Financial Data Dashboard",
+  title: "Washington School District Financial Data Dashboard",
   description: 'Dashboard centralizing and joining bunches of official data to make it more usable.',
 };
 
-type PageProps = {
-  params: Promise<{ ccddd: string, mode: string  }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-};
-
-export default async function Page({ params, searchParams }: PageProps) {
-  const { ccddd, mode } = await params;
+export default async function Page(props: PageProps<'/finance/[ccddd]/[mode]'>) {
+  const { ccddd, mode } = await props.params;
+  const query = await props.searchParams;
   return (
     <>
       <FinanceNav />
