@@ -5,7 +5,7 @@ export {};
 
 declare global {
   interface Window {
-    districtData: DistrictData;
-    dashboards: Dashboards;
+    districtData?: DistrictData;
+    dashboards?: Dashboards;
   }
 }

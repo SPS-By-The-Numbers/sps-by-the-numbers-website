@@ -4,7 +4,7 @@ export const SITE_ROOT_URL = 'https://app.sps-by-the-numbers.com';
 export const HOME_URL = 'https://sps-by-the-numbers.com';
 
 // Used to generate the title and description in the <head> element.
-export const APP_TITLE = 'SPS By The Numbers Transcriptions';
+export const APP_TITLE = 'SPS By The Numbers -- Data analysis apps';
 
 // Originally this was a static HTML site with files spit into a prefix tree directory
 // structure to avoid having too many files in one directory. This isn't necessary

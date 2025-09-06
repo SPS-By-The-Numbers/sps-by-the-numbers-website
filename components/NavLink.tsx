@@ -11,9 +11,11 @@ import type { SxProps, Theme } from '@mui/material';
 export default function NavLink({href, children, sx=[]} : {href: string, children: ReactNode, sx?: SxProps<Theme>}) {
   const pathname = usePathname();
 
+  // TODO: Client-side navigation by using component={NextLink} causes the page to
+  // chug like mad on rerender. Something is wrong with highcharts there. I think we
+  // need to explicitly teardown the old board.
   return (
     <Link
-        component={NextLink}
         href={href}
         underline="none"
         sx={[{

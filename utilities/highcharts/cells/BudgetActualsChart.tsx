@@ -136,7 +136,14 @@ function inferUnits(valueFormat : ValueFormat) {
 export default function makeBudgetActualsChart(options : BudgetActualsChartOptions) {
   const {budgetColumn, actualsColumn} = getColumnName(options.metricColumnRoot, options.metricSuffix);
 
-  const valueFormatter = getFormatter(options.valueFormat, options.precision);
+  const rawFomatter = getFormatter(options.valueFormat, options.precision);
+  const valueFormatter = (v) => {
+    if (v === undefined) {
+      return '';
+    }
+
+    return rawFomatter(v);
+  };
 
   const yAxis = {
     title: {
@@ -153,7 +160,8 @@ export default function makeBudgetActualsChart(options : BudgetActualsChartOptio
   if (options.valueFormat === 'percentage') {
     // Fix the y-axis
     yAxis.min = 0;
-    yAxis.max = 100;
+    yAxis.max = 10;
+    yAxis.tickInterval = 1;
   }
 
   return merge(

@@ -13,7 +13,7 @@ import '../styles/globals.scss';
 
 export const metadata: Metadata = {
   title: Constants.APP_TITLE,
-  description: `Transcriptions of ${Object.entries(Constants.CATEGORY_CHANNEL_MAP).map(([k,info]) => info.name).join(', ')}`,
+  description: 'Apps for analysing data related to Seattle Public Schools',
 };
 
 const roboto = Roboto({subsets: ['latin'],});

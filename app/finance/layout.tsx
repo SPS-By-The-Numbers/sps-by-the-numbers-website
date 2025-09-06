@@ -1,6 +1,6 @@
 import { fetchDatasetStream } from 'utilities/DistrictData';
 import { parse } from "csv-parse/sync";
-import FinanceNav from 'components/finance/FinanceNav';
+import DistrictDataProvider from './DistrictDataProvider';
 import FinanceNavStateProvider from 'components/providers/FinanceNavStateProvider';
 
 import type { ReactNode } from 'react';
@@ -20,9 +20,10 @@ export default async function FinanceLayout({ children }: {children: ReactNode})
   }
 
   return (
-    <FinanceNavStateProvider initialCcddd={17001} districts={districts}>
-      <FinanceNav />
-      {children}
-    </FinanceNavStateProvider>
+    <DistrictDataProvider>
+      <FinanceNavStateProvider initialCcddd={17001} districts={districts}>
+        {children}
+      </FinanceNavStateProvider>
+    </DistrictDataProvider>
   )
 }

@@ -1,19 +1,11 @@
-'use client'
-
 import { baselineClassOfChartOptions } from "utilities/highcharts/defaults";
-import { useEffect } from 'react';
-import { useFinanceNavState } from 'components/providers/FinanceNavStateProvider';
-import { useHighcharts } from 'components/providers/HighchartsProvider';
 import makeBudgetActualsChart from "utilities/highcharts/cells/BudgetActualsChart";
 import makePctAmtChart from "utilities/highcharts/cells/PctAmtChart";
-import DistrictData from "utilities/DistrictData";
 import merge from 'lodash.merge';
 
 import type { BudgetActualsChartOptions } from "utilities/highcharts/cells/BudgetActualsChart";
 import type { PctAmtChartOptions } from "utilities/highcharts/cells/PctAmtChart";
-import type Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
-
-import "styles/hc-ba-history.scss"
+import type DistrictData from "utilities/DistrictData";
 
 // TODO: This needs dedupping with DistrictData.
 const DEFAULT_PRECISION = 2;
@@ -69,7 +61,7 @@ function makeActivityCells(allActivitiesDf) {
   return results;
 }
 
-function makeDashboardConfig(districtData : DistrictData) {
+export default function makeExpendituresConfig(districtData : DistrictData) {
   const allActivitiesDf = districtData.allActivities();
 
   return {
@@ -88,22 +80,3 @@ function makeDashboardConfig(districtData : DistrictData) {
     ],
   };
 }
-
-async function loadData(dashboards, ccddd) {
-  const districtData = await DistrictData.loadFromGcs(ccddd);
-  dashboards.board('dashboard-charts-container', makeDashboardConfig(districtData));
-  window.districtData = districtData;
-}
-
-export default function ExpendituresDashboard() {
-  const { ccddd } = useFinanceNavState();
-  const { highchartsObjs } = useHighcharts();
-  useEffect(() => {
-    if (highchartsObjs['dashboards']) {
-      loadData(highchartsObjs['dashboards'], ccddd);
-    }
-  },
-  [ccddd, highchartsObjs]);
-  return (<div id="dashboard-charts-container" />);
-}
-
