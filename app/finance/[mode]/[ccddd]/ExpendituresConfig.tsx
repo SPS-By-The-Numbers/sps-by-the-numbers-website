@@ -1,7 +1,10 @@
 import { baselineClassOfChartOptions } from "utilities/highcharts/defaults";
+import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import makeBudgetActualsChart from "utilities/highcharts/cells/BudgetActualsChart";
 import makePctAmtChart from "utilities/highcharts/cells/PctAmtChart";
 import merge from 'lodash.merge';
+import * as aq from 'arquero';
+import { op } from 'arquero';
 
 import type { BudgetActualsChartOptions } from "utilities/highcharts/cells/BudgetActualsChart";
 import type { PctAmtChartOptions } from "utilities/highcharts/cells/PctAmtChart";
@@ -62,17 +65,36 @@ function makeActivityCells(allActivitiesDf) {
 }
 
 export default function makeExpendituresConfig(districtData : DistrictData) {
-  const allActivitiesDf = districtData.allActivities();
+  // TODO: Hack on object_codes.
+  const expendituresDf = districtData.filteredExpenditures([2,3,4]);
+
+
+  const allActivitiesDf = expendituresDf.groupby('activity_code', 'activity').rollup();
+
+  const data = expendituresDf.groupby('class_of', 'data_type', 'activity_code')
+    .rollup({
+      amount: op.sum('amount'),
+      pctexp: op.sum('c_pct_expenditure'),
+      pctrev: op.sum('c_pct_revenue'),
+    })
+    .groupby('class_of')
+    .pivot(['activity_code', 'data_type'], {
+      amount: d => op.sum(d.amount),
+      pctexp: d => op.sum(d.pctexp) * 100,
+      pctrev: d => op.sum(d.pctrev) * 100,
+    })
+    .join(districtData.enrollment());
 
   return {
-    editMode: {
-      enabled: true,
-      contextMenu: {
-        enabled: true,
-        items: ['editMode'],
-      },
+    dataPool: {
+      connectors: [
+        {
+          id: 'c-gf-exp-by-activity',
+          type: 'JSON',
+          options: dfToJSONConnectorOptions(data, DEFAULT_PRECISION),
+        },
+      ],
     },
-    dataPool: districtData.expenditures_datapool(),
     gui: makeDashboardGui(allActivitiesDf),
     components: [
       ...rowCellConfigs.map(c => makeBudgetActualsChart(c)),

@@ -3,45 +3,6 @@ import * as aq from 'arquero';
 import { op } from 'arquero';
 import type { ColumnTable } from 'arquero';
 
-function dfToJSONConnectorOptions(df : ColumnTable, precision: number) {
-  const newDf = df.derive({
-    covid_shape: d => {
-      if (d.class_of < 2020) {
-        return 'triangle-down';
-      } else if (d.class_of < 2022) {
-        return 'square';
-      } else {
-        return 'triangle';
-      }
-    }})
-    .derive({
-      marker_radius: d => {
-        if (d.class_of < 2020) {
-          return 4;
-        } else if (d.class_of < 2022) {
-          return 2;
-        } else {
-          return 6;
-        }
-      }});
-
-   const undefinedToNull = newDf.columnNames().reduce((acc, col) => {
-     acc[col] = aq.escape(d => d[col] === undefined ? null : d[col]);
-     return acc;
-   }, {});
-
-   const roundNumbers = newDf.columnNames().reduce((acc, col) => {
-     acc[col] = aq.escape(
-       d => typeof d[col] === "number" ? op.round(d[col] * (10**precision))/(10**precision): d[col]);
-     return acc;
-   }, {});
-
-  return {
-    firstRowAsNames: false,
-    data: newDf.derive(undefinedToNull).derive(roundNumbers).objects(),
-  };
-}
-
 // TODO: This needs dedupping with SummaryDashboard.
 const DEFAULT_PRECISION = 2;
 
@@ -275,38 +236,9 @@ export default class DistrictData {
     };
   }
 
-  allActivities() {
-    return this.gf_expenditure_df.groupby('activity_code', 'activity').rollup();
-  }
-
-  expendituresByActivity() {
+  filteredExpenditures(object_codes) {
     return this.gf_expenditure_df
-      .filter(d => d.includes([2,3,4], d.object_code))
-      .groupby('class_of', 'data_type', 'activity_code')
-      .rollup({
-        amount: op.sum('amount'),
-        pctexp: op.sum('c_pct_expenditure'),
-        pctrev: op.sum('c_pct_revenue'),
-      })
-      .groupby('class_of')
-      .pivot(['activity_code', 'data_type'], {
-        amount: d => op.sum(d.amount),
-        pctexp: d => op.sum(d.pctexp) * 100,
-        pctrev: d => op.sum(d.pctrev) * 100,
-      });
+      .params({object_codes})
+      .filter((d, $) => d.includes($.object_codes, d.object_code));
   }
-
-  expenditures_datapool() {
-    const data = this.expendituresByActivity().join(this.enrollment());
-    return {
-      connectors: [
-        {
-          id: 'c-gf-exp-by-activity',
-          type: 'JSON',
-          options: dfToJSONConnectorOptions(data, DEFAULT_PRECISION),
-        },
-      ],
-    };
-  }
-
 };

@@ -69,7 +69,7 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
   const title = getTitle(mode);
 
   return (
-    <Stack component="main" sx={{ margin: "1rem" }}>
+    <Stack component="main">
       <Paper sx={{ paddingTop: "0.5rem", paddingBottom: "0.5rem" }}>
       <Typography component="h1" variant="h1" textAlign="center" style={{fontSize: "2.5rem"}}>{title} Dashboard</Typography>
       </Paper>
@@ -85,7 +85,6 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
                 paddingBottom: "1rem",
                 fontSize: "1.5rem",
               }}
-              id="hi"
             >
               Loading...
             </Typography>

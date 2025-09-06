@@ -29,7 +29,7 @@ function getSeriesAsDf(series, name, xMin, xMax) {
       let df = aq.fromJSON(s.userOptions.data);
 
       if (df.numCols() <  2) {
-        throw "Series missing y column.";
+        throw `missing ${name}`;
       }
 
       // First column is x.
@@ -64,6 +64,7 @@ function generateColoredTd(value, valueFormatter) {
 function generateVarianceCaption(name, series, valueFormatter, minX, maxX) {
   const budget_df = getSeriesAsDf(series, 'budget', minX, maxX);
   const actuals_df = getSeriesAsDf(series, 'actuals', minX, maxX);
+
   const variances_df = budget_df.join(actuals_df)
     .derive({variance: d => d.budget - d.actuals})
     .orderby('x');
@@ -76,6 +77,10 @@ function generateVarianceCaption(name, series, valueFormatter, minX, maxX) {
   });
   const median = stats.get('median', 0);
   const mean = stats.get('mean', 0);
+
+  if ([xVal, latest, median, mean].some(v => v === undefined)) {
+    throw "incomplete data";
+  }
 
   return `
   <table class="ba-chartstats-table">
@@ -198,9 +203,11 @@ export default function makeBudgetActualsChart(options : BudgetActualsChartOptio
                                         event.max)
                 });
               } catch(e) {
-                console.error('Failed calculating stats:', e);
+                console.warn(
+                  `Failed calculating stats for ${options.metricColumnRoot}, ${options.metricSuffix}:`,
+                  e);
                 this.chart.setCaption({
-                  text: '[Stat error]'
+                  text: `<table class="ba-chartstats-table"><tr><td>[${e}]</td></tr></table>`
                 });
               }
             },
