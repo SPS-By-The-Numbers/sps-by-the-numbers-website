@@ -1,17 +1,18 @@
 import DashboardSwitcher from './DashboardSwitcher';
 import FinanceNav from 'components/finance/FinanceNav';
+import { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: "Washington State School Financial Data Dashboard",
   description: 'Dashboard centralizing and joining bunches of official data to make it more usable.',
 };
 
-type PageParams = {
+type PageProps = {
   params: Promise<{ ccddd: string, mode: string  }>;
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-export default async function Page({ params, searchParams }: PageParams) {
+export default async function Page({ params, searchParams }: PageProps) {
   const { ccddd, mode } = await params;
   return (
     <>

@@ -34,9 +34,6 @@ function getTitle(mode) {
 }
 
 function updateChart(dashboards, mode, districtData) {
-  // Destroy the last chart if it's there.
-  document.getElementById('dashboard-charts-container').innerHTML = '';
-
   if (mode === 'summary') {
     dashboards.board('dashboard-charts-container',
                      makeSummaryConfig(districtData));
@@ -66,7 +63,7 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
         updateChart(dashboards, mode, districtData);
       }
     },
-    [ccddd, districtDataMap, highchartsObjs]
+    [ccddd, districtDataMap, highchartsObjs, loadCcddd]
   );
 
   const title = getTitle(mode);

@@ -10,7 +10,7 @@ export type DistrictDataMap = Map<Ccddd, DistrictData>;
 
 type DistrictDataContextType = {
   districtDataMap: DistrictDataMap;
-  loadCcddd: (ccddd: DistrictDataMap) => void;
+  loadCcddd: (ccddd: Ccddd) => void;
 };
 
 type DistrictDataProviderParams = {
@@ -29,30 +29,25 @@ export function useDistrictData() {
   return context;
 }
 
-async function loadData(dashboards, ccddd) {
-  const districtData = await DistrictData.loadFromGcs(ccddd);
-  dashboards.board('dashboard-charts-container', makeDashboardConfig(districtData));
-  window.districtData = districtData;
-  window.dashboards = dashboards;
-}
-
-
 export default function DistrictDataProvider({children}: DistrictDataProviderParams) {
   // Use loadedCcddds to keep track of requests to prevent double-loading the dataset.
   const [loadedCcddds, setLoadedCcddds] = useState<Set<Ccddd>>(new Set<Ccddd>);
-  const [districtDataMap, setDistrictDataMap] = useState<DistrictDataMap>({});
+  const [districtDataMap, setDistrictDataMap] = useState<DistrictDataMap>({} as DistrictDataMap);
 
-  // Used to signal a new data fetch.
-  const loadCcddd = async (ccddd: Ccddd) => {
-    if (!loadedCcddds.has(ccddd)) {
-      setLoadedCcddds(new Set(loadedCcddds).add(ccddd));
-      const newDistrictDataMap = Object.assign({}, districtDataMap);
-      newDistrictDataMap[ccddd] = await DistrictData.loadFromGcs(ccddd);
-      setDistrictDataMap(newDistrictDataMap);
-    }
-  };
-
-  const value = useMemo(() => ({districtDataMap, loadCcddd}), [districtDataMap]);
+  const value = useMemo(
+    () => {
+      // Used to signal a new data fetch.
+      const loadCcddd = async (ccddd: Ccddd) => {
+        if (!loadedCcddds.has(ccddd)) {
+          setLoadedCcddds(new Set(loadedCcddds).add(ccddd));
+          const newDistrictDataMap = Object.assign({}, districtDataMap);
+          newDistrictDataMap[ccddd] = await DistrictData.loadFromGcs(ccddd);
+          setDistrictDataMap(newDistrictDataMap);
+        }
+      };
+      return {districtDataMap, loadCcddd};
+    },
+    [districtDataMap]);
 
   return (
     <DistrictDataContext.Provider value={value}>
