@@ -3,9 +3,6 @@ import * as aq from 'arquero';
 import { op } from 'arquero';
 import type { ColumnTable } from 'arquero';
 
-// TODO: This needs dedupping with SummaryDashboard.
-const DEFAULT_PRECISION = 2;
-
 const YEAR_GROUP_BY = ["class_of"];
 const FINANCE_GROUP_BY = ["data_type", ...YEAR_GROUP_BY];
 
@@ -222,18 +219,6 @@ export default class DistrictData {
     return k12EnrollmentActuals
       .join_full(k12EnrollmentBudget)
       .join_full(this.all_class_ofs_df);
-  }
-
-  toplevel_metrics_datapool() {
-    return {
-      connectors: [
-        {
-          id: 'c-toplevel-metrics',
-          type: 'JSON',
-          options: dfToJSONConnectorOptions(this.toplevel_metrics(), DEFAULT_PRECISION),
-        },
-      ],
-    };
   }
 
   filteredExpenditures(object_codes) {

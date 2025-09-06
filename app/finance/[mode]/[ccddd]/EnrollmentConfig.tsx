@@ -1,4 +1,5 @@
 import { baselineClassOfChartOptions } from "utilities/highcharts/defaults";
+import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import merge from 'lodash.merge';
 
 import type Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
@@ -158,6 +159,7 @@ function makeCorrelationGraph(target_id, title, yMetric, xMetric,
 }
 
 export default function makeEnrollmentConfig(districtData : DistrictData) {
+  const data = districtData.toplevel_metrics();
   return {
     editMode: {
       enabled: true,
@@ -166,7 +168,15 @@ export default function makeEnrollmentConfig(districtData : DistrictData) {
         items: ['editMode'],
       },
     },
-    dataPool: districtData.toplevel_metrics_datapool(),
+    dataPool:  {
+      connectors: [
+        {
+          id: 'c-toplevel-metrics',
+          type: 'JSON',
+          options: dfToJSONConnectorOptions(data),
+        },
+      ],
+    },
     gui: makeDashboardGui(),
     components: [
       makeCorrelationGraph('enrollment-teaching-fte-correlation', 'Enrollment-Teaching FTE Correlation',

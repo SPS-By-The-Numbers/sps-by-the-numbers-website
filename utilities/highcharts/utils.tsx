@@ -1,5 +1,9 @@
+import type { ColumnTable } from 'arquero';
+
 import * as aq from 'arquero';
 import { op } from 'arquero';
+
+export const DEFAULT_PRECISION = 2;
 
 export function makeCurrencyFormatter(precision : number) {
   return new Intl.NumberFormat("en-US", {
@@ -11,7 +15,7 @@ export function makeCurrencyFormatter(precision : number) {
   }).format;
 }
 
-export function dfToJSONConnectorOptions(df : ColumnTable, precision: number) {
+export function dfToJSONConnectorOptions(df : ColumnTable, precision = DEFAULT_PRECISION) {
   const newDf = df.derive({
     covid_shape: d => {
       if (d.class_of < 2020) {

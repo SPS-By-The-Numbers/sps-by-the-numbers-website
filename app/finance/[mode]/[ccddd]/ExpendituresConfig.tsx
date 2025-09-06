@@ -1,17 +1,14 @@
 import { baselineClassOfChartOptions } from "utilities/highcharts/defaults";
-import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
+import { dfToJSONConnectorOptions, DEFAULT_PRECISION } from 'utilities/highcharts/utils';
+import { op } from 'arquero';
+import * as aq from 'arquero';
 import makeBudgetActualsChart from "utilities/highcharts/cells/BudgetActualsChart";
 import makePctAmtChart from "utilities/highcharts/cells/PctAmtChart";
 import merge from 'lodash.merge';
-import * as aq from 'arquero';
-import { op } from 'arquero';
 
 import type { BudgetActualsChartOptions } from "utilities/highcharts/cells/BudgetActualsChart";
 import type { PctAmtChartOptions } from "utilities/highcharts/cells/PctAmtChart";
 import type DistrictData from "utilities/DistrictData";
-
-// TODO: This needs dedupping with DistrictData.
-const DEFAULT_PRECISION = 2;
 
 const rowCellConfigs : Array<BudgetActualsChartOptions> = [
   {
@@ -91,7 +88,7 @@ export default function makeExpendituresConfig(districtData : DistrictData) {
         {
           id: 'c-gf-exp-by-activity',
           type: 'JSON',
-          options: dfToJSONConnectorOptions(data, DEFAULT_PRECISION),
+          options: dfToJSONConnectorOptions(data),
         },
       ],
     },

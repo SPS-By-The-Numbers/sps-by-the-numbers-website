@@ -55,13 +55,13 @@ export default function FinanceNav({sx=[]} : Params) {
           }}>
         <Stack direction="row" spacing={4} sx={{alignItems: "center"}}>
           <div>
-            <NavLink href={`/finance/${ccddd}/summary`}>Summary</NavLink>
+            <NavLink href={`/finance/summary/${ccddd}`}>Summary</NavLink>
           </div>
           <div>
-            <NavLink href={`/finance/${ccddd}/enrollment`}>Enrollment</NavLink>
+            <NavLink href={`/finance/enrollment/${ccddd}`}>Enrollment</NavLink>
           </div>
           <div>
-            <NavLink href={`/finance/${ccddd}/expenditures`}>Staffing Expenditures</NavLink>
+            <NavLink href={`/finance/expenditures/${ccddd}`}>Staffing Expenditures</NavLink>
           </div>
           <Autocomplete
             disableClearable

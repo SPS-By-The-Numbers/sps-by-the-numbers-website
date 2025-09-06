@@ -1,13 +1,11 @@
+import { dfToJSONConnectorOptions, DEFAULT_PRECISION } from 'utilities/highcharts/utils';
 import makeBudgetActualsChart from "utilities/highcharts/cells/BudgetActualsChart";
 import makePctAmtChart from "utilities/highcharts/cells/PctAmtChart";
-import DistrictData from "utilities/DistrictData";
 import merge from 'lodash.merge';
 
 import type { BudgetActualsChartOptions } from "utilities/highcharts/cells/BudgetActualsChart";
 import type { PctAmtChartOptions } from "utilities/highcharts/cells/PctAmtChart";
-
-// TODO: This needs dedupping with DistrictData.
-const DEFAULT_PRECISION = 2;
+import type DistrictData from "utilities/DistrictData";
 
 const rowCellConfigs : Array<BudgetActualsChartOptions> = [
   {
@@ -96,6 +94,7 @@ function makeDashboardGui() {
 }
 
 export default function makeSummaryConfig(districtData : DistrictData) {
+  const data = districtData.toplevel_metrics();
   return {
     editMode: {
       enabled: true,
@@ -104,7 +103,15 @@ export default function makeSummaryConfig(districtData : DistrictData) {
         items: ['editMode'],
       },
     },
-    dataPool: districtData.toplevel_metrics_datapool(),
+    dataPool:  {
+      connectors: [
+        {
+          id: 'c-toplevel-metrics',
+          type: 'JSON',
+          options: dfToJSONConnectorOptions(data),
+        },
+      ],
+    },
     gui: makeDashboardGui(),
     components: [
       ...rowCellConfigs.map(c => makeBudgetActualsChart(c)),
