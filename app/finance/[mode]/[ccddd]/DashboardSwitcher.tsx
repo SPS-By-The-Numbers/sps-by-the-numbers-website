@@ -34,7 +34,7 @@ function getTitle(mode) {
   return "[error]";
 }
 
-function updateChart(dashboards, mode, districtData, filterState) {
+function updateChart(dashboards, mode, districtData, filterSelection) {
   if (mode === 'summary') {
     dashboards.board('dashboard-charts-container',
                      makeSummaryConfig(districtData));
@@ -43,14 +43,38 @@ function updateChart(dashboards, mode, districtData, filterState) {
                      makeEnrollmentConfig(districtData));
   } else if (mode === 'expenditures') {
     dashboards.board('dashboard-charts-container',
-                     makeExpendituresConfig(districtData, filterState));
+                     makeExpendituresConfig(districtData, filterSelection));
   }
+}
+
+function extractCodes(prefix, selectedItems) {
+  const selectedCodes = new Array<number>;
+  for (const id of selectedItems) {
+    const parts = id.split('-');
+    if (parts.length === 2 && parts[0] === prefix) {
+      selectedCodes.push(parseInt(parts[1]));
+    }
+  }
+  return selectedCodes;
 }
 
 export default function DashboardSwitcher({ccddd, mode} : Params) {
   const [selectedObjects, setSelectedObjects] = useState<string[]>(['obj-2', 'obj-3']);
-  const [selectedActivities, setSelectedActivities] = useState<string[]>(['act-4']);
-  const [selectedPrograms, setSelectedPrograms] = useState<string[]>(['obj-4']);
+  const [selectedActivities, setSelectedActivities] = useState<string[]>([
+    // Add basic teaching related activities.
+    'act-21',
+    'act-27',
+    'act-28',
+  ]);
+  const [selectedPrograms, setSelectedPrograms] = useState<string[]>([
+    // Add all special education programs for now.
+    'prog-21',
+    'prog-22',
+    'prog-23',
+    'prog-24',
+    'prog-25',
+    'prog-29',
+  ]);
 
   const { highchartsObjs } = useHighcharts();
   const { districtDataMap, loadCcddd } = useDistrictData();
@@ -62,9 +86,9 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
       }
 
       const filterSelection = {
-        selectedObjects,
-        selectedActivities,
-        selectedPrograms,
+        selectedObjectCodes: extractCodes('obj', selectedObjects),
+        selectedActivityCodes: extractCodes('act', selectedActivities),
+        selectedProgramCodes: extractCodes('prog', selectedPrograms),
       };
 
       if (highchartsObjs.dashboards && ccddd in districtDataMap) {

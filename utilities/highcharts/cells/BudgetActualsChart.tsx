@@ -164,8 +164,7 @@ export default function makeBudgetActualsChart(options : BudgetActualsChartOptio
 
   if (options.valueFormat === 'percentage') {
     // Fix the y-axis
-    yAxis.min = 0;
-    yAxis.max = 10;
+    // TODO: Make scale based on data.
     yAxis.tickInterval = 1;
   }
 

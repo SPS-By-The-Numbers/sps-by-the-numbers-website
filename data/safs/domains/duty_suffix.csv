@@ -1,0 +1,7 @@
+duty_suffix,duty_contract_type,duty_contract_description,school_year,_source,_source_table
+0,"Certificated, base","Certificated base contracts and all classified employment assignments except as
+noted below.",9998-9999,9998-9999-spsbtn.xlsx,duty_suffix
+1,"Certificated, supplemental",Certificated supplemental contracts for additional responsibility and incentive but not additional time.,9998-9999,9998-9999-spsbtn.xlsx,duty_suffix
+2,"Certificated, supplemental, extended","Certificated supplemental contracts for extended, extra, or optional days and hours
+which are available to the employee.",9998-9999,9998-9999-spsbtn.xlsx,duty_suffix
+3,"Classified, non-time",Certain classified employment or payments not related to time.,9998-9999,9998-9999-spsbtn.xlsx,duty_suffix

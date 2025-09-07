@@ -3,6 +3,12 @@ import * as aq from 'arquero';
 import { op } from 'arquero';
 import type { ColumnTable } from 'arquero';
 
+export type FilterSelection = {
+  selectedObjectCodes: Array<number>,
+  selectedActivityCodes: Array<number>,
+  selectedProgramCodes: Array<number>,
+};
+
 const YEAR_GROUP_BY = ["class_of"];
 const FINANCE_GROUP_BY = ["data_type", ...YEAR_GROUP_BY];
 
@@ -221,9 +227,13 @@ export default class DistrictData {
       .join_full(this.all_class_ofs_df);
   }
 
-  filteredExpenditures(object_codes) {
+  filteredExpenditures(filterSelection: FilterSelection) {
+    console.log(filterSelection);
     return this.gf_expenditure_df
-      .params({object_codes})
-      .filter((d, $) => d.includes($.object_codes, d.object_code));
+      .params(filterSelection)
+      .filter((d, $) =>
+              d.includes($.selectedObjectCodes, d.object_code) &&
+              d.includes($.selectedActivityCodes, d.activity_code) &&
+              d.includes($.selectedProgramCodes, d.program_code));
   }
 };

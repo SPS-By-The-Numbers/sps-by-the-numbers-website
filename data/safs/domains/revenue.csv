@@ -1,0 +1,227 @@
+revenue_code,revenue,category_code,category,program_code
+1100,Local Property Tax,1000,Local Taxes,0
+1300,Sale of Tax Title Property,1000,Local Taxes,0
+1400,Local in Lieu of Taxes,1000,Local Taxes,0
+1500,Timber Excise Tax,1000,Local Taxes,0
+1600,County-Administered Forests,1000,Local Taxes,0
+1900,Other Local Taxes,1000,Local Taxes,0
+2100,Tuition and Fees?Unassigned,2000,Local Non-tax,0
+2101,All Day Kindergarten-Begin FY 03-04-Deletetd FY 04-05,2000,Local Non-tax,1
+2122,Special Education?Infants and Toddlers?Tuition and Fees,2000,Local Non-tax,22
+2131,Secondary Vocational Education?Tuition and Fees,2000,Local Non-tax,31
+2145,Skill Center?Tuition and Fees,2000,Local Non-tax,45
+2171,Traffic Safety?Education Fees,2000,Local Non-tax,71
+2173,Summer School?Tuition and Fees,2000,Local Non-tax,73
+2183,Adult Education Tuitions and Fees-Deleted FY 03-04,2000,Local Non-tax,83
+2186,Community School?Tuition and Fees,2000,Local Non-tax,86
+2188,Child Care?Tuition and Fees,2000,Local Non-tax,88
+2200,"""Sales of Goods, Supplies, and Services?Unassigned""",2000,Local Non-tax,0
+2231,"""Secondary Vocational Education?Sales of Goods, Supplies, and Services""",2000,Local Non-tax,31
+2241,"Skills Center Proj., Sales of Goods-Deleted FY00",2000,Local Non-tax,41
+2245,"""Skill Center?Sales of Goods, Supplies, and Services""",2000,Local Non-tax,45
+2288,"""Child Care?Sales of Goods, Supplies, and Services""",2000,Local Non-tax,88
+2289,"""Other Community Services?Sales of Goods, Supplies, and Services""",2000,Local Non-tax,89
+2298,"""School Food Services?Sales of Goods, Supplies, and Services""",2000,Local Non-tax,98
+2299,School Bus Revenue,2000,Local Non-tax,99
+2300,Investment Earnings,2000,Local Non-tax,0
+2400,Interfund Loan Interest Earnings,2000,Local Non-tax,0
+2450,Other Interest Earnings,2000,Local Non-tax,50
+2500,"""Gifts, Grants, and Donations (Local)""",2000,Local Non-tax,0
+2600,Fines and Damages,2000,Local Non-tax,0
+2700,Rentals and Leases,2000,Local Non-tax,0
+2800,Insurance Recoveries,2000,Local Non-tax,0
+2900,Local Support Non-Tax?Unassigned,2000,Local Non-tax,0
+2910,E-Rate,2000,Local Non-tax,10
+2998,Local School Food Services?non NSLP,2000,Local Non-tax,98
+3100,Apportionment,3000,State-General Purpose,0
+3121,Special Education?General Apportionment,3000,State-General Purpose,21
+3300,Local Effort Assistance,3000,State-General Purpose,0
+3600,State Forests,3000,State-General Purpose,0
+3700,Timber Excise Tax-Renumbered 1500 FY 99-00,3000,State-General Purpose,0
+3900,Other State General Purpose?Unassigned,3000,State-General Purpose,0
+4100,Special Purpose?Unassigned,4000,State-Special Purpose,0
+4121,Special Education,4000,State-Special Purpose,21
+4122,Special Education?Infants and Toddlers?State,4000,State-Special Purpose,22
+4126,State Institutions?Special Education,4000,State-Special Purpose,26
+4130,State Funding Assistance?Paid Direct to District,4000,State-Special Purpose,30
+4134,Middle School Career and Technical Education - added FY 07-08 F-196,4000,State-Special Purpose,34
+4139,Career Launch,4000,State-Special Purpose,39
+4154,Student Retention and Retrieval-Deleted FY99-00,4000,State-Special Purpose,54
+4155,Learning Assistance,4000,State-Special Purpose,55
+4156,"""State Institutions, Centers, and Homes?Delinquent""",4000,State-Special Purpose,56
+4158,Special and Pilot Programs,4000,State-Special Purpose,58
+4159,Institutions?Juveniles in Adult Jails,4000,State-Special Purpose,59
+4162,"Better Schools-Staff, State-Deleted FY 02-03",4000,State-Special Purpose,62
+4163,"Promoting Academic Success Added FY 05-06 F-196 (formerly Better Schools-Prof. Dev.), State-Deleted FY 02-03",4000,State-Special Purpose,63
+4165,Transitional Bilingual,4000,State-Special Purpose,65
+4166,Student Achievement - Added FY 01-02 - Deleted FY 13-14,4000,State-Special Purpose,66
+4171,Traffic Safety Education?Inactive Account,4000,State-Special Purpose,71
+4174,Highly Capable,4000,State-Special Purpose,74
+4175,Professional Development-added FY 07-08 F-196 (Flexible Ed-Deleted FY 03-04-FY 02-03 (formerly Local Education Prgm Enhancmt),4000,State-Special Purpose,75
+4183,Adult Education-Deleted FY99-00,4000,State-Special Purpose,83
+4188,Child Care,4000,State-Special Purpose,88
+4198,School Food Services,4000,State-Special Purpose,98
+4199,Transportation?Operations,4000,State-Special Purpose,99
+4230,State Funding Assistance?Paid Direct to Contractor,4000,State-Special Purpose,30
+4300,Other State Agencies?Unassigned,4000,State-Special Purpose,0
+4321,Special Education,4000,State-Special Purpose,21
+4322,Special Education?Infants and Toddlers?State,4000,State-Special Purpose,22
+4326,State Institutions?Special Education,4000,State-Special Purpose,26
+4330,State Funding Assistance?Other,4000,State-Special Purpose,30
+4356,State Institutions?Centers and Homes,4000,State-Special Purpose,56
+4358,Special and Pilot Programs,4000,State-Special Purpose,58
+4365,Transitional Bilingual,4000,State-Special Purpose,65
+4388,Child Care?Other State Agencies,4000,State-Special Purpose,88
+4398,School Food Services,4000,State-Special Purpose,98
+4399,Transportation?Operations,4000,State-Special Purpose,99
+4499,Transportation?Depreciation,4000,State-Special Purpose,99
+5200,General Purpose Direct Federal Grants?Unassigned,5000,Federal-General Purpose,0
+5300,Impact Aid?Maintenance and Operations,5000,Federal-General Purpose,0
+5329,Impact Aid?Special Education Funding,5000,Federal-General Purpose,29
+5400,Federal in Lieu of Taxes,5000,Federal-General Purpose,0
+5500,Federal Forests,5000,Federal-General Purpose,0
+5600,Qualified Bond Interest Credit?Federal,5000,Federal-General Purpose,0
+6100,Special Purpose?OSPI Unassigned,6000,Federal-Special Purpose,0
+6111,Special Purpose?GEER,6000,Federal-Special Purpose,11
+6112,Special Purpose?ESSER II,6000,Federal-Special Purpose,12
+6113,Special Purpose?ESSER III,6000,Federal-Special Purpose,13
+6114,Special Purpose?ESSER III?Supplemental?Learning Loss,6000,Federal-Special Purpose,14
+6118,Special Purpose?Reserve G,6000,Federal-Special Purpose,18
+6119,Special Purpose?Reserve H,6000,Federal-Special Purpose,19
+6121,Special Education?Medicaid Reimbursements,6000,Federal-Special Purpose,21
+6122,Special Education?Infants and Toddlers?Medicaid Reimbursements,6000,Federal-Special Purpose,22
+6123,Special Education?ARP?IDEA,6000,Federal-Special Purpose,23
+6124,Special Education?Supplemental,6000,Federal-Special Purpose,24
+6125,Special Education?Infants and Toddlers?Federal,6000,Federal-Special Purpose,25
+6127,"Special Education, Deinstitutionalized-Deleted FY 97-98",6000,Federal-Special Purpose,27
+6128,"Special Education, Institution-Deleted FY 96-97",6000,Federal-Special Purpose,28
+6138,Secondary Vocational Education,6000,Federal-Special Purpose,38
+6140,Impact Aid?Construction,6000,Federal-Special Purpose,40
+6146,Skill Center,6000,Federal-Special Purpose,46
+6151,ESEA Disadvantaged?Federal,6000,Federal-Special Purpose,51
+6152,Other Title Grants Under ESEA?Federal,6000,Federal-Special Purpose,52
+6153,ESEA Migrant?Federal,6000,Federal-Special Purpose,53
+6154,Reading First,6000,Federal-Special Purpose,54
+6157,Institutions?Neglected and Delinquent,6000,Federal-Special Purpose,57
+6161,Head Start,6000,Federal-Special Purpose,61
+6162,Math and Science?Professional Development,6000,Federal-Special Purpose,62
+6164,Limited English Proficiency,6000,Federal-Special Purpose,64
+6167,Indian Education?JOM,6000,Federal-Special Purpose,67
+6168,Indian Education?ED,6000,Federal-Special Purpose,68
+6176,Targeted Assistance,6000,Federal-Special Purpose,76
+6177,Eisenhower Professional Development-Deleted FY 05-06,6000,Federal-Special Purpose,77
+6178,Youth Training Programs,6000,Federal-Special Purpose,78
+6184,Adult Basic Education - Deleted FY 00-01,6000,Federal-Special Purpose,84
+6188,Child Care,6000,Federal-Special Purpose,88
+6189,Other Community Services,6000,Federal-Special Purpose,89
+6198,School Food Services,6000,Federal-Special Purpose,98
+6199,Transportation?Operations,6000,Federal-Special Purpose,99
+6200,Direct Special Purpose Grants,6000,Federal-Special Purpose,0
+6211,Special Purpose?GEER,6000,Federal-Special Purpose,11
+6212,Special Purpose?ESSER II,6000,Federal-Special Purpose,12
+6213,Special Purpose?ESSER III,6000,Federal-Special Purpose,13
+6214,Special Purpose?ESSER III?Supplemental?Learning Loss,6000,Federal-Special Purpose,14
+6218,Special Purpose?Reserve G,6000,Federal-Special Purpose,18
+6219,Special Purpose?Reserve H,6000,Federal-Special Purpose,19
+6221,Special Education?Medicaid Reimbursements,6000,Federal-Special Purpose,21
+6222,Special Education?Infants and Toddlers?Medicaid Reimbursements,6000,Federal-Special Purpose,22
+6223,Special Education?ARP?IDEA,6000,Federal-Special Purpose,23
+6224,Special Education?Supplemental,6000,Federal-Special Purpose,24
+6225,Special Education?Infants and Toddlers?Federal,6000,Federal-Special Purpose,25
+6238,Secondary Vocational Education,6000,Federal-Special Purpose,38
+6240,Impact Aid?Construction,6000,Federal-Special Purpose,40
+6246,Skill Center,6000,Federal-Special Purpose,46
+6249,Impact Aid-Construction,6000,Federal-Special Purpose,49
+6251,ESEA Disadvantaged?Federal,6000,Federal-Special Purpose,51
+6252,Other Title Grants Under ESEA?Federal,6000,Federal-Special Purpose,52
+6253,ESEA Migrant?Federal,6000,Federal-Special Purpose,53
+6254,Reading First,6000,Federal-Special Purpose,54
+6257,Institutions?Neglected and Delinquent,6000,Federal-Special Purpose,57
+6261,Head Start,6000,Federal-Special Purpose,61
+6262,Math and Science?Professional Development,6000,Federal-Special Purpose,62
+6264,Limited English Proficiency,6000,Federal-Special Purpose,64
+6267,Indian Education?JOM,6000,Federal-Special Purpose,67
+6268,Indian Education?ED,6000,Federal-Special Purpose,68
+6276,Targeted Assistance,6000,Federal-Special Purpose,76
+6278,Youth Training Programs,6000,Federal-Special Purpose,78
+6288,Child Care,6000,Federal-Special Purpose,88
+6289,Other Community Services,6000,Federal-Special Purpose,89
+6298,School Food Services,6000,Federal-Special Purpose,98
+6299,Transportation?Operations,6000,Federal-Special Purpose,99
+6300,Federal Grants Through Other Entities?Unassigned,6000,Federal-Special Purpose,0
+6310,Medicaid Administrative Match,6000,Federal-Special Purpose,10
+6311,Special Purpose?GEER,6000,Federal-Special Purpose,11
+6312,Special Purpose?ESSER II,6000,Federal-Special Purpose,12
+6313,Special Purpose?ESSER III,6000,Federal-Special Purpose,13
+6314,Special Purpose?ESSER III?Supplemental?Learning Loss,6000,Federal-Special Purpose,14
+6318,Special Purpose?Reserve G,6000,Federal-Special Purpose,18
+6319,Special Purpose?Reserve H,6000,Federal-Special Purpose,19
+6321,Special Education?Medicaid Reimbursements,6000,Federal-Special Purpose,21
+6322,Special Education?Infants and Toddlers?Medicaid Reimbursements,6000,Federal-Special Purpose,22
+6323,Special Education?ARP?IDEA,6000,Federal-Special Purpose,23
+6324,Special Education?Supplemental,6000,Federal-Special Purpose,24
+6325,Special Education?Infants and Toddlers?Federal,6000,Federal-Special Purpose,25
+6338,Secondary Vocational Education,6000,Federal-Special Purpose,38
+6340,Impact Aid?Construction,6000,Federal-Special Purpose,40
+6346,Skill Center,6000,Federal-Special Purpose,46
+6351,ESEA Disadvantaged?Federal,6000,Federal-Special Purpose,51
+6352,Other Title Grants Under ESEA?Federal,6000,Federal-Special Purpose,52
+6353,ESEA Migrant?Federal,6000,Federal-Special Purpose,53
+6354,Reading First,6000,Federal-Special Purpose,54
+6357,Institutions?Neglected and Delinquent,6000,Federal-Special Purpose,57
+6361,Head Start,6000,Federal-Special Purpose,61
+6362,Math and Science?Professional Development,6000,Federal-Special Purpose,62
+6364,Limited English Proficiency,6000,Federal-Special Purpose,64
+6367,Indian Education?JOM,6000,Federal-Special Purpose,67
+6368,Indian Education?ED,6000,Federal-Special Purpose,68
+6376,Targeted Assistance,6000,Federal-Special Purpose,76
+6377,Eisenhower Professional Development Added FY 00-01-Deleted FY 05-06,6000,Federal-Special Purpose,77
+6378,Youth Training Programs,6000,Federal-Special Purpose,78
+6385,Adult Job Training-Deleted FY 00-01,6000,Federal-Special Purpose,85
+6388,Child Care,6000,Federal-Special Purpose,88
+6389,Other Community Services,6000,Federal-Special Purpose,89
+6398,School Food Services,6000,Federal-Special Purpose,98
+6399,Transportation?Operations,6000,Federal-Special Purpose,99
+6998,USDA Commodities,6000,Federal-Special Purpose,98
+7100,Program Participation?Unassigned,7000,Revenues from Other School Districts,0
+7121,Special Education,7000,Revenues from Other School Districts,21
+7122,Special Education?Infants and Toddlers,7000,Revenues from Other School Districts,22
+7131,Vocational Education,7000,Revenues from Other School Districts,31
+7145,Skill Center,7000,Revenues from Other School Districts,45
+7147,Skill Center?Facility Upgrades,7000,Revenues from Other School Districts,47
+7163,Promoting Academic Success - Added FY 06-07 F-196,7000,Revenues from Other School Districts,63
+7189,Other Community Services,7000,Revenues from Other School Districts,89
+7194,Support Services - Deleted FY 01-02,7000,Revenues from Other School Districts,94
+7197,Support Services,7000,Revenues from Other School Districts,97
+7198,School Food Services,7000,Revenues from Other School Districts,98
+7199,Transportation,7000,Revenues from Other School Districts,99
+7297,Data Processing-Deleted FY00-01,7000,Revenues from Other School Districts,97
+7301,Nonhigh Participation,7000,Revenues from Other School Districts,1
+8100,Governmental Entities,8000,Revenues from Other Agencies and Associations,0
+8101,Governmental Entities?Enrichment,8000,Revenues from Other Agencies and Associations,1
+8188,Child Care,8000,Revenues from Other Agencies and Associations,88
+8189,Community Services,8000,Revenues from Other Agencies and Associations,89
+8198,School Food Services,8000,Revenues from Other Agencies and Associations,98
+8199,Transportation,8000,Revenues from Other Agencies and Associations,99
+8200,Private Foundations,8000,Revenues from Other Agencies and Associations,0
+8500,Educational Service Districts,8000,Revenues from Other Agencies and Associations,0
+8521,Educational Service Districts?Special Education,8000,Revenues from Other Agencies and Associations,21
+8522,Educational Service Districts?Special Education?Infants and Toddlers,8000,Revenues from Other Agencies and Associations,22
+9100,Sale of Bonds,9000,Other Financing Sources,0
+9110,Premium on Bonds Sold-Deleted,9000,Other Financing Sources,10
+9200,Sale of Real Property,9000,Other Financing Sources,0
+9300,Sale of Equipment,9000,Other Financing Sources,0
+9400,Compensated Loss of Capital Assets,9000,Other Financing Sources,0
+9500,Long-Term Financing,9000,Other Financing Sources,0
+9600,Sale of Refunding Bonds,9000,Other Financing Sources,0
+9900,Transfers?Redirection of Apportionment,9000,Other Financing Sources,0
+9901,Transfers?Other Resources,9000,Other Financing Sources,1
+1000,[Roll-Up] Local Taxes,1000,Local Taxes,
+2000,[Roll-Up] Local Non-tax,2000,Local Non-tax,
+3000,[Roll-Up] State-General Purpose,3000,State-General Purpose,
+4000,[Roll-Up] State-Special Purpose,4000,State-Special Purpose,
+5000,[Roll-Up] Federal-General Purpose,5000,Federal-General Purpose,
+6000,[Roll-Up] Federal-Special Purpose,6000,Federal-Special Purpose,
+7000,[Roll-Up] Revenues from Other School Districts,7000,Revenues from Other School Districts,
+8000,[Roll-Up] Revenues from Other Agencies and Associations,8000,Revenues from Other Agencies and Associations,
+9000,[Roll-Up] Other Financing Sources,9000,Other Financing Sources,

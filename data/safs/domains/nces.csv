@@ -1,0 +1,90 @@
+nces_code,nces
+0,Transfers (Credit and Debit)
+110,Salaries of Regular Employee
+120,Salaries of Temporary EEs & Subs
+130,Non contracted Salaries & Extra Time
+150,Supplemental Contracts
+160,Other Salaries
+212,Group Insurance-Certificate
+213,Group Insurance-Classified
+222,Federally Mandated Insurance-Certificate
+223,Federally Mandated Insurance-Classified
+232,Retirement Contribution - Certificated
+233,Retirement Contribution - Classified
+243,On-Behalf Payments - Classified
+262,Unemployment Compensation - Certificated
+263,Unemployment Compensation - Classified
+272,Worker's Compensation - Certificated
+273,Worker's Compensation - Classified
+282,Health Benefits - Certificated
+283,Health Benefits - Classified
+292,Other Employee Benefits - Certificated
+293,Other Employee Benefits  - Classified
+310,Office and Administrative Services
+311,Election Fees
+320,Professional Educational Services
+321,Contracted Teachers
+322,Contracted Educational Staff Associates
+330,Employee Training and Development Services
+340,Other Professional Purchased Services
+341,Legal Services for District support
+342,Audit Services
+343,Other Legal Services
+350,Technical Services
+351,Data Processing and Coding Services
+352,Other Technical Services
+410,Utility Services
+420,Cleaning Services
+431,Non-Technology-Related Repair and Maintenance
+432,Technology-Related Repair and Maintenance
+441,Rentals of Land and Buildings
+442,Rentals of Equipment and Vehicles
+450,"Contractor Services (renovating, remodeling)"
+519,Student Transportation Svcs purchased from another
+520,Insurance (Other Than Employee Benefits) (Property
+530,Communications
+540,Advertising
+550,Printing and Binding
+565,Tuition Paid to Postsecondary Schools (Dual Credit
+569,Tuition - Other
+580,"Travel - Meals, Lodging, Registration and Entrance"
+610,General Supplies
+621,Natural Gas
+622,Electricity
+624,Oil
+626,Motor Vehicle Fuel
+630,Food
+640,Books and Periodicals
+650,Supplies - Technology Related
+720,Buildings
+731,Machinery
+732,Vehicles
+733,Furniture and Fixtures
+734,Technology-Related Hardware
+735,Technology-Related Software
+739,Other Equipment
+810,Dues and Fees
+820,Settlements and Judgements Against the School Dist
+831,Redemption of Principal
+832,Interest on Long-Term Debt
+835,Interest on Short-Term Debt
+112,Group Insurance - Certificated
+113,Group Insurance - Classified
+140,Sabbatical Leave
+170,National Board Certificated Teacher
+242,On-Behalf Payments - Certificated
+252,Tuition Reimbursement - Certificated
+253,Tuition Reimbursement - Classified
+443,Rentals of Computers and Related Equipment
+490,Other Purchased Property Services
+511,Student Transportation Purchased from Another District
+570,Food Service Management
+591,Services From Another District or ESD
+592,Services Purchased Fron Another LEA or SEA Out-of-State
+623,Energy - Bottled Gas
+625,Coal
+629,Other Energy
+710,Land and Improvements
+833,Debt - Bond Issuance and Other Debt-Related Costs
+950,Special Items
+960,Extraordinary Items

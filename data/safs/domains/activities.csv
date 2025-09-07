@@ -1,0 +1,52 @@
+activity,activity_code,sps_activity_category,simplfied_activity
+Board of Directors,11,Central Administration,Board of Directors
+Superintendent's Office,12,Central Administration,Superintendent's Office
+Business Office,13,Central Administration,Business Office
+Human Resources,14,Central Administration,Human Resources
+Public Relations,15,Central Administration,Public Relations
+Supervision - Instruction,21,Central Administration,Supervision - Instruction
+Learning Resources,22,Teaching Support,Learning Resources
+Principal's Office,23,Principal Office,Principal's Office
+Guidance and Counseling,24,Teaching Support,Guidance and Counseling
+Pupil Management and Safety,25,Teaching Support,Pupil Management and Safety
+Health and Related Services,26,Teaching Support,Health and Related Services
+Teaching,27,Teaching,Teaching
+Extracurricular,28,Teaching,Extracurricular
+Payments to School Districts,29,[uncat] - Payments to School Districts,Payments to School Districts
+Instructional Professional Development,31,Teaching Support,Instructional Professional Development/Professional Learning - State
+Instructional Technology,32,Teaching Support,Instructional Technology
+Curriculum,33,Teaching Support,Curriculum
+Professional Learning - State,34,Teaching Support,Instructional Professional Development/Professional Learning - State
+Supervision - Food Service,41,Central Administration,Supervision - Food Service
+Food,42,Other Support Activities,Food
+Operations - Food Service,44,Other Support Activities,Operations - Food Service
+Transfers - Food Service,49,[uncat] - Transfers - Food Service,Transfers - Food Service
+Supervision - Transportation,51,Central Administration,Supervision - Transportation
+Operations - Transportation,52,Other Support Activities,Operations - Transportation
+Maintenance - Transportation,53,[uncat] - Maintenance - Transportation,Maintenance - Transportation
+Insurance - Transportation,56,[uncat] - Insurance - Transportation,Insurance - Transportation
+Remote Learning Operations,58,Other Support Activities,Remote Learning Operations
+Transfers - Transportation,59,Other Support Activities,Transfers - Transportation
+Supervision - Maintenance and Operations,61,Central Administration,Supervision - Maintenance and Operations
+Grounds Maintenance,62,Other Support Activities,Grounds Maintenance
+Operations of Buildings,63,Other Support Activities,Operations of Buildings
+Maintenance,64,Other Support Activities,Maintenance
+Utilities,65,Other Support Activities,Utilities
+Building and Property Security,67,Other Support Activities,Building and Property Security
+Insurance - Maintenance and Operations,68,Other Support Activities,Insurance - Maintenance and Operations
+Informational Systems,72,Other Support Activities,Informational Systems
+Printing,73,Other Support Activities,Printing
+Warehousing and Distribution,74,Other Support Activities,Warehousing and Distribution
+Motor pool,75,Other Support Activities,Motor pool
+Interest,83,[uncat] - Interest,Interest
+Principal,84,Principal Office,Principal
+Debt Service,85,[uncat] - Debt Service,Debt Service
+Public Activities,91,Other Support Activities,Public Activities
+"",0,,
+Pupil Safety,35,,
+E-Rate - Federal,66,,
+Depreciation Sub-Fund Facility Maintenance,69,,
+Commodities-Deleted FY 02-03,43,,
+Garage - Operation and Maintenance,54,,
+Payments In-Lieu-of Transportation,55,,
+Interest,82,,

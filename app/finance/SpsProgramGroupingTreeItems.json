@@ -1,0 +1,408 @@
+[
+  {
+    "id": "cat-regular-instruction",
+    "label": "Regular Instruction",
+    "children": [
+      {
+        "id": "prog-1",
+        "label": "Basic Education"
+      },
+      {
+        "id": "prog-2",
+        "label": "Basic Education - Alternative learning Experience"
+      },
+      {
+        "id": "prog-3",
+        "label": "Basic Education - Dropout Reengagement"
+      },
+      {
+        "id": "prog-75",
+        "label": "Professional Development - State"
+      }
+    ]
+  },
+  {
+    "id": "cat-special-education",
+    "label": "Special Education Instruction",
+    "children": [
+      {
+        "id": "cat-special-education-sps",
+        "label": "Special Education SPS",
+        "children": [
+          {
+            "id": "prog-21",
+            "label": "Special Education - Supplemental - State"
+          },
+          {
+            "id": "prog-23",
+            "label": "Special Edication - ARP - IDEA - Federal"
+          },
+          {
+            "id": "prog-24",
+            "label": "Special Education - Supplemental - Federal"
+          }
+        ]
+      },
+      {
+        "id": "cat-special-education-non-sps",
+        "label": "Special Education Non-SPS)",
+        "children": [
+          {
+            "id": "prog-22",
+            "label": "Special Education - Infants and Toddlers - State"
+          },
+          {
+            "id": "prog-25",
+            "label": "Special Education - Infants and Toddlers - Federal"
+          },
+          {
+            "id": "prog-26",
+            "label": "Special Education - Institutions - State"
+          },
+          {
+            "id": "prog-29",
+            "label": "Special Education - Other - Federal"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-compensatory",
+    "label": "Compensatory Education Instruction",
+    "children": [
+      {
+        "id": "cat-compensatory-sps",
+        "label": "Compensatory Education SPS",
+        "children": [
+          {
+            "id": "prog-51",
+            "label": "ESEA Disadvantaged - Federal"
+          },
+          {
+            "id": "prog-52",
+            "label": "Other Title Grants Under ESEA"
+          },
+          {
+            "id": "prog-53",
+            "label": "ESEA Migrant - Federal"
+          },
+          {
+            "id": "prog-56",
+            "label": "State Institutions, Centers, and Homes - Delinquent"
+          },
+          {
+            "id": "prog-57",
+            "label": "State Institutions - Neglected and Delinquent - Federal"
+          },
+          {
+            "id": "prog-58",
+            "label": "Special and Pilot Programs - State"
+          },
+          {
+            "id": "prog-61",
+            "label": "Head Start - Federal"
+          },
+          {
+            "id": "prog-64",
+            "label": "Limited English Proficiency - Federal"
+          },
+          {
+            "id": "prog-68",
+            "label": "Indian Education - Federal - ED"
+          },
+          {
+            "id": "prog-69",
+            "label": "Compensatory - Other"
+          }
+        ]
+      },
+      {
+        "id": "cat-compensatory-non-sps",
+        "label": "Compensatory Education Instruction (non-sps)",
+        "children": [
+          {
+            "id": "prog-54",
+            "label": "Reading First - Federal"
+          },
+          {
+            "id": "prog-59",
+            "label": "Institutions - Juveniles in Adult Jails"
+          },
+          {
+            "id": "prog-62",
+            "label": "Math and Science - Professional Development - Federal"
+          },
+          {
+            "id": "prog-67",
+            "label": "Indian Education - Federal - JOM"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-support",
+    "label": "Transportation, Food, Support",
+    "children": [
+      {
+        "id": "prog-97",
+        "label": "Districtwide Support"
+      },
+      {
+        "id": "prog-99",
+        "label": "Pupil Transportation"
+      },
+      {
+        "id": "prog-98",
+        "label": "School Food Services"
+      }
+    ]
+  },
+  {
+    "id": "cat-assistance-transition",
+    "label": "Transition and Assistance",
+    "children": [
+      {
+        "id": "prog-55",
+        "label": "Learning Assistance Program (LAP) - State"
+      },
+      {
+        "id": "prog-76",
+        "label": "Targeted Assistance - Federal"
+      },
+      {
+        "id": "prog-9",
+        "label": "Transition to Kindergarten"
+      },
+      {
+        "id": "prog-65",
+        "label": "Transitional Bilingual - State"
+      }
+    ]
+  },
+  {
+    "id": "cat-misc",
+    "label": "Unrestricted, Reserved, Covid",
+    "children": [
+      {
+        "id": "prog-0",
+        "label": "[pseudo] Unrestricted"
+      },
+      {
+        "id": "prog-18",
+        "label": "Special Purpose - Reserved"
+      },
+      {
+        "id": "cat-covid",
+        "label": "Covid",
+        "children": [
+          {
+            "id": "prog-11",
+            "label": "Special Purpose - SLFRF Enrollment Stabilization"
+          },
+          {
+            "id": "prog-12",
+            "label": "Special Purpose - ESSER II"
+          },
+          {
+            "id": "prog-13",
+            "label": "Special Purpose - ESSER III"
+          },
+          {
+            "id": "prog-14",
+            "label": "Special Purpose - ESSER III - Learning Loss"
+          },
+          {
+            "id": "prog-19",
+            "label": "Special Purpose - CARES Act Other"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-community_services",
+    "label": "Community Services",
+    "children": [
+      {
+        "id": "cat-community_services-sps",
+        "label": "Community Services SPS",
+        "children": [
+          {
+            "id": "prog-81",
+            "label": "Public Radio and Television"
+          },
+          {
+            "id": "prog-89",
+            "label": "Other Community Services"
+          }
+        ]
+      },
+      {
+        "id": "cat-community_services-non-sps",
+        "label": "Community Services Non-SPS",
+        "children": [
+          {
+            "id": "prog-88",
+            "label": "Child Care"
+          },
+          {
+            "id": "prog-86",
+            "label": "Community Schools"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-other-instructional",
+    "label": "Other Instructional Program",
+    "children": [
+      {
+        "id": "cat-other-instructional-sps",
+        "label": "Other Instructional SPS",
+        "children": [
+          {
+            "id": "prog-73",
+            "label": "Summer School"
+          },
+          {
+            "id": "prog-74",
+            "label": "Highly Capable"
+          },
+          {
+            "id": "prog-79",
+            "label": "Instructional Programs - Other"
+          }
+        ]
+      },
+      {
+        "id": "cat-instructional-non-sps",
+        "label": "Other Instructional Non-sps",
+        "children": [
+          {
+            "id": "prog-71",
+            "label": "Traffic Safety"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-skills-center",
+    "label": "Skills Center and Vocational",
+    "children": [
+      {
+        "id": "cat-skills-center-sps",
+        "label": "Skills Center SPS",
+        "children": [
+          {
+            "id": "prog-45",
+            "label": "Skills Center - Basic - State"
+          },
+          {
+            "id": "prog-46",
+            "label": "Skills Center - Federal"
+          }
+        ]
+      },
+      {
+        "id": "cat-skills-center-non-sps",
+        "label": "Skills Center Instruction (non-sps)",
+        "children": [
+          {
+            "id": "prog-47",
+            "label": "Skills Center - Facility Upgrades"
+          }
+        ]
+      },
+      {
+        "id": "cat-vocational-sps",
+        "label": "Vocational SPS",
+        "children": [
+          {
+            "id": "prog-31",
+            "label": "Vocational - Basic - State"
+          },
+          {
+            "id": "prog-34",
+            "label": "Middle School Career and Technical Education - State"
+          },
+          {
+            "id": "prog-39",
+            "label": "Vocational - Other Categorical"
+          }
+        ]
+      },
+      {
+        "id": "cat-vocational-non-sps",
+        "label": "Vocational Non-SPS",
+        "children": [
+          {
+            "id": "prog-38",
+            "label": "Vocational - Federal"
+          },
+          {
+            "id": "prog-78",
+            "label": "Youth Training Programs - Federal"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "cat-obsolete",
+    "label": "Obsolete",
+    "children": [
+      {
+        "id": "prog-83",
+        "label": "Adult Education, Basic, State - deleted FY 00-01"
+      },
+      {
+        "id": "prog-84",
+        "label": "Adult Basic Education, Federal - deleted FY 00-01"
+      },
+      {
+        "id": "prog-85",
+        "label": "Adult Job Training, Federal - deleted FY 00-01"
+      },
+      {
+        "id": "prog-92",
+        "label": "Debt Service - deleted FY 00-01"
+      },
+      {
+        "id": "prog-27",
+        "label": "Deleted"
+      },
+      {
+        "id": "prog-28",
+        "label": "Deleted"
+      },
+      {
+        "id": "prog-77",
+        "label": "Eisenhower Professional Development, Federal -deleted FY 05-06"
+      },
+      {
+        "id": "prog-94",
+        "label": "Instruction Support - deleted FY 00-01"
+      },
+      {
+        "id": "prog-63",
+        "label": "Promoting Academic Success Added FY 05-06 F-196 (formerly Better Schools-Staff Dev.)-State - added FY 00-01 - deleted FY 02-03"
+      },
+      {
+        "id": "prog-41",
+        "label": "Skill Center Projects - deleted FY 00-01"
+      },
+      {
+        "id": "prog-49",
+        "label": "Skill Center, Other Categorical - deleted FY 02-03"
+      },
+      {
+        "id": "prog-66",
+        "label": "Student Achievement-State - added FY 01-02 - Deleted 13-14"
+      }
+    ]
+  }
+]

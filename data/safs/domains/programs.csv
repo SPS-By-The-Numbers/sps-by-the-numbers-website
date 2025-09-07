@@ -1,0 +1,68 @@
+program_code,program,sps_program_grouping,raw_sps_program_grouping,per_pupil_program
+1,Basic Education,Regular Instruction,Regular Instruction,Basic Education
+2,Basic Education - Alternative learning Experience,Regular Instruction,Regular Instruction,Alternative Learning Experience
+3,Basic Education - Dropout Reengagement,Regular Instruction,Regular Instruction,Basic Education - Dropout Reengagement
+11,Special Purpose - SLFRF Enrollment Stabilization,Covid - SLRF / GEER,NaN,Special Purpose - SLFRF Enrollment Stabilization
+12,Special Purpose - ESSER II,Covid - ESSER,NaN,"Federal Stimulus, ESSER II"
+13,Special Purpose - ESSER III,Covid - ESSER,NaN,"Federal Stimulus, ESSER III"
+14,Special Purpose - ESSER III - Learning Loss,Covid - ESSER,NaN,"Federal Stimulus, ESSER III (Learning Loss)"
+18,Special Purpose - Reserved,Special Purpose - Reserved,NaN,Special Purpose - Reserved
+19,Special Purpose - CARES Act Other,Covid - CARES,NaN,Federal Special Purpose - Other
+21,Special Education - Supplemental - State,Special Education Instruction,Special Education Instruction,"Special Education, Supplemental, State"
+22,Special Education - Infants and Toddlers - State,Special Education Instruction (non-sps),NaN,Special Education - Infants and Toddlers - State
+23,Special Edication - ARP - IDEA - Federal,Special Education Instruction,Special Education Instruction,"Special Education - Supplemental, IDEA, Federal"
+24,Special Education - Supplemental - Federal,Special Education Instruction,Special Education Instruction,"Special Education, Supplemental, Federal"
+25,Special Education - Infants and Toddlers - Federal,Special Education Instruction (non-sps),NaN,"Special Education - Infants and Toddlers, Federal"
+26,Special Education - Institutions - State,Special Education Instruction (non-sps),NaN,"Special Education - Institutions, State"
+29,Special Education - Other - Federal,Special Education Instruction (non-sps),NaN,"Special Education - Other, Federal"
+31,Vocational - Basic - State,Vocational Education Instruction,Vocational Education Instruction,"Vocational, Basic, State"
+34,Middle School Career and Technical Education - State,Vocational Education Instruction,Vocational Education Instruction,"Middle School Career and Technical Education, State"
+38,Vocational - Federal,Vocational Education Instruction (non-sps),NaN,"Vocational, Federal"
+39,Vocational - Other Categorical,Vocational Education Instruction,Vocational Education Instruction,Vocational - Other Categorical
+45,Skills Center - Basic - State,Skills Center Instruction,Skills Center Instruction,"Skill Center, Basic, State"
+46,Skills Center - Federal,Skills Center Instruction,Skills Center Instruction,"Skill Center, Federal"
+47,Skills Center - Facility Upgrades,Skills Center Instruction (non-sps),NaN,Skills Center - Facility Upgrades
+51,ESEA Disadvantaged - Federal,Compensatory Education Instruction,Compensatory Education Instruction,"Disadvantaged (formerly Remediation) ESEA Disadvantaged, Federal"
+52,Other Title Grants Under ESEA,#REF!,Compensatory Education Instruction,Other Title Grants Under ESEA - Federal
+53,ESEA Migrant - Federal,Compensatory Education Instruction,Compensatory Education Instruction,"Migrant ESEA Migrant, Federal"
+54,Reading First - Federal,Compensatory Education Instruction (non-sps),NaN,Reading First - Federal
+55,Learning Assistance Program (LAP) - State,Learning Assistance Program (LAP) - State,Compensatory Education Instruction,"Learning Assistance Program (LAP), State"
+56,"State Institutions, Centers, and Homes - Delinquent",Compensatory Education Instruction,Compensatory Education Instruction,"State Institutions, Centers and Homes, Delinquent"
+57,State Institutions - Neglected and Delinquent - Federal,Compensatory Education Instruction,Compensatory Education Instruction,"State Institutions, Neglected and Delinquent, Federal"
+58,Special and Pilot Programs - State,Compensatory Education Instruction,Compensatory Education Instruction,"Special and Pilot Programs, State"
+59,Institutions - Juveniles in Adult Jails,Compensatory Education Instruction (non-sps),NaN,Institutions - Juveniles in Adult Jails
+61,Head Start - Federal,Compensatory Education Instruction,Compensatory Education Instruction,"Head Start, Federal"
+62,Math and Science - Professional Development - Federal,Compensatory Education Instruction (non-sps),NaN,Math and Science - Professional Development - Federal
+64,Limited English Proficiency - Federal,Compensatory Education Instruction,Compensatory Education Instruction,"Limited English Proficiency, Federal"
+65,Transitional Bilingual - State,Transitional Bilingual - State,Compensatory Education Instruction,"Transitional Bilingual, State"
+67,Indian Education - Federal - JOM,Compensatory Education Instruction (non-sps),NaN,"Indian Education, Federal, JOM"
+68,Indian Education - Federal - ED,Compensatory Education Instruction,Compensatory Education Instruction,"Indian Education, Federal, ED"
+69,Compensatory - Other,Compensatory Education Instruction,Compensatory Education Instruction,"Compensatory, Other"
+71,Traffic Safety,Other Instructional Program (non-sps),NaN,Traffic Safety
+73,Summer School,Other Instructional Program,Other Instructional Program,Summer School
+74,Highly Capable,Other Instructional Program,Other Instructional Program,Highly Capable
+75,Professional Development - State,Professional Development - State,Professional Development - State,"Professional Development, State"
+76,Targeted Assistance - Federal,Targeted Assistance - Federal,Targeted Assistance - Federal,"Targeted Assistance, Federal"
+78,Youth Training Programs - Federal,Youth Training Programs - Federal,Youth Training Programs - Federal,Youth Training Programs - Federal
+79,Instructional Programs - Other,Other Instructional Program,Other Instructional Program,"Instructional Programs, Other"
+81,Public Radio and Television,Community Services,Community Services,Public Radio/Television
+86,Community Schools,Community Schools,Community Schools,Community Schools
+88,Child Care,Child Care,Child Care,Child Care
+89,Other Community Services,Community Services,Community Services,Other Community Services
+97,Districtwide Support,Districtwide Support,Support Services,District-wide Support
+98,School Food Services,School Food Services,Support Services,School Food Services
+99,Pupil Transportation,Pupil Transportation,Support Services,Pupil Transportation
+0,[special] Unrestricted,[special] Unrestricted,,
+9,Transition to Kindergarten,[infered] Transition to Kindergarten,,
+27,Deleted,[infered] Deleted,,
+28,Deleted,[infered] Deleted,,
+41,Skill Center Projects - deleted FY 00-01,[infered] Skill Center Projects - deleted FY 00-01,,
+49,"Skill Center, Other Categorical - deleted FY 02-03","[infered] Skill Center, Other Categorical - deleted FY 02-03",,
+63,Promoting Academic Success Added FY 05-06 F-196 (formerly Better Schools-Staff Dev.)-State - added FY 00-01 - deleted FY 02-03,[infered] Promoting Academic Success Added FY 05-06 F-196 (formerly Better Schools-Staff Dev.)-State - added FY 00-01 - deleted FY 02-03,,
+66,Student Achievement-State - added FY 01-02 - Deleted 13-14,[infered] Student Achievement-State - added FY 01-02 - Deleted 13-14,,
+77,"Eisenhower Professional Development, Federal -deleted FY 05-06","[infered] Eisenhower Professional Development, Federal -deleted FY 05-06",,
+83,"Adult Education, Basic, State - deleted FY 00-01","[infered] Adult Education, Basic, State - deleted FY 00-01",,
+84,"Adult Basic Education, Federal - deleted FY 00-01","[infered] Adult Basic Education, Federal - deleted FY 00-01",,
+85,"Adult Job Training, Federal - deleted FY 00-01","[infered] Adult Job Training, Federal - deleted FY 00-01",,
+92,Debt Service - deleted FY 00-01,[infered] Debt Service - deleted FY 00-01,,
+94,Instruction Support - deleted FY 00-01,[infered] Instruction Support - deleted FY 00-01,,

@@ -1,0 +1,11 @@
+object_code,object,object_type
+0,Debit Transfer,finance
+1,Credit Transfer,finance
+2,Salaries - Certificated Employees,compensation
+3,Salaries - Classified Employees,compensation
+4,Employee Benefits and Payroll Taxes,compensation
+5,"Supplies, Instructional Resources, and Noncapitalized Items",non-compensation
+7,Purchased Services,non-compensation
+8,Travel,non-compensation
+9,Capital Outlay,non-compensation
+6,(Not Used),
