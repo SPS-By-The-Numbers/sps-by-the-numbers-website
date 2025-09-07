@@ -68,7 +68,7 @@ function extractCodes(prefix, selectedItems) {
 }
 
 export default function DashboardSwitcher({ccddd, mode} : Params) {
-  const priorBoard = useRef<Dashboard | null>(null);
+  const priorBoard = useRef<Dashboards | null>(null);
   const [selectedObjects, setSelectedObjects] = useState<string[]>(['obj-2', 'obj-3']);
   const [selectedActivities, setSelectedActivities] = useState<string[]>([
     // Add basic teaching related activities.
