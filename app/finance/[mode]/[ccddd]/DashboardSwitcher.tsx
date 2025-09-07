@@ -1,7 +1,7 @@
 'use client';
 
 import { useDistrictData } from '../../DistrictDataProvider';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useHighcharts } from 'components/providers/HighchartsProvider';
 import makeEnrollmentConfig from './EnrollmentConfig';
 import makeExpendituresConfig from './ExpendituresConfig';
@@ -11,6 +11,8 @@ import Paper from '@mui/material/Paper';
 import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+
+import type Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
 
 import "styles/hc-ba-history.scss"
 
@@ -34,16 +36,23 @@ function getTitle(mode) {
   return "[error]";
 }
 
-function updateChart(dashboards, mode, districtData, filterSelection) {
+function updateChart(dashboards, priorBoard, mode, districtData, filterSelection) {
+  if (priorBoard.current !== null) {
+    priorBoard.current.destroy();
+  }
+
   if (mode === 'summary') {
-    dashboards.board('dashboard-charts-container',
-                     makeSummaryConfig(districtData));
+    priorBoard.current = dashboards.board(
+      'dashboard-charts-container',
+      makeSummaryConfig(districtData));
   } else if (mode === 'enrollment') {
-    dashboards.board('dashboard-charts-container',
-                     makeEnrollmentConfig(districtData));
+    priorBoard.current = dashboards.board(
+      'dashboard-charts-container',
+      makeEnrollmentConfig(districtData));
   } else if (mode === 'expenditures') {
-    dashboards.board('dashboard-charts-container',
-                     makeExpendituresConfig(districtData, filterSelection));
+    priorBoard.current = dashboards.board(
+      'dashboard-charts-container',
+      makeExpendituresConfig(districtData, filterSelection));
   }
 }
 
@@ -59,6 +68,7 @@ function extractCodes(prefix, selectedItems) {
 }
 
 export default function DashboardSwitcher({ccddd, mode} : Params) {
+  const priorBoard = useRef<Dashboard | null>(null);
   const [selectedObjects, setSelectedObjects] = useState<string[]>(['obj-2', 'obj-3']);
   const [selectedActivities, setSelectedActivities] = useState<string[]>([
     // Add basic teaching related activities.
@@ -95,7 +105,7 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
         const dashboards = highchartsObjs.dashboards;
         const districtData = districtDataMap[ccddd];
 
-        updateChart(dashboards, mode, districtData, filterSelection);
+        updateChart(dashboards, priorBoard, mode, districtData, filterSelection);
       }
     },
     [ccddd, districtDataMap, highchartsObjs, loadCcddd, mode,

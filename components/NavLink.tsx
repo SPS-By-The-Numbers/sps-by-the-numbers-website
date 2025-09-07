@@ -18,6 +18,7 @@ export default function NavLink({href, children, sx=[]} : {href: string, childre
     <Link
         href={href}
         underline="none"
+        component={NextLink}
         sx={[{
           display: "flex",
           alignSelf: "stretch",
