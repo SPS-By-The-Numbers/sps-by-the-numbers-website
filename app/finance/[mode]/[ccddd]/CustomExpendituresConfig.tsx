@@ -66,6 +66,8 @@ function makeActivityCells(allActivitiesDf, metricVaraint, scaleLock) {
       connectorId: 'c-gf-exp-by-activity',
       xDataColumn: 'class_of',
       precision: DEFAULT_PRECISION,
+      valueFormat: 'currency' as const,
+      yUnits: '$',
     };
     results.push(makeBudgetActualsChart(options));
   }
@@ -101,13 +103,9 @@ export default function makeCustomConfig(
    const allActivitiesDf = activityVarianceDf
     .groupby('activity_code', 'activity')
     .rollup({
-        max: d => op.max(d.variance),
-        min: d => op.min(d.variance),
-        mean: d => op.mean(d.variance),
-        median: d => op.median(d.variance),
-        pctl90: d => op.quantile(d.variance, 0.9),
+        absmedian: d => op.abs(op.median(d.variance)),
       })
-      .orderby(aq.desc('median'));
+      .orderby(aq.desc('absmedian'));
 
   const data = expendituresDf.groupby('class_of', 'data_type', 'activity_code')
     .rollup({
