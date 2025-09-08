@@ -35,16 +35,16 @@ const rowCellConfigs : Array<BudgetActualsChartOptions> = [
   },
 ];
 
-function makeDashboardGui(allActivitiesDf) {
+function makeDashboardGui(activityCodesSorted : Array<number>) {
   const r = {
     layouts: [
       {
         rows: [
           ...rowCellConfigs.map(c => ({cells:[{id:c.renderTo}]})),
-          ...allActivitiesDf.objects().map(info => (
+          ...activityCodesSorted.map(code => (
             {
               cells:[
-                {id: `act-${info.activity_code}-chart`},
+                {id: `act-${code}-chart`},
               ]
             })),
         ],
@@ -90,22 +90,24 @@ export default function makeCustomConfig(
 
   const expendituresDf = districtData.filteredExpenditures(filterSelection);
 
-  const activityVarianceDf = expendituresDf
+  // Calculate variance for sort order.
+  const varianceDf = expendituresDf
     .groupby('class_of', 'data_type', 'activity_code', 'activity')
     .rollup({
-      val: op.sum(`c_pct_expenditure`),
+      val: op.sum(`amount`),
     })
     .groupby('class_of', 'activity_code', 'activity')
     .pivot(['data_type'], { val: d => op.sum(d.val) })
     .derive({variance: d => d.budget - d.actuals})
     .filter(d => !op.is_nan(d.variance));
 
-   const allActivitiesDf = activityVarianceDf
+  const activityCodesSorted = varianceDf
     .groupby('activity_code', 'activity')
-    .rollup({
-        absmedian: d => op.abs(op.median(d.variance)),
-      })
-      .orderby(aq.desc('absmedian'));
+    .rollup({absmedian: d => op.abs(op.median(d.variance))})
+    .orderby(aq.desc('absmedian'));
+  activityCodesSorted.print();
+
+  const allActivitiesDf = varianceDf.groupby('activity_code', 'activity').rollup({});
 
   const data = expendituresDf.groupby('class_of', 'data_type', 'activity_code')
     .rollup({
@@ -131,7 +133,7 @@ export default function makeCustomConfig(
         },
       ],
     },
-    gui: makeDashboardGui(allActivitiesDf),
+    gui: makeDashboardGui(activityCodesSorted.array('activity_code')),
     components: [
       ...rowCellConfigs.map(c => makeBudgetActualsChart(c)),
       ...makeActivityCells(allActivitiesDf, metricVaraint, scaleLock),
