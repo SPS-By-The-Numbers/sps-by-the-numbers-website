@@ -94,9 +94,6 @@ function makeCorrelationGraph(target_id, title, yMetric, xMetric,
         text: title,
       },
       series: [] as Array<object>,
-      legend: {
-        floating: false,
-      },
       tooltip: {
         useHTML: true,
         formatter: function() {

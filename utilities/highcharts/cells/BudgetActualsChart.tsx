@@ -226,12 +226,6 @@ export default function makeBudgetActualsChart(options : BudgetActualsChartOptio
             pointPadding: 0.27,
           },
         ],
-        legend: {
-          layout: 'horizontal',
-          verticalAlign: 'bottom',
-          align: 'left',
-          enabled: true,
-        },
         plotOptions: {
           series: {
             grouping: false,

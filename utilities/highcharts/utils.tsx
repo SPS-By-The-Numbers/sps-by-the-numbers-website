@@ -35,7 +35,8 @@ export function dfToJSONConnectorOptions(df : ColumnTable, precision = DEFAULT_P
         } else {
           return 6;
         }
-      }});
+      }
+    });
 
    const undefinedToNull = newDf.columnNames().reduce((acc, col) => {
      acc[col] = aq.escape(d => d[col] === undefined ? null : d[col]);
@@ -45,12 +46,13 @@ export function dfToJSONConnectorOptions(df : ColumnTable, precision = DEFAULT_P
    const roundNumbers = newDf.columnNames().reduce((acc, col) => {
      acc[col] = aq.escape(
        d => typeof d[col] === "number" ? op.round(d[col] * (10**precision))/(10**precision): d[col]);
-     return acc;
+       return acc;
    }, {});
 
-  return {
-    firstRowAsNames: false,
-    data: newDf.derive(undefinedToNull).derive(roundNumbers).objects(),
-  };
+   const data = newDf.derive(undefinedToNull).derive(roundNumbers).objects();
+   return {
+     firstRowAsNames: false,
+     data,
+   };
 }
 

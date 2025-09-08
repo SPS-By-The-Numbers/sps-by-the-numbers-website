@@ -138,36 +138,37 @@ export default class DistrictData {
   toplevel_metrics() {
     const merged_df = this.cashflow()
       .join_full(this.enrollment())
-      .join_full(this.staffing());
+      .join_full(this.staffing())
+      .join_full(this.balances());
     return merged_df;
   }
 
   staffing() {
     const staffFteActuals = this.s275_summary_df
       .groupby(['class_of'])
-      .rollup({'staff_fte_actuals': op.sum('fte_in_assignment')});
+      .rollup({'amount_staff_fte_actuals': op.sum('fte_in_assignment')});
 
     // 317 is certificated FTE counts
     // 318 is classified FTE counts.
     const staffFteBudget = this.budget_items_df.filter(
       d => op.includes(['317', '318'], d.item_code))
       .groupby('class_of')
-      .rollup({'staff_fte_budget': op.sum('amount')});
+      .rollup({'amount_staff_fte_budget': op.sum('amount')});
 
-    const teachingFte = this.s275_summary_df
+    const teachingFteActuals = this.s275_summary_df
         .filter(aq.escape(d => op.includes(TEACHING_CODES, d.activity_code)))
         .groupby('class_of')
-        .rollup({teaching_fte_actuals: op.sum('fte_in_assignment')});
+        .rollup({amount_teaching_fte_actuals: op.sum('fte_in_assignment')});
 
     const studentSupportFte = this.s275_summary_df
         .filter(aq.escape(d => op.includes(STUDENT_SUPPORT_CODES, d.activity_code)))
         .groupby('class_of')
-        .rollup({student_support_fte_actuals: op.sum('fte_in_assignment')});
+        .rollup({amount_student_support_fte_actuals: op.sum('fte_in_assignment')});
 
     const buildingSupportFte = this.s275_summary_df
         .filter(aq.escape(d => op.includes(BUILDING_SUPPORT, d.activity_code)))
         .groupby('class_of')
-        .rollup({building_support_fte_actuals: op.sum('fte_in_assignment')});
+        .rollup({amount_building_support_fte_actuals: op.sum('fte_in_assignment')});
 
     const otherFte = this.s275_summary_df
         .filter(aq.escape(d => !op.includes([
@@ -176,14 +177,45 @@ export default class DistrictData {
             ...BUILDING_SUPPORT],
             d.activity_code)))
         .groupby('class_of')
-        .rollup({other_fte_actuals: op.sum('fte_in_assignment')});
+        .rollup({amount_other_fte_actuals: op.sum('fte_in_assignment')});
 
     return staffFteActuals
         .join_full(staffFteBudget)
-        .join_full(teachingFte)
+        .join_full(teachingFteActuals)
         .join_full(studentSupportFte)
         .join_full(buildingSupportFte)
         .join_full(otherFte);
+  }
+
+  balances() {
+    const beginningBalanceBudget = this.budget_items_df.filter(
+      aq.escape(d => d.item_code === '275' && d.fund_code === 1))
+      .groupby('class_of')
+      .rollup(
+        {'beginning_balance_budget': op.sum('amount')});
+
+    const endingBalanceBudget = this.budget_items_df.filter(
+      aq.escape(d => d.item_code === '439' && d.fund_code === 1))
+      .groupby('class_of')
+      .rollup(
+        {'ending_balance_budget': op.sum('amount')});
+
+    const beginningBalanceActuals = this.actuals_items_df.filter(
+      aq.escape(d => d.item_code === '275' && d.fund_code === 1))
+      .groupby('class_of')
+      .rollup(
+        {'beginning_balance_actuals': op.sum('amount')});
+
+    const endingBalanceActuals = this.actuals_items_df.filter(
+      aq.escape(d => d.item_code === '439' && d.fund_code === 1))
+      .groupby('class_of')
+      .rollup(
+        {'ending_balance_actuals': op.sum('amount')});
+
+    return beginningBalanceBudget
+        .join_full(beginningBalanceActuals)
+        .join_full(endingBalanceBudget)
+        .join_full(endingBalanceActuals);
   }
 
   cashflow() {

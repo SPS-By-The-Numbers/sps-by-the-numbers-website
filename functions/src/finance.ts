@@ -10,7 +10,7 @@ const bigqueryClient = new BigQuery();
 const storageClient = new Storage();
 
 // Change this to force cache invalidaiton of results for queries.
-const CACHE_BREAK_SALT = 'a';
+const CACHE_BREAK_SALT = 'b';
 
 
 function sha256(str) {

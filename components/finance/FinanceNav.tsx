@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useFinanceNavState } from 'components/providers/FinanceNavStateProvider';
+import { useRouter, usePathname } from 'next/navigation';
 import AppBar from '@mui/material/AppBar';
 import Autocomplete from '@mui/material/Autocomplete';
 import FormControl from '@mui/material/FormControl';
@@ -38,6 +39,8 @@ function makeDistrictOptions(districts : DistrictsMap) {
 
 export default function FinanceNav({sx=[]} : Params) {
   const {ccddd, setCcddd, districts} = useFinanceNavState();
+  const router = useRouter();
+  const pathName = usePathname();
   const districtOptions = makeDistrictOptions(districts);
   const districtsByName = Object.fromEntries(
     Object.entries(districts).map(([k, v]) => [v['district'], k]));
@@ -61,13 +64,20 @@ export default function FinanceNav({sx=[]} : Params) {
             <NavLink href={`/finance/enrollment/${ccddd}`}>Enrollment</NavLink>
           </div>
           <div>
-            <NavLink href={`/finance/expenditures/${ccddd}`}>Staffing Expenditures</NavLink>
+            <NavLink href={`/finance/expenditures/${ccddd}`}>Expenditures</NavLink>
           </div>
           <Autocomplete
             disableClearable
             value={{label: districts[ccddd].district,  value: String(ccddd)}}
             options={ districtOptions }
-            onChange={(_event, newValue) => setCcddd(parseInt(newValue.value))}
+            onChange={(_event, newValue) => {
+              const newCcddd = parseInt(newValue.value);
+              const parts = pathName.split('/');
+              parts.pop();
+              parts.push(newCcddd.toString())
+              setCcddd(newCcddd);
+              router.push(parts.join('/'));
+            }}
             renderInput={
               (params) => (
                 <TextField

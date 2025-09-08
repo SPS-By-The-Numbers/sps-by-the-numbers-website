@@ -20,6 +20,17 @@ const rowCellConfigs : Array<BudgetActualsChartOptions> = [
     yUnits: 'AFTE',
   },
   {
+    title: 'Staffing FTE',
+    renderTo: 'staffing-ba-history-chart',
+    metricColumnRoot: 'amount_staff_fte',
+    connectorId: 'c-toplevel-metrics',
+    xDataColumn: 'class_of',
+
+    valueFormat: 'decimal',
+    precision: DEFAULT_PRECISION,
+    yUnits: 'FTE',
+  },
+  {
     title: 'Cashflow',
     renderTo: 'cashflow-ba-history-chart',
     metricColumnRoot: 'cashflow',
@@ -35,25 +46,15 @@ const rowCellConfigs : Array<BudgetActualsChartOptions> = [
     },
   },
   {
-    title: 'Staffing',
-    renderTo: 'staffing-ba-history-chart',
-    metricColumnRoot: 'staff_fte',
+    title: 'Beginning Balance',
+    renderTo: 'beginning-balance-chart',
+    metricColumnRoot: 'beginning_balance',
     connectorId: 'c-toplevel-metrics',
     xDataColumn: 'class_of',
 
-    valueFormat: 'decimal',
+    valueFormat: 'currency',
     precision: DEFAULT_PRECISION,
-    yUnits: 'FTE',
-  },
-];
-
-const pctAmtRowCellConfigs : Array<PctAmtChartOptions> = [
-  {
-    title: 'Teaching Related Comp',
-    renderTo: 'teaching-related-ba-history-chart',
-    metricSuffix: 'teaching_related_comp',
-    connectorId: 'c-toplevel-metrics',
-    xDataColumn: 'class_of',
+    yUnits: '$',
   },
 ];
 
@@ -79,14 +80,11 @@ function makeDashboardGui() {
     layouts: [
       {
         rows: [
-          ...rowCellConfigs.map(c => ({cells:[{id:c.renderTo}]})),
-          ...pctAmtRowCellConfigs.map(c => (
-            {
-              cells:[
-                {id: `${c.renderTo}-pct`},
-                {id: `${c.renderTo}-amt`},
-              ]
-            })),
+          {
+            cells: [
+              ...rowCellConfigs.map(c => ({id:c.renderTo})),
+            ]
+          }
         ],
       },
     ],
@@ -115,7 +113,6 @@ export default function makeSummaryConfig(districtData : DistrictData) {
     gui: makeDashboardGui(),
     components: [
       ...rowCellConfigs.map(c => makeBudgetActualsChart(c)),
-      ...pctAmtRowCellConfigs.flatMap(c => makePctAmtChart(c)),
     ],
   };
 }

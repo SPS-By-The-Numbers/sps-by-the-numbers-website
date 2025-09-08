@@ -16,6 +16,7 @@ import Typography from '@mui/material/Typography';
 import type Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
 
 import "styles/hc-ba-history.scss"
+import "styles/finance-dashboard.scss"
 
 type Params = {
   ccddd: number;

@@ -30,12 +30,14 @@ export const baselineClassOfChartOptions = {
     }
   },
   legend: {
-    enabled: true,
-    verticalAlign: 'bottom',
+    layout: 'horizontal',
+    verticalAlign: 'top',
+    align: 'left',
     floating: true,
-    x: 80,
+    enabled: true,
   },
   tooltip: {
+    outside: true,
     stickOnContact: true,
   },
 };
