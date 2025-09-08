@@ -3,6 +3,7 @@
 import { useDistrictData } from '../../DistrictDataProvider';
 import { useEffect, useState, useRef } from 'react';
 import { useHighcharts } from 'components/providers/HighchartsProvider';
+import makeCustomConfig from './CustomExpendituresConfig';
 import makeEnrollmentConfig from './EnrollmentConfig';
 import makeExpendituresConfig from './ExpendituresConfig';
 import makeSummaryConfig from './SummaryConfig';
@@ -31,6 +32,9 @@ function getTitle(mode) {
 
     case 'expenditures':
         return 'Expenditure Analysis';
+
+    case 'custom':
+        return 'Custom Analysis';
   }
 
   return "[error]";
@@ -53,6 +57,18 @@ function updateChart(dashboards, priorBoard, mode, districtData, filterSelection
     priorBoard.current = dashboards.board(
       'dashboard-charts-container',
       makeExpendituresConfig(districtData, filterSelection));
+  } else if (mode === 'custom') {
+    priorBoard.current = dashboards.board(
+      'dashboard-charts-container',
+      makeCustomConfig(
+        districtData,
+        filterSelection,
+        17001,
+        "amount",
+        "variance",
+        "descending",
+        "yFree",
+      ));
   }
 }
 

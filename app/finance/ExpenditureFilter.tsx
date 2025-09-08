@@ -21,7 +21,6 @@ export type ExpenditureFilterState = {
 function FilterTree({title, items, selectedItems, setSelectedItems}) {
   return (
     <Stack>
-      <Typography component="h3" variant="h3" textAlign="left" style={{fontSize: "1.1rem"}}>{title}</Typography>
       <RichTreeView
         checkboxSelection
         multiSelect
@@ -53,7 +52,7 @@ export default function ExpenditureFilter({filterState} : { filterState: FilterS
     <Paper>
       <Stack>
         <Typography component="h2" variant="h2" textAlign="center" style={{fontSize: "1.4rem"}}>Filters</Typography>
-          <Stack direction="row">
+          <Stack direction="row" justifyContent="space-between">
             <FilterTree
               title="Object"
               items={SafsObjectsTreeItems}

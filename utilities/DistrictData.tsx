@@ -227,8 +227,11 @@ export default class DistrictData {
       .join_full(this.all_class_ofs_df);
   }
 
+  expenditures() {
+    return this.gf_expenditure_df;
+  }
+
   filteredExpenditures(filterSelection: FilterSelection) {
-    console.log(filterSelection);
     return this.gf_expenditure_df
       .params(filterSelection)
       .filter((d, $) =>
