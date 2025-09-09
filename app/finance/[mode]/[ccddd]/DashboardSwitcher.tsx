@@ -1,9 +1,10 @@
 'use client';
 
 import { useDistrictData } from '../../DistrictDataProvider';
+import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import { useEffect, useState, useRef } from 'react';
 import { useHighcharts } from 'components/providers/HighchartsProvider';
-import makeCustomConfig, { makeChartCells, makeExpendituresData } from './CustomExpendituresConfig';
+import { makeChartCells, makeExpendituresData, makeSortedGui } from './CustomExpendituresConfig';
 import makeEnrollmentConfig from './EnrollmentConfig';
 import makeExpendituresConfig from './ExpendituresConfig';
 import makeSummaryConfig from './SummaryConfig';
@@ -41,37 +42,52 @@ function getTitle(mode) {
   return "[error]";
 }
 
-function updateChart(dashboards, priorBoard, mode, districtData, filterSelection) {
+function updateChart(dashboards, dashboardDiv, priorBoard, mode, districtData, filterSelection) {
+  // Not mounted yet.
+  if (dashboardDiv.current === null) {
+    return;
+  }
+
   if (priorBoard.current !== null) {
     priorBoard.current.destroy();
   }
 
   if (mode === 'summary') {
     priorBoard.current = dashboards.board(
-      'dashboard-charts-container',
+      dashboardDiv.current,
       makeSummaryConfig(districtData));
   } else if (mode === 'enrollment') {
     priorBoard.current = dashboards.board(
-      'dashboard-charts-container',
+      dashboardDiv.current,
       makeEnrollmentConfig(districtData));
   } else if (mode === 'expenditures') {
     priorBoard.current = dashboards.board(
-      'dashboard-charts-container',
+      dashboardDiv.current,
       makeExpendituresConfig(districtData, filterSelection));
   } else if (mode === 'custom') {
     const expendituresDf = districtData.filteredExpenditures(filterSelection);
-    const [allFacetsDf, facetCodesSortedDf, data] = makeExpendituresData(expendituresDf,
-                                                                         "variance",
-    "descending");
+    const [allFacetsDf, facetCodesSortedDf, data] = makeExpendituresData(expendituresDf, "variance", "descending");
+    const gui = makeSortedGui("act", facetCodesSortedDf.array('activity_code'));
+    const connectorId = 'c-connector';
+
     priorBoard.current = dashboards.board(
-      'dashboard-charts-container',
-      makeCustomConfig(
-        data,
-        allFacetsDf,
-        facetCodesSortedDf,
-        "amount",
-        "yFree",
-      ));
+      dashboardDiv.current,
+      {
+        gui,
+        components: [
+          ...makeChartCells(allFacetsDf, connectorId, "amount", "yFree"),
+        ],
+        dataPool: {
+          connectors: [
+            {
+              id: connectorId,
+              type: 'JSON',
+              options: dfToJSONConnectorOptions(data),
+            },
+          ],
+        },
+      }
+    );
   }
 }
 
@@ -88,6 +104,7 @@ function extractCodes(prefix, selectedItems) {
 
 export default function DashboardSwitcher({ccddd, mode} : Params) {
   const priorBoard = useRef<Dashboards | null>(null);
+  const dashboardDiv = useRef<HTMLDivElement>(null);
   const [selectedObjects, setSelectedObjects] = useState<string[]>(['obj-2', 'obj-3']);
   const [selectedActivities, setSelectedActivities] = useState<string[]>([
     // Add basic teaching related activities.
@@ -124,7 +141,7 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
         const dashboards = highchartsObjs.dashboards;
         const districtData = districtDataMap[ccddd];
 
-        updateChart(dashboards, priorBoard, mode, districtData, filterSelection);
+        updateChart(dashboards, dashboardDiv, priorBoard, mode, districtData, filterSelection);
       }
     },
     [ccddd, districtDataMap, highchartsObjs, loadCcddd, mode,
@@ -149,7 +166,7 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
             setSelectedPrograms
           }}
       />
-      <div id="dashboard-charts-container">
+      <div ref={dashboardDiv}>
         <LinearProgress />
         <Paper>
           <Typography

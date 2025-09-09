@@ -19,15 +19,15 @@ type SortType = "variance";
 type SortOrder = "ascending" | "descending";
 type ScaleLock = "yFixed" | "yFree";
 
-function makeDashboardGui(activityCodesSorted : Array<number>) {
+export function makeSortedGui(prefix, facetCodesSorted : Array<number>) {
   const r = {
     layouts: [
       {
         rows: [
           {
             cells: [
-              ...activityCodesSorted.map(code => (
-                {id: `act-${code}-chart`}
+              ...facetCodesSorted.map(code => (
+                {id: `${prefix}-${code}-chart`}
               )),
             ]
           }
@@ -39,7 +39,7 @@ function makeDashboardGui(activityCodesSorted : Array<number>) {
   return r;
 }
 
-export function makeChartCells(allActivitiesDf, metricVaraint, scaleLock) {
+export function makeChartCells(allActivitiesDf, connectorId, metricVaraint, scaleLock) {
   const results = new Array<PctAmtChartOptions>;
   for (const info of allActivitiesDf.objects()) {
     const options = {
@@ -47,7 +47,7 @@ export function makeChartCells(allActivitiesDf, metricVaraint, scaleLock) {
       renderTo: `act-${info.activity_code}-chart`,
       metricSuffix: info.activity_code,
       metricColumnRoot: metricVaraint,
-      connectorId: 'c-gf-exp-by-activity',
+      connectorId,
       xDataColumn: 'class_of',
       precision: DEFAULT_PRECISION,
       valueFormat: 'currency' as const,
@@ -72,11 +72,11 @@ export function makeExpendituresData(expendituresDf : ColumnTable,
     .derive({variance: d => d.budget - d.actuals})
     .filter(d => !op.is_nan(d.variance));
 
-  const activityCodesSorted = varianceDf
+  const facetCodesSorted = varianceDf
     .groupby('activity_code', 'activity')
     .rollup({absmedian: d => op.abs(op.median(d.variance))})
     .orderby(aq.desc('absmedian'));
-  activityCodesSorted.print();
+  facetCodesSorted.print();
 
   const allActivitiesDf = varianceDf.groupby('activity_code', 'activity').rollup({});
 
@@ -93,10 +93,11 @@ export function makeExpendituresData(expendituresDf : ColumnTable,
       pctrev: d => op.sum(d.pctrev) * 100,
     });
 
-  return [allActivitiesDf, activityCodesSorted, data];
+  return [allActivitiesDf, facetCodesSorted, data];
 };
 
 export default function makeCustomConfig(
+  gui: any,
   data : ColumnTable,
   allActivitiesDf: ColumnTable,
   facetCodesSortedDf: ColumnTable,
@@ -105,19 +106,18 @@ export default function makeCustomConfig(
 ) {
 
 
+  const connectorId = 'c-connector';
   return {
     dataPool: {
       connectors: [
         {
-          id: 'c-gf-exp-by-activity',
+          id: connectorId,
           type: 'JSON',
           options: dfToJSONConnectorOptions(data),
         },
       ],
     },
-    gui: makeDashboardGui(facetCodesSortedDf.array('activity_code')),
-    components: [
-      ...makeChartCells(allActivitiesDf, metricVaraint, scaleLock),
-    ],
+    gui,
+    components: makeChartCells(allActivitiesDf, connectorId, metricVaraint, scaleLock),
   };
 }
