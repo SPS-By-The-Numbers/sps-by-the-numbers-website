@@ -66,6 +66,9 @@ export default function FinanceNav({sx=[]} : Params) {
           <div>
             <NavLink href={`/finance/expenditures/${ccddd}`}>Expenditures</NavLink>
           </div>
+          <div>
+            <NavLink href={`/finance/custom/${ccddd}`}>Custom</NavLink>
+          </div>
           <Autocomplete
             disableClearable
             value={{label: districts[ccddd].district,  value: String(ccddd)}}

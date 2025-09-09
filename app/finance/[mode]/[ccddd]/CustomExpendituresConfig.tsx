@@ -3,11 +3,9 @@ import { dfToJSONConnectorOptions, DEFAULT_PRECISION } from 'utilities/highchart
 import { op } from 'arquero';
 import * as aq from 'arquero';
 import makeBudgetActualsChart from "utilities/highcharts/cells/BudgetActualsChart";
-import makePctAmtChart from "utilities/highcharts/cells/PctAmtChart";
 import merge from 'lodash.merge';
 
 import type { ExpenditureFilterState } from "app/finance/ExpenditureFilter";
-import type { BudgetActualsChartOptions } from "utilities/highcharts/cells/BudgetActualsChart";
 import type { PctAmtChartOptions } from "utilities/highcharts/cells/PctAmtChart";
 import type { default as DistrictData, FilterSelection } from "utilities/DistrictData";
 
@@ -21,32 +19,18 @@ type SortType = "variance";
 type SortOrder = "ascending" | "descending";
 type ScaleLock = "yFixed" | "yFree";
 
-const rowCellConfigs : Array<BudgetActualsChartOptions> = [
-  {
-    title: 'Enrollment',
-    renderTo: 'enrollment-ba-history-chart',
-    metricColumnRoot: 'enrollment',
-    connectorId: 'c-gf-exp-by-activity',
-    xDataColumn: 'class_of',
-
-    precision: DEFAULT_PRECISION,
-    valueFormat: 'decimal',
-    yUnits: 'AFTE',
-  },
-];
-
 function makeDashboardGui(activityCodesSorted : Array<number>) {
   const r = {
     layouts: [
       {
         rows: [
-          ...rowCellConfigs.map(c => ({cells:[{id:c.renderTo}]})),
-          ...activityCodesSorted.map(code => (
-            {
-              cells:[
-                {id: `act-${code}-chart`},
-              ]
-            })),
+          {
+            cells: [
+              ...activityCodesSorted.map(code => (
+                {id: `act-${code}-chart`}
+              )),
+            ]
+          }
         ],
       },
     ],
@@ -55,7 +39,7 @@ function makeDashboardGui(activityCodesSorted : Array<number>) {
   return r;
 }
 
-function makeActivityCells(allActivitiesDf, metricVaraint, scaleLock) {
+export function makeChartCells(allActivitiesDf, metricVaraint, scaleLock) {
   const results = new Array<PctAmtChartOptions>;
   for (const info of allActivitiesDf.objects()) {
     const options = {
@@ -74,22 +58,9 @@ function makeActivityCells(allActivitiesDf, metricVaraint, scaleLock) {
   return results;
 }
 
-
-export default function makeCustomConfig(
-  districtData : DistrictData,
-  filterSelection : FilterSelection,   // TODO: Should this be moved up a layer?
-
-  ccddd: number,
-  metricVaraint: MetricVariant,
-
-  sortType: SortType,
-  sortOrder: SortOrder,
-
-  scaleLock: ScaleLock,
-) {
-
-  const expendituresDf = districtData.filteredExpenditures(filterSelection);
-
+export function makeExpendituresData(expendituresDf : ColumnTable, 
+                                     sortType: SortType,
+                                     sortOrder: SortOrder) {
   // Calculate variance for sort order.
   const varianceDf = expendituresDf
     .groupby('class_of', 'data_type', 'activity_code', 'activity')
@@ -120,8 +91,19 @@ export default function makeCustomConfig(
       amount: d => op.sum(d.amount),
       pctexp: d => op.sum(d.pctexp) * 100,
       pctrev: d => op.sum(d.pctrev) * 100,
-    })
-    .join(districtData.enrollment());
+    });
+
+  return [allActivitiesDf, activityCodesSorted, data];
+};
+
+export default function makeCustomConfig(
+  data : ColumnTable,
+  allActivitiesDf: ColumnTable,
+  facetCodesSortedDf: ColumnTable,
+  metricVaraint: MetricVariant,
+  scaleLock: ScaleLock,
+) {
+
 
   return {
     dataPool: {
@@ -133,10 +115,9 @@ export default function makeCustomConfig(
         },
       ],
     },
-    gui: makeDashboardGui(activityCodesSorted.array('activity_code')),
+    gui: makeDashboardGui(facetCodesSortedDf.array('activity_code')),
     components: [
-      ...rowCellConfigs.map(c => makeBudgetActualsChart(c)),
-      ...makeActivityCells(allActivitiesDf, metricVaraint, scaleLock),
+      ...makeChartCells(allActivitiesDf, metricVaraint, scaleLock),
     ],
   };
 }

@@ -3,7 +3,7 @@
 import { useDistrictData } from '../../DistrictDataProvider';
 import { useEffect, useState, useRef } from 'react';
 import { useHighcharts } from 'components/providers/HighchartsProvider';
-import makeCustomConfig from './CustomExpendituresConfig';
+import makeCustomConfig, { makeChartCells, makeExpendituresData } from './CustomExpendituresConfig';
 import makeEnrollmentConfig from './EnrollmentConfig';
 import makeExpendituresConfig from './ExpendituresConfig';
 import makeSummaryConfig from './SummaryConfig';
@@ -59,15 +59,17 @@ function updateChart(dashboards, priorBoard, mode, districtData, filterSelection
       'dashboard-charts-container',
       makeExpendituresConfig(districtData, filterSelection));
   } else if (mode === 'custom') {
+    const expendituresDf = districtData.filteredExpenditures(filterSelection);
+    const [allFacetsDf, facetCodesSortedDf, data] = makeExpendituresData(expendituresDf,
+                                                                         "variance",
+    "descending");
     priorBoard.current = dashboards.board(
       'dashboard-charts-container',
       makeCustomConfig(
-        districtData,
-        filterSelection,
-        17001,
+        data,
+        allFacetsDf,
+        facetCodesSortedDf,
         "amount",
-        "variance",
-        "descending",
         "yFree",
       ));
   }
