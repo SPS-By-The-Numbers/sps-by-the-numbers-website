@@ -1,16 +1,18 @@
 'use client';
 
-import { useDistrictData } from '../../DistrictDataProvider';
 import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
+import { makeChartCells, makeExpendituresData, makeSortedGui } from './CustomExpendituresConfig';
+import { useDistrictData } from '../../DistrictDataProvider';
 import { useEffect, useState, useRef } from 'react';
 import { useHighcharts } from 'components/providers/HighchartsProvider';
-import { makeChartCells, makeExpendituresData, makeSortedGui } from './CustomExpendituresConfig';
+import { makeChartableExpenditures } from 'utilities/ChartableMetrics';
+import ComparisonDashboard from './ComparisonDashboard';
+import ExpenditureFilter, { ALL_PROGRAM_ITEMS, ALL_ACTIVITY_ITEMS, ALL_OBJECT_ITEMS } from 'app/finance/ExpenditureFilter';
+import Loading from 'components/Loading';
 import makeEnrollmentConfig from './EnrollmentConfig';
 import makeExpendituresConfig from './ExpendituresConfig';
 import makeSummaryConfig from './SummaryConfig';
-import ExpenditureFilter from 'app/finance/ExpenditureFilter';
 import Paper from '@mui/material/Paper';
-import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
@@ -64,7 +66,7 @@ function updateChart(dashboards, dashboardDiv, priorBoard, mode, districtData, f
     priorBoard.current = dashboards.board(
       dashboardDiv.current,
       makeExpendituresConfig(districtData, filterSelection));
-  } else if (mode === 'custom') {
+  } else if (mode === 'custom-old') {
     const expendituresDf = districtData.filteredExpenditures(filterSelection);
     const [allFacetsDf, facetCodesSortedDf, data] = makeExpendituresData(expendituresDf, "variance", "descending");
     const gui = makeSortedGui("act", facetCodesSortedDf.array('activity_code'));
@@ -105,14 +107,22 @@ function extractCodes(prefix, selectedItems) {
 export default function DashboardSwitcher({ccddd, mode} : Params) {
   const priorBoard = useRef<Dashboards | null>(null);
   const dashboardDiv = useRef<HTMLDivElement>(null);
-  const [selectedObjects, setSelectedObjects] = useState<string[]>(['obj-2', 'obj-3']);
-  const [selectedActivities, setSelectedActivities] = useState<string[]>([
+  const [selectedObjects, setSelectedObjects] = useState<string[]>(ALL_OBJECT_ITEMS);
+  const [selectedActivities, setSelectedActivities] = useState<string[]>(ALL_ACTIVITY_ITEMS);
+  const [selectedPrograms, setSelectedPrograms] = useState<string[]>(ALL_PROGRAM_ITEMS);
+
+  const { highchartsObjs } = useHighcharts();
+  const { districtDataMap, loadCcddd } = useDistrictData();
+
+/*
+    [
     // Add basic teaching related activities.
     'act-21',
     'act-27',
     'act-28',
   ]);
-  const [selectedPrograms, setSelectedPrograms] = useState<string[]>([
+
+    [
     // Add all special education programs for now.
     'prog-21',
     'prog-22',
@@ -121,9 +131,7 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
     'prog-25',
     'prog-29',
   ]);
-
-  const { highchartsObjs } = useHighcharts();
-  const { districtDataMap, loadCcddd } = useDistrictData();
+  */
 
   useEffect(
     () => {
@@ -148,7 +156,39 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
       selectedObjects, selectedPrograms, selectedActivities]
   );
 
+  const filterSelection = {
+    selectedObjectCodes: extractCodes('obj', selectedObjects),
+    selectedActivityCodes: extractCodes('act', selectedActivities),
+    selectedProgramCodes: extractCodes('prog', selectedPrograms),
+  };
+
   const title = getTitle(mode);
+
+  let chartComponent = (
+    <div ref={dashboardDiv}>
+      <Loading />
+    </div>
+  );
+
+  if (mode === 'custom' && ccddd in districtDataMap) {
+    const [data, facetOrder] = makeChartableExpenditures(
+      ccddd,
+      districtDataMap[ccddd].filteredExpenditures(filterSelection),
+      'activity',
+      'variance' as const,
+      'descending' as const);
+
+    chartComponent = (
+      <ComparisonDashboard
+        data={data}
+        facetOrder={facetOrder}
+        metricList={
+          [
+            {ccddd, name: 'activity', quantifier: 'amount', facetColumn: 'activity'}
+          ]
+        }
+      />);
+  }
 
   return (
     <Stack component="main" gap="0.2rem" paddingTop="0.3rem">
@@ -166,23 +206,7 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
             setSelectedPrograms
           }}
       />
-      <div ref={dashboardDiv}>
-        <LinearProgress />
-        <Paper>
-          <Typography
-            component="h2"
-            variant="h2"
-            textAlign="center"
-            style={{
-              paddingTop: "1rem",
-              paddingBottom: "1rem",
-              fontSize: "1.5rem",
-            }}
-          >
-            Loading...
-          </Typography>
-        </Paper>
-      </div>
+      {chartComponent}
     </Stack>
   );
 }
