@@ -33,6 +33,9 @@ import type { ChartableMetrics, FilterSelection } from 'utilities/ChartableMetri
 type MetricDef ={
   ccddd: number;
   metricVariant: string;
+  precision: number; DEFAULT_PRECISION,
+  valueFormat: ValueFormat;
+  yLabel: string;
 };
 
 type FacetInfo = {
@@ -43,6 +46,8 @@ type FacetInfo = {
 type Params = {
   idPrefix: string;
   data: ColumnTable;
+  xColumn: string;
+  xLabel: string;
   facetOrder: Array<FacetInfo>;
   metricList: Array<MetricDef>;
 };
@@ -51,21 +56,25 @@ function makeCellId(idPrefix, metricOrdinal, facetInfo) {
   return `chart-${idPrefix}-${facetInfo.code}-${metricOrdinal}`;
 }
 
-export function makeFacetComponents(idPrefix, facetOrder, connectorId, metricList) {
+export function makeFacetComponents(idPrefix, xColumn, xLabel, facetOrder,
+                                    connectorId, metricList) {
   const r = metricList.flatMap(
     (metricDef, metricOrdinal) => facetOrder.map(
       facetInfo => (
-        {
-          title: facetInfo.title,
-          renderTo: makeCellId(idPrefix, metricOrdinal, facetInfo),
-          metricSuffix: facetInfo.code,
-          metricColumnRoot: metricDef.metricVaraint,
-          connectorId,
-          xDataColumn: 'class_of',
-          precision: DEFAULT_PRECISION,
-          valueFormat: 'currency' as const,
-          yUnits: '$',
-        }
+        makeBudgetActualsChart(
+          {
+            title: facetInfo.title,
+            renderTo: makeCellId(idPrefix, metricOrdinal, facetInfo),
+            metricSuffix: facetInfo.code,
+            metricColumnRoot: metricDef.metricVaraint,
+            connectorId,
+            xDataColumn: xColumn,
+            precision: metricDef.precision,
+            valueFormat: metricDef.valueFormat,
+            xLabel,
+            yLabel: metricDef.yLabel,
+          }
+        )
       )
     )
   );
@@ -91,20 +100,21 @@ export function makeSortedGui(idPrefix, facetOrder : Array<FacetInfo>,
     ],
   };
 
-  console.log(r);
   return r;
 }
 
 function renderHighchartDashboard(dashboardDiv: HTMLDivElement,
                                   dashboards : Dashboards,
+                                  xColumn: string,
+                                  xLabel: string,
                                   idPrefix: string,
                                   data : ColumnTable,
                                   facetOrder : Array<FacetInfo>,
                                   metricList : Array<MetricDef>) {
   const connectorId = 'c-chartdata';
   const gui = makeSortedGui(idPrefix, facetOrder, metricList);
-  const components = makeFacetComponents(idPrefix, facetOrder, connectorId, metricList);
-  debugger;
+  const components = makeFacetComponents(idPrefix, xColumn, xLabel,
+                                         facetOrder, connectorId, metricList);
 
   const board = dashboards.board(
     dashboardDiv.current,
@@ -124,7 +134,8 @@ function renderHighchartDashboard(dashboardDiv: HTMLDivElement,
   );
 }
 
-export default function ComparisonDashboard({idPrefix, data, facetOrder, metricList} : Params) {
+export default function ComparisonDashboard({idPrefix, data, xColumn, xLabel,
+                                            facetOrder, metricList} : Params) {
   const { highchartsObjs } = useHighcharts();
   const dashboardDiv = useRef<HTMLDivElement>(null);
 
@@ -135,8 +146,8 @@ export default function ComparisonDashboard({idPrefix, data, facetOrder, metricL
       }
 
       const dashboards = highchartsObjs.dashboards;
-      const board = renderHighchartDashboard(dashboardDiv, dashboards, idPrefix,
-                                             data, facetOrder, metricList);
+      const board = renderHighchartDashboard(dashboardDiv, dashboards, xColumn, xLabel,
+                                             idPrefix, data, facetOrder, metricList);
 
       return () => {
         // Clean up all the Highcharts event handlers, etc, on unmount or

@@ -10,6 +10,7 @@ export const baselineClassOfChartOptions = {
   yAxis: {
     crosshair: true,
     minorTickInterval: "auto",
+    type: 'logarithmic',
   },
   xAxis: {
     type: 'category',

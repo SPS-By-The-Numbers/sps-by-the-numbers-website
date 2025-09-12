@@ -57,18 +57,10 @@ export default function FinanceNav({sx=[]} : Params) {
             justifyContent: "space-between",
           }}>
         <Stack direction="row" spacing={4} sx={{alignItems: "center"}}>
-          <div>
-            <NavLink href={`/finance/summary/${ccddd}`}>Summary</NavLink>
-          </div>
-          <div>
-            <NavLink href={`/finance/enrollment/${ccddd}`}>Enrollment</NavLink>
-          </div>
-          <div>
-            <NavLink href={`/finance/expenditures/${ccddd}`}>Expenditures</NavLink>
-          </div>
-          <div>
-            <NavLink href={`/finance/custom/${ccddd}`}>Custom</NavLink>
-          </div>
+          <NavLink href={`/finance/summary/${ccddd}`}>Summary</NavLink>
+          <NavLink href={`/finance/enrollment/${ccddd}`}>Enrollment</NavLink>
+          <NavLink href={`/finance/expenditures/${ccddd}`}>Expenditures</NavLink>
+
           <Autocomplete
             disableClearable
             value={{label: districts[ccddd].district,  value: String(ccddd)}}

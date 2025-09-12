@@ -17,7 +17,7 @@ export type BudgetActualsChartOptions = {
 
   precision: number;
   valueFormat: ValueFormat;
-  yUnits : string;
+  yLabel : string;
   seriesLabel?: string;
 
   tooltip?: object;
@@ -100,14 +100,20 @@ function generateVarianceCaption(name, series, valueFormatter, minX, maxX) {
   `;
 }
 
+function percentFormatter(value, precision) {
+  return `${value.toFixed(precision)}%`;
+}
+
 function getFormatter(format : ValueFormat, precision) {
   switch(format) {
     case 'decimal':
       return d => d.toFixed(precision);
     case 'currency':
       return makeCurrencyFormatter(precision);
-    case 'percentage':
-      return d => `${d.toFixed(precision)}%`;
+    case 'percent':
+      return d => percentFormatter(d, precision);
+    case 'pctexp':
+      return d => percentFormatter(d, precision);
     case 'passthru':
       return x => x;
   }
@@ -121,7 +127,7 @@ function getColumnName(metricColumnRoot, suffix) {
   }
 }
 
-function inferUnits(valueFormat : ValueFormat) {
+function inferLabel(valueFormat : ValueFormat) {
   switch (valueFormat) {
     case 'currency':
       return '$';
@@ -134,7 +140,12 @@ function inferUnits(valueFormat : ValueFormat) {
 
     case 'percentage':
       return '%';
+
+    case 'pctexp':
+      return '% of expenditures';
   }
+
+  throw `Unexpected format ${valueFormat}`;
 }
 
 // Create the a chart cell definition graphic budgets vs actuals.
@@ -152,7 +163,7 @@ export default function makeBudgetActualsChart(options : BudgetActualsChartOptio
 
   const yAxis = {
     title: {
-      text: options.yUnits ?? inferUnits(options.valueFormat)
+      text: options.yLabel ?? inferLabel(options.valueFormat)
     },
   } as any;
 
@@ -191,6 +202,9 @@ export default function makeBudgetActualsChart(options : BudgetActualsChartOptio
           text: options.title
         },
         xAxis: {
+          title: {
+            text: options.xLabel,
+          },
           events: {
             afterSetExtremes: function(event) {
               try {

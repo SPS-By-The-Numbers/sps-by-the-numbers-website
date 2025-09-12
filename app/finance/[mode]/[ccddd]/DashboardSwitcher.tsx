@@ -10,7 +10,6 @@ import ComparisonDashboard from './ComparisonDashboard';
 import ExpenditureFilter, { ALL_PROGRAM_ITEMS, ALL_ACTIVITY_ITEMS, ALL_OBJECT_ITEMS } from 'app/finance/ExpenditureFilter';
 import Loading from 'components/Loading';
 import makeEnrollmentConfig from './EnrollmentConfig';
-import makeExpendituresConfig from './ExpendituresConfig';
 import makeSummaryConfig from './SummaryConfig';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
@@ -36,9 +35,6 @@ function getTitle(mode) {
 
     case 'expenditures':
         return 'Expenditure Analysis';
-
-    case 'custom':
-        return 'Custom Analysis';
   }
 
   return "[error]";
@@ -62,10 +58,6 @@ function updateChart(dashboards, dashboardDiv, priorBoard, mode, districtData, f
     priorBoard.current = dashboards.board(
       dashboardDiv.current,
       makeEnrollmentConfig(districtData));
-  } else if (mode === 'expenditures') {
-    priorBoard.current = dashboards.board(
-      dashboardDiv.current,
-      makeExpendituresConfig(districtData, filterSelection));
   }
 }
 
@@ -127,7 +119,7 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
     </div>
   );
 
-  if (mode === 'custom' && ccddd in districtDataMap) {
+  if (mode === 'expenditures' && ccddd in districtDataMap) {
     const [data, facetOrder] = makeChartableExpenditures(
       ccddd,
       districtDataMap[ccddd].filteredExpenditures(filterSelection),
@@ -139,10 +131,23 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
       <ComparisonDashboard
         idPrefix="act"
         data={data}
+        xColumn="class_of"
+        xLabel="Class of"
         facetOrder={facetOrder}
         metricList={
           [
-            {ccddd, metricVaraint: 'amount'},
+            {
+              ccddd,
+              metricVaraint: 'amount',
+              valueFormat: 'currency' as const,
+              precision: 2,  // TODO: remove and infer from valueFormat
+            },
+            {
+              ccddd,
+              metricVaraint: 'pctexp',
+              valueFormat: 'pctexp' as const,
+              precision: 2,  // TODO: remove and infer from valueFormat
+            },
           ]
         }
       />);
