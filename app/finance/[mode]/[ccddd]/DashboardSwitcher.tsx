@@ -1,13 +1,9 @@
 'use client';
 
-import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
-import { makeChartCells, makeExpendituresData, makeSortedGui } from './CustomExpendituresConfig';
 import { useDistrictData } from '../../DistrictDataProvider';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useHighcharts } from 'components/providers/HighchartsProvider';
-import { makeChartableExpenditures } from 'utilities/ChartableMetrics';
-import ComparisonDashboard from './ComparisonDashboard';
-import ExpenditureFilter, { ALL_PROGRAM_ITEMS, ALL_ACTIVITY_ITEMS, ALL_OBJECT_ITEMS } from 'app/finance/ExpenditureFilter';
+import ExpenditureComparisonDashboard from './ExpenditureComparisonDashboard';
 import Loading from 'components/Loading';
 import makeEnrollmentConfig from './EnrollmentConfig';
 import makeSummaryConfig from './SummaryConfig';
@@ -40,7 +36,7 @@ function getTitle(mode) {
   return "[error]";
 }
 
-function updateChart(dashboards, dashboardDiv, priorBoard, mode, districtData, filterSelection) {
+function updateChart(dashboards, dashboardDiv, priorBoard, mode, districtData) {
   // Not mounted yet.
   if (dashboardDiv.current === null) {
     return;
@@ -61,23 +57,9 @@ function updateChart(dashboards, dashboardDiv, priorBoard, mode, districtData, f
   }
 }
 
-function extractCodes(prefix, selectedItems) {
-  const selectedCodes = new Array<number>;
-  for (const id of selectedItems) {
-    const parts = id.split('-');
-    if (parts.length === 2 && parts[0] === prefix) {
-      selectedCodes.push(parseInt(parts[1]));
-    }
-  }
-  return selectedCodes;
-}
-
 export default function DashboardSwitcher({ccddd, mode} : Params) {
   const priorBoard = useRef<Dashboards | null>(null);
   const dashboardDiv = useRef<HTMLDivElement>(null);
-  const [selectedObjects, setSelectedObjects] = useState<string[]>(ALL_OBJECT_ITEMS);
-  const [selectedActivities, setSelectedActivities] = useState<string[]>(ALL_ACTIVITY_ITEMS);
-  const [selectedPrograms, setSelectedPrograms] = useState<string[]>(ALL_PROGRAM_ITEMS);
 
   const { highchartsObjs } = useHighcharts();
   const { districtDataMap, loadCcddd } = useDistrictData();
@@ -88,28 +70,16 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
         loadCcddd(ccddd)
       }
 
-      const filterSelection = {
-        selectedObjectCodes: extractCodes('obj', selectedObjects),
-        selectedActivityCodes: extractCodes('act', selectedActivities),
-        selectedProgramCodes: extractCodes('prog', selectedPrograms),
-      };
-
       if (highchartsObjs.dashboards && ccddd in districtDataMap) {
         const dashboards = highchartsObjs.dashboards;
         const districtData = districtDataMap[ccddd];
 
-        updateChart(dashboards, dashboardDiv, priorBoard, mode, districtData, filterSelection);
+        updateChart(dashboards, dashboardDiv, priorBoard, mode, districtData);
       }
     },
-    [ccddd, districtDataMap, highchartsObjs, loadCcddd, mode,
-      selectedObjects, selectedPrograms, selectedActivities]
+    [ccddd, districtDataMap, highchartsObjs, loadCcddd, mode ]
   );
 
-  const filterSelection = {
-    selectedObjectCodes: extractCodes('obj', selectedObjects),
-    selectedActivityCodes: extractCodes('act', selectedActivities),
-    selectedProgramCodes: extractCodes('prog', selectedPrograms),
-  };
 
   const title = getTitle(mode);
 
@@ -120,37 +90,13 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
   );
 
   if (mode === 'expenditures' && ccddd in districtDataMap) {
-    const [data, facetOrder] = makeChartableExpenditures(
-      ccddd,
-      districtDataMap[ccddd].filteredExpenditures(filterSelection),
-      'activity',
-      'variance' as const,
-      'descending' as const);
-
     chartComponent = (
-      <ComparisonDashboard
-        idPrefix="act"
-        data={data}
-        xColumn="class_of"
-        xLabel="Class of"
-        facetOrder={facetOrder}
-        metricList={
-          [
-            {
-              ccddd,
-              metricVaraint: 'amount',
-              valueFormat: 'currency' as const,
-              precision: 2,  // TODO: remove and infer from valueFormat
-            },
-            {
-              ccddd,
-              metricVaraint: 'pctexp',
-              valueFormat: 'pctexp' as const,
-              precision: 2,  // TODO: remove and infer from valueFormat
-            },
-          ]
-        }
-      />);
+      <ExpenditureComparisonDashboard
+        primaryCcddd={ccddd}
+        districtDataMap={districtDataMap}
+        expenditureFacet="activity"
+        />
+    );
   }
 
   return (
@@ -158,17 +104,6 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
       <Paper sx={{ paddingTop: "0.5rem", paddingBottom: "0.5rem" }}>
         <Typography component="h1" variant="h1" textAlign="center" style={{fontSize: "2.5rem"}}>{title} Dashboard</Typography>
       </Paper>
-      <ExpenditureFilter
-        filterState={
-          {
-            selectedObjects,
-            setSelectedObjects,
-            selectedActivities,
-            setSelectedActivities,
-            selectedPrograms,
-            setSelectedPrograms
-          }}
-      />
       {chartComponent}
     </Stack>
   );
