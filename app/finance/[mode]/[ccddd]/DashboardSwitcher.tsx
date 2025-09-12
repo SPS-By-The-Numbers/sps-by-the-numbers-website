@@ -66,30 +66,6 @@ function updateChart(dashboards, dashboardDiv, priorBoard, mode, districtData, f
     priorBoard.current = dashboards.board(
       dashboardDiv.current,
       makeExpendituresConfig(districtData, filterSelection));
-  } else if (mode === 'custom-old') {
-    const expendituresDf = districtData.filteredExpenditures(filterSelection);
-    const [allFacetsDf, facetCodesSortedDf, data] = makeExpendituresData(expendituresDf, "variance", "descending");
-    const gui = makeSortedGui("act", facetCodesSortedDf.array('activity_code'));
-    const connectorId = 'c-connector';
-
-    priorBoard.current = dashboards.board(
-      dashboardDiv.current,
-      {
-        gui,
-        components: [
-          ...makeChartCells(allFacetsDf, connectorId, "amount", "yFree"),
-        ],
-        dataPool: {
-          connectors: [
-            {
-              id: connectorId,
-              type: 'JSON',
-              options: dfToJSONConnectorOptions(data),
-            },
-          ],
-        },
-      }
-    );
   }
 }
 
@@ -113,25 +89,6 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
 
   const { highchartsObjs } = useHighcharts();
   const { districtDataMap, loadCcddd } = useDistrictData();
-
-/*
-    [
-    // Add basic teaching related activities.
-    'act-21',
-    'act-27',
-    'act-28',
-  ]);
-
-    [
-    // Add all special education programs for now.
-    'prog-21',
-    'prog-22',
-    'prog-23',
-    'prog-24',
-    'prog-25',
-    'prog-29',
-  ]);
-  */
 
   useEffect(
     () => {
@@ -180,11 +137,12 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
 
     chartComponent = (
       <ComparisonDashboard
+        idPrefix="act"
         data={data}
         facetOrder={facetOrder}
         metricList={
           [
-            {ccddd, name: 'activity', quantifier: 'amount', facetColumn: 'activity'}
+            {ccddd, metricVaraint: 'amount'},
           ]
         }
       />);

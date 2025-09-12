@@ -71,20 +71,6 @@ function minMaxClassOf(df) {
 
 // Fetches the dataset for one district.
 //
-// Final data is returned with one entry in toe "class_of" column for each year and most column
-// representing one chartable metric or aggregation.
-//
-// Columns representing a chartable metric has a column name with this format:
-//
-//   ${ccddd]_${metric_name}_${facet}_${budget/actual}
-//
-//  Example for amount of activity_code 11 in actuals for 17001 would be:
-//
-//    17001_amount_11_actuals
-//
-// Columns providing more info on the row itself do not follow
-// any specific form. An example of such a column is "covid_type"
-// which lists of the year is before, during, or after covid.
 export default class DistrictData {
   private enrollment_df : ColumnTable;
   private gf_expenditure_df : ColumnTable;

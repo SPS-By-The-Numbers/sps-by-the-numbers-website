@@ -12,14 +12,11 @@ import SpsProgramGroupingTreeItems from 'app/finance/SpsProgramGroupingTreeItems
 // Iterates a TreeViewBaseItem and extracts all IDs with a given prefix.
 // Used to generate default selection.
 function allItems(config, prefix) {
-  // TODO: This does not get the roll-up items to top level categories
   const nodes = [...config];  // Take copy of input 
   const itemIds = new Array<string>;
   while (nodes.length > 0) {
     const n = nodes.pop();
-    if (n.id.startsWith(prefix)) {
-      itemIds.push(n.id);
-    }
+    itemIds.push(n.id);
 
     if (n.children && n.children.length > 0) {
       nodes.push(...n.children);
@@ -29,9 +26,9 @@ function allItems(config, prefix) {
   return itemIds;
 };
 
-export const ALL_OBJECT_ITEMS = allItems(SafsObjectsTreeItems, "obj-");
-export const ALL_ACTIVITY_ITEMS = allItems(SpsActivityCategoryTreeItems, "act-");
-export const ALL_PROGRAM_ITEMS = allItems(SpsProgramGroupingTreeItems, "prog-");
+export const ALL_OBJECT_ITEMS = allItems(SafsObjectsTreeItems);
+export const ALL_ACTIVITY_ITEMS = allItems(SpsActivityCategoryTreeItems);
+export const ALL_PROGRAM_ITEMS = allItems(SpsProgramGroupingTreeItems);
 
 export type ExpenditureFilterState = {
   selectedObjects: string[];

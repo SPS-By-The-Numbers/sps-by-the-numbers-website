@@ -66,5 +66,14 @@ export function makeChartableExpenditures(ccddd: number,
       pctrev: d => op.sum(d.pctrev) * 100,
     });
 
-  return [data, facetCodesSorted.array(facetCodeColumn)];
+    return [data, facetCodesSorted
+      .derive({
+        facet_info: aq.escape(
+          d => ({
+            code: d[facetCodeColumn],
+            title: d[facetColumn],
+          })
+        )
+      })
+      .array('facet_info')];
 }

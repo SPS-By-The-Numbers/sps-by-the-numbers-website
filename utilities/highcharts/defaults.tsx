@@ -30,10 +30,10 @@ export const baselineClassOfChartOptions = {
     }
   },
   legend: {
-    layout: 'horizontal',
-    verticalAlign: 'top',
-    align: 'left',
+    layout: 'vertical',
+    verticalAlign: 'bottom',
     floating: true,
+    align: 'left',
     enabled: true,
   },
   tooltip: {
