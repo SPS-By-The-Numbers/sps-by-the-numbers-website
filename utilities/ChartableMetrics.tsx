@@ -4,17 +4,10 @@ import { op } from 'arquero';
 import type { ColumnTable } from 'arquero';
 export type SortType = "variance";
 export type SortOrder = "ascending" | "descending";
-
-// Data should be
-export default class ChartableMetrics {
-  constructor() {
-    this.districtDataList = [];
-  }
-
-  mergeExpenditures(ccddd: number, df : ColumnTable) {
-    this.filterSelection = filterSelection;
-  }
-}
+export type FacetInfo = {
+  code: number;
+  title: string;
+};
 
 // Returns data with one entry in the "class_of" column for each year and most column
 // representing one chartable metric or aggregation.
@@ -30,11 +23,12 @@ export default class ChartableMetrics {
 // Columns providing more info on the row itself do not follow
 // any specific form. An example of such a column is "covid_type"
 // which lists of the year is before, during, or after covid.
-export function makeChartableExpenditures(ccddd: number,
-                                          df: ColumnTable,
-                                          facetColumn: string,
-                                          sortType: SortType,
-                                          sortOrder: SortOrder) {
+export function makeChartableExpenditures(
+    ccddd: number,
+    df: ColumnTable,
+    facetColumn: string,
+    sortType: SortType,
+    sortOrder: SortOrder) : [ColumnTable, Array<FacetInfo>] {
   try {
     const facetCodeColumn = `${facetColumn}_code`;
 
@@ -61,7 +55,7 @@ export function makeChartableExpenditures(ccddd: number,
           })
         )
       })
-      .array('facet_info')];
+      .array('facet_info');
 
     const data = df.groupby('class_of', 'data_type', facetCodeColumn)
       .rollup({
@@ -76,7 +70,7 @@ export function makeChartableExpenditures(ccddd: number,
         [`${ccddd}_pctrev`]: d => op.sum(d.pctrev) * 100,
       });
 
-      return [data, facetInfoSorted];
+      return [data, facetInfoSorted as Array<FacetInfo>];
   } catch (e) {
     console.warn("No data");
     return [df.groupby('class_of').rollup(), []];

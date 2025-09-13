@@ -6,8 +6,8 @@ import MetricVariantSelector from 'components/finance/MetricVariantSelector';
 import ComparisonDashboard from './ComparisonDashboard';
 import ExpenditureFilter, { ALL_PROGRAM_ITEMS, ALL_ACTIVITY_ITEMS, ALL_OBJECT_ITEMS } from 'app/finance/ExpenditureFilter';
 
-import type DistrictDataMap from 'app/finance/DistrictDataProvider';
-import type MetricDef from './ComparisonDashboard';
+import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
+import type { MetricDef } from './ComparisonDashboard';
 import Stack from '@mui/material/Stack';
 
 type Params = {
@@ -37,11 +37,11 @@ export default function ExpenditureComparisonDashboard({expenditureFacet} : Para
     [
       {
         ccddd: initialCcddd,
-        metricVaraint: 'amount',
+        metricVariant: 'amount' as const,
       },
       {
         ccddd: initialCcddd,
-        metricVaraint: 'pctexp',
+        metricVariant: 'pctexp' as const,
       },
     ]
   );
@@ -122,14 +122,14 @@ export default function ExpenditureComparisonDashboard({expenditureFacet} : Para
               <Stack key={i} spacing={4} direction="column">
                 <DistrictSelector
                   ccddd={def.ccddd}
-                  onChange={selection => {
-                    updateMetricList(i, {ccddd: parseInt(selection.value)
-                  })}}
+                  onChange={(selection) => {
+                    updateMetricList(i, {ccddd: selection})
+                  }}
                 />
                 <MetricVariantSelector
                   label={`Column ${i} variant`}
-                  variant={metricList[i].metricVaraint}
-                  onChange={newValue => updateMetricList(i, {metricVaraint: newValue})}
+                  variant={metricList[i].metricVariant}
+                  onChange={newValue => updateMetricList(i, {metricVariant: newValue})}
                 />
               </Stack>
           ))

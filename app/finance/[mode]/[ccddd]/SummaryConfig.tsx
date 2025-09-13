@@ -15,9 +15,8 @@ const rowCellConfigs : Array<BudgetActualsChartOptions> = [
     connectorId: 'c-toplevel-metrics',
     xDataColumn: 'class_of',
 
-    precision: DEFAULT_PRECISION,
     valueFormat: 'decimal',
-    yUnits: 'AFTE',
+    yLabel: 'AFTE',
   },
   {
     title: 'Staffing FTE',
@@ -27,8 +26,7 @@ const rowCellConfigs : Array<BudgetActualsChartOptions> = [
     xDataColumn: 'class_of',
 
     valueFormat: 'decimal',
-    precision: DEFAULT_PRECISION,
-    yUnits: 'FTE',
+    yLabel: 'FTE',
   },
   {
     title: 'Cashflow',
@@ -38,8 +36,6 @@ const rowCellConfigs : Array<BudgetActualsChartOptions> = [
     xDataColumn: 'class_of',
 
     valueFormat: 'currency',
-    precision: DEFAULT_PRECISION,
-    yUnits: '$',
 
     tooltip: {
       valuePrefix: "$",
@@ -53,8 +49,6 @@ const rowCellConfigs : Array<BudgetActualsChartOptions> = [
     xDataColumn: 'class_of',
 
     valueFormat: 'currency',
-    precision: DEFAULT_PRECISION,
-    yUnits: '$',
   },
 ];
 

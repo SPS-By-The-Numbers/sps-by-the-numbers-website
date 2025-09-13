@@ -32,18 +32,16 @@ import { useEffect, useRef } from 'react';
 import { useHighcharts } from 'components/providers/HighchartsProvider';
 import Loading from 'components/Loading';
 
-import type { ChartableMetrics, FilterSelection } from 'utilities/ChartableMetrics';
+import type { MetricVariant } from 'components/finance/MetricVariantSelector';
+import type { ValueFormat } from 'utilities/highcharts/cells/BudgetActualsChart';
+import type { FacetInfo } from 'utilities/ChartableMetrics';
 
 export type MetricDef ={
   ccddd: number;
-  metricVariant: string;
+  metricVariant: MetricVariant;
+
   valueFormat?: ValueFormat;
   yLabel?: string;
-};
-
-export type FacetInfo = {
-  code: number;
-  title: string;
 };
 
 type Params = {
@@ -59,12 +57,14 @@ function makeCellId(idPrefix, metricOrdinal, facetInfo) {
   return `chart-${idPrefix}-${facetInfo.code}-${metricOrdinal}`;
 }
 
-function formatForVariant(variant) {
+function formatForVariant(variant) : ValueFormat {
   if (variant === 'amount') {
-    return 'currency';
+    return 'currency' as const;
   } else if (variant === 'pctexp') {
-    return 'pctexp';
+    return 'pctexp' as const;
   }
+
+  return 'passthru' as const;
 }
 
 export function makeFacetComponents(idPrefix, xColumn, xLabel, facetOrder,
@@ -112,7 +112,7 @@ export function makeSortedGui(idPrefix, facetOrder : Array<FacetInfo>,
   return r;
 }
 
-function renderHighchartDashboard(dashboardDiv: HTMLDivElement,
+function renderHighchartDashboard(dashboardDiv,
                                   dashboards : Dashboards,
                                   xColumn: string,
                                   xLabel: string,
@@ -141,6 +141,8 @@ function renderHighchartDashboard(dashboardDiv: HTMLDivElement,
       },
     }
   );
+
+  return board;
 }
 
 export default function ComparisonDashboard({idPrefix, data, xColumn, xLabel,
@@ -166,12 +168,12 @@ export default function ComparisonDashboard({idPrefix, data, xColumn, xLabel,
         }
       };
     },
-    [dashboardDiv, highchartsObjs, data, facetOrder, metricList]
+    [dashboardDiv, highchartsObjs, data, facetOrder, metricList, xLabel, idPrefix, xColumn]
   );
   return (
     <Paper>
       <div ref={dashboardDiv}>
-        <Loading />
+        <Loading text="Loading..." />
       </div>
     </Paper>
   );

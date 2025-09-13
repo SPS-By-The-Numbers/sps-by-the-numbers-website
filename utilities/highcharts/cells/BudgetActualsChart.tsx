@@ -5,7 +5,7 @@ import { op } from 'arquero';
 import merge from 'lodash.merge';
 import ReactDOMServer from 'react-dom/server';
 
-export type ValueFormat =  'currency' | 'decimal' | 'passthru' | 'percentage';
+export type ValueFormat =  'currency' | 'decimal' | 'passthru' | 'percentage' | 'pctexp';
 
 export type BudgetActualsChartOptions = {
   title : string;
@@ -15,10 +15,12 @@ export type BudgetActualsChartOptions = {
   metricSuffix?: string;
   renderTo: string;
 
-  precision: number;
   valueFormat: ValueFormat;
-  yLabel?: string;
+  precision?: number;
+
   seriesLabel?: string;
+  yLabel?: string;
+  xLabel?: string;
 
   tooltip?: object;
 };
@@ -119,7 +121,7 @@ function getFormatter(format : ValueFormat, precision) {
       return d => d.toFixed(precision);
     case 'currency':
       return makeCurrencyFormatter(precision);
-    case 'percent':
+    case 'percentage':
       return d => percentFormatter(d, precision);
     case 'pctexp':
       return d => percentFormatter(d, precision);
@@ -194,7 +196,7 @@ export default function makeBudgetActualsChart(options : BudgetActualsChartOptio
     ...options.tooltip
   };
 
-  if (valueFormat === 'percentage') {
+  if (valueFormat === 'percentage' || valueFormat === 'pctexp') {
     // Fix the y-axis
     // TODO: Make scale based on data.
     yAxis.tickInterval = 1;

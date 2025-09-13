@@ -6,6 +6,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
 
 import type { SxProps, Theme } from '@mui/material';
+import type { DistrictsMap } from 'components/providers/FinanceNavStateProvider';
 
 type Params = {
   ccddd: number;
@@ -46,7 +47,7 @@ export default function DistrictSelector({ccddd, onChange, sx=[]} : Params) {
       disableClearable
       value={{label: districts[ccddd].district, value: String(ccddd)}}
       options={ districtOptions }
-      onChange={(_event, newValue) => onChange(newValue)}
+      onChange={(_event, newValue) => onChange(parseInt(newValue.value))}
       renderInput={
         (params) => (
           <TextField

@@ -85,7 +85,7 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
 
   let chartComponent = (
     <div ref={dashboardDiv}>
-      <Loading />
+      <Loading text="Loading..." />
     </div>
   );
 

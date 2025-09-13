@@ -23,8 +23,6 @@ export default function makePctAmtChart(options : PctAmtChartOptions) {
         renderTo: `${options.renderTo}-pct`,
         metricColumnRoot: 'pctexp',
         valueFormat: 'percentage' as ValueFormat,
-        yUnits: '%',
-        precision: 2, // HACK
       }),
     makeBudgetActualsChart(
       {
@@ -32,8 +30,6 @@ export default function makePctAmtChart(options : PctAmtChartOptions) {
         renderTo: `${options.renderTo}-amt`,
         metricColumnRoot: 'amount',
         valueFormat: 'currency' as ValueFormat,
-        yUnits: '$',
-        precision: 2, // HACK
       }),
   ];
 }

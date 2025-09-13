@@ -11,7 +11,7 @@ import SpsProgramGroupingTreeItems from 'app/finance/SpsProgramGroupingTreeItems
 
 // Iterates a TreeViewBaseItem and extracts all IDs with a given prefix.
 // Used to generate default selection.
-function allItems(config, prefix) {
+function allItems(config) {
   const nodes = [...config];  // Take copy of input 
   const itemIds = new Array<string>;
   while (nodes.length > 0) {
