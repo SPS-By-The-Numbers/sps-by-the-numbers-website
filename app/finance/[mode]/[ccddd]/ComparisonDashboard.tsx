@@ -80,7 +80,7 @@ export function makeFacetComponents(idPrefix, xColumn, xLabel, facetOrder,
             metricColumnRoot: [metricDef.ccddd, metricDef.metricVariant].join('_'),
             connectorId,
             xDataColumn: xColumn,
-            valueFormat: formatForVariant(metricDef.metricVaraint),
+            valueFormat: formatForVariant(metricDef.metricVariant),
             xLabel,
           }
         )

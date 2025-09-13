@@ -44,13 +44,14 @@ function getSeriesAsDf(series, name, xMin, xMax) {
         normalized = normalized.rename({'name':'class_of', 'y': name});
       }
 
-      // First column is x.
-      const result = normalized
-          .filter(aq.escape(d =>
+      // Pull into the right zoom window and drop empty data.
+      const dataDropped = normalized.filter(aq.escape(d =>
                             d['x'] >= xMin &&
                             d['x'] <= xMax &&
-                            op.compact(d[name])))
-      return result;
+                            Number.isFinite(d[name])));
+
+      // Only return the interested columns so later joins aren't messy.
+      return dataDropped.select('class_of', name);
     }
   }
 
