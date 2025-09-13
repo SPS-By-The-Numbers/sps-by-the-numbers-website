@@ -76,3 +76,38 @@ export function makeChartableExpenditures(
     return [df.groupby('class_of').rollup(), []];
   }
 }
+
+export function makeChartableEnrollment(
+    ccddd: number,
+    enrollment_df: ColumnTable,
+    facetColumn: string,
+    sortType: SortType,
+    sortOrder: SortOrder) : [ColumnTable, Array<FacetInfo>] {
+  const k12EnrollmentActuals =
+    this.enrollment_df.filter(
+      d => op.includes(['K-12 FTE', 'K-12 FTE - Includes ALE'], d.enrollment_domain)
+  )
+  .groupby('class_of')
+  .rollup({
+    [`${ccddd}_enrollment_actuals`]: op.sum('amount')
+  });
+
+  // K-12 FTE from the p223 confusingly is NOT the
+  // "Total K-12 FTE Enrollment Counts" (item code 314) in the F195.
+  //
+  // Item 314 in F195 includes also the Running Start and Drop Out Reengagement.
+  //
+  // The equivalent number from the F195 is actually the sum of these two item codes
+  //  327 - Subtotal K-12
+  //  148 - ALE Enrollment
+  const k12EnrollmentBudget = this.budget_items_df.filter(
+      d => op.includes(['327', '148'], d.item_code)
+  )
+  .groupby('class_of')
+  .rollup({
+    [`${ccddd}_enrollment_budget`]: op.sum('amount')
+  });
+
+  return k12EnrollmentActuals
+    .join_full(k12EnrollmentBudget);
+}

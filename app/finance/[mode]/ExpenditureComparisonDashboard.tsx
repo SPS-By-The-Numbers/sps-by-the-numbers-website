@@ -1,5 +1,5 @@
 import { makeChartableExpenditures } from 'utilities/ChartableMetrics';
-import { useDistrictData } from '../../DistrictDataProvider';
+import { useDistrictData } from '../DistrictDataProvider';
 import { useState, useEffect } from 'react';
 import DistrictSelector from 'components/finance/DistrictSelector';
 import MetricVariantSelector from 'components/finance/MetricVariantSelector';
