@@ -35,38 +35,24 @@ export function makeChartableExpenditures(ccddd: number,
                                           facetColumn: string,
                                           sortType: SortType,
                                           sortOrder: SortOrder) {
-  const facetCodeColumn = `${facetColumn}_code`;
+  try {
+    const facetCodeColumn = `${facetColumn}_code`;
 
-  // Calculate variance for sort order.
-  const varianceDf = df
-    .groupby('class_of', 'data_type', facetColumn, facetCodeColumn)
-    .rollup({
-      val: op.sum(`amount`),
-    })
-    .groupby('class_of', facetColumn, facetCodeColumn)
-    .pivot(['data_type'], { val: d => op.sum(d.val) })
-    .derive({variance: d => d.budget - d.actuals})
-    .filter(d => !op.is_nan(d.variance));
+    // Calculate variance for sort order.
+    const varianceDf = df
+      .groupby('class_of', 'data_type', facetColumn, facetCodeColumn)
+      .rollup({
+        val: op.sum(`amount`),
+      })
+      .groupby('class_of', facetColumn, facetCodeColumn)
+      .pivot(['data_type'], { val: d => op.sum(d.val) })
+      .derive({variance: d => d.budget - d.actuals})
+      .filter(d => !op.is_nan(d.variance));
 
-  const facetCodesSorted = varianceDf
-    .groupby(facetColumn, facetCodeColumn)
-    .rollup({absmedian: d => op.abs(op.median(d.variance))})
-    .orderby(aq.desc('absmedian'));
-
-  const data = df.groupby('class_of', 'data_type', facetCodeColumn)
-    .rollup({
-      amount: op.sum(`amount`),
-      pctexp: op.sum(`c_pct_expenditure`),
-      pctrev: op.sum(`c_pct_revenue`),
-    })
-    .groupby('class_of')
-    .pivot([facetCodeColumn, 'data_type'], {
-      amount: d => op.sum(d.amount),
-      pctexp: d => op.sum(d.pctexp) * 100,
-      pctrev: d => op.sum(d.pctrev) * 100,
-    });
-
-    return [data, facetCodesSorted
+    const facetInfoSorted = varianceDf
+      .groupby(facetColumn, facetCodeColumn)
+      .rollup({absmedian: d => op.abs(op.median(d.variance))})
+      .orderby(aq.desc('absmedian'))
       .derive({
         facet_info: aq.escape(
           d => ({
@@ -76,4 +62,23 @@ export function makeChartableExpenditures(ccddd: number,
         )
       })
       .array('facet_info')];
+
+    const data = df.groupby('class_of', 'data_type', facetCodeColumn)
+      .rollup({
+        amount: op.sum(`amount`),
+        pctexp: op.sum(`c_pct_expenditure`),
+        pctrev: op.sum(`c_pct_revenue`),
+      })
+      .groupby('class_of')
+      .pivot([facetCodeColumn, 'data_type'], {
+        [`${ccddd}_amount`]: d => op.sum(d.amount),
+        [`${ccddd}_pctexp`]: d => op.sum(d.pctexp) * 100,
+        [`${ccddd}_pctrev`]: d => op.sum(d.pctrev) * 100,
+      });
+
+      return [data, facetInfoSorted];
+  } catch (e) {
+    console.warn("No data");
+    return [df.groupby('class_of').rollup(), []];
+  }
 }

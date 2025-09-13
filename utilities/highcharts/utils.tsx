@@ -43,6 +43,7 @@ export function dfToJSONConnectorOptions(df : ColumnTable, precision = DEFAULT_P
      return acc;
    }, {});
 
+   // TODO: Do we want to round here too?
    const roundNumbers = newDf.columnNames().reduce((acc, col) => {
      acc[col] = aq.escape(
        d => typeof d[col] === "number" ? op.round(d[col] * (10**precision))/(10**precision): d[col]);

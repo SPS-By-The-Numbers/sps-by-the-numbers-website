@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import { makeChartableExpenditures } from 'utilities/ChartableMetrics';
 
+import DistrictSelector from 'components/finance/DistrictSelector';
+import MetricVariantSelector from 'components/finance/MetricVariantSelector';
 import ComparisonDashboard from './ComparisonDashboard';
 import ExpenditureFilter, { ALL_PROGRAM_ITEMS, ALL_ACTIVITY_ITEMS, ALL_OBJECT_ITEMS } from 'app/finance/ExpenditureFilter';
 
 import type DistrictDataMap from 'app/finance/DistrictDataProvider';
+import type MetricDef from './ComparisonDashboard';
+import Stack from '@mui/material/Stack';
 
 type Params = {
   primaryCcddd: number;
@@ -24,10 +28,36 @@ function extractCodes(prefix, selectedItems) {
 }
 
 // Charts expenditures for 
-export default function ExpenditureComparisonDashboard({primaryCcddd, districtDataMap, expenditureFacet} : Params) {
+export default function ExpenditureComparisonDashboard({districtDataMap, expenditureFacet} : Params) {
+  const initialCcddd = 17001;
   const [selectedObjects, setSelectedObjects] = useState<string[]>(ALL_OBJECT_ITEMS);
   const [selectedActivities, setSelectedActivities] = useState<string[]>(ALL_ACTIVITY_ITEMS);
   const [selectedPrograms, setSelectedPrograms] = useState<string[]>(ALL_PROGRAM_ITEMS);
+  const [metricList, setMetricList] = useState<Array<MetricDef>>(
+    [
+      {
+        ccddd: initialCcddd,
+        metricVaraint: 'amount',
+        valueFormat: 'currency' as const,
+        precision: 2,  // TODO: remove and infer from valueFormat
+      },
+      {
+        ccddd: initialCcddd,
+        metricVaraint: 'pctexp',
+        valueFormat: 'pctexp' as const,
+        precision: 2,  // TODO: remove and infer from valueFormat
+      },
+    ]
+  );
+
+  const updateMetricList = (i, newState) => {
+    // Copy the list.
+    const newList = [...metricList];
+
+    // Override the fields in the right MetricDef then set.
+    newList[i] = {...metricList[i], ...newState};
+    setMetricList(newList);
+  };
 
   const filterSelection = {
     selectedObjectCodes: extractCodes('obj', selectedObjects),
@@ -35,15 +65,39 @@ export default function ExpenditureComparisonDashboard({primaryCcddd, districtDa
     selectedProgramCodes: extractCodes('prog', selectedPrograms),
   };
 
-  const [data, facetOrder] = makeChartableExpenditures(
-    primaryCcddd,
-    districtDataMap[primaryCcddd].filteredExpenditures(filterSelection),
+  const firstCcddd = metricList[0].ccddd;
+  const otherCcddds = new Set(metricList.map(def => def.ccddd));
+  otherCcddds.delete(firstCcddd);
+
+  const [firstData, facetOrder] = makeChartableExpenditures(
+    firstCcddd,
+    districtDataMap[firstCcddd].filteredExpenditures(filterSelection),
     expenditureFacet,
     'variance' as const,
     'descending' as const);
 
+  const data = [...otherCcddds].reduce(
+    (acc, ccddd) => {
+      if (!(ccddd in districtDataMap)) {
+        console.warn("Not loaded yet " + ccddd);
+        return acc;
+      }
+
+      const [otherData, _] = makeChartableExpenditures(
+        ccddd,
+        districtDataMap[ccddd].filteredExpenditures(filterSelection),
+        expenditureFacet,
+        'variance' as const,
+        'descending' as const
+      );
+
+      return acc.join_full(otherData);
+    },
+  firstData);
+
   return (
     <div>
+      {/* This section is configuration of the data set. */}
       <ExpenditureFilter
         filterState={
           {
@@ -55,28 +109,34 @@ export default function ExpenditureComparisonDashboard({primaryCcddd, districtDa
             setSelectedPrograms
           }}
       />
+
+      {/* This section is configuration of each comparison */}
+      <Stack direction="row" spacing={4}>
+        {metricList.map(
+          (def,i) => (
+              <Stack key={i} spacing={4} direction="column">
+                <DistrictSelector
+                  ccddd={def.ccddd}
+                  onChange={selection => {
+                    updateMetricList(i, {ccddd: parseInt(selection.value)
+                  })}}
+                />
+                <MetricVariantSelector
+                  label={`Column ${i} variant`}
+                  variant={metricList[i].metricVaraint}
+                  onChange={newValue => updateMetricList(i, {metricVaraint: newValue})}
+                />
+              </Stack>
+          ))
+        }
+      </Stack>
     <ComparisonDashboard
       idPrefix={expenditureFacet}
       data={data}
       xColumn="class_of"
       xLabel="Class of"
       facetOrder={facetOrder}
-      metricList={
-        [
-          {
-            primaryCcddd,
-            metricVaraint: 'amount',
-            valueFormat: 'currency' as const,
-            precision: 2,  // TODO: remove and infer from valueFormat
-          },
-          {
-            primaryCcddd,
-            metricVaraint: 'pctexp',
-            valueFormat: 'pctexp' as const,
-            precision: 2,  // TODO: remove and infer from valueFormat
-          },
-        ]
-      }
+      metricList={metricList}
     />
   </div>);
 }

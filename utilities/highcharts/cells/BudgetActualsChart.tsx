@@ -31,10 +31,19 @@ function getSeriesAsDf(series, name, xMin, xMax) {
       if (df.numCols() <  2) {
         throw `missing ${name}`;
       }
+      const columnNames = df.columnNames();
+      let normalized = df;
+
+      if (columnNames.includes('0')) {
+        normalized = normalized
+          .rename({'0':'class_of', '1': name})
+          .derive({'x': op.row_number()});
+      } else {
+        normalized = normalized.rename({'name':'class_of', 'y': name});
+      }
 
       // First column is x.
-      const result = df
-          .rename({0:'x', 1: name})
+      const result = normalized
           .filter(aq.escape(d =>
                             d['x'] >= xMin &&
                             d['x'] <= xMax &&
@@ -67,7 +76,7 @@ function generateVarianceCaption(name, series, valueFormatter, minX, maxX) {
 
   const variances_df = budget_df.join(actuals_df)
     .derive({variance: d => d.budget - d.actuals})
-    .orderby('x');
+    .orderby('class_of');
   
   const xVal = variances_df.array('x').at(-1);
   const latest = variances_df.array('variance').at(-1);
@@ -189,11 +198,17 @@ export default function makeBudgetActualsChart(options : BudgetActualsChartOptio
         columnAssignment: [
           {
             seriesId: 'budget',
-            data: [options.xDataColumn, budgetColumn],
+            data: {
+              name: options.xDataColumn,
+              y: budgetColumn
+            },
           },
           {
             seriesId: 'actuals',
-            data: [options.xDataColumn, actualsColumn],
+            data: {
+              name: options.xDataColumn,
+              y: actualsColumn,
+            }
           },
         ],
       },
@@ -205,6 +220,7 @@ export default function makeBudgetActualsChart(options : BudgetActualsChartOptio
           title: {
             text: options.xLabel,
           },
+          reversed: true,
           events: {
             afterSetExtremes: function(event) {
               try {
@@ -231,6 +247,10 @@ export default function makeBudgetActualsChart(options : BudgetActualsChartOptio
           {
             id: 'budget',
             name: `Budget${options.seriesLabel ?? ''}`,
+            dataSorting: {
+              enabled: true,
+              sortKey: 'name',
+            },
             colorIndex: 2,
           },
           {
@@ -251,7 +271,7 @@ export default function makeBudgetActualsChart(options : BudgetActualsChartOptio
         caption: {
           useHTML: true,
           align: 'right',
-        }
+        },
       }
     },
   );

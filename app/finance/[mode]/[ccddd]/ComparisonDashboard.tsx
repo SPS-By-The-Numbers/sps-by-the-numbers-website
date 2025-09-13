@@ -1,5 +1,9 @@
 import { dfToJSONConnectorOptions, DEFAULT_PRECISION } from 'utilities/highcharts/utils';
 import makeBudgetActualsChart from "utilities/highcharts/cells/BudgetActualsChart";
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+
 import type { ColumnTable } from 'arquero';
 import type Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
 
@@ -30,7 +34,7 @@ import Loading from 'components/Loading';
 
 import type { ChartableMetrics, FilterSelection } from 'utilities/ChartableMetrics';
 
-type MetricDef ={
+export type MetricDef ={
   ccddd: number;
   metricVariant: string;
   precision: number; DEFAULT_PRECISION,
@@ -38,7 +42,7 @@ type MetricDef ={
   yLabel: string;
 };
 
-type FacetInfo = {
+export type FacetInfo = {
   code: number;
   title: string;
 };
@@ -66,7 +70,7 @@ export function makeFacetComponents(idPrefix, xColumn, xLabel, facetOrder,
             title: facetInfo.title,
             renderTo: makeCellId(idPrefix, metricOrdinal, facetInfo),
             metricSuffix: facetInfo.code,
-            metricColumnRoot: metricDef.metricVaraint,
+            metricColumnRoot: [metricDef.ccddd, metricDef.metricVaraint].join('_'),
             connectorId,
             xDataColumn: xColumn,
             precision: metricDef.precision,
@@ -111,7 +115,7 @@ function renderHighchartDashboard(dashboardDiv: HTMLDivElement,
                                   data : ColumnTable,
                                   facetOrder : Array<FacetInfo>,
                                   metricList : Array<MetricDef>) {
-  const connectorId = 'c-chartdata';
+  const connectorId = `${idPrefix}-data-connector`;
   const gui = makeSortedGui(idPrefix, facetOrder, metricList);
   const components = makeFacetComponents(idPrefix, xColumn, xLabel,
                                          facetOrder, connectorId, metricList);
@@ -160,8 +164,10 @@ export default function ComparisonDashboard({idPrefix, data, xColumn, xLabel,
     [dashboardDiv, highchartsObjs, data, facetOrder, metricList]
   );
   return (
-    <div ref={dashboardDiv}>
-      <Loading />
-    </div>
+    <Paper>
+      <div ref={dashboardDiv}>
+        <Loading />
+      </div>
+    </Paper>
   );
 }
