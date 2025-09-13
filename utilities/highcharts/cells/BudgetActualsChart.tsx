@@ -1,5 +1,5 @@
 import { baselineHighchartsCell } from "utilities/highcharts/defaults";
-import { makeCurrencyFormatter } from "utilities/highcharts/utils";
+import { makeCurrencyFormatter, DEFAULT_PRECISION } from "utilities/highcharts/utils";
 import * as aq from 'arquero';
 import { op } from 'arquero';
 import merge from 'lodash.merge';
@@ -17,7 +17,7 @@ export type BudgetActualsChartOptions = {
 
   precision: number;
   valueFormat: ValueFormat;
-  yLabel : string;
+  yLabel?: string;
   seriesLabel?: string;
 
   tooltip?: object;
@@ -78,7 +78,7 @@ function generateVarianceCaption(name, series, valueFormatter, minX, maxX) {
     .derive({variance: d => d.budget - d.actuals})
     .orderby('class_of');
   
-  const xVal = variances_df.array('x').at(-1);
+  const xVal = variances_df.array('class_of').at(-1);
   const latest = variances_df.array('variance').at(-1);
   const stats = variances_df.rollup({
     median: d => op.median(d.variance),
@@ -157,11 +157,23 @@ function inferLabel(valueFormat : ValueFormat) {
   throw `Unexpected format ${valueFormat}`;
 }
 
+function inferFormat(variant) {
+  if (variant === 'amount') {
+    return 'currency';
+  } else if (variant === 'pctexp') {
+    return 'pctexp';
+  }
+  return 'passthru';
+}
+
 // Create the a chart cell definition graphic budgets vs actuals.
 export default function makeBudgetActualsChart(options : BudgetActualsChartOptions) {
   const {budgetColumn, actualsColumn} = getColumnName(options.metricColumnRoot, options.metricSuffix);
 
-  const rawFomatter = getFormatter(options.valueFormat, options.precision);
+  const valueFormat = options.valueFormat;
+  const precision = options.precision ?? DEFAULT_PRECISION;
+  const rawFomatter = getFormatter(valueFormat, precision);
+
   const valueFormatter = (v) => {
     if (v === undefined) {
       return '';
@@ -172,7 +184,7 @@ export default function makeBudgetActualsChart(options : BudgetActualsChartOptio
 
   const yAxis = {
     title: {
-      text: options.yLabel ?? inferLabel(options.valueFormat)
+      text: options.yLabel ?? inferLabel(valueFormat)
     },
   } as any;
 
@@ -182,7 +194,7 @@ export default function makeBudgetActualsChart(options : BudgetActualsChartOptio
     ...options.tooltip
   };
 
-  if (options.valueFormat === 'percentage') {
+  if (valueFormat === 'percentage') {
     // Fix the y-axis
     // TODO: Make scale based on data.
     yAxis.tickInterval = 1;

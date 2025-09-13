@@ -37,9 +37,8 @@ import type { ChartableMetrics, FilterSelection } from 'utilities/ChartableMetri
 export type MetricDef ={
   ccddd: number;
   metricVariant: string;
-  precision: number; DEFAULT_PRECISION,
-  valueFormat: ValueFormat;
-  yLabel: string;
+  valueFormat?: ValueFormat;
+  yLabel?: string;
 };
 
 export type FacetInfo = {
@@ -60,6 +59,14 @@ function makeCellId(idPrefix, metricOrdinal, facetInfo) {
   return `chart-${idPrefix}-${facetInfo.code}-${metricOrdinal}`;
 }
 
+function formatForVariant(variant) {
+  if (variant === 'amount') {
+    return 'currency';
+  } else if (variant === 'pctexp') {
+    return 'pctexp';
+  }
+}
+
 export function makeFacetComponents(idPrefix, xColumn, xLabel, facetOrder,
                                     connectorId, metricList) {
   const r = metricList.flatMap(
@@ -73,10 +80,8 @@ export function makeFacetComponents(idPrefix, xColumn, xLabel, facetOrder,
             metricColumnRoot: [metricDef.ccddd, metricDef.metricVaraint].join('_'),
             connectorId,
             xDataColumn: xColumn,
-            precision: metricDef.precision,
-            valueFormat: metricDef.valueFormat,
+            valueFormat: formatForVariant(metricDef.metricVaraint),
             xLabel,
-            yLabel: metricDef.yLabel,
           }
         )
       )

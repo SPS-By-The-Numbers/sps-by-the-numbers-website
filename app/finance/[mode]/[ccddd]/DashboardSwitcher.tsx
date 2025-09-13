@@ -93,7 +93,6 @@ export default function DashboardSwitcher({ccddd, mode} : Params) {
     chartComponent = (
       <ExpenditureComparisonDashboard
         primaryCcddd={ccddd}
-        districtDataMap={districtDataMap}
         expenditureFacet="activity"
         />
     );

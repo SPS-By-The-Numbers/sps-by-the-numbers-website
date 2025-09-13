@@ -6,8 +6,10 @@ import MenuItem from '@mui/material/MenuItem';
 
 import type { SxProps, Theme } from '@mui/material';
 
+export type MetricVariant = "amount" | "pctexp";
+
 type Params = {
-  variant: string;
+  variant: MetricVariant;
   label: string;
   onChange: (newVariant: string) => void;
   sx?: SxProps<Theme>;

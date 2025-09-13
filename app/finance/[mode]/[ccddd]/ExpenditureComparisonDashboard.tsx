@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import { makeChartableExpenditures } from 'utilities/ChartableMetrics';
-
+import { useDistrictData } from '../../DistrictDataProvider';
+import { useState, useEffect } from 'react';
 import DistrictSelector from 'components/finance/DistrictSelector';
 import MetricVariantSelector from 'components/finance/MetricVariantSelector';
 import ComparisonDashboard from './ComparisonDashboard';
@@ -12,7 +12,6 @@ import Stack from '@mui/material/Stack';
 
 type Params = {
   primaryCcddd: number;
-  districtDataMap: DistrictDataMap;
   expenditureFacet: "program" | "activity" | "object";
 };
 
@@ -28,7 +27,8 @@ function extractCodes(prefix, selectedItems) {
 }
 
 // Charts expenditures for 
-export default function ExpenditureComparisonDashboard({districtDataMap, expenditureFacet} : Params) {
+export default function ExpenditureComparisonDashboard({expenditureFacet} : Params) {
+  const {districtDataMap, loadCcddd} = useDistrictData();
   const initialCcddd = 17001;
   const [selectedObjects, setSelectedObjects] = useState<string[]>(ALL_OBJECT_ITEMS);
   const [selectedActivities, setSelectedActivities] = useState<string[]>(ALL_ACTIVITY_ITEMS);
@@ -38,16 +38,21 @@ export default function ExpenditureComparisonDashboard({districtDataMap, expendi
       {
         ccddd: initialCcddd,
         metricVaraint: 'amount',
-        valueFormat: 'currency' as const,
-        precision: 2,  // TODO: remove and infer from valueFormat
       },
       {
         ccddd: initialCcddd,
         metricVaraint: 'pctexp',
-        valueFormat: 'pctexp' as const,
-        precision: 2,  // TODO: remove and infer from valueFormat
       },
     ]
+  );
+
+  useEffect(
+    () => {
+      for (const metricDef of metricList) {
+        loadCcddd(metricDef.ccddd);
+      }
+    },
+    [loadCcddd, metricList]
   );
 
   const updateMetricList = (i, newState) => {
