@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
 export default function Page() {
-  redirect('/finance/summary/17001');
+  redirect('/finance/vitals');
 }
