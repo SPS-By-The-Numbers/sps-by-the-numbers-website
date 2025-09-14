@@ -8,12 +8,13 @@ import ReactDOMServer from 'react-dom/server';
 export type ValueFormat =  'currency' | 'decimal' | 'passthru' | 'percentage' | 'pctexp';
 
 export type BudgetActualsChartOptions = {
+  renderTo: string;
+
   title : string;
   metricColumnRoot: string;
   connectorId : string;
   xDataColumn : string;
   metricSuffix?: string;
-  renderTo: string;
 
   valueFormat: ValueFormat;
   precision?: number;

@@ -77,37 +77,44 @@ export function makeChartableExpenditures(
   }
 }
 
-export function makeChartableEnrollment(
+export function makeChartableVitals(
     ccddd: number,
     enrollment_df: ColumnTable,
-    facetColumn: string,
-    sortType: SortType,
-    sortOrder: SortOrder) : [ColumnTable, Array<FacetInfo>] {
-  const k12EnrollmentActuals =
-    this.enrollment_df.filter(
-      d => op.includes(['K-12 FTE', 'K-12 FTE - Includes ALE'], d.enrollment_domain)
-  )
-  .groupby('class_of')
-  .rollup({
-    [`${ccddd}_enrollment_actuals`]: op.sum('amount')
-  });
+    staffing_df: ColumnTable,
+    balances_df: ColumnTable) : [ColumnTable, Array<FacetInfo>] {
+  const enrollment = enrollment_df
+      .select('class_of', 'enrollment_budget', 'enrollment_actuals')
+      .rename(
+        {
+          enrollment_budget: `${ccddd}_enrollment_budget`,
+          enrollment_actuals:`${ccddd}_enrollment_actuals`,
+        }
+      );
 
-  // K-12 FTE from the p223 confusingly is NOT the
-  // "Total K-12 FTE Enrollment Counts" (item code 314) in the F195.
-  //
-  // Item 314 in F195 includes also the Running Start and Drop Out Reengagement.
-  //
-  // The equivalent number from the F195 is actually the sum of these two item codes
-  //  327 - Subtotal K-12
-  //  148 - ALE Enrollment
-  const k12EnrollmentBudget = this.budget_items_df.filter(
-      d => op.includes(['327', '148'], d.item_code)
-  )
-  .groupby('class_of')
-  .rollup({
-    [`${ccddd}_enrollment_budget`]: op.sum('amount')
-  });
+  const staffing = staffing_df
+      .select('class_of', 'amount_staff_fte_budget', 'amount_staff_fte_actuals')
+      .rename(
+        {
+          amount_staff_fte_budget: `${ccddd}_amount_staff_fte_budget`,
+          amount_staff_fte_actuals:`${ccddd}_amount_staff_fte_actuals`,
+        }
+      );
 
-  return k12EnrollmentActuals
-    .join_full(k12EnrollmentBudget);
+  const balances = balances_df
+      .derive({
+        cashflow_budget: d => (d.ending_balance_budget - d.beginning_balance_budget),
+        cashflow_actuals: d => (d.ending_balance_actuals - d.beginning_balance_actuals),
+      })
+      .select('class_of', 'beginning_balance_budget', 'beginning_balance_actuals',
+              'cashflow_budget', 'cashflow_actuals')
+      .rename(
+        {
+          beginning_balance_budget: `${ccddd}_beginning_balance_budget`,
+          beginning_balance_actuals:`${ccddd}_beginning_balance_actuals`,
+          cashflow_budget: `${ccddd}_cashflow_budget`,
+          cashflow_actuals:`${ccddd}_cashflow_actuals`,
+        }
+      );
+
+  return enrollment.join_full(staffing).join_full(balances);
 }

@@ -121,14 +121,6 @@ export default class DistrictData {
                            budget_items_df, actuals_items_df, s275_summary_df);
   }
 
-  toplevel_metrics() {
-    const merged_df = this.cashflow()
-      .join_full(this.enrollment())
-      .join_full(this.staffing())
-      .join_full(this.balances());
-    return merged_df;
-  }
-
   staffing() {
     const staffFteActuals = this.s275_summary_df
       .groupby(['class_of'])
