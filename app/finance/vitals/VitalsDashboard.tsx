@@ -2,12 +2,13 @@
 
 import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import { makeChartableVitals } from 'utilities/ChartableMetrics';
-import { makeDashboardGui } from './SummaryConfig';
 import { useDistrictData } from '../DistrictDataProvider';
 import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation'
 import HcDashboard from 'components/HcDashboard';
 import Loading from 'components/Loading';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
 import makeBudgetActualsChart from "utilities/highcharts/cells/BudgetActualsChart";
 
 import type { BudgetActualsChartOptions } from "utilities/highcharts/cells/BudgetActualsChart";
@@ -18,7 +19,7 @@ const CONNECTOR_ID = 'vitals-connector';
 function makeRowCellConfigs(ccddd) : Array<BudgetActualsChartOptions> {
   return [
     {
-      renderTo: 'enrollment-ba-history-chart',
+      renderTo: 'enrollment-chart',
 
       title: 'Enrollment',
       metricColumnRoot: `${ccddd}_enrollment`,
@@ -29,8 +30,9 @@ function makeRowCellConfigs(ccddd) : Array<BudgetActualsChartOptions> {
       yLabel: 'AFTE',
     },
     {
+      renderTo: 'staffing-chart',
+
       title: 'Staffing FTE',
-      renderTo: 'staffing-ba-history-chart',
       metricColumnRoot: `${ccddd}_amount_staff_fte`,
       connectorId: CONNECTOR_ID,
       xDataColumn: 'class_of',
@@ -39,7 +41,8 @@ function makeRowCellConfigs(ccddd) : Array<BudgetActualsChartOptions> {
       yLabel: 'FTE',
     },
     {
-      renderTo: 'cashflow-ba-history-chart',
+      renderTo: 'cashflow-chart',
+
       title: 'Cashflow',
       metricColumnRoot: `${ccddd}_cashflow`,
       connectorId: CONNECTOR_ID,
@@ -52,8 +55,9 @@ function makeRowCellConfigs(ccddd) : Array<BudgetActualsChartOptions> {
       },
     },
     {
-      title: 'Beginning Balance',
       renderTo: 'beginning-balance-chart',
+
+      title: 'Beginning Balance',
       metricColumnRoot: `${ccddd}_beginning_balance`,
       connectorId: CONNECTOR_ID,
       xDataColumn: 'class_of',
@@ -68,8 +72,13 @@ export default function VitalsDashboard() {
   const searchParams = useSearchParams();
   const ccddd = parseInt(searchParams.get('ccddd') ?? '17001');
 
-  const gui = makeDashboardGui();
-  const components = makeRowCellConfigs(ccddd).map(c => makeBudgetActualsChart(c));
+  const rowCellConfigs = makeRowCellConfigs(ccddd);
+  const components = rowCellConfigs.map(c => makeBudgetActualsChart(c));
+  const gui = { layouts: [{rows: [
+    { cells: [{id: 'enrollment-chart'}, {id: 'staffing-chart'}]},
+    { cells: [{id: 'cashflow-chart'}, {id: 'beginning-balance-chart'}]},
+    ]}]};
+
 
   // TODO: Pull this into a component.
   useEffect(
