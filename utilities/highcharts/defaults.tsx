@@ -4,8 +4,21 @@ export const baselineClassOfChartOptions = {
     animation: false,
     styledMode: true,
     zooming: {
-      type: 'x'
-    }
+      type: 'x',
+      resetButton: {
+        position: {
+          align: 'left',
+          verticalAlign: 'top',
+          x: 5,
+          y: 5,
+        },
+        theme: {
+          width: 70,
+          height: 5
+        },
+        relativeTo: 'chart'
+      }
+    },
   },
   yAxis: {
     crosshair: true,
