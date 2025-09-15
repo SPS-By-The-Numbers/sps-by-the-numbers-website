@@ -16,7 +16,7 @@ export default function HcDashboard({config, handleDrawFinish, children} : Param
 
   useEffect(
     () => {
-      if (!highchartsObjs.dashboards || dashboardDiv.current === null) {
+      if (!(highchartsObjs.dashboards && dashboardDiv.current)) {
         return;
       }
 

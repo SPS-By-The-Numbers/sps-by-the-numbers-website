@@ -1,3 +1,4 @@
+// TODO: Delete this now. Moved to makeBaseChartConfig() configurat
 export const baselineClassOfChartOptions = {
   chart: {
     type: 'column',

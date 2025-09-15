@@ -11,7 +11,7 @@ import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import makeBudgetActualsChartConfig from "utilities/highcharts/ChartConfigGenerators";
 
-import type { BudgetActualsChartOptions } from "utilities/highcharts/ChartConfigGenerators";
+import type { BudgetActualsChartOptions } from "utilities/highcharts/cells/BudgetActualsChart";
 
 
 const CONNECTOR_ID = 'vitals-connector';
@@ -30,44 +30,25 @@ function makeBudgetActualsChartOptions(ccddd) : Array<BudgetActualsChartOptions>
       yValueFormat: 'decimal',
       yLabel: 'AFTE',
     },
-    {
-      renderTo: 'staffing-chart',
+  ];
+}
 
-      title: 'Staffing FTE',
-      metricColumn: `${ccddd}_amount_staff_fte`,
+function makeCorrelationChartOptions(ccddd) : Array<BudgetActualsChartOptions> {
+  return [
+    /*
+    {
+      renderTo: 'enrollment-cashflow',
+
+      title: 'Enrollment-Cashflow Correlation',
+      metricColumn: `${ccddd}_enrollment`,
       connectorId: CONNECTOR_ID,
       xDataColumn: 'class_of',
       xValueFormat: 'year',
 
-      yValueFormat: 'decimal',
-      yLabel: 'FTE',
+      valueFormat: 'decimal',
+      yLabel: 'AFTE',
     },
-    {
-      renderTo: 'cashflow-chart',
-
-      title: 'Cashflow',
-      metricColumn: `${ccddd}_cashflow`,
-      connectorId: CONNECTOR_ID,
-      xDataColumn: 'class_of',
-      xValueFormat: 'year',
-
-      yValueFormat: 'currency',
-
-      tooltip: {
-        valuePrefix: "$",
-      },
-    },
-    {
-      renderTo: 'beginning-balance-chart',
-
-      title: 'Beginning Balance',
-      metricColumn: `${ccddd}_beginning_balance`,
-      connectorId: CONNECTOR_ID,
-      xDataColumn: 'class_of',
-      xValueFormat: 'year',
-
-      yValueFormat: 'currency',
-    },
+    */
   ];
 }
 
@@ -77,9 +58,13 @@ export default function VitalsDashboard() {
   const ccddd = parseInt(searchParams.get('ccddd') ?? '17001');
 
   const budgetActualsChartOptions = makeBudgetActualsChartOptions(ccddd);
-  const components = budgetActualsChartOptions.map(c => makeBudgetActualsChartConfig(c));
+  const correlationChartOptions = makeCorrelationChartOptions(ccddd);
+  const components = [
+    ...budgetActualsChartOptions.map(c => makeBudgetActualsChartConfig(c)),
+    ...correlationChartOptions.map(c => makeBudgetActualsChartConfig(c)),
+  ];
   const gui = { layouts: [{rows: [
-    { cells: [{id: 'enrollment-chart'}, {id: 'staffing-chart'}]},
+    { cells: [{id: 'enrollment-chart'}, {id: 'enrollment-cashflow'}]},
     { cells: [{id: 'cashflow-chart'}, {id: 'beginning-balance-chart'}]},
     ]}]};
 
@@ -120,3 +105,4 @@ export default function VitalsDashboard() {
     <HcDashboard config={config} />
   );
 }
+

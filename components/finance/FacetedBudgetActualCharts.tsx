@@ -11,19 +11,16 @@
 
 import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import HcDashboard from 'components/HcDashboard';
-import makeBudgetActualsChart from "utilities/highcharts/cells/BudgetActualsChart";
+import makeBudgetActualsChartConfig from "utilities/highcharts/ChartConfigGenerators";
 
 import type { ColumnTable } from 'arquero';
 import type { FacetInfo } from 'utilities/ChartableMetrics';
 import type { MetricVariant } from 'components/finance/MetricVariantSelector';
-import type { ValueFormat } from 'utilities/highcharts/cells/BudgetActualsChart';
+import type { ValueFormat } from 'utilities/highcharts/ChartConfigGenerators';
 
 export type MetricDef ={
   ccddd: number;
   metricVariant: MetricVariant;
-
-  valueFormat?: ValueFormat;
-  yLabel?: string;
 };
 
 type Params = {
@@ -49,20 +46,38 @@ function formatForVariant(variant) : ValueFormat {
   return 'passthru' as const;
 }
 
+function metricVariantToTitle(variant: MetricVariant) {
+  if (variant === 'amount') {
+    return 'amount';
+  } else if (variant === 'pctexp') {
+    return '% of expenditures';
+  }
+
+  throw `Unexpected variant ${variant}`;
+}
+
+function makeTitle(facetInfo, metricDef) {
+  return `<div class='chart-title'>
+    <h3>${facetInfo.title}</h3>
+    <h4>${metricVariantToTitle(metricDef.metricVariant)} - ${metricDef.ccddd}</h4>
+  </div>`;
+}
+
 export function makeFacetComponents(idPrefix, xColumn, xLabel, facetOrder,
                                     connectorId, metricList) {
   const r = metricList.flatMap(
     (metricDef, metricOrdinal) => facetOrder.map(
       facetInfo => (
-        makeBudgetActualsChart(
+        makeBudgetActualsChartConfig(
           {
-            title: facetInfo.title,
+            title: makeTitle(facetInfo, metricDef),
             renderTo: makeCellId(idPrefix, metricOrdinal, facetInfo),
             metricSuffix: facetInfo.code,
-            metricColumnRoot: [metricDef.ccddd, metricDef.metricVariant].join('_'),
+            metricColumn: [metricDef.ccddd, metricDef.metricVariant].join('_'),
             connectorId,
             xDataColumn: xColumn,
-            valueFormat: formatForVariant(metricDef.metricVariant),
+            yValueFormat: formatForVariant(metricDef.metricVariant),
+            xValueFormat: 'year',
             xLabel,
           }
         )
