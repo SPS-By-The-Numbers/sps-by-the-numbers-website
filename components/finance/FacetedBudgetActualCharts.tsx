@@ -10,8 +10,8 @@
 // creating html identifiers etc.
 
 import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
+import { makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGenerators";
 import HcDashboard from 'components/HcDashboard';
-import makeBudgetActualsChartConfig from "utilities/highcharts/ChartConfigGenerators";
 
 import type { ColumnTable } from 'arquero';
 import type { FacetInfo } from 'utilities/ChartableMetrics';

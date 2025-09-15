@@ -6,7 +6,7 @@ import { op } from 'arquero';
 
 export type ValueFormat =  'currency' | 'decimal' | 'class_of' | 'pctexp';
 
-type BaseChartConfigOptions = {
+export type BaseChartConfigOptions = {
   title: string;
 
   connectorId : string;
@@ -30,21 +30,26 @@ type BaseChartConfigOptions = {
   xMax?: number;
 };
 
-type BudgetActualsChartOptions = BaseChartConfigOptions & {
+export type BudgetActualsChartOptions = BaseChartConfigOptions & {
   metricColumn: string;
   metricSuffix?: string;
 
   xDataColumn : string;
 };
 
-type CorrelationChartOptions = BaseChartConfigOptions & {
+type SeriesDef = {
+  name: string;
+  columnSuffix: string;
+  colorIndex: number;
+}
+
+export type CorrelationChartOptions = BaseChartConfigOptions & {
   yMetricColumn: string;
   xMetricColumn: string;
+  dataLabelColumn: string;
 
-  metricSuffix?: string;
-
-  xDataColumn : string;
-  metricSuffix?: string;
+  // Name of the series.
+  seriesDefs: Array<SeriesDef>;
 };
 
 function getSeriesAsDf(series, name, xMin, xMax) {
@@ -185,7 +190,7 @@ function percentFormatter(value, precision) {
   return `${value.toFixed(precision)}%`;
 }
 
-function getFormatter(format : ValueFormat, precision) {
+function getRawFormatter(format : ValueFormat, precision) {
   switch(format) {
     case 'decimal':
       return d => d.toFixed(precision);
@@ -198,6 +203,18 @@ function getFormatter(format : ValueFormat, precision) {
       return x => x;
   }
   throw `Unkonwn format ${format}`;
+}
+
+function getFormatter(format : ValueFormat, precision) {
+  const rawFormatter = getRawFormatter(format, precision);
+
+  return (v) => {
+    if (v === undefined) {
+      return '';
+    }
+
+    return rawFormatter(v);
+  };
 }
 
 // Convert a metricColumn to names for the budget and actuals of that column.
@@ -302,22 +319,14 @@ export function makeBaseChartConfig(options : BaseChartConfigOptions) {
   };
 }
 
-export default function makeBudgetActualsChartConfig(options : BudgetActualsChartOptions) {
+export function makeBudgetActualsChartConfig(options : BudgetActualsChartOptions) {
   const {budgetColumn, actualsColumn} = getBAColumns(options.metricColumn, options.metricSuffix);
 
   const baseChartConfig = makeBaseChartConfig(options);
 
   const valueFormat = options.yValueFormat;
   const precision = options.precision;
-  const rawFormatter = getFormatter(valueFormat, precision);
-
-  const valueFormatter = (v) => {
-    if (v === undefined) {
-      return '';
-    }
-
-    return rawFormatter(v);
-  };
+  const valueFormatter = getFormatter(valueFormat, precision);
 
   return merge(
     baseChartConfig,
@@ -405,108 +414,70 @@ export default function makeBudgetActualsChartConfig(options : BudgetActualsChar
   );
 }
 
-/*
-   target_id, title, yMetric, xMetric,
-   ySeriesIds=['budget', 'actuals'],
-   xSeriesIds=['budget', 'actuals'],
-   colorIndexMap={
-actuals: 1,
-budget: 2,
-}) {
-*/
+export function makeCorrelationChartConfig(options : CorrelationChartOptions ) {
+  const {yMetricColumn, xMetricColumn, dataLabelColumn, seriesDefs} = options;
+  const columnAssignment = new Array<object>;
+  const series = new Array<object>;
 
-function makeCorrelationGraph(options) {
-  const result = {
-    connector: {
-      id: 'c-toplevel-metrics',
-      columnAssignment: [] as Array<object>,
-    },
-    sync: {
-      visibility: true,
-      highlight: true,
-      extremes: true,
-    },
-    cell: target_id,
-    type: 'Highcharts',
+  // Create the column assignment and series.
+  for (const def of seriesDefs) {
+    columnAssignment.push(
+      {
+        seriesId: def.columnSuffix,
+        data: {
+          x: `${xMetricColumn}_${def.columnSuffix}`,
+          y: `${yMetricColumn}_${def.columnSuffix}`,
+          name: dataLabelColumn,
+          'marker.radius': 'marker_radius',
+          'marker.symbol': 'covid_shape',
+        },
+      }
+    );
 
-    chartOptions: merge({}, baselineClassOfChartOptions, {
-      chart: {
-        type:'scatter',
-      },
-      yAxis: {
-        title: { text: 'Student AFTE'},
-        startOnTick: true,
-        endOnTick: true,
-        showLastLabel: true,
-      },
-      xAxis: {
-        type: 'linear',
-        startOnTick: true,
-        endOnTick: true,
-        showLastLabel: true,
-      },
-      title: {
-        text: title,
-      },
-      series: [] as Array<object>,
-      tooltip: {
-        useHTML: true,
-        formatter: function() {
-          return `
-          <h2 class="hc-tooltip-header">${this.point.name}</h2>
-          <table>
-          <tr><th>${yMetric}<th><td class="hc-tooltip-data">${this.point.x.toLocaleString()}<td></tr>
-          <tr><th>${xMetric}<th><td class="hc-tooltip-data">${this.point.y.toLocaleString()}<td></tr>
-          </table>
-          `;
+    series.push(
+      {
+        id: def.columnSuffix,
+        name: def.name,
+        colorIndex: def.colorIndex,
+        dataLabels: {
+          enabled: true,
+          format: '{point.name}',
+          crop: false,
+          overflow: 'allow',
+          allowOverlap: true,
         }
+      }
+    );
+  }
+
+  const result = merge(
+    makeBaseChartConfig(options),
+    {
+      connector: {
+        columnAssignment,
       },
 
-      plotOptions: {
-        scatter: {
-          opacity: 0.5,
-          marker: {
-            states: {
-              hover: {
-                enabled: true,
-                lineColor: "rgb(100,100,100)"
+      chartOptions: {
+        chart: {
+          type:'scatter',
+        },
+        series,
+        plotOptions: {
+          scatter: {
+            opacity: 0.5,
+            marker: {
+              states: {
+                hover: {
+                  enabled: true,
+                  lineColor: "rgb(100,100,100)"
+                }
               }
-            }
+            },
           },
         },
-      },
-    }),
-  };
-
-  for (const yKind of ySeriesIds) {
-    for (const xKind of xSeriesIds) {
-      result.connector.columnAssignment.push(
-        {
-          seriesId: yKind,
-          data: {
-            x: `${xMetric}_${xKind}`,
-            y: `${yMetric}_${yKind}`,
-            name: 'class_of',
-            'marker.radius': 'marker_radius',
-            'marker.symbol': 'covid_shape',
-          },
-        }
-      );
-      result.chartOptions.series.push(
-          {
-            id: yKind,
-            name: yKind,
-            colorIndex: colorIndexMap[yKind],
-            dataLabels: {
-              enabled: true,
-              format: '{point.name}',
-              crop: false,
-              overflow: 'allow',
-              allowOverlap: true,
-            }
-          }
-      );
+      }
     }
-  }
+  );
+
   return result;
 }

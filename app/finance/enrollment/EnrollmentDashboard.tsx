@@ -1,6 +1,7 @@
 'use client';
 
 import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
+import { makeBudgetActualsChartConfig, makeCorrelationChartConfig } from "utilities/highcharts/ChartConfigGenerators";
 import { makeChartableVitals } from 'utilities/ChartableMetrics';
 import { useDistrictData } from '../DistrictDataProvider';
 import { useEffect } from 'react';
@@ -9,46 +10,39 @@ import HcDashboard from 'components/HcDashboard';
 import Loading from 'components/Loading';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
-import makeBudgetActualsChartConfig from "utilities/highcharts/ChartConfigGenerators";
 
-import type { BudgetActualsChartOptions } from "utilities/highcharts/cells/BudgetActualsChart";
+import type { BudgetActualsChartOptions, CorrelationChartOptions } from "utilities/highcharts/cells/BudgetActualsChart";
 
 
 const CONNECTOR_ID = 'vitals-connector';
 
-function makeBudgetActualsChartOptions(ccddd) : Array<BudgetActualsChartOptions> {
-  return [
-    {
-      renderTo: 'enrollment-chart',
+function makeEnrollmentCashflowConfig(ccddd, name, columnSuffix, colorIndex) {
+  return {
+    renderTo: `enrollment-cashflow-${columnSuffix}`,
+    title: `Enrollment-Cashflow Correlation (${name})`,
+    connectorId: CONNECTOR_ID,
+    xMetricColumn: `${ccddd}_enrollment`,
+    xLabel: `${name} Enrollment AFTE`,
+    xValueFormat: 'decimal',
 
-      title: 'Enrollment',
-      metricColumn: `${ccddd}_enrollment`,
-      connectorId: CONNECTOR_ID,
-      xDataColumn: 'class_of',
-      xValueFormat: 'year',
+    yMetricColumn: `${ccddd}_cashflow`,
+    yLabel: `${name} Cashflow $`,
 
-      yValueFormat: 'decimal',
-      yLabel: 'AFTE',
-    },
-  ];
+    dataLabelColumn: 'class_of',
+    seriesDefs: [
+      {
+        name,
+        columnSuffix,
+        colorIndex,
+      },
+    ]
+  };
 }
 
-function makeCorrelationChartOptions(ccddd) : Array<BudgetActualsChartOptions> {
+function makeCorrelationChartOptions(ccddd) : Array<CorrelationChartOptions> {
   return [
-    /*
-    {
-      renderTo: 'enrollment-cashflow',
-
-      title: 'Enrollment-Cashflow Correlation',
-      metricColumn: `${ccddd}_enrollment`,
-      connectorId: CONNECTOR_ID,
-      xDataColumn: 'class_of',
-      xValueFormat: 'year',
-
-      valueFormat: 'decimal',
-      yLabel: 'AFTE',
-    },
-    */
+    makeEnrollmentCashflowConfig(ccddd, 'Budget', 'budget', 2),
+    makeEnrollmentCashflowConfig(ccddd, 'Actuals', 'actuals', 1),
   ];
 }
 
@@ -57,14 +51,12 @@ export default function VitalsDashboard() {
   const searchParams = useSearchParams();
   const ccddd = parseInt(searchParams.get('ccddd') ?? '17001');
 
-  const budgetActualsChartOptions = makeBudgetActualsChartOptions(ccddd);
   const correlationChartOptions = makeCorrelationChartOptions(ccddd);
   const components = [
-    ...budgetActualsChartOptions.map(c => makeBudgetActualsChartConfig(c)),
-    ...correlationChartOptions.map(c => makeBudgetActualsChartConfig(c)),
+    ...correlationChartOptions.map(c => makeCorrelationChartConfig(c)),
   ];
   const gui = { layouts: [{rows: [
-    { cells: [{id: 'enrollment-chart'}, {id: 'enrollment-cashflow'}]},
+    { cells: [{id: 'enrollment-cashflow-actuals'}, {id: 'enrollment-cashflow-budget'}]},
     { cells: [{id: 'cashflow-chart'}, {id: 'beginning-balance-chart'}]},
     ]}]};
 

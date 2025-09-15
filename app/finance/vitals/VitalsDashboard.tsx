@@ -2,6 +2,7 @@
 
 import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import { makeChartableVitals } from 'utilities/ChartableMetrics';
+import { makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGenerators";
 import { useDistrictData } from '../DistrictDataProvider';
 import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation'
@@ -9,7 +10,6 @@ import HcDashboard from 'components/HcDashboard';
 import Loading from 'components/Loading';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
-import makeBudgetActualsChartConfig from "utilities/highcharts/ChartConfigGenerators";
 
 import type { BudgetActualsChartOptions } from "utilities/highcharts/ChartConfigGenerators";
 
