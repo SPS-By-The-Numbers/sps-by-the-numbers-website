@@ -196,7 +196,7 @@ function inferyAxisOptions(yValueFormat) {
   switch (yValueFormat) {
     case 'pctexp':
     case 'pctcomp':
-      return ({min:0.0001, max:100});
+      return ({min:5, max:99});
   }
 
   return {};
