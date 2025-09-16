@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { Suspense } from 'react';
 import EnrollmentDashboard from './EnrollmentDashboard';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -14,7 +15,9 @@ export default async function Page() {
       <Typography className="analysis-title" component="h1" variant="h1">
         Enrollment Dashboard
       </Typography>
-      <EnrollmentDashboard/>
+      <Suspense>
+        <EnrollmentDashboard/>
+      </Suspense>
     </Stack>
   );
 }

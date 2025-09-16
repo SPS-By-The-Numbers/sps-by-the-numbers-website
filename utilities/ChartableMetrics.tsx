@@ -82,7 +82,7 @@ export function makeChartableVitals(
     enrollmentSummaryDf: ColumnTable,
     staffingSummaryDf: ColumnTable,
     balancesDf: ColumnTable,
-    compensationDf: ColumnTable) : [ColumnTable, Array<FacetInfo>] {
+    compensationDf: ColumnTable) : ColumnTable {
   const enrollment = enrollmentSummaryDf
       .select('class_of', 'enrollment_budget', 'enrollment_actuals')
       .rename(

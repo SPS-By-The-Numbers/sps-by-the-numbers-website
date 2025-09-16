@@ -6,26 +6,27 @@ import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import { makeChartableVitals } from 'utilities/ChartableMetrics';
 import { makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGenerators";
 import { useDistrictData } from '../DistrictDataProvider';
-import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react';
 import HcDashboard from 'components/HcDashboard';
-import MetricVariantSelector from 'components/finance/MetricVariantSelector';
 import Loading from 'components/Loading';
+import MetricVariantSelector from 'components/finance/MetricVariantSelector';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 
 import type { BudgetActualsChartOptions } from "utilities/highcharts/ChartConfigGenerators";
+import type { MetricVariant } from 'components/finance/MetricVariantSelector';
 
 const CONNECTOR_ID = 'vitals-connector';
 
-function makeCell(renderTo, ccddd, metricColumnRoot, title, yValueFormat, yLabel) {
+function makeCell(renderTo, ccddd, metricColumnRoot, title, yValueFormat, yLabel ?: string) {
     return {
       renderTo,
       title,
       metricColumn: `${ccddd}_${metricColumnRoot}`,
       connectorId: CONNECTOR_ID,
       xDataColumn: 'class_of',
-      xValueFormat: 'year',
+      xValueFormat: 'year' as const,
 
       yValueFormat,
       yLabel,
@@ -78,7 +79,7 @@ export default function VitalsDashboard() {
   // TODO: Pull this into a component.
   useEffect(
     () => { loadCcddd(ccddd); },
-    [ccddd]);
+    [ccddd, loadCcddd]);
 
   if (!(ccddd in districtDataMap)) {
     return <Loading text="Loading dataset..." />
@@ -124,7 +125,7 @@ export default function VitalsDashboard() {
       <MetricVariantSelector
         label={`Key Expenditure Unit`}
         variant={metricVariant}
-        onChange={newValue => setMetricVariant(newValue)}
+        onChange={newValue => setMetricVariant(newValue as MetricVariant)}
       />
       <HcDashboard config={config} />
     </Stack>

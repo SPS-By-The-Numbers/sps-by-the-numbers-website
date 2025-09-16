@@ -4,7 +4,7 @@ import merge from 'lodash.merge';
 import * as aq from 'arquero';
 import { op } from 'arquero';
 
-export type ValueFormat =  'currency' | 'decimal' | 'class_of' | 'pctexp';
+export type ValueFormat =  'currency' | 'decimal' | 'year' | 'pctexp' | 'pctcomp';
 
 export type BaseChartConfigOptions = {
   title: string;
@@ -18,10 +18,11 @@ export type BaseChartConfigOptions = {
   xValueFormat: ValueFormat;
   xLabel?: string;
 
-  xAxisType: Highcharts.AxisTypeValue;
+  xAxisType?: Highcharts.AxisTypeValue;
+  yAxisType?: Highcharts.AxisTypeValue;
 
   // TODO: Infer precision.
-  precision: number;
+  precision?: number;
 
   // Scale constraints.
   yMin?: number;
@@ -216,7 +217,7 @@ function getRawFormatter(format : ValueFormat, precision) {
     case 'pctexp':
     case 'pctcomp':
       return d => percentFormatter(d, precision);
-    case 'passthru':
+    case 'year':
       return x => x;
   }
   throw `Unkonwn format ${format}`;
@@ -332,7 +333,7 @@ export function makeBaseChartConfig(options : BaseChartConfigOptions) {
         outside: true,
         shared: true,
         stickOnContact: true,
-        valueDecimals: options.prescision ?? inferPrecision(options.yValueFormat),
+        valueDecimals: options.precision ?? inferPrecision(options.yValueFormat),
       },
     }
   };

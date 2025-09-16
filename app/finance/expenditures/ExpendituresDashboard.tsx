@@ -11,10 +11,9 @@ import MetricVariantSelector from 'components/finance/MetricVariantSelector';
 import Stack from '@mui/material/Stack';
 
 import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
-import type { MetricDef } from './ComparisonDashboard';
+import type { MetricDef } from 'components/finance/FacetedBudgetActualCharts';
 
 type Params = {
-  primaryCcddd: number;
   facet: "program" | "activity" | "object";
 };
 

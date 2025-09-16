@@ -2,12 +2,14 @@
 
 import { useEffect, useRef } from 'react';
 import { useHighcharts } from 'components/providers/HighchartsProvider';
+
 import type Dashboards from '@highcharts/dashboards/es-modules/masters/dashboards.src.js';
+import type { ReactNode } from 'react';
 
 type Params = {
-  config: Dashboards.Board.Options;
+  config: object;
   handleDrawFinish?: (board: Dashboards) => void;
-  children: ReactNode;
+  children?: ReactNode;
 };
 
 export default function HcDashboard({config, handleDrawFinish, children} : Params) {
@@ -34,7 +36,7 @@ export default function HcDashboard({config, handleDrawFinish, children} : Param
         }
       };
     },
-    [highchartsObjs, dashboardDiv, config]
+    [highchartsObjs, dashboardDiv, config, handleDrawFinish]
   );
 
   return (

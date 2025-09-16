@@ -41,9 +41,11 @@ function formatForVariant(variant) : ValueFormat {
     return 'currency' as const;
   } else if (variant === 'pctexp') {
     return 'pctexp' as const;
+  } else if (variant === 'pctcomp') {
+    return 'pctcomp' as const;
   }
 
-  return 'passthru' as const;
+  return 'decimal' as const;
 }
 
 function metricVariantToTitle(variant: MetricVariant) {
