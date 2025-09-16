@@ -193,8 +193,8 @@ function inferAxisType(valueFormat) {
   return 'category';
 }
 
-function inferyAxisOptions(yValueFormat) {
-  switch (yValueFormat) {
+function inferAxisOptions(valueFormat) {
+  switch (valueFormat) {
     case 'pctexp':
     case 'pctcomp':
       return ({min:5, max:99});
@@ -303,13 +303,15 @@ export function makeBaseChartConfig(options : BaseChartConfigOptions) {
         title: {
           text: options.yLabel ?? inferLabel(options.yValueFormat)
         },
-        ...inferyAxisOptions(options.yValueFormat)
+        ...inferAxisOptions(options.yValueFormat)
       },
       xAxis: {
         type: options.xAxisType ?? inferAxisType(options.xValueFormat),
         title: {
           text: options.xLabel ?? inferLabel(options.xValueFormat)
         },
+        // TODO: Do better with xaxis scales.
+        // ...inferAxisOptions(options.xValueFormat)
       },
       credits: {
         enabled: false,
