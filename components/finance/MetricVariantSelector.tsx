@@ -11,7 +11,7 @@ export type MetricVariant = "amount" | "pctexp" | "pctcomp" | "ppe";
 type Params = {
   variant: MetricVariant;
   label: string;
-  onChange: (newVariant: string) => void;
+  onChange: (newVariant: MetricVariant) => void;
   sx?: SxProps<Theme>;
 };
 
@@ -23,7 +23,7 @@ export default function MetricVariantSelector({variant, label, onChange, sx=[]} 
       <Select
         labelId={selectId}
         value={variant}
-        onChange={e => onChange(e.target.value)}
+        onChange={e => onChange(e.target.value as MetricVariant)}
         sx={[{
         },
         ...(Array.isArray(sx) ? sx : [sx])

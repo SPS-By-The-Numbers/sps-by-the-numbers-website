@@ -4,15 +4,14 @@ import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import { makeBudgetActualsChartConfig, makeCorrelationChartConfig } from "utilities/highcharts/ChartConfigGenerators";
 import { makeChartableVitals } from 'utilities/ChartableMetrics';
 import { useDistrictData } from '../DistrictDataProvider';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation'
 import HcDashboard from 'components/HcDashboard';
 import Loading from 'components/Loading';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
+import MetricVariantSelector from 'components/finance/MetricVariantSelector';
 
 import type { BudgetActualsChartOptions, CorrelationChartOptions } from "utilities/highcharts/ChartConfigGenerators";
-
+import type { MetricVariant } from 'components/finance/MetricVariantSelector';
 
 const CONNECTOR_ID = 'vitals-connector';
 
@@ -40,10 +39,41 @@ function makeEnrollmentCashflowConfig(ccddd, name, columnSuffix, colorIndex) {
   };
 }
 
+function makeCompCashflowConfig(ccddd, name, metricColumn, columnSuffix, colorIndex) {
+  return {
+    renderTo: `${metricColumn}-cashflow-${columnSuffix}`,
+    title: `${name}-Cashflow Correlation (${columnSuffix})`,
+    connectorId: CONNECTOR_ID,
+    xMetricColumn: `${ccddd}_${metricColumn}`,
+    xValueFormat: 'pctcomp' as const,
+
+    yMetricColumn: `${ccddd}_cashflow`,
+    yLabel: `Cashflow $`,
+    yValueFormat: 'currency' as const,
+
+    dataLabelColumn: 'class_of',
+    seriesDefs: [
+      {
+        name,
+        columnSuffix,
+        colorIndex,
+      },
+    ]
+  };
+}
+
 function makeCorrelationChartOptions(ccddd) : Array<CorrelationChartOptions> {
   return [
     makeEnrollmentCashflowConfig(ccddd, 'Budget', 'budget', 2),
     makeEnrollmentCashflowConfig(ccddd, 'Actuals', 'actuals', 1),
+    makeCompCashflowConfig(ccddd, 'Teaching Comp', 'teachingComp', 'actuals', 1),
+    makeCompCashflowConfig(ccddd, 'Teaching Comp', 'teachingComp', 'budget', 2),
+    makeCompCashflowConfig(ccddd, 'Student Support Comp', 'studentSupportComp', 'actuals', 1),
+    makeCompCashflowConfig(ccddd, 'Student Support Comp', 'studentSupportComp', 'budget', 2),
+    makeCompCashflowConfig(ccddd, 'Building Support Comp', 'buildingSupportComp', 'actuals', 1),
+    makeCompCashflowConfig(ccddd, 'Building Support Comp', 'buildingSupportComp', 'budget', 2),
+    makeCompCashflowConfig(ccddd, 'Other Comp', 'otherComp', 'actuals', 1),
+    makeCompCashflowConfig(ccddd, 'Other Comp', 'otherComp', 'budget', 2),
   ];
 }
 
@@ -51,6 +81,7 @@ export default function VitalsDashboard() {
   const { districtDataMap, loadCcddd } = useDistrictData();
   const searchParams = useSearchParams();
   const ccddd = parseInt(searchParams.get('ccddd') ?? '17001');
+  const [metricVariant, setMetricVariant] = useState<MetricVariant>('pctcomp' as const);
 
   const correlationChartOptions = makeCorrelationChartOptions(ccddd);
   const components = [
@@ -58,7 +89,10 @@ export default function VitalsDashboard() {
   ];
   const gui = { layouts: [{rows: [
     { cells: [{id: 'enrollment-cashflow-actuals'}, {id: 'enrollment-cashflow-budget'}]},
-    { cells: [{id: 'cashflow-chart'}, {id: 'beginning-balance-chart'}]},
+    { cells: [{id: 'teachingComp-cashflow-actuals'}, {id: 'teachingComp-cashflow-budget'}]},
+    { cells: [{id: 'studentSupportComp-cashflow-actuals'}, {id: 'studentSupportComp-cashflow-budget'}]},
+    { cells: [{id: 'buildingSupportComp-cashflow-actuals'}, {id: 'buildingSupportComp-cashflow-budget'}]},
+    { cells: [{id: 'otherComp-cashflow-actuals'}, {id: 'otherComp-cashflow-budget'}]},
     ]}]};
 
 
@@ -77,7 +111,7 @@ export default function VitalsDashboard() {
     districtData.enrollmentSummary(),
     districtData.staffingSummary(),
     districtData.balances(),
-    districtData.compensation(),
+    districtData.compensation(metricVariant),
   );
 
   const config = ({
@@ -99,4 +133,3 @@ export default function VitalsDashboard() {
     <HcDashboard config={config} />
   );
 }
-

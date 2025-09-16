@@ -1,7 +1,9 @@
 import { fetchEndpoint } from 'utilities/client/endpoint';
-import * as aq from 'arquero';
 import { op } from 'arquero';
+import * as aq from 'arquero';
+
 import type { ColumnTable } from 'arquero';
+import type { MetricVariant } from 'components/finance/MetricVariantSelector';
 
 export type FilterSelection = {
   selectedObjectCodes: Array<number>,
@@ -45,6 +47,13 @@ const BUILDING_SUPPORT = [
   63,  // Operations of Building
   64,  // Maintenance
 ];
+
+function makeNormalizeDerive(metricColumn, normalizeColumn) {
+    return {
+      [metricColumn]: aq.escape(d => 100 * d[metricColumn] / d[normalizeColumn]),
+    };
+}
+
 
 function financeGroupSumAmount(new_col_name, df, col_to_sum) {
   return df
@@ -188,7 +197,7 @@ export default class DistrictData {
   // so trying to reconcile total compensation in a way that can be cut apart
   // by consistently is difficult.  The F195 and F196 can be compared by PAO
   // codes, but the s275 cannot be done without making estimates.
-  compensation() {
+  compensation(metricVariant: MetricVariant) {
     const allStaffComp = this.gf_expenditure_df.filter(
       aq.escape(d => op.includes(COMP_OBJECT_CODES, d.object_code)))
       .groupby('data_type', 'class_of')
@@ -223,11 +232,22 @@ export default class DistrictData {
         .groupby('data_type', 'class_of')
         .rollup({otherComp: op.sum('amount')});
 
-    return allStaffComp
+    const rawResult = allStaffComp
         .join_full(teachingRelatedComp)
         .join_full(studentSupportComp)
         .join_full(buildingSupportComp)
         .join_full(otherComp);
+
+    if (metricVariant === 'pctcomp')  {
+      return rawResult.derive({
+        ...makeNormalizeDerive('teachingComp', 'allStaffComp'),
+        ...makeNormalizeDerive('studentSupportComp', 'allStaffComp'),
+        ...makeNormalizeDerive('buildingSupportComp', 'allStaffComp'),
+        ...makeNormalizeDerive('otherComp', 'allStaffComp'),
+      });
+    }
+
+    return rawResult;
   }
 
   balances() {
