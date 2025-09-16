@@ -8,6 +8,7 @@ import FinanceNavStateProvider from 'components/providers/FinanceNavStateProvide
 import type { ReactNode } from 'react';
 import type { DistrictsMap } from 'components/providers/FinanceNavStateProvider.tsx';
 
+import "styles/highcharts-base.scss"
 import "styles/finance-dashboard.scss"
 import "styles/hc-ba-history.scss"
 
