@@ -107,7 +107,7 @@ function makeCorrelationChartOptions(ccddd) : Array<CorrelationChartOptions> {
   ];
 }
 
-export default function VitalsDashboard() {
+export default function CashflowDashboard() {
   const { districtDataMap, loadCcddd } = useDistrictData();
   const searchParams = useSearchParams();
   const ccddd = parseInt(searchParams.get('ccddd') ?? '17001');
