@@ -152,6 +152,9 @@ function inferLabel(valueFormat : ValueFormat) {
 
     case 'pctexp':
       return '% of expenditures';
+
+    case 'pctcomp':
+      return '% of compensation';
   }
 
   throw `Cannot infer label for ${valueFormat}`;
@@ -162,6 +165,7 @@ function inferPrecision(valueFormat) {
     case 'currency':
     case 'decimal':
     case 'pctexp':
+    case 'pctcomp':
       return 2;
 
     case 'year':
@@ -171,18 +175,31 @@ function inferPrecision(valueFormat) {
   return undefined;
 }
 
-function inferXAxisType(valueFormat) {
+function inferAxisType(valueFormat) {
   switch (valueFormat) {
     case 'currency':
     case 'decimal':
-    case 'pctexp':
       return 'linear';
+
+    case 'pctexp':
+    case 'pctcomp':
+      return 'logarithmic';
 
     case 'year':
       return 'category';
   }
 
   return 'category';
+}
+
+function inferyAxisOptions(yValueFormat) {
+  switch (yValueFormat) {
+    case 'pctexp':
+    case 'pctcomp':
+      return ({min:0.0001, max:100});
+  }
+
+  return {};
 }
 
 // TODO: Move all this value formatting stuff out.
@@ -196,8 +213,8 @@ function getRawFormatter(format : ValueFormat, precision) {
       return d => d.toFixed(precision);
     case 'currency':
       return makeCurrencyFormatter(precision);
-    case 'percentage':
     case 'pctexp':
+    case 'pctcomp':
       return d => percentFormatter(d, precision);
     case 'passthru':
       return x => x;
@@ -281,12 +298,14 @@ export function makeBaseChartConfig(options : BaseChartConfigOptions) {
       yAxis: {
         crosshair: true,
         minorTickInterval: "auto",
+        type: options.yAxisType ?? inferAxisType(options.yValueFormat),
         title: {
           text: options.yLabel ?? inferLabel(options.yValueFormat)
         },
+        ...inferyAxisOptions(options.yValueFormat)
       },
       xAxis: {
-        type: options.xAxisType ?? inferXAxisType(options.xValueFormat),
+        type: options.xAxisType ?? inferAxisType(options.xValueFormat),
         title: {
           text: options.xLabel ?? inferLabel(options.xValueFormat)
         },

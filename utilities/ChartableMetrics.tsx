@@ -79,10 +79,11 @@ export function makeChartableExpenditures(
 
 export function makeChartableVitals(
     ccddd: number,
-    enrollment_df: ColumnTable,
-    staffing_df: ColumnTable,
-    balances_df: ColumnTable) : [ColumnTable, Array<FacetInfo>] {
-  const enrollment = enrollment_df
+    enrollmentSummaryDf: ColumnTable,
+    staffingSummaryDf: ColumnTable,
+    balancesDf: ColumnTable,
+    compensationDf: ColumnTable) : [ColumnTable, Array<FacetInfo>] {
+  const enrollment = enrollmentSummaryDf
       .select('class_of', 'enrollment_budget', 'enrollment_actuals')
       .rename(
         {
@@ -91,7 +92,7 @@ export function makeChartableVitals(
         }
       );
 
-  const staffing = staffing_df
+  const staffing = staffingSummaryDf
       .select('class_of', 'amount_staff_fte_budget', 'amount_staff_fte_actuals')
       .rename(
         {
@@ -100,7 +101,7 @@ export function makeChartableVitals(
         }
       );
 
-  const balances = balances_df
+  const balances = balancesDf
       .derive({
         cashflow_budget: d => (d.ending_balance_budget - d.beginning_balance_budget),
         cashflow_actuals: d => (d.ending_balance_actuals - d.beginning_balance_actuals),
@@ -116,5 +117,23 @@ export function makeChartableVitals(
         }
       );
 
-  return enrollment.join_full(staffing).join_full(balances);
+  const compensation = compensationDf
+      .groupby('class_of')
+      .rename(
+        {
+          allStaffComp: `${ccddd}_allStaffComp`,
+          teachingComp: `${ccddd}_teachingComp`,
+          studentSupportComp: `${ccddd}_studentSupportComp`,
+          buildingSupportComp: `${ccddd}_buildingSupportComp`,
+          otherComp: `${ccddd}_otherComp`,
+        })
+      .pivot('data_type', [
+        `${ccddd}_allStaffComp`,
+        `${ccddd}_teachingComp`,
+        `${ccddd}_studentSupportComp`,
+        `${ccddd}_buildingSupportComp`,
+        `${ccddd}_otherComp`,
+      ]);
+
+  return enrollment.join_full(staffing).join_full(balances).join_full(compensation);
 }

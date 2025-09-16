@@ -6,7 +6,7 @@ import MenuItem from '@mui/material/MenuItem';
 
 import type { SxProps, Theme } from '@mui/material';
 
-export type MetricVariant = "amount" | "pctexp";
+export type MetricVariant = "amount" | "pctexp" | "pctcomp" | "ppe";
 
 type Params = {
   variant: MetricVariant;
@@ -31,8 +31,9 @@ export default function MetricVariantSelector({variant, label, onChange, sx=[]} 
       >
         <MenuItem value="amount">Raw Amount</MenuItem>
         <MenuItem value="pctexp">% of Expenditures</MenuItem>
-        <MenuItem value="ppe">Per Pupil</MenuItem>
-        <MenuItem value="pctexppee">% of Expenditures Per Pupil</MenuItem>
+        <MenuItem value="pctcomp">% of Compensation</MenuItem>
+        <MenuItem value="ppe">Per Pupil[not impl]</MenuItem>
+        <MenuItem value="pctexppee">% of Expenditures Per Pupil[not impl]</MenuItem>
       </Select>
     </FormControl>
   );

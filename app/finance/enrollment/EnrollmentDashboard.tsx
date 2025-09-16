@@ -73,8 +73,8 @@ export default function VitalsDashboard() {
   const districtData = districtDataMap[ccddd];
   const data = makeChartableVitals(
     ccddd,
-    districtData.enrollment(),
-    districtData.staffing(),
+    districtData.enrollmentSummary(),
+    districtData.staffingSummary(),
     districtData.balances()
   );
 

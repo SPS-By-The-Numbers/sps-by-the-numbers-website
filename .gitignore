@@ -37,3 +37,9 @@ yarn-error.log*
 .firebase
 
 data/transcripts
+
+scratch.ts
+tsconfig.tsbuildinfo
+firebase-debug.log
+sps-by-the-numbers-firebase-adminsdk*
+testdata

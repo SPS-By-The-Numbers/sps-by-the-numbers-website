@@ -12,10 +12,18 @@ export type FilterSelection = {
 const YEAR_GROUP_BY = ["class_of"];
 const FINANCE_GROUP_BY = ["data_type", ...YEAR_GROUP_BY];
 
-const COMP_OBJECT_CODES = [
+const SALARY_OBJECT_CODES = [
   2,  // Certificated Salary
   3,  // Classified Salary
+];
+
+const BENEFITS_OBJECT_CODES = [
   4,  // Benefits
+]
+
+const COMP_OBJECT_CODES = [
+  ...SALARY_OBJECT_CODES,
+  ...BENEFITS_OBJECT_CODES,
 ];
 
 const TEACHING_CODES = [
@@ -69,8 +77,11 @@ function minMaxClassOf(df) {
   return df.select('class_of').rollup({min: op.min('class_of'), max: op.max('class_of')});
 }
 
-// Fetches the dataset for one district.
+// Fetches the dataset for one district. Also does minimal processing
+// to produce basic filtering and data tables for common semantic
+// groupings of information and calculations.
 //
+// Data is joinable on the 'class_of' column.
 export default class DistrictData {
   private enrollment_df : ColumnTable;
   private gf_expenditure_df : ColumnTable;
@@ -121,7 +132,7 @@ export default class DistrictData {
                            budget_items_df, actuals_items_df, s275_summary_df);
   }
 
-  staffing() {
+  staffingSummary() {
     const staffFteActuals = this.s275_summary_df
       .groupby(['class_of'])
       .rollup({'amount_staff_fte_actuals': op.sum('fte_in_assignment')});
@@ -163,6 +174,60 @@ export default class DistrictData {
         .join_full(studentSupportFte)
         .join_full(buildingSupportFte)
         .join_full(otherFte);
+  }
+
+  // Returns a bunch of roll-ups related to compensation. Compensation is tricky
+  // because there are multiple data sources that overlap and are not fully complete.
+  //
+  // From the s275, there is the total_final_salary per position which comes from
+  // payroll and should be accurate. It matches Object codes 2 and 3 for salary.
+  // However, the entire s275 sticks to the staff list on Oct 1st and can have
+  // errors. It doesn't fully reconcile with the f196 data.
+  //
+  // Benefits overall are not assigned to any single staff member in the s275
+  // so trying to reconcile total compensation in a way that can be cut apart
+  // by consistently is difficult.  The F195 and F196 can be compared by PAO
+  // codes, but the s275 cannot be done without making estimates.
+  compensation() {
+    const allStaffComp = this.gf_expenditure_df.filter(
+      aq.escape(d => op.includes(COMP_OBJECT_CODES, d.object_code)))
+      .groupby('data_type', 'class_of')
+      .rollup({allStaffComp: op.sum('amount')});
+
+    const teachingRelatedComp = this.gf_expenditure_df.filter(
+      aq.escape(d => op.includes(TEACHING_CODES, d.activity_code) &&
+                op.includes(COMP_OBJECT_CODES, d.object_code)))
+      .groupby('data_type', 'class_of')
+      .rollup({teachingComp: op.sum('amount')});
+
+    const studentSupportComp = this.gf_expenditure_df.filter(
+      aq.escape(d => op.includes(STUDENT_SUPPORT_CODES, d.activity_code) &&
+                op.includes(COMP_OBJECT_CODES, d.object_code)))
+      .groupby('data_type', 'class_of')
+      .rollup({studentSupportComp: op.sum('amount')});
+
+    const buildingSupportComp = this.gf_expenditure_df.filter(
+      aq.escape(d => op.includes(BUILDING_SUPPORT, d.activity_code) &&
+                op.includes(COMP_OBJECT_CODES, d.object_code)))
+      .groupby('data_type', 'class_of')
+      .rollup({buildingSupportComp: op.sum('amount')});
+
+    const otherComp = this.gf_expenditure_df.filter(
+      aq.escape(
+        d => op.includes(COMP_OBJECT_CODES, d.object_code) &&
+          !op.includes([
+          ...TEACHING_CODES,
+          ...STUDENT_SUPPORT_CODES,
+          ...BUILDING_SUPPORT],
+          d.activity_code)))
+        .groupby('data_type', 'class_of')
+        .rollup({otherComp: op.sum('amount')});
+
+    return allStaffComp
+        .join_full(teachingRelatedComp)
+        .join_full(studentSupportComp)
+        .join_full(buildingSupportComp)
+        .join_full(otherComp);
   }
 
   balances() {
@@ -210,7 +275,7 @@ export default class DistrictData {
     .join_full(this.all_class_ofs_df);
   }
 
-  enrollment() {
+  enrollmentSummary() {
     const k12EnrollmentActuals =
       this.enrollment_df.filter(
         d => op.includes(['K-12 FTE', 'K-12 FTE - Includes ALE'], d.enrollment_domain)
