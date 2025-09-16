@@ -93,11 +93,18 @@ export function makeChartableVitals(
       );
 
   const staffing = staffingSummaryDf
-      .select('class_of', 'amount_staff_fte_budget', 'amount_staff_fte_actuals')
       .rename(
         {
           amount_staff_fte_budget: `${ccddd}_amount_staff_fte_budget`,
           amount_staff_fte_actuals:`${ccddd}_amount_staff_fte_actuals`,
+
+          amount_teaching_fte_actuals:`${ccddd}_amount_teaching_fte_actuals`,
+
+          amount_student_support_fte_actuals:`${ccddd}_amount_student_support_fte_actuals`,
+
+          amount_building_support_fte_actuals:`${ccddd}_amount_building_support_fte_actuals`,
+
+          amount_other_fte_actuals:`${ccddd}_amount_other_fte_actuals`,
         }
       );
 

@@ -62,10 +62,35 @@ function makeCompCashflowConfig(ccddd, name, metricColumn, columnSuffix, colorIn
   };
 }
 
+function makeFteCashflowConfig(ccddd, name, metricColumn, columnSuffix, colorIndex) {
+  return {
+    renderTo: `${metricColumn}-cashflow-${columnSuffix}`,
+    title: `${name}-Cashflow Correlation (${columnSuffix})`,
+    connectorId: CONNECTOR_ID,
+    xMetricColumn: `${ccddd}_${metricColumn}`,
+    xLabel: 'FTE',
+    xValueFormat: 'decimal' as const,
+
+    yMetricColumn: `${ccddd}_cashflow`,
+    yLabel: `Cashflow $`,
+    yValueFormat: 'currency' as const,
+
+    dataLabelColumn: 'class_of',
+    seriesDefs: [
+      {
+        name,
+        columnSuffix,
+        colorIndex,
+      },
+    ]
+  };
+}
+
 function makeCorrelationChartOptions(ccddd) : Array<CorrelationChartOptions> {
   return [
     makeEnrollmentCashflowConfig(ccddd, 'Budget', 'budget', 2),
     makeEnrollmentCashflowConfig(ccddd, 'Actuals', 'actuals', 1),
+
     makeCompCashflowConfig(ccddd, 'Teaching Comp', 'teachingComp', 'actuals', 1),
     makeCompCashflowConfig(ccddd, 'Teaching Comp', 'teachingComp', 'budget', 2),
     makeCompCashflowConfig(ccddd, 'Student Support Comp', 'studentSupportComp', 'actuals', 1),
@@ -74,6 +99,11 @@ function makeCorrelationChartOptions(ccddd) : Array<CorrelationChartOptions> {
     makeCompCashflowConfig(ccddd, 'Building Support Comp', 'buildingSupportComp', 'budget', 2),
     makeCompCashflowConfig(ccddd, 'Other Comp', 'otherComp', 'actuals', 1),
     makeCompCashflowConfig(ccddd, 'Other Comp', 'otherComp', 'budget', 2),
+
+    makeFteCashflowConfig(ccddd, 'Teaching Fte', 'amount_teaching_fte', 'actuals', 1),
+    makeFteCashflowConfig(ccddd, 'Student Support Fte', 'amount_student_support_fte', 'actuals', 1),
+    makeFteCashflowConfig(ccddd, 'Building Support Fte', 'amount_building_support_fte', 'actuals', 1),
+    makeFteCashflowConfig(ccddd, 'Other Fte', 'amount_other_fte', 'actuals', 1),
   ];
 }
 
@@ -89,10 +119,19 @@ export default function VitalsDashboard() {
   ];
   const gui = { layouts: [{rows: [
     { cells: [{id: 'enrollment-cashflow-actuals'}, {id: 'enrollment-cashflow-budget'}]},
+
     { cells: [{id: 'teachingComp-cashflow-actuals'}, {id: 'teachingComp-cashflow-budget'}]},
+    { cells: [{id: 'amount_teaching_fte-cashflow-actuals'}]},
+
     { cells: [{id: 'studentSupportComp-cashflow-actuals'}, {id: 'studentSupportComp-cashflow-budget'}]},
+    { cells: [{id: 'amount_student_support_fte-cashflow-actuals'}]},
+
     { cells: [{id: 'buildingSupportComp-cashflow-actuals'}, {id: 'buildingSupportComp-cashflow-budget'}]},
+    { cells: [{id: 'amount_building_support_fte-cashflow-actuals'}]},
+
     { cells: [{id: 'otherComp-cashflow-actuals'}, {id: 'otherComp-cashflow-budget'}]},
+    { cells: [{id: 'amount_other_fte-cashflow-actuals'}]},
+
     ]}]};
 
 
