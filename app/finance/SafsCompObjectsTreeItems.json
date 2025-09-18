@@ -1,0 +1,20 @@
+[
+  {
+    "id": "cat-salary",
+    "label": "Salary",
+    "children": [
+      {
+        "id": "obj-2",
+        "label": "Certificated"
+      },
+      {
+        "id": "obj-3",
+        "label": "Classified"
+      }
+    ]
+  },
+  {
+    "id": "obj-4",
+    "label": "Benefits + Payroll Taxes"
+  }
+]

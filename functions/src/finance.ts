@@ -86,6 +86,8 @@ function getExpenditures(ccddd) {
     activity,
     object_code,
     object,
+    nces_code,
+    nces,
     sum(c_pct_expenditure) c_pct_expenditure,
     sum(c_pct_revenue) c_pct_revenue,
     sum(amount) amount
@@ -101,7 +103,9 @@ function getExpenditures(ccddd) {
     activity_code,
     activity,
     object_code,
-    object
+    object,
+    nces_code,
+    nces
   `;
 }
 

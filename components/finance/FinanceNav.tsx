@@ -24,10 +24,11 @@ export default function FinanceNav({sx=[]} : Params) {
           }}>
         <Stack direction="row" spacing={4} sx={{alignItems: "center"}}>
           <NavLink href={'/finance/vitals'}>Vitals</NavLink>
-          <NavLink href={'/finance/enrollment'}>Enrollment</NavLink>
           <NavLink href={'/finance/cashflow'}>Cashflow</NavLink>
           <NavLink href={'/finance/expenditures'}>Expenditures</NavLink>
-          <NavLink href={'/finance/correlations'}>Key Correlations</NavLink>
+          <NavLink href={'/finance/nces'}>Actual Spend Details</NavLink>
+          <NavLink href={'/finance/staffing'}>Staffing</NavLink>
+          <NavLink href={'/finance/sps/orgchart'}>SPS OrgChart</NavLink>
         </Stack>
       </Toolbar>
     </AppBar>

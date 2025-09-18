@@ -1,6 +1,6 @@
 'use client';
 
-import { makeChartableExpenditures } from 'utilities/ChartableMetrics';
+import { makeChartableNces } from 'utilities/ChartableMetrics';
 import { useDistrictData } from 'app/finance/DistrictDataProvider';
 import { useState, useEffect } from 'react';
 import DistrictSelector from 'components/finance/DistrictSelector';
@@ -12,10 +12,6 @@ import Stack from '@mui/material/Stack';
 
 import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
 import type { MetricDef } from 'components/finance/FacetedBudgetActualCharts';
-
-type Params = {
-  facet: "program" | "activity" | "object";
-};
 
 function extractCodes(prefix, selectedItems) {
   const selectedCodes = new Array<number>;
@@ -43,37 +39,38 @@ function compileData(districtDataMap, firstCcddd, otherCcddds, filterSelection, 
     return [null,null];
   }
 
-  const [firstData, facetOrder] = makeChartableExpenditures(
+  const [firstData, facetOrder] = makeChartableNces(
     firstCcddd,
     districtDataMap[firstCcddd].filteredExpenditures(filterSelection),
     facet,
     'variance' as const,
     'descending' as const);
 
-    const data = [...otherCcddds].reduce(
-      (acc, ccddd) => {
-        if (!(ccddd in districtDataMap)) {
-          console.warn("Not loaded yet " + ccddd);
-          return acc;
-        }
+  const data = [...otherCcddds].reduce(
+    (acc, ccddd) => {
+      if (!(ccddd in districtDataMap)) {
+        console.warn("Not loaded yet " + ccddd);
+        return acc;
+      }
 
-        const [otherData, _] = makeChartableExpenditures(
-          ccddd,
-          districtDataMap[ccddd].filteredExpenditures(filterSelection),
-          facet,
-          'variance' as const,
-          'descending' as const
-        );
+      const [otherData, _] = makeChartableNces(
+        ccddd,
+        districtDataMap[ccddd].filteredExpenditures(filterSelection),
+        facet,
+        'variance' as const,
+        'descending' as const
+      );
 
-        return acc.join_full(otherData);
-      },
-      firstData);
+      return acc.join_full(otherData);
+    },
+    firstData);
 
-      return [data, facetOrder];
+    return [data, facetOrder];
 }
 
 // Charts expenditures for 
-export default function ExpendituresDashboard({facet} : Params) {
+export default function NcesDashboard() {
+  const facet = 'nces';
   const {districtDataMap, loadCcddd} = useDistrictData();
   const initialCcddd = 17001;
   const [selectedObjects, setSelectedObjects] = useState<string[]>(ALL_OBJECT_ITEMS);
@@ -84,10 +81,6 @@ export default function ExpendituresDashboard({facet} : Params) {
       {
         ccddd: initialCcddd,
         metricVariant: 'amount' as const,
-      },
-      {
-        ccddd: initialCcddd,
-        metricVariant: 'pctexp' as const,
       },
     ]
   );

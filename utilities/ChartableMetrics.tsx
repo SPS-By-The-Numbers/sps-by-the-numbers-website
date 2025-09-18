@@ -77,6 +77,50 @@ export function makeChartableExpenditures(
   }
 }
 
+// ${ccddd]_amount_${nces_code}_${budget/actual}
+export function makeChartableNces(
+    ccddd: number,
+    raw_df: ColumnTable,
+    facetColumn: string,
+    sortType: SortType,
+    sortOrder: SortOrder) : [ColumnTable, Array<FacetInfo>] {
+  try {
+    const facetCodeColumn = `${facetColumn}_code`;
+
+    // NCES codes only work with actuals.
+    const df = raw_df.filter(d => d.nces_code !== null);
+
+    // Sort by biggest.
+    const facetInfoSorted = df
+      .groupby('class_of', facetColumn, facetCodeColumn)
+      .rollup({amount: op.sum('amount') })
+      .groupby(facetColumn, facetCodeColumn)
+      .rollup({medamount: op.median(`amount`)})
+      .orderby(aq.desc('medamount'))
+      .derive({
+        facet_info: aq.escape(
+          d => ({
+            code: d[facetCodeColumn],
+            title: d[facetColumn],
+          })
+        )
+      })
+      .array('facet_info');
+
+    const data = df.groupby('class_of')
+      .pivot([facetCodeColumn, 'data_type'], {
+        [`${ccddd}_amount`]: d => op.sum(d.amount),
+          _pivot_name_hack_: d => op.any('_pivot_name_hack_')
+      })
+      .select(aq.not('_pivot_name_hack_'));
+
+      return [data, facetInfoSorted as Array<FacetInfo>];
+  } catch (e) {
+    console.warn("No data");
+    return [raw_df.groupby('class_of').rollup(), []];
+  }
+}
+
 export function makeChartableVitals(
     ccddd: number,
     enrollmentSummaryDf: ColumnTable,

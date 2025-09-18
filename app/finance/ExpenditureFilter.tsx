@@ -5,6 +5,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { TreeViewBaseItem } from '@mui/x-tree-view/models';
 import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
+import SafsCompObjectsTreeItems from 'app/finance/SafsCompObjectsTreeItems.json';
 import SafsObjectsTreeItems from 'app/finance/SafsObjectsTreeItems.json';
 import SpsActivityCategoryTreeItems from 'app/finance/SpsActivityCategoryTreeItems.json';
 import SpsProgramGroupingTreeItems from 'app/finance/SpsProgramGroupingTreeItems.json';
@@ -26,6 +27,7 @@ function allItems(config) {
   return itemIds;
 };
 
+export const ALL_COMP_OBJECT_ITEMS = allItems(SafsCompObjectsTreeItems);
 export const ALL_OBJECT_ITEMS = allItems(SafsObjectsTreeItems);
 export const ALL_ACTIVITY_ITEMS = allItems(SpsActivityCategoryTreeItems);
 export const ALL_PROGRAM_ITEMS = allItems(SpsProgramGroupingTreeItems);
