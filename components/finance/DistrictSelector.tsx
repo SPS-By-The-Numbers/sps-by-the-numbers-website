@@ -1,12 +1,9 @@
-'use client'
-
-import { useFinanceNavState } from 'components/providers/FinanceNavStateProvider';
-
 import Autocomplete from '@mui/material/Autocomplete';
 import TextField from '@mui/material/TextField';
+import ALL_DISTRICTS from './ccddd';
 
 import type { SxProps, Theme } from '@mui/material';
-import type { DistrictsMap } from 'components/providers/FinanceNavStateProvider';
+import type { DistrictsMap } from './ccddd';
 
 type Params = {
   ccddd: number;
@@ -33,19 +30,13 @@ function makeDistrictOptions(districts : DistrictsMap) {
 }
 
 export default function DistrictSelector({ccddd, onChange, sx=[]} : Params) {
-  // TODO: This is the wrong place for storing the districts data.
-  const {districts} = useFinanceNavState();
-
-  const districtOptions = makeDistrictOptions(districts);
-  const districtsByName = Object.fromEntries(
-    Object.entries(districts).map(([k, v]) => [v['district'], k]));
-  const districtsAlphabetical = Object.keys(districtsByName).sort();
+  const districtOptions = makeDistrictOptions(ALL_DISTRICTS);
 
   return (
     <Autocomplete
       size="small"
       disableClearable
-      value={{label: districts[ccddd].district, value: String(ccddd)}}
+      value={{label: ALL_DISTRICTS[ccddd].district, value: String(ccddd)}}
       options={ districtOptions }
       onChange={(_event, newValue) => onChange(parseInt(newValue.value))}
       renderInput={
