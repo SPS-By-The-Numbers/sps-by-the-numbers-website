@@ -15,7 +15,7 @@ import HcDashboard from 'components/HcDashboard';
 
 import type { ColumnTable } from 'arquero';
 import type { FacetInfo } from 'utilities/ChartableMetrics';
-import type { MetricVariant } from 'components/finance/MetricVariantSelector';
+import type { MetricVariant } from 'app/finance/MetricVariantSelector';
 import type { ValueFormat } from 'utilities/highcharts/ChartConfigGenerators';
 
 export type MetricDef ={

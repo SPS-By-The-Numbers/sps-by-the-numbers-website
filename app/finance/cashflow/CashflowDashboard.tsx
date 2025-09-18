@@ -8,10 +8,10 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation'
 import HcDashboard from 'components/HcDashboard';
 import Loading from 'components/Loading';
-import MetricVariantSelector from 'components/finance/MetricVariantSelector';
+import MetricVariantSelector from 'app/finance/MetricVariantSelector';
 
 import type { BudgetActualsChartOptions, CorrelationChartOptions } from "utilities/highcharts/ChartConfigGenerators";
-import type { MetricVariant } from 'components/finance/MetricVariantSelector';
+import type { MetricVariant } from 'app/finance/MetricVariantSelector';
 
 const CONNECTOR_ID = 'vitals-connector';
 

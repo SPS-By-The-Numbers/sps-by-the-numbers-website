@@ -3,15 +3,15 @@
 import { makeChartableExpenditures } from 'utilities/ChartableMetrics';
 import { useDistrictData } from 'app/finance/DistrictDataProvider';
 import { useState, useEffect } from 'react';
-import DistrictSelector from 'components/finance/DistrictSelector';
+import DistrictSelector from 'app/finance/DistrictSelector';
 import ExpenditureFilter, { ALL_PROGRAM_ITEMS, ALL_ACTIVITY_ITEMS, ALL_OBJECT_ITEMS } from 'app/finance/ExpenditureFilter';
-import FacetedBudgetActualCharts from 'components/finance/FacetedBudgetActualCharts';
+import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
 import Loading from 'components/Loading';
-import MetricVariantSelector from 'components/finance/MetricVariantSelector';
+import MetricVariantSelector from 'app/finance/MetricVariantSelector';
 import Stack from '@mui/material/Stack';
 
 import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
-import type { MetricDef } from 'components/finance/FacetedBudgetActualCharts';
+import type { MetricDef } from 'app/finance/FacetedBudgetActualCharts';
 
 type Params = {
   facet: "program" | "activity" | "object";

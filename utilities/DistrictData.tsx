@@ -3,7 +3,7 @@ import { op } from 'arquero';
 import * as aq from 'arquero';
 
 import type { ColumnTable } from 'arquero';
-import type { MetricVariant } from 'components/finance/MetricVariantSelector';
+import type { MetricVariant } from 'app/finance/MetricVariantSelector';
 
 export type FilterSelection = {
   selectedObjectCodes: Array<number>,
