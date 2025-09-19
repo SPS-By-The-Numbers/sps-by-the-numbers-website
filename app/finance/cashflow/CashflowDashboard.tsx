@@ -6,9 +6,11 @@ import { makeChartableVitals } from 'utilities/ChartableMetrics';
 import { useDistrictData } from '../DistrictDataProvider';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation'
+import DistrictSelector from 'app/finance/DistrictSelector';
 import HcDashboard from 'components/HcDashboard';
 import Loading from 'components/Loading';
 import MetricVariantSelector from 'app/finance/MetricVariantSelector';
+import Stack from '@mui/material/Stack';
 
 import type { BudgetActualsChartOptions, CorrelationChartOptions } from "utilities/highcharts/ChartConfigGenerators";
 import type { MetricVariant } from 'app/finance/MetricVariantSelector';
@@ -72,7 +74,7 @@ function makeFteCashflowConfig(ccddd, name, metricColumn, columnSuffix, colorInd
     xValueFormat: 'decimal' as const,
 
     yMetricColumn: `${ccddd}_cashflow`,
-    yLabel: `Cashflow $`,
+    yLabel: `${columnSuffix} Cashflow $`,
     yValueFormat: 'currency' as const,
 
     dataLabelColumn: 'class_of',
@@ -110,8 +112,8 @@ function makeCorrelationChartOptions(ccddd) : Array<CorrelationChartOptions> {
 export default function CashflowDashboard() {
   const { districtDataMap, loadCcddd } = useDistrictData();
   const searchParams = useSearchParams();
-  const ccddd = parseInt(searchParams.get('ccddd') ?? '17001');
   const [metricVariant, setMetricVariant] = useState<MetricVariant>('pctcomp' as const);
+  const [ccddd, setCcddd] = useState<number>(parseInt(searchParams.get('ccddd') ?? '17001'));
 
   const correlationChartOptions = makeCorrelationChartOptions(ccddd);
   const components = [
@@ -169,6 +171,19 @@ export default function CashflowDashboard() {
 
 
   return (
-    <HcDashboard config={config} />
+    <Stack>
+      <Stack direction="row">
+        <DistrictSelector
+          ccddd={ccddd}
+          onChange={(selection) => setCcddd(selection)}
+        />
+        <MetricVariantSelector
+          label={`Key Expenditure Unit`}
+          variant={metricVariant}
+          onChange={newValue => setMetricVariant(newValue)}
+        />
+      </Stack>
+      <HcDashboard config={config} />
+    </Stack>
   );
 }

@@ -6,6 +6,7 @@ import { makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGe
 import { useDistrictData } from '../DistrictDataProvider';
 import { useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react';
+import DistrictSelector from 'app/finance/DistrictSelector';
 import HcDashboard from 'components/HcDashboard';
 import Loading from 'components/Loading';
 import MetricVariantSelector from 'app/finance/MetricVariantSelector';
@@ -51,8 +52,8 @@ function makeBudgetActualsChartOptions(ccddd, metricVariant) : Array<BudgetActua
 export default function VitalsDashboard() {
   const { districtDataMap, loadCcddd } = useDistrictData();
   const searchParams = useSearchParams();
-  const ccddd = parseInt(searchParams.get('ccddd') ?? '17001');
   const [metricVariant, setMetricVariant] = useState<MetricVariant>('pctcomp' as const);
+  const [ccddd, setCcddd] = useState<number>(parseInt(searchParams.get('ccddd') ?? '17001'));
 
   const budgetActualsChartOptions = makeBudgetActualsChartOptions(ccddd, metricVariant);
   const components = budgetActualsChartOptions.map(c => makeBudgetActualsChartConfig(c));
@@ -99,11 +100,17 @@ export default function VitalsDashboard() {
 
   return (
     <Stack>
-      <MetricVariantSelector
-        label={`Key Expenditure Unit`}
-        variant={metricVariant}
-        onChange={newValue => setMetricVariant(newValue)}
-      />
+      <Stack direction="row">
+        <DistrictSelector
+          ccddd={ccddd}
+          onChange={(selection) => setCcddd(selection)}
+        />
+        <MetricVariantSelector
+          label={`Key Expenditure Unit`}
+          variant={metricVariant}
+          onChange={newValue => setMetricVariant(newValue)}
+        />
+      </Stack>
       <HcDashboard config={config} />
     </Stack>
   );

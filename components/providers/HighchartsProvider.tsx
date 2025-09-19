@@ -34,6 +34,8 @@ async function loadHighchartsModules() {
   const Highcharts = (await import('highcharts')).default;
   await import("highcharts/modules/accessibility");
   await import("highcharts/modules/no-data-to-display");
+  await import("highcharts/modules/sankey");
+  await import("highcharts/modules/organization");
 
   const Dashboards = (await import(
     '@highcharts/dashboards/es-modules/masters/dashboards.src.js')).default;
