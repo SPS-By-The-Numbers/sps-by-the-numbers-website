@@ -1,11 +1,12 @@
 import { Metadata } from 'next';
+import { Suspense } from 'react';
 import OrgChartDashboard from './OrgChartDashboard';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 export const metadata: Metadata = {
-  title: "Actual Spending Dashboard for Washingtion State Schools",
-  description: 'Gives detailed breakdown of actual spending using the NCES classification codes.',
+  title: "Reverse engineered Org Chart for SPS",
+  description: 'Attempts to show FTE + Salary per for each department in SPS',
 };
 
 export default async function Page() {
@@ -14,7 +15,9 @@ export default async function Page() {
       <Typography className="analysis-title" component="h1" variant="h1">
         Attempt to reverse engineer an SPS Org chart from P-A-O codes and S275 data.
       </Typography>
-      <OrgChartDashboard />
+      <Suspense>
+        <OrgChartDashboard />
+      </Suspense>
     </Stack>
   );
 }
