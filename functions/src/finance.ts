@@ -168,20 +168,29 @@ function getS275Summary(ccddd) {
   SELECT
     r.school_year,
     SPLIT(r.school_year, '-')[1] class_of,
+    a.school_code,
     a.program_code,
     a.activity_code,
-    sum(a.fte_in_assignment) fte_in_assignment
+    a.duty_root_code,
+    a.duty_suffix_code,
+    sum(a.fte_in_assignment) fte_in_assignment,
+    sum(pa.assignment_salary) + sum(pa.c_est_other_salary) c_est_total_initial_salary,
+    sum(pa.c_est_total_final_salary) c_est_total_final_salary,
   FROM
     sps-btn-data.safs_s275.assignment a
     JOIN sps-btn-data.safs_s275.report r ON (a.report_id = r.report_id)
+    JOIN sps-btn-data.safs_s275.private_assignment pa ON (a.assignment_id = pa.assignment_id)
     WHERE
     r.report_type = 'final' AND
     r.ccddd = ${ccddd}
   GROUP BY
     school_year,
     class_of,
+    school_code,
     program_code,
-    activity_code
+    activity_code,
+    duty_root_code,
+    duty_suffix_code
   `;
 }
 

@@ -250,6 +250,10 @@ export default class DistrictData {
     return rawResult;
   }
 
+  s275Summary() {
+    return this.s275_summary_df;
+  }
+
   balances() {
     const beginningBalanceBudget = this.budget_items_df.filter(
       aq.escape(d => d.item_code === '275' && d.fund_code === 1))

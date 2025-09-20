@@ -2091,7 +2091,7 @@ export const DeptToPad = {
         }
       ]
     },
-    'Facilities Operations': {
+    'Facilities Operations Dept': {
       'Grounds/Sports Complexes': [
         {
           'activity_code': 62,
@@ -2513,7 +2513,19 @@ export const DeptToPad = {
     ]
   },
   'Chief Academics Office Org': {
-    'Student & School Support': {
+    'Chief Academics Office': [
+      {
+        'activity_code': 21,
+        'program_code': 1,
+        'duty_root': 99
+      },
+      {
+        'activity_code': 21,
+        'program_code': 1,
+        'duty_root': 94
+      }
+    ],
+    'Student & School Support Dept': {
       'Coordinated School Health': [
         {
           'activity_code': 25,
@@ -3021,18 +3033,6 @@ export const DeptToPad = {
         }
       ]
     },
-    'Chief Academics Office': [
-      {
-        'activity_code': 21,
-        'program_code': 1,
-        'duty_root': 99
-      },
-      {
-        'activity_code': 21,
-        'program_code': 1,
-        'duty_root': 94
-      }
-    ],
   },
   'Accountability Org': {
     'Partnerships': [
