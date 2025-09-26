@@ -3,7 +3,6 @@
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { TreeViewBaseItem } from '@mui/x-tree-view/models';
 import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
 import SafsCompObjectsTreeItems from 'app/finance/SafsCompObjectsTreeItems.json';
 import SafsObjectsTreeItems from 'app/finance/SafsObjectsTreeItems.json';
@@ -12,7 +11,7 @@ import SpsProgramGroupingTreeItems from 'app/finance/SpsProgramGroupingTreeItems
 
 // Iterates a TreeViewBaseItem and extracts all IDs with a given prefix.
 // Used to generate default selection.
-function allItems(config) {
+export function allItems(config) {
   const nodes = [...config];  // Take copy of input 
   const itemIds = new Array<string>;
   while (nodes.length > 0) {

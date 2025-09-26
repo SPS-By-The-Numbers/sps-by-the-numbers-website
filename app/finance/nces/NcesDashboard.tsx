@@ -4,6 +4,7 @@ import { makeChartableNces } from 'utilities/ChartableMetrics';
 import { useDistrictData } from 'app/finance/DistrictDataProvider';
 import { useState, useEffect } from 'react';
 import DistrictSelector from 'app/finance/DistrictSelector';
+import SchoolFilter, {getSchoolItems} from 'app/finance/SchoolFilter';
 import ExpenditureFilter, { ALL_PROGRAM_ITEMS, ALL_ACTIVITY_ITEMS, ALL_OBJECT_ITEMS } from 'app/finance/ExpenditureFilter';
 import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
 import Loading from 'components/Loading';
@@ -12,6 +13,10 @@ import Stack from '@mui/material/Stack';
 
 import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
 import type { MetricDef } from 'app/finance/FacetedBudgetActualCharts';
+
+type CompareState = MetricDef & {
+  selectedSchools: Array<string>,
+};
 
 function extractCodes(prefix, selectedItems) {
   const selectedCodes = new Array<number>;
@@ -76,11 +81,12 @@ export default function NcesDashboard() {
   const [selectedObjects, setSelectedObjects] = useState<string[]>(ALL_OBJECT_ITEMS);
   const [selectedActivities, setSelectedActivities] = useState<string[]>(ALL_ACTIVITY_ITEMS);
   const [selectedPrograms, setSelectedPrograms] = useState<string[]>(ALL_PROGRAM_ITEMS);
-  const [metricList, setMetricList] = useState<Array<MetricDef>>(
+  const [metricList, setMetricList] = useState<Array<CompareState>>(
     [
       {
         ccddd: initialCcddd,
         metricVariant: 'amount' as const,
+        selectedSchools: getSchoolItems(initialCcddd),
       },
     ]
   );
@@ -147,14 +153,24 @@ export default function NcesDashboard() {
               <Stack key={i} spacing={4} direction="column">
                 <DistrictSelector
                   ccddd={def.ccddd}
-                  onChange={(selection) => {
-                    updateMetricList(i, {ccddd: selection})
-                  }}
+                  onChange={ccddd => {
+                    updateMetricList(i, {
+                      ccddd,
+                      selectedSchools: getSchoolItems(ccddd),
+                    }
+                  )}}
+                />
+                <SchoolFilter
+                  ccddd={def.ccddd}
+                  selectedSchools={def.selectedSchools}
+                  setSelectedSchools={
+                    selectedSchools => updateMetricList(i, {selectedSchools})
+                  }
                 />
                 <MetricVariantSelector
                   label={`Column ${i} variant`}
                   variant={metricList[i].metricVariant}
-                  onChange={newValue => updateMetricList(i, {metricVariant: newValue})}
+                  onChange={metricVariant => updateMetricList(i, {metricVariant})}
                 />
               </Stack>
           ))

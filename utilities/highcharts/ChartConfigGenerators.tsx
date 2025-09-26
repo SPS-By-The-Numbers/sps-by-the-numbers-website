@@ -4,7 +4,7 @@ import merge from 'lodash.merge';
 import * as aq from 'arquero';
 import { op } from 'arquero';
 
-export type ValueFormat =  'currency' | 'decimal' | 'year' | 'pctexp' | 'pctcomp';
+export type ValueFormat =  'currency' | 'decimal' | 'year' | 'pctexp' | 'pctcomp' | 'fte';
 
 export type BaseChartConfigOptions = {
   title: string;

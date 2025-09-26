@@ -1,0 +1,3033 @@
+school_code,ccddd,school,is_district_office
+2376,27010,Mason,f
+2543,27403,Roy Elementary,f
+2871,27010,Edison,f
+2938,27010,Sherman,f
+3646,27010,Boze,f
+5708,14172,Ocosta ALE,f
+2336,27010,Lyon,f
+2746,27010,Geiger,f
+1000,32081,District Office,t
+1001,31015,District Office,t
+1002,17001,District Office,t
+1003,17401,District Office,t
+1004,17405,District Office,t
+1005,27010,District Office,t
+1006,39007,District Office,t
+1007,31002,District Office,t
+1008,17210,District Office,t
+1009,17403,District Office,t
+1010,17412,District Office,t
+1011,17414,District Office,t
+1012,17415,District Office,t
+1013,27400,District Office,t
+1014,6037,District Office,t
+1015,32356,District Office,t
+1016,36140,District Office,t
+1017,3017,District Office,t
+1018,3400,District Office,t
+1019,11001,District Office,t
+1020,13161,District Office,t
+1021,4246,District Office,t
+1022,37501,District Office,t
+1023,31025,District Office,t
+1024,17400,District Office,t
+1025,17408,District Office,t
+1026,17411,District Office,t
+1027,17417,District Office,t
+1028,27003,District Office,t
+1029,27402,District Office,t
+1030,6114,District Office,t
+1031,8122,District Office,t
+1032,8458,District Office,t
+1033,14005,District Office,t
+1034,34003,District Office,t
+1035,34111,District Office,t
+1036,5121,District Office,t
+1756,17407,CLIP,f
+1037,18100,District Office,t
+1038,18402,District Office,t
+1039,32354,District Office,t
+1040,32360,District Office,t
+1041,32363,District Office,t
+1042,38267,District Office,t
+1043,2250,District Office,t
+1044,1147,District Office,t
+1045,19401,District Office,t
+1046,39201,District Office,t
+1047,39202,District Office,t
+1048,39207,District Office,t
+1049,39208,District Office,t
+1050,9206,District Office,t
+1051,15201,District Office,t
+1052,29100,District Office -  Burlington,t
+1053,29101,District Office -  Sedro,t
+1054,29103,District Office,t
+1055,29320,District Office,t
+1056,31006,District Office,t
+1057,31201,District Office,t
+1058,17406,District Office,t
+1059,27083,District Office,t
+1060,27320,District Office -  Sumner,t
+1061,27401,District Office,t
+1062,27403,District Office,t
+1063,6119,District Office,t
+1064,14028,District Office,t
+1065,21302,District Office,t
+1066,21401,District Office,t
+1067,18400,District Office,t
+1068,18401,District Office,t
+1069,32326,District Office,t
+1070,32361,District Office,t
+1071,39119,District Office,t
+1072,39200,District Office,t
+1073,37502,District Office,t
+1074,31004,District Office,t
+1075,31016,District Office,t
+1076,31103,District Office,t
+1077,17216,District Office,t
+1078,17409,District Office,t
+1079,17410,District Office,t
+1080,18303,District Office,t
+1081,27417,District Office,t
+1082,6117,District Office,t
+1083,23309,District Office,t
+1084,34033,District Office,t
+1085,32414,District Office,t
+1086,33115,District Office,t
+1087,3116,District Office,t
+1088,11051,District Office,t
+1089,13144,District Office,t
+1090,13165,District Office,t
+1091,39003,District Office,t
+1092,39090,District Office,t
+1093,39204,District Office,t
+1094,4222,District Office,t
+1095,24019,District Office,t
+1096,24410,District Office,t
+1097,37503,District Office,t
+1098,37504,District Office,t
+1099,37505,District Office,t
+1100,37506,District Office,t
+1101,37507,District Office,t
+1102,31311,District Office,t
+1103,31401,District Office -  Stanwood,t
+1104,17402,District Office,t
+1106,27404,District Office,t
+1107,27416,District Office,t
+1108,6112,District Office -  Washougal School District 112,t
+1109,6122,District Office,t
+1110,8401,District Office,t
+1111,8404,District Office,t
+1112,20405,District Office,t
+1113,14066,District Office,t
+1114,14068,District Office,t
+1115,25116,District Office,t
+1116,34002,District Office,t
+1117,5323,District Office,t
+1118,5402,District Office,t
+1119,16050,District Office,t
+1120,26056,District Office -  Newport School District 056,t
+1121,32416,District Office,t
+1122,33036,District Office,t
+1123,38300,District Office,t
+1124,7002,District Office,t
+1125,12110,District Office,t
+1126,3052,District Office -  Kiona,t
+1127,13160,District Office,t
+1128,19404,District Office -  Cle Elum,t
+1129,20404,District Office,t
+1130,39203,District Office,t
+1131,39209,District Office,t
+1132,4228,District Office,t
+1133,4129,District Office,t
+1134,24105,District Office,t
+1136,24404,District Office,t
+1137,15206,District Office,t
+1138,17407,District Office,t
+1139,27344,District Office,t
+1140,8402,District Office,t
+1141,25101,District Office,t
+1142,30303,District Office -  Stevenson,t
+1143,14172,District Office,t
+1144,21232,District Office,t
+1145,21237,District Office,t
+1146,21303,District Office,t
+1147,34401,District Office,t
+1148,34402,District Office,t
+1149,23403,District Office,t
+1150,32358,District Office,t
+1151,32362,District Office,t
+1152,33212,District Office,t
+1153,3053,District Office,t
+1154,1160,District Office,t
+1155,13301,District Office,t
+1156,13146,District Office -  Warden Joint Consolidated School District 146,t
+1157,39120,District Office,t
+1158,39205,District Office,t
+1160,24111,District Office,t
+1161,15204,District Office,t
+1162,29011,District Office,t
+1163,31330,District Office,t
+1164,31332,District Office,t
+1165,6101,District Office,t
+1166,25155,District Office -  Naselle,t
+1167,35200,District Office,t
+1168,14064,District Office,t
+1169,21206,District Office,t
+1170,21214,District Office,t
+1171,21300,District Office,t
+1172,25118,District Office,t
+1173,25160,District Office,t
+1174,5401,District Office,t
+1175,16049,District Office,t
+1176,10309,District Office,t
+1177,22105,District Office,t
+1178,22200,District Office,t
+1179,22207,District Office,t
+1180,22009,District Office -  Reardan,t
+1181,26059,District Office,t
+1182,26070,District Office,t
+1183,33207,District Office,t
+1184,38301,District Office,t
+1185,38322,District Office,t
+1186,36400,District Office,t
+1187,36401,District Office,t
+1188,1158,District Office,t
+1189,13156,District Office,t
+1190,19403,District Office,t
+1191,4019,District Office,t
+1192,4127,District Office,t
+1193,9075,District Office,t
+1194,9209,District Office,t
+1195,24122,District Office,t
+1196,24350,District Office,t
+1197,28149,District Office,t
+1198,29311,District Office,t
+1199,8130,District Office,t
+1200,20406,District Office,t
+1201,14097,District Office,t
+1202,14400,District Office,t
+1203,21014,District Office,t
+1204,21301,District Office,t
+1205,22204,District Office,t
+1206,33206,District Office,t
+1207,33211,District Office,t
+1208,38126,District Office,t
+1209,38265,District Office,t
+1210,38302,District Office,t
+1211,38306,District Office,t
+1212,38320,District Office,t
+1213,38324,District Office,t
+1214,2420,District Office,t
+1215,36300,District Office,t
+1216,36402,District Office,t
+1217,1109,District Office,t
+1218,13151,District Office,t
+1221,20402,District Office,t
+1222,21226,District Office,t
+1223,34307,District Office,t
+1224,5313,District Office,t
+1907,31002,Port Gardner,f
+1225,16048,District Office,t
+1226,10050,District Office,t
+1227,10070,District Office,t
+1228,22008,District Office -  Sprague,t
+1229,22017,District Office,t
+1230,22073,District Office,t
+1231,33049,District Office,t
+1232,38308,District Office,t
+1234,11056,District Office,t
+1236,13167,District Office,t
+1237,19028,District Office,t
+1238,19400,District Office,t
+1239,20203,District Office,t
+1240,9207,District Office,t
+1241,28144,District Office,t
+1243,17404,District Office,t
+1244,20094,District Office,t
+1245,20400,District Office,t
+1246,20401,District Office,t
+1247,14117,District Office,t
+1248,21234,District Office,t
+1249,23311,District Office,t
+1250,25200,District Office,t
+1252,36250,District Office,t
+1253,39002,District Office,t
+1254,27001,District Office,t
+1255,6098,District Office,t
+1256,23404,District Office,t
+1257,27343,District Office,t
+1258,31306,District Office,t
+1260,32325,District Office,t
+1261,1122,District Office,t
+1262,3050,District Office,t
+1263,4069,District Office,t
+1264,6103,District Office,t
+1265,7035,District Office,t
+1267,9013,District Office,t
+1268,9102,District Office,t
+1269,10003,District Office,t
+1271,10065,District Office,t
+1272,11054,District Office,t
+1273,13073,District Office,t
+1274,14065,District Office,t
+1275,14077,District Office,t
+1276,14099,District Office,t
+1277,14104,District Office,t
+1278,16020,District Office -  Queets,t
+1279,16046,District Office,t
+1280,19007,District Office,t
+1281,20215,District Office,t
+1282,20403,District Office,t
+1284,21036,District Office,t
+1285,23042,District Office,t
+1286,23054,District Office,t
+1287,23402,District Office,t
+1288,24014,District Office,t
+1289,27019,District Office,t
+1290,28010,District Office,t
+1291,29317,District Office,t
+1292,30002,District Office,t
+1293,30029,District Office -  Mount Pleasant School District 029,t
+1294,30031,District Office,t
+1295,31063,District Office,t
+1296,32123,District Office,t
+1297,32312,District Office,t
+1298,33030,District Office,t
+1299,33070,District Office,t
+1300,33183,District Office,t
+1301,33202,District Office,t
+1302,33205,District Office,t
+1303,34324,District Office,t
+1304,36101,District Office,t
+1305,38264,District Office,t
+1306,38304,District Office,t
+1312,27901,District Office,t
+1325,17910,District Office,t
+1327,17911,District Office,t
+1329,37903,District Office,t
+1330,17903,District Office,t
+1335,28137,District Office,t
+1336,32907,District Office,t
+1338,5903,District Office,t
+1339,17908,District Office,t
+1344,32901,District Office,t
+1345,17905,District Office,t
+1346,27905,District Office,t
+1347,17902,District Office,t
+1348,18902,District Office,t
+1350,34901,District Office,t
+1356,39901,District Office,t
+1357,18901,District Office,t
+1358,17917,District Office,t
+1359,17916,District Office,t
+1360,32903,District Office,t
+1361,37902,District Office,t
+1362,4901,District Office,t
+1363,27902,District Office -  Impact-,t
+1364,38901,District Office,t
+1365,6901,District Office,t
+1366,24915,District Office,t
+1367,17919,District Office,t
+1500,5402,Forks Alternative School,t
+1502,17410,Two Rivers School,f
+1506,13144,Quincy High Tech High,f
+1508,39202,Computer Academy Toppenish High School,f
+1510,27403,Challenger High School,f
+1514,27010,Alternative Spcl Needs Div Occ,f
+1516,27401,Henderson Bay Alt High School,f
+1518,13156,RISE Academy,f
+1519,31015,Edmonds eLearning Academy,f
+1520,31015,Challenge Elementary,f
+1523,17216,Special Ed School,f
+1528,6112,Excelsior High School,f
+1530,6114,Early Childhood Center,f
+1533,32081,A-3 Multiagency Adolescent Prog,f
+1534,17403,Griffin Home,f
+1537,29101,State Street High School,f
+1539,17401,CHOICE Academy,f
+1547,17001,Middle College High School,f
+1554,32416,Riverside Achievement Center,f
+1558,31015,Unassigned School,f
+1559,21302,Lewis County Juvenile Detention,f
+1560,27403,Thompson Preschool,f
+1566,32081,Alternative Northeast Community Center Preschool,f
+1567,32081,Pratt Academy,f
+1570,31103,Monroe Special Ed Preschool,f
+1574,6037,Fir Grove Childrens Center,f
+1579,17001,Tops K-8 School,f
+1585,27010,Comm Based Trans Program,f
+1594,33115,Panorama School,f
+1596,17001,Seattle World School,f
+1597,6119,Homelink Schools,f
+1603,32081,Daybreak Alternative School,f
+1604,32081,Alternative Tamarack School,f
+1605,29011,Twin Cedars High School,f
+1612,4246,Skill Source,f
+1613,4246,Westside High School,f
+1617,2250,Educational Opportunity Center,f
+1620,17001,Pathfinder K-8 School,f
+1621,24350,ILC Choice School,f
+1624,17411,Issaquah Special Services,f
+1627,34002,Yelm Extension School,f
+1628,32363,Dishman Hills High School,f
+1629,14068,East Grays Harbor High School,f
+1635,17001,Interagency Programs,f
+1640,27003,Puyallup Online Academy/POA,f
+1643,31103,Out Of District Special Ed,f
+1645,39200,Compass High School,f
+1646,6114,49th Street Academy,f
+1647,37501,Options High School,f
+1648,17403,Out Of District Facility,f
+1649,17414,Contractual Schools,f
+1650,29100,BECC,f
+1656,31025,10th Street School,f
+1657,31025,Heritage School,f
+1658,17414,Discovery School,f
+1663,31002,NW Learning Center,f
+1667,17412,Handicapped Contractual Services,f
+1668,17405,Transition Program,f
+1670,31311,Student Services School,f
+1671,5402,District Run Home School,f
+1672,25116,Developmental Preschool,f
+1675,4129,Lake Chelan Preschool,f
+1677,18400,Special Programs,f
+1680,23403,James A. Taylor High School,f
+1682,15206,South Whidbey Academy,f
+1683,15206,South Whidbey Special Services,f
+1685,31015,Maplewood Parent Coop,f
+1687,17414,Explorer Community School,f
+1688,17414,Emerson K-12,f
+1689,6037,Vancouver School of Arts and Academics,f
+1694,37501,Home Port Learning Center,f
+1698,32081,SCCP Images,f
+1699,18303,Odyssey Multiage Program,f
+1706,17414,International Community School,f
+1707,31401,Lincoln Hill High School,f
+1708,5323,Olympic Peninsula Academy,f
+1709,33036,Chewelah Alternative,f
+1712,32361,Continuous Curriculum School,f
+1713,34033,Cascadia High School,f
+1714,31016,Stillaguamish Valley Learning Center,f
+1715,5121,Parents As Partners,f
+1718,18402,Explorer Academy,f
+1724,16049,PI Program,f
+1728,3116,Prosser Falls Education Center,f
+1730,31201,Snohomish Center,f
+1733,18400,Parent Assisted Learning,f
+1735,34401,H.e.a.r.t. High School,f
+1737,18100,Renaissance Alternative High School,f
+1738,6037,Gate Program,f
+1740,18401,Off Campus,f
+1742,4246,Valley Academy Of Learning,f
+1743,37505,Meridian Special Programs,f
+1744,31025,School Home Partnership Program,f
+1749,18100,Bremerton Home Link Program,f
+1751,17001,Cascade Parent Partnership Program,f
+1753,31004,Homelink,f
+1754,11051,Palouse Junction High School,f
+1755,32363,West Valley City School,f
+1757,31201,Snohomish Online Learning,f
+1758,15201,Homeconnection,f
+1759,17210,Internet Academy,f
+1762,29011,Skagit River School House,f
+1763,33036,Quartzite Learning,f
+1765,30303,Preschool - Stevenson,f
+1767,32081,The Healing Lodge,f
+1768,34111,Avanti High School,f
+1769,32360,Three Springs High School,f
+1771,17412,Home Education Exchange,f
+1772,36140,HomeLink,f
+1776,39200,Contract Learning Center,f
+1777,31103,Sky Valley Education Center,f
+1781,27320,Sumner Special Services,f
+1784,17403,H.O.M.E. Program,f
+1787,5401,Cape Flattery Preschool,f
+1789,17210,Federal Way Public Academy,f
+1790,27083,University Place Special Educ,f
+1795,8404,TEAM High School,f
+1796,17001,Salmon Bay K-8 School,f
+1797,27010,Day Reporting School,f
+1798,16050,OCEAN,f
+1799,37501,Visions (Seamar Youth Center),f
+1800,17414,Environmental & Adventure School,f
+1801,6114,iQ Academy Washington,f
+1802,4246,Chelan County Juvenile Detention Center,f
+1803,32354,Mead Alternative High School,f
+1804,17414,Futures School,f
+1806,31103,Leaders In Learning,f
+1807,17415,Regional Justice Center,f
+1810,31002,Sno Co Jail,f
+1811,29801,Pass Program,f
+1814,17417,Northshore Networks,f
+1815,17417,Northshore Special Services,f
+1819,33207,Parent Partner Program,f
+1820,33207,Mary Walker Alternative High Schl,f
+1822,17402,Family Link,f
+1823,37506,Nooksack Valley Special Services,f
+1825,27400,Alfaretta House,f
+1829,21232,Winolequa Learning Academy,f
+1830,31015,Contracted Schools,f
+1831,39202,Toppenish Pre School,f
+1833,22207,Davenport Alternative Learning Ct,f
+1835,13073,Sentinel Tech Alt School,f
+1836,6119,CAM Academy,f
+1838,32363,Spokane Valley High School,f
+1841,18303,Mosaic Home Education Partnership,f
+1842,32363,Spokane Valley Transition School,f
+1845,24350,Home School Experience,f
+1848,31006,Special Services,f
+1851,33049,Wellpinit Alliance High School,f
+1852,32414,Deer Park Home Link Program,f
+1854,17407,PARADE,f
+1856,17001,The Center School,f
+1857,33207,Springdale Academy,f
+1858,32354,Mead Education Partnership Prog,f
+1860,27010,Tacoma School of the Arts,f
+1861,23403,North Mason Homelink Program,f
+1862,31025,Marysville Coop Program,f
+1875,6119,Homelink River,f
+1880,27400,Re-Entry High School,f
+1881,27400,Re-Entry Middle School,f
+1882,27400,Special Education Services/relife,f
+1884,3017,Legacy High School,f
+1888,23309,Mason County Detention Center,f
+1889,11051,Connell Preschool,f
+1892,28137,OASIS K-12,f
+1895,31025,ECEAP,f
+1897,5121,Special Education,f
+1898,10309,Republic Parent Partner,f
+1899,6112,Washougal Special Services,f
+1900,9075,Bridgeport Aurora High School,f
+1902,25116,Raymond Home Link School,f
+1904,31201,Parent Partnership,f
+1905,29103,Cooperatives,f
+1910,31025,Marysville SD Special,f
+1911,33049,Wellpinit - Fort Semco High School,f
+1914,37504,Lynden Special Services,f
+1915,17408,Special Ed School,f
+1919,32416,Independent Scholar,f
+1921,10050,Curlew Parent Partner,f
+1922,33183,Loon Lake Homelink Program,f
+1924,19401,Ellensburg Developmental Preschool,f
+1925,21301,Trojan Alternative School,f
+1926,6114,Home Choice Academy,f
+1927,31025,Legacy High School,f
+1928,29100,Burlington-Edison Alternative School,f
+1932,33070,Columbia Virtual Academy,f
+1934,8458,Loowit High School,f
+1935,18303,Eagle Harbor High School,f
+1936,37507,Educational Resource Center,f
+1937,32361,Children First,f
+1938,17402,Student Link,f
+1939,18303,Bainbridge Special Education Services,f
+1940,4129,Chelan School of Innovation,f
+1941,3017,Mid-Columbia Parent Partnership,f
+1942,17412,Cascade K-8 Community School,f
+1943,27403,Pioneer Valley Preschool,f
+1945,27403,Elk Plain Head Start,f
+1950,17210,Employment Transition Program,f
+1951,17210,Support School,f
+1960,31006,ECEAP,f
+1961,38301,Palouse at Garfield Middle School,f
+1962,38302,Garfield at Palouse High School,f
+1963,28149,Griffin Bay School,f
+1964,32356,Spokane Valley Learning Academy,f
+1966,31015,Edmonds Heights K-12,f
+1970,11001,Pasco Early Childhood,f
+1971,13165,Sage Hills High School,f
+1972,17401,New Start,f
+1973,17401,Satellite High School,f
+1975,17414,Stella Schola,f
+2623,4019,Manson High School,f
+1980,24105,Okanogan Alternative High School,f
+1981,13073,Developmental Pre-School,f
+1982,13073,Birth to 3 Years,f
+1983,37504,Lynden Academy,f
+1986,17903,Muckleshoot Tribal School,f
+1987,19404,Swiftwater Learning Center - Cle Elum,f
+1992,29320,Skagit Academy,f
+1998,17401,Head Start,f
+2000,3017,Keewaydin Discovery Center,f
+2001,3400,Special Programs,f
+2006,10050,Curlew Elem & High School,f
+2007,11054,Star Elem School,f
+2010,14104,Satsop Elementary,f
+2026,18400,Poulsbo Elementary School,f
+2027,21302,Green Hill Academic School,f
+2031,24019,Omak High School,f
+2036,27010,Larchmont,f
+2039,27010,Remann Hall Juvenile Detention Center,f
+2040,27001,Anderson Island Elementary,f
+2041,27400,Firwood,f
+2045,32081,Shrine Hospital,f
+2049,33030,Onion Creek Elementary,f
+2052,38265,Tekoa Elementary School,f
+2056,32081,Holmes Elementary,f
+2061,17001,Green Lake Elementary School,f
+2062,33211,Northport Elementary School,f
+2063,17001,John Hay Elementary School,f
+2065,31002,Garfield Elementary School,f
+2066,37501,Fairhaven Middle School,f
+2067,37501,Roosevelt Elementary School,f
+2069,17001,Madrona K-5 School,f
+2070,17001,Beacon Hill International School,f
+2073,31201,Machias Elementary,f
+2074,36140,Berney Elementary School,f
+2075,37501,Whatcom Middle School,f
+2077,19007,Damman Elementary,f
+2078,36140,Green Park Elementary School,f
+2080,17001,Stevens Elementary School,f
+2081,17001,John Stanford International School,f
+2083,27010,Washington Elementary,f
+2084,27010,Stadium,f
+2086,32081,Roosevelt Elementary,f
+2087,38126,Lacrosse Elementary School,f
+2088,38126,Lacrosse High School,f
+2089,17001,Martin Luther King Jr. Elementary School,f
+2090,17001,Frantz Coe Elementary School,f
+2092,17001,Whittier Elementary School,f
+2094,27010,Blix Elementary,f
+2096,32081,Regal Elementary,f
+2097,32312,Great Northern Elementary,f
+2103,27010,Jefferson,f
+2105,31311,Sultan Middle School,f
+2106,32081,North Central High School,f
+2108,32081,Stevens Elementary,f
+2109,32081,Willard Elementary,f
+2110,32081,Sheridan Elementary,f
+2111,32081,Jefferson Elementary,f
+2113,32356,Opportunity Elementary,f
+2114,36250,Davis Elementary,f
+2115,38304,Steptoe Elementary School,f
+2116,39007,Davis High School,f
+2118,17001,Emerson Elementary School,f
+2120,17001,Rising Star Elementary School,f
+2121,17001,Leschi Elementary School,f
+2123,17001,Greenwood Elementary School,f
+2124,17410,Snoqualmie Middle School,f
+2125,27003,Puyallup High School,f
+2126,31002,Everett High School,f
+2127,32081,Franklin Elementary,f
+2128,32081,Audubon Elementary,f
+2129,32081,Cooper Elementary,f
+2131,39207,Wapato Middle School,f
+2132,1160,Ritzville High School,f
+2133,3050,Paterson Elementary School,f
+2134,4246,Wenatchee High School,f
+2135,7035,Starbuck School,f
+2136,10065,Orient Elementary School,f
+2137,14068,Elma High School,f
+2138,17001,Adams Elementary School,f
+2139,17001,Gatewood Elementary School,f
+2141,17001,Thurgood Marshall Elementary,f
+2142,17001,West Woodland Elementary School,f
+2143,17001,John Muir Elementary School,f
+2144,17401,Mount View Elementary,f
+2145,23054,Grapeview Elementary & Middle School,f
+2146,24350,Liberty Bell Jr Sr High,f
+2148,27010,Franklin,f
+2150,29101,Sedro Woolley Senior High School,f
+2155,32081,Bemiss Elementary,f
+2156,32081,Adams Elementary,f
+2157,32356,Greenacres Elementary,f
+2158,34307,Rainier Middle School,f
+2159,36140,Prospect Point Elementary,f
+2160,36300,Touchet Elem & High School,f
+2161,9209,Waterville Elementary,f
+2162,9209,Waterville High School,f
+2166,21401,Centralia High School,f
+2167,27010,Fern Hill,f
+2168,27010,Sheridan,f
+2169,27010,Point Defiance,f
+2172,32081,Lewis & Clark High School,f
+2173,32414,Arcadia Elementary,f
+2174,36401,Preston Hall Middle School,f
+2175,37501,Silver Beach Elementary School,f
+2176,39007,Garfield Elementary School,f
+2177,39007,Mckinley Elementary School,f
+2179,6037,Fort Vancouver High School,f
+2180,14066,Montesano Jr-Sr High,f
+2181,17001,Alki Elementary School,f
+2182,17001,Franklin High School,f
+2183,17001,Lawton Elementary School,f
+2185,17412,Lake Forest Park Elementary,f
+2186,22008,Sprague High School,f
+2189,27400,Park Lodge Elementary School,f
+2190,27416,Elk Ridge Elementary,f
+2191,32081,Whitman Elementary,f
+2195,3116,Keene-Riverview Elementary,f
+2196,4019,Manson Elementary,f
+2198,11051,Robert L Olds Junior High School,f
+2199,17001,Concord International School,f
+2201,17001,McGilvra Elementary School,f
+2205,27404,Eatonville Elementary School,f
+2206,27404,Eatonville High School,f
+2207,38308,Endicott/St John Elem and Middle,f
+2209,17001,Broadview-Thomson K-8 School,f
+2214,25118,South Bend High School,f
+2215,27010,Lincoln,f
+2218,32081,Browne Elementary,f
+2219,37504,Lynden Middle School,f
+2220,17001,Ballard High School,f
+2222,17410,Fall City Elementary,f
+2223,27083,University Place Primary,f
+2225,37501,Lowell Elementary School,f
+2227,21226,Adna Elementary School,f
+2229,31311,Sultan Elementary School,f
+2233,9207,Mansfield Elem and High School,f
+2234,17001,West Seattle High School,f
+2237,27001,Pioneer Middle,f
+2240,39205,Zillah High School,f
+2241,12110,Pomeroy Jr Sr High School,f
+2244,21401,Edison Elementary,f
+2245,24105,Okanogan Middle School,f
+2246,24105,Okanogan High School,f
+2247,27010,Northeast Tacoma,f
+2251,20215,Centerville Elementary,f
+2252,27010,Manitou Park,f
+2256,17001,Olympic View Elementary School,f
+2257,27402,Collins Elementary,f
+2258,32081,Hutton Elementary,f
+2260,34002,McKenna Elementary,f
+2262,37501,Geneva Elementary School,f
+2263,37502,Beach Elem,f
+2264,39202,Toppenish Middle School,f
+2265,4069,Stehekin Elementary,f
+2266,8458,Kelso High School,f
+2267,11001,Mcloughlin Middle School,f
+2268,14028,Emerson Elementary,f
+2269,17001,Highland Park Elementary School,f
+2270,17401,Puget Sound Skills Center,f
+2272,18402,South Kitsap High School,f
+2273,21014,Napavine Jr Sr High School,f
+2274,21302,Cascade Elementary School,f
+2275,27010,Roosevelt,f
+2276,29311,La Conner High School,f
+2277,31016,Arlington Special Educ School,f
+2278,36101,Dixie Elementary School,f
+2279,4246,Lewis And Clark Elementary Sch,f
+2281,8401,Castle Rock High School,f
+2283,14400,Oakville High School,f
+2285,17001,Roosevelt High School,f
+2287,17410,North Bend Elementary School,f
+2288,17410,Snoqualmie Elementary,f
+2289,17414,Redmond Elementary,f
+2290,21232,Winlock Miller Elementary,f
+2291,21401,Oakview Elementary School,f
+2292,25200,North River School,f
+2294,27401,Goodman Middle School,f
+2295,29320,Mount Vernon High School,f
+2296,32081,Wilson Elementary,f
+2297,33207,Springdale Elementary,f
+2299,2250,Charles Francis Adams High School,f
+2301,4246,Columbia Elementary School,f
+2302,7002,Dayton High School,f
+2304,13151,Coulee City MS,f
+2305,14005,Miller Junior High,f
+2306,17001,Garfield High School,f
+2307,17001,Bailey Gatzert Elementary School,f
+2308,17414,Kirkland Middle School,f
+2310,23404,Hood Canal Elementary School,f
+2311,27003,Stewart Elementary,f
+2312,32081,Finch Elementary,f
+2314,39007,Washington Middle School,f
+2315,4222,CASHMERE MIDDLE SCHOOL,f
+2317,4129,Chelan Middle School,f
+2318,6037,Lincoln Elementary School,f
+2319,8122,Kessler Elementary School,f
+2321,17001,Dunlap Elementary School,f
+2322,17001,Montlake Elementary School,f
+2325,17401,Highline High School,f
+2326,17408,Washington Elementary School,f
+2328,19404,Cle Elum Roslyn Elementary - Cle Elum,f
+2329,19404,Cle Elum Roslyn High School - Cle Elum,f
+2330,20405,Columbia High School,f
+2331,21300,Onalaska High School,f
+2334,27003,Meeker Elementary,f
+2335,27010,Madison Headstart,f
+2338,27010,Jason Lee,f
+2340,27402,Midland Elementary,f
+2341,32325,Nine Mile Falls Elementary,f
+2342,34111,Lincoln Elementary School,f
+2343,37507,Mount Baker Senior High,f
+2344,39090,East Valley High School,f
+2345,39200,Mcclure Elementary School,f
+2347,4246,Mission View Elementary School,f
+2349,5402,Forks Junior-Senior High School,f
+2353,17001,Maple Elementary School,f
+2355,21036,Evaline Elementary School,f
+2357,25116,Raymond Jr Sr High School,f
+2358,27010,Stanley,f
+2359,27010,Stewart,f
+2360,27344,Orting Primary School,f
+2361,27404,Weyerhaeuser Elementary,f
+2362,29100,Burlington Edison High School,f
+2364,31002,North Middle School,f
+2365,37501,Columbia Elementary School,f
+2367,3053,River View High School,f
+2368,5121,Jefferson Elementary,f
+2369,8122,Columbia Valley Garden Elem Schl,f
+2370,8122,Saint Helens Elementary,f
+2371,17001,Hamilton International Middle School,f
+2372,17001,Bryant Elementary School,f
+2377,27010,Gray,f
+2379,29100,Edison Elementary - Burlington/Edison,f
+2380,29101,Central Elementary School,f
+2381,32081,Arlington Elementary,f
+2385,33212,Kettle Falls Elementary School,f
+2386,36401,Waitsburg High School,f
+2387,37501,Sunnyland Elementary School,f
+2388,39119,Selah High School,f
+2389,39209,Mount Adams Middle School,f
+2390,6122,Ridgefield High School,f
+2391,14028,Hoquiam Middle School,f
+2392,17001,Cleveland High School STEM,f
+2394,17408,Cascade Middle School,f
+2395,18303,Bainbridge High School,f
+2396,24122,Pateros Elementary,f
+2397,24122,Pateros High School,f
+2398,27402,Central Avenue Elementary,f
+2399,27403,Spanaway Elementary,f
+2400,31401,Stanwood Middle School,f
+2401,32081,Libby Center,f
+2402,32354,Mead Senior High School,f
+2404,33036,Jenkins Junior/Senior High,f
+2405,33070,Valley School,f
+2406,34324,Griffin School,f
+2407,36140,Alternative Education Program,f
+2410,39007,Franklin Middle School,f
+2415,6119,Battle Ground High School,f
+2416,8122,R A Long High School,f
+2417,17210,Federal Way High School,f
+2418,17401,Des Moines Elementary,f
+2419,17402,Vashon Island High School,f
+2422,24410,Oroville Elementary,f
+2423,26059,Cusick Jr Sr High School,f
+2425,27400,Clover Park High School,f
+2426,31004,Lake Stevens Sr High School,f
+2428,31201,Snohomish High School,f
+2430,32414,Deer Park Elementary,f
+2431,37501,Birchwood Elementary School,f
+2432,38324,Oakesdale High School,f
+2433,39007,Ridgeview Elementary,f
+2434,2420,Asotin Jr Sr High - Asotin,f
+2435,17001,Madison Middle School,f
+2437,17001,Laurelhurst Elementary School,f
+2439,17403,Bryn Mawr Elementary School,f
+2441,21226,Adna Middle/High School,f
+2442,21302,R E Bennett Elementary,f
+2443,22105,Odessa High School,f
+2447,32360,Cheney Middle School,f
+2448,34111,Garfield Elementary School,f
+2449,14005,McDermoth Elementary,f
+2450,17001,Daniel Bagley Elementary School,f
+2453,19401,Morgan Middle School,f
+2457,34402,Parkside Elementary,f
+2458,37502,Central Elementary,f
+2459,37506,Nooksack Valley High School,f
+2462,17001,Loyal Heights Elementary School,f
+2466,27019,Carbonado Historical School 19,f
+2467,29103,Anacortes High School,f
+2468,34307,Rainier Senior High School,f
+2469,39201,Outlook Elementary School,f
+2471,5323,Sequim Senior High,f
+2472,13167,Wilson Creek Elementary,f
+2473,13167,Wilson Creek High,f
+2474,16048,Quilcene High And Elementary,f
+2475,17403,Renton Senior High School,f
+2476,18400,Poulsbo Middle School,f
+2478,22009,Reardan Middle-Senior High School,f
+2479,32081,Rogers High School,f
+2480,33183,Loon Lake Elementary School,f
+2481,34002,Yelm Middle School,f
+2484,6103,Green Mountain School,f
+2485,17407,Carnation Elementary School,f
+2487,34111,Boston Harbor Elementary,f
+2488,37502,Ferndale High School,f
+2489,37506,Sumas Elementary,f
+2491,16020,Queets-Clearwater Elementary - Queets,f
+2493,17417,C O Sorenson,f
+2494,24014,Nespelem Elementary,f
+2495,27003,Waller Road Elementary,f
+2496,27003,Firgrove Elementary,f
+2497,27003,Spinning Elementary,f
+2498,27003,Maplewood Elementary,f
+2499,38267,Pullman High School,f
+2501,2250,Lincoln Middle School,f
+2502,9102,Palisades Elementary School,f
+2503,16050,Port Townsend High School,f
+2505,39208,Wide Hollow Elementary,f
+2506,39209,Harrah Elementary School,f
+2507,2420,Asotin Elementary - Asotin,f
+2508,3116,Prosser High School,f
+2509,6112,Hathaway Elementary,f
+2510,13144,Quincy Middle School,f
+2511,15206,South Whidbey Middle,f
+2512,17404,Skykomish Elementary School,f
+2513,17404,Skykomish High School,f
+2514,19400,Thorp Elem & Jr Sr High,f
+2516,21234,Boistfort Elem,f
+2517,25101,Hilltop School,f
+2518,26056,Newport High School,f
+2519,27003,Woodland Elementary,f
+2520,28149,Friday Harbor Elementary School,f
+2521,29101,Big Lake Elementary School,f
+2522,29311,La Conner Elementary,f
+2523,31016,Arlington High School,f
+2525,32416,Chattaroy Elementary,f
+2527,34401,Rochester Primary School,f
+2528,36140,Edison Elementary School - Walla Walla,f
+2624,8458,Wallace Elementary,f
+2529,39007,Roosevelt Elementary School,f
+2530,39090,Moxee Elementary,f
+2531,39204,Granger Middle School,f
+2532,39209,White Swan High School,f
+2539,24105,Grainger Elementary,f
+2542,25160,Willapa Valley Middle-High,f
+2545,31002,Silver Lake Elementary - Everett,f
+2546,31103,Maltby Elementary,f
+2549,33049,Wellpinit Elementary School,f
+2550,33049,Wellpinit High School,f
+2552,34033,Michael T Simmons Elementary,f
+2553,37501,Bellingham High School,f
+2554,37505,Meridian High School,f
+2555,39200,Grandview High School,f
+2558,6101,La Center Elementary,f
+2560,8130,Toutle Lake High School,f
+2561,8402,Kalama Middle School,f
+2562,9075,Bridgeport Elementary,f
+2563,9206,Rock Island Elementary,f
+2564,17406,Showalter Middle School,f
+2565,17415,Meridian Elementary School,f
+2569,19403,Kittitas Elementary School,f
+2570,19404,Walter Strom Middle School - Cle Elum,f
+2572,21206,Mossyrock Elementary School,f
+2575,27003,Edgemont Jr High,f
+2576,27403,Clover Creek Elementary,f
+2577,29011,Concrete Elementary,f
+2578,29317,Conway School,f
+2579,29320,Lincoln Elementary School,f
+2580,31332,Granite Falls High School,f
+2581,31401,Stanwood High School,f
+2584,37505,Irene Reither Elementary School,f
+2585,37507,Acme Elementary,f
+2587,38267,Franklin Elementary,f
+2588,38306,Colton School,f
+2591,39003,Naches Valley High School,f
+2592,39007,Adams Elementary School,f
+2594,5401,Neah Bay Elementary School,f
+2596,8458,Rose Valley Elementary,f
+2597,17403,Kennydale Elementary School,f
+2601,29801,Snohomish Detention Center,f
+2602,10003,Keller Elementary School,f
+2603,10070,Inchelium High School,f
+2605,20094,Wishram High And Elementary Schl,f
+2607,37502,Custer Elem,f
+2608,39202,Garfield Elementary School,f
+2609,5402,Forks Middle School,f
+2610,6037,Hough Elementary School,f
+2612,17412,Fircrest Residential Habilitation,f
+2613,18100,West Hills S.T.E.M. Academy,f
+2615,18401,Central Kitsap High School,f
+2616,21237,Toledo High School,f
+2620,29101,Lyman Elementary School,f
+2621,34111,McLane Elementary School,f
+2622,38301,Palouse Elementary,f
+2625,15204,Coupeville High School,f
+2632,28144,Lopez Middle High School,f
+2633,34002,Yelm High School 12,f
+2634,38301,Palouse High School,f
+2635,39202,Lincoln Elementary School,f
+2636,6037,Early Childhood Education Center,f
+2637,6037,Fruit Valley Elementary School,f
+2639,17401,White Center Heights Elementary,f
+2640,17403,Highlands Elementary School,f
+2641,18402,East Port Orchard Elementary,f
+2642,3400,Jefferson Elementary,f
+2643,6037,Harney Elementary School,f
+2644,6037,Peter S Ogden Elementary,f
+2645,17001,West Seattle Elementary School,f
+2650,18402,Orchard Heights Elementary,f
+2651,27400,Tillicum Elementary School,f
+2652,27400,Lakeview Hope Academy,f
+2653,32361,Trent School,f
+2656,3400,Marcus Whitman Elementary,f
+2657,3400,Lewis & Clark Elementary School,f
+2659,17408,Terminal Park Elementary School,f
+2662,23403,Belfair Elementary,f
+2664,33036,Gess Elementary,f
+2665,8122,Broadway Learning Center,f
+2666,9013,Orondo Elementary and Middle School,f
+2667,17001,View Ridge Elementary School,f
+2668,22207,Davenport Elementary,f
+2669,31002,Madison Elementary,f
+2671,6119,Amboy Middle School,f
+2673,13161,Frontier Middle School,f
+2676,20400,Trout Lake School,f
+2677,20404,Goldendale Primary School,f
+2678,21214,Morton Elementary School,f
+2679,24404,Tonasket High School,f
+2681,27401,Peninsula High School,f
+2682,30303,Stevenson Elementary - Stevenson,f
+2687,37506,Nooksack Valley Middle School,f
+2688,4127,Paul Rumburg Elementary,f
+2689,4129,Morgen Owings Elementary School,f
+2690,6037,Hazel Dell Elementary School,f
+2691,8458,Catlin Elementary,f
+2693,13151,Coulee City Elementary,f
+2694,13156,Soap Lake Elementary,f
+2695,13165,Parkway School,f
+2696,15201,Oak Harbor Elementary,f
+2697,16049,Chimacum Elementary School,f
+2699,17401,Hazel Valley Elementary,f
+2701,17405,Bellevue High School,f
+2702,17408,West Auburn Senior High School,f
+2703,17412,Ridgecrest Elementary,f
+2704,21401,Fords Prairie Elementary,f
+2706,24410,Oroville Middle-High School,f
+2707,29103,Anacortes Middle School,f
+2708,32081,Madison Elementary,f
+2711,32363,Millwood Kindergarten Center,f
+2792,13146,Warden Elementary,f
+2712,36401,Waitsburg Elementary School,f
+2713,37503,Blaine Elementary School,f
+2714,39002,Union Gap School,f
+2715,39007,Hoover Elementary School,f
+2717,39201,Washington Elementary,f
+2718,39203,Highland Junior High School,f
+2719,1160,Ritzville Grade School,f
+2721,3400,Carmichael Middle School,f
+2722,5323,Helen Haller Elementary School,f
+2723,6037,Minnehaha Elementary School,f
+2724,6114,Evergreen High School,f
+2725,6117,Helen Baller Elem,f
+2726,8122,Olympic Elementary School,f
+2727,9206,Eastmont Senior High,f
+2728,14064,North Beach Senior High School,f
+2729,17001,Eckstein Middle School,f
+2730,17001,Arbor Heights Elementary School,f
+2733,17001,Lafayette Elementary School,f
+2734,17401,McMicken Heights Elementary,f
+2738,17411,Clark Elementary,f
+2739,17414,Lake Washington High,f
+2741,19401,Lincoln Elementary,f
+2743,22204,Harrington Elementary School,f
+2744,23042,Southside Elementary,f
+2745,23309,Evergreen Elementary School,f
+2747,27010,Downing,f
+2748,27403,Kapowsin Elementary,f
+2749,28137,Orcas Island Elementary School,f
+2750,28137,Orcas Island High School,f
+2751,31002,Jackson Elementary School,f
+2752,31002,Whittier Elementary,f
+2754,34003,South Bay Elementary,f
+2756,39200,Thompson Elementary School,f
+2757,39207,Satus Elementary,f
+2758,39208,Mountainview Elementary,f
+2760,4228,Peshastin Dryden Elementary,f
+2762,8401,Castle Rock Elementary,f
+2763,14005,Robert Gray Elementary,f
+2765,17401,Beverly Park Elem at Glendale,f
+2766,19403,Kittitas High School,f
+2768,21401,Washington Elementary School,f
+2769,22105,P C Jantz Elementary,f
+2770,26059,Bess Herian Elementary,f
+2771,27010,Lister,f
+2772,27010,Fawcett,f
+2773,27417,Fife High School,f
+2774,29101,Mary Purcell Elementary School,f
+2776,32356,North Pines Middle School,f
+2778,34111,Roosevelt Elementary School,f
+2780,36140,Pioneer Middle School,f
+2783,39205,Hilton Elementary School,f
+2785,3400,Chief Joseph Middle School,f
+2786,3400,Jason Lee Elementary School,f
+2787,4222,VALE ELEMENTARY SCHOOL,f
+2788,9075,Bridgeport High School,f
+2789,10309,Republic Elementary School,f
+2790,11001,Longfellow Elementary,f
+2793,13165,Columbia Ridge Elementary,f
+2795,17408,Auburn Senior High School,f
+2796,17414,Juanita Elementary,f
+2797,17415,Kent-Meridian High School,f
+2798,18400,David Wolfle Elementary,f
+2799,21302,W F West High School,f
+2800,24111,Brewster High School,f
+2801,13301,Lake Roosevelt Jr/Sr High School,f
+2802,13301,Lake Roosevelt Elementary,f
+2803,25116,Raymond Elementary School,f
+2804,25118,Mike Morris Elementary,f
+2805,27010,Lowell,f
+2806,27010,Reed,f
+2807,27403,Bethel High School,f
+2808,27404,Columbia Crest A-STEM Academy,f
+2809,27417,Endeavour Intermediate,f
+2810,29011,Concrete High School,f
+2811,31002,Lowell Elementary - Everett,f
+2813,31025,Totem Middle School,f
+2814,32360,Sunset Elementary,f
+2816,34033,Littlerock Elementary School,f
+2817,37501,Carl Cozier Elementary School,f
+2818,39007,Gilbert Elementary School,f
+2819,39007,Nob Hill Elementary School,f
+2821,39090,Terrace Heights Elementary,f
+2822,39208,Ahtanum Valley Elementary,f
+2823,2250,Parkway Elementary,f
+2824,3017,Eastgate Elementary School,f
+2825,3017,Westgate Elementary School,f
+2826,3017,Kennewick High School,f
+2827,4228,Alpine Lakes Elementary,f
+2828,6037,Walnut Grove Elementary,f
+2829,6114,Mill Plain Elementary School,f
+2830,7002,Dayton Elementary School,f
+2831,8122,Monticello Middle School,f
+2832,13161,Peninsula Elementary,f
+2833,13161,Knolls Vista Elementary,f
+2834,14005,A J West Elementary,f
+2835,14065,Mccleary Elem,f
+2836,16046,Brinnon Elementary,f
+2838,17001,Catharine Blaine K-8 School,f
+2839,17001,David T. Denny International Middle School,f
+2841,17210,Lakeland Elementary School,f
+2842,17401,Shorewood Elementary,f
+2844,17401,Gregory Heights Elementary,f
+2846,17405,Enatai Elementary School,f
+2847,17405,Clyde Hill Elementary,f
+2848,17406,Foster Senior High School,f
+2849,17409,Tahoma Senior High School,f
+2850,17410,Mount Si High School,f
+2851,17415,East Hill Elementary School,f
+2853,18100,View Ridge Elementary Arts Academy,f
+2854,18400,Hilder Pearson Elementary,f
+2856,20404,Goldendale High School,f
+2858,21301,Pe Ell School,f
+2859,21303,White Pass Jr. Sr. High School,f
+2860,22017,Almira Elementary School,f
+2862,22073,Creston Elementary,f
+2863,22073,Creston Jr-Sr High School,f
+2864,22009,Reardan Elementary School,f
+2865,23402,Pioneer Middle School,f
+2868,25155,Naselle Elementary,f
+2870,27003,Karshner Elementary,f
+2872,27010,Browns Point,f
+2874,27010,Whitman,f
+2875,27320,Maple Lawn Elementary,f
+2876,27402,Franklin Pierce High School,f
+2877,27403,Elk Plain School of Choice,f
+2878,27417,Discovery Primary School,f
+2879,28149,Friday Harbor High School,f
+2880,29320,Washington Elementary School,f
+2882,30303,Carson Elementary - Stevenson,f
+2883,31002,Hawthorne Elementary School - Everett,f
+2884,31004,Mt. Pilchuck Elementary School,f
+2885,31004,Hillcrest Elementary School,f
+2886,31006,Fairmount Elementary,f
+2887,31015,Martha Lake Elementary,f
+2888,31015,Terrace Park Elementary,f
+2890,32326,Medical Lake High School,f
+2892,32356,Broadway Elementary,f
+2893,35200,Julius A Wendt Elementary/John C Thomas Middle School,f
+2894,38300,Leonard M Jennings Elementary,f
+2895,38302,Garfield Elementary,f
+2896,38302,Garfield Middle School,f
+2898,39003,Naches Valley Middle School,f
+2899,39007,Mcclure Elementary School Yakima,f
+2900,39202,Toppenish High School,f
+2902,1147,Lutacaga Elementary,f
+2903,1158,Lind-Ritzville High School,f
+2904,3052,Kiona-Benton City High School,f
+2905,3116,Whitstran Elementary,f
+2906,3116,Housel Middle School,f
+2907,4246,Washington Elementary School,f
+2908,5121,Port Angeles High School,f
+2909,5121,Franklin Elementary,f
+2910,6119,Yacolt Primary,f
+2911,6112,Gause Elementary,f
+2912,6114,Orchards Elementary School,f
+2913,8458,Carrolls Elementary,f
+2914,8122,Northlake Elementary School,f
+2915,8402,Kalama Elem School,f
+2916,8458,Huntington Middle School,f
+2917,11001,Pasco Senior High School,f
+2918,11051,Connell Elem,f
+2919,13144,Pioneer Elementary,f
+2920,13165,Ephrata High School,f
+2921,14097,Lake Quinault School,f
+2922,14400,Oakville Elementary,f
+2926,17401,Cedarhurst Elementary,f
+2927,17401,Sylvester Middle School,f
+2929,17403,Lakeridge Elementary School,f
+2932,17408,Dick Scobee Elementary School,f
+2939,27010,Delong,f
+2940,27010,Arlington,f
+2941,27010,Mann,f
+2942,27344,Orting High School,f
+2943,27400,Custer Elementary School,f
+2944,27401,Harbor Heights Elementary School,f
+2945,27402,James Sales Elementary,f
+2946,29100,West View Elementary,f
+2948,31063,Index Elementary School,f
+2950,32081,Ridgeview Elementary,f
+2951,32081,Lincoln Heights Elementary,f
+2952,32081,Lidgerwood Elementary,f
+2953,32356,Progress Elementary School,f
+2954,32360,Betz Elementary,f
+2955,32361,Otis Orchards School,f
+2956,32363,Seth Woodard Elementary,f
+2957,33115,Hofstetter Elementary,f
+2958,33211,Northport High School,f
+2959,39201,Sunnyside High School,f
+2960,39207,Camas Elementary,f
+2961,1147,Hiawatha Elementary School,f
+2962,2250,Grantham Elementary,f
+2964,6037,Salmon Creek Elementary,f
+2966,9206,Grant Elementary School,f
+2967,11001,Emerson Elementary,f
+2968,13151,Almira Coulee Hartline High School,f
+2969,13161,Lakeview Terrace Elementary,f
+2970,13161,Midway Elementary,f
+2971,14005,Stevens Elementary School,f
+2972,14028,Central Elementary School,f
+2973,14097,Lake Quinault High School,f
+2974,15201,Oak Harbor High School,f
+2975,17001,John Rogers Elementary School,f
+2976,17001,Olympic Hills Elementary School,f
+2977,17001,Viewlands Elementary School,f
+2980,17216,Byron Kibler Elementary School,f
+2981,17400,Lakeridge Elementary School,f
+2982,17401,Bow Lake Elementary,f
+2983,17401,North Hill Elementary,f
+2984,17401,Midway Elementary,f
+2986,9206,Canyon View Group Home,f
+2990,17412,Briarcrest Elementary,f
+2992,17414,Rose Hill Elementary,f
+2993,17417,Kenmore Elementary,f
+2994,18401,Brownsville Elementary,f
+2995,18402,Olalla Elementary School,f
+2996,19401,Ellensburg High School,f
+2997,20405,Hulan L Whitson Elem,f
+2998,21237,Toledo Elementary School,f
+2999,24019,N Omak Elementary,f
+3000,27402,Harvard Elementary,f
+3001,29320,Madison Elementary,f
+3002,31002,View Ridge Elementary,f
+3003,37507,Mount Baker Junior High,f
+3005,31201,Emerson Elementary,f
+3006,17407,Eagle Rock Multiage School,f
+3007,32081,Hamblen Elementary,f
+3008,32081,Bryant Center,f
+3010,34003,North Thurston High School,f
+3011,28149,Friday Harbor Middle School,f
+3012,36400,Columbia Middle School,f
+3013,39200,Smith Elementary School,f
+3014,17415,Kent Mountain View Academy,f
+3015,1147,Othello High School,f
+3016,6037,Sarah J Anderson Elementary,f
+3017,6037,Lake Shore Elementary,f
+3018,6119,Glenwood Heights Primary,f
+3019,8122,Robert Gray Elementary,f
+3020,13144,Mountain View Elementary,f
+3021,13161,Larson Heights Elementary,f
+3022,13161,Chief Moses Middle School,f
+3023,39007,K-8 Learning Lab,f
+3024,14172,Ocosta Junior - Senior High,f
+3025,14172,Ocosta Elementary School,f
+3026,17001,Wedgwood Elementary School,f
+3027,17001,Northgate Elementary School,f
+3028,17001,Sacajawea Elementary School,f
+3029,17400,Mercer Island High School,f
+3032,17401,Southern Heights Elementary,f
+3034,17403,Campbell Hill Elementary School,f
+3035,17403,McKnight Middle School,f
+3036,17405,Eastgate Elementary School,f
+3038,17411,Issaquah Middle School,f
+3041,17414,Lakeview Elementary,f
+3043,18303,Capt. Charles Wilkes Elem School,f
+3046,18402,Marcus Whitman Middle School,f
+3047,20401,Glenwood Elementary,f
+3048,20401,Glenwood Secondary,f
+3049,20406,Dallesport Elementary,f
+3050,22008,Sprague Elementary,f
+3051,24019,E Omak Elementary,f
+3052,27003,Kalles Junior High,f
+3053,27010,Grant,f
+3054,27010,Baker,f
+3055,27401,Evergreen Elementary,f
+3056,27401,Vaughn Elementary School,f
+3057,29103,Mount Erie Elementary,f
+3059,31025,Cascade Elementary,f
+3060,31103,Frank Wagner Elementary,f
+3062,20400,Trout Lake Elementary,f
+3063,32081,Westview Elementary,f
+3064,32356,University Elementary School,f
+3065,32356,Central Valley High School,f
+3066,34111,Madison Elementary School,f
+3067,34401,Rochester Middle School,f
+3068,38322,St John/Endicott High,f
+3069,38322,St John Elementary,f
+3070,39120,Artz Fox Elementary,f
+3071,39200,Grandview Middle School,f
+3072,39203,Marcus Whitman-Cowiche Elementary,f
+3073,39203,Tieton Intermediate School,f
+3074,39208,West Valley High School,f
+3075,1109,Washtucna Elementary/High School,f
+3077,3017,Hawthorne Elementary School - Kennewick,f
+3078,3053,Finley Elementary,f
+3079,5121,Hamilton Elementary,f
+3080,6037,Benjamin Franklin Elementary,f
+3081,6037,Hudson's Bay High School,f
+3082,8458,Butler Acres Elementary,f
+3083,9206,Lee Elementary,f
+3085,11001,Mark Twain Elementary,f
+3086,11051,Mesa Elem,f
+3087,12110,Pomeroy Elementary School,f
+3088,13144,Quincy High School,f
+3089,13156,Soap Lake Middle & High School,f
+3090,13160,Red Rock Elementary,f
+3091,13161,Garden Heights Elementary,f
+3092,13165,Grant Elementary,f
+3094,16050,Salish Coast Elementary,f
+3095,17001,Mercer International Middle School,f
+3096,17001,Chief Sealth International High School,f
+3097,17401,Marvista Elementary,f
+3098,17401,Chinook Middle School,f
+3099,17401,Evergreen High School,f
+3100,17405,Stevenson Elementary,f
+3101,17407,Cherry Valley Elementary School,f
+3104,17412,Echo Lake Elementary School,f
+3105,17417,Crystal Springs Elementary,f
+3106,17417,Bothell High School,f
+3107,17417,Arrowhead Elementary,f
+3108,18100,Crownhill Elementary School,f
+3109,18100,Bremerton High School,f
+3110,18402,South Colby Elementary,f
+3111,20406,Lyle High School,f
+3112,21214,Morton Junior-Senior High,f
+3113,22204,Harrington High School,f
+3114,27003,Riverside Elementary,f
+3115,27003,Hilltop Elementary,f
+3116,27010,Wainwright,f
+3117,27400,Idlewild Elementary School,f
+3119,30303,Stevenson High School - Stevenson,f
+3120,31006,Olympic View Middle School,f
+3121,31006,Olivia Park Elementary,f
+3122,31015,Lynndale Elementary,f
+3123,31015,Edmonds Woodway High School,f
+3124,31016,Post Middle School,f
+3125,31401,Stanwood Elementary School,f
+3126,18400,Middle School Options,f
+3127,32356,McDonald Elementary School,f
+3128,32361,Trentwood School,f
+3129,32363,Orchard Center Elementary,f
+3130,34003,Mountain View Elementary,f
+3132,34111,Olympia High School,f
+3133,34111,Jefferson Middle School,f
+3134,37501,Happy Valley Elementary School,f
+3136,37503,Blaine High School,f
+3137,38264,Lamont Middle School,f
+3138,39007,Barge-Lincoln Elementary School,f
+3141,39207,Wapato High School,f
+3142,1122,Benge Elementary,f
+3143,18801,Clallam Co Juvenile Detention,f
+3144,3017,Washington Elementary School,f
+3145,5401,Neah Bay Junior/ Senior High School,f
+3146,6037,Mcloughlin Middle School,f
+3147,6112,Washougal High School,f
+3148,6114,Ellsworth Elementary School,f
+3149,6114,Sifton Elementary School,f
+3151,8122,Mark Morris High School,f
+3152,13073,Mattawa Elementary,f
+3153,13161,Longview Elementary,f
+3154,14005,Hopkins Elementary,f
+3155,14064,Pacific Beach Elementary School,f
+3157,17001,Roxhill Elementary School,f
+3159,17210,Mirror Lake Elementary School,f
+3160,17210,Star Lake Elementary School,f
+3162,17400,Island Park Elementary,f
+3163,17401,Cascade Middle School,f
+3165,17401,Hilltop Elementary,f
+3166,17405,Highland Middle School,f
+3167,17405,Woodridge Elementary,f
+3168,17405,Phantom Lake Elementary,f
+3169,17408,Olympic Middle School,f
+3171,18100,Naval Avenue Elementary School,f
+3172,21401,Jefferson Lincoln Elementary,f
+3173,22207,Davenport Senior High School,f
+3174,23403,Hawkins Middle School,f
+3175,23403,North Mason Senior High School,f
+3176,24404,Tonasket Elementary School,f
+3179,27083,Curtis Junior High,f
+3180,27402,Brookdale Elementary,f
+3181,29101,Cascade Middle School,f
+3182,29103,Fidalgo Elementary,f
+3183,29320,Jefferson Elementary,f
+3184,31002,Emerson Elementary School,f
+3185,31015,Early Childhood Center,f
+3186,31015,Westgate Elementary,f
+3187,31025,Shoultes Elementary,f
+3188,31330,Darrington High School,f
+3189,32081,Shadle Park High School,f
+3190,32081,Linwood Elementary,f
+3191,32354,Mountainside Middle School,f
+3192,32358,Freeman High School,f
+3193,24105,Okanogan Co Juvenile Detention,f
+3194,32363,Pasadena Park Elementary,f
+3195,32363,West Valley High School,f
+3196,32363,Ness Elementary,f
+3197,33205,Evergreen School,f
+3198,33212,Kettle Falls Middle School,f
+3199,34033,Peter G Schmidt Elementary,f
+3200,37501,Alderwood Elementary School,f
+3201,37501,Shuksan Middle School,f
+3202,37501,Parkview Elementary School,f
+3203,38267,Jefferson Elementary,f
+3204,38320,Rosalia Elementary & Secondary School,f
+3205,38324,Oakesdale Elementary School,f
+3206,39007,Eisenhower High School,f
+3207,39208,Summitview Elementary,f
+3208,4246,Sunnyslope Elementary School,f
+3209,4246,Abraham Lincoln Elementary,f
+3210,4246,Pioneer Middle School,f
+3211,8122,Columbia Heights Elementary,f
+3212,9206,Kenroy Elementary,f
+3213,19403,Parke Creek Treatment Ctr,f
+3214,11056,Kahlotus Elem & High,f
+3215,13161,Moses Lake High School,f
+3216,14005,Central Park Elementary,f
+3217,14068,Elma Elementary School,f
+3218,17001,North Beach Elementary School,f
+3219,17400,Islander Middle School,f
+3224,17405,Puesta del Sol Elementary School,f
+3225,17405,Lake Hills Elementary,f
+3226,17406,Cascade View Elementary,f
+3227,17408,Pioneer Elementary School,f
+3228,17411,Sunset Elementary,f
+3230,17412,Brookside Elementary,f
+3231,17412,Highland Terrace Elementary,f
+3232,17414,Redmond Middle School,f
+3233,17415,Meridian Middle School,f
+3234,17417,Cottage Lake Elementary,f
+3236,18400,North Kitsap High School,f
+3237,18401,Central Kitsap Middle School,f
+3238,21206,Mossyrock Jr./Sr. High School,f
+3239,21300,Onalaska Elementary School,f
+3240,21401,Centralia Middle School,f
+3241,23309,Shelton High School,f
+3244,27010,Meeker,f
+3246,27010,Wilson,f
+3247,27320,Sumner High School,f
+3248,27400,Hudtloff Middle School,f
+3249,27400,Tyee Park Elementary School,f
+3250,27403,Bethel Middle School,f
+3251,29100,Lucille Umbarger Elementary,f
+3252,29103,Island View Elementary,f
+3253,31002,Evergreen Middle School,f
+3254,31015,Mountlake Terrace Elementary,f
+3255,31306,Lakewood Elementary School,f
+3257,32081,Shaw Middle School,f
+3258,32081,Glover Middle School,f
+3259,32356,Adams Elementary,f
+3260,32356,Bowdish Middle School,f
+3261,32414,Deer Park Middle School,f
+3262,34003,Lydia Hawk Elementary,f
+3264,39007,Robertson Elementary,f
+3266,2250,Highland Elementary,f
+3267,3017,Highlands Middle School,f
+3268,4222,CASHMERE HIGH SCHOOL,f
+3269,4246,Castlerock Early Learning Center,f
+3270,6112,Cape Horn Skye Elementary,f
+3272,11051,Connell High School,f
+3273,13146,Warden High School,f
+3410,31015,Spruce Elementary,f
+3274,15201,Oak Harbor Intermediate School,f
+3275,16049,Chimacum Junior/Senior High School,f
+3276,17001,Ingraham High School,f
+3277,17001,Whitman Middle School,f
+3278,17401,Madrona Elementary,f
+3279,17401,Mount Rainier High School,f
+3280,17403,Dimmitt Middle School,f
+3282,17405,Sammamish Senior High,f
+3283,17405,Tyee Middle School,f
+3286,17409,Lake Wilderness Elementary,f
+3287,17417,Westhill Elementary,f
+3288,21014,Napavine Elementary,f
+3289,22200,Wilbur Secondary School,f
+3290,22200,Wilbur Elementary School,f
+3291,23309,Bordeaux Elementary School,f
+3292,23309,Mountain View Elementary,f
+3293,24111,Brewster Elementary School,f
+3294,6801,Cowlitz County Youth Services Center,f
+3295,25155,Naselle Jr Sr High Schools,f
+3296,27083,Narrows View Intermediate,f
+3297,27400,Mann Middle School,f
+3298,27400,Hillside Elementary School,f
+3299,27401,Artondale Elementary School,f
+3300,27402,Morris Ford Middle School,f
+3301,27402,Christensen Elementary,f
+3302,31015,Beverly Elementary,f
+3303,31015,Mountlake Terrace High School,f
+3304,31015,Cedar Way Elementary,f
+3305,31201,Cathcart Elementary,f
+3307,32356,South Pines Elementary,f
+3309,32360,Windsor Elementary,f
+3310,33115,Colville Senior High School,f
+3311,33207,Mary Walker High School,f
+3312,39007,Whitney Elementary Yakima,f
+3313,39201,Harrison Middle School,f
+3314,39204,Granger High School,f
+3315,3017,Edison Elementary School - Kennewick,f
+3316,3116,Prosser Heights Elementary,f
+3317,4127,Entiat Middle and High School,f
+3318,5121,Stevens Middle School,f
+3319,6098,Hockinson Middle School,f
+3320,6114,Covington Middle School,f
+3321,6122,South Ridge Elementary,f
+3322,8458,Coweeman Middle School,f
+3323,8458,Barnes Elementary,f
+3324,11001,Stevens Middle School,f
+3325,11051,Basin City Elem,f
+3326,14099,Cosmopolis Elementary School,f
+3327,17001,Rainier Beach High School,f
+3328,17210,Woodmont K-8 School,f
+3329,17210,Panther Lake Elementary School,f
+3330,17216,Enumclaw Sr High School,f
+3333,17401,Pacific Middle School,f
+3335,17401,Parkside Elementary,f
+3337,17403,Cascade Elementary School,f
+3338,17405,Chinook Middle School,f
+3339,17405,Sherwood Forest Elementary,f
+3340,13165,Grant Co Detention Ctr,f
+3341,17409,Summit Trail Middle School,f
+3343,17412,Shorecrest High School,f
+3344,17417,Maywood Hills Elementary,f
+3345,17417,Kenmore Middle School,f
+3346,21302,Olympic Elementary,f
+3349,27320,Bonney Lake Elementary,f
+3351,27400,Lake Louise Elementary School,f
+3352,32801,Martin Hall Detention Ctr,f
+3353,31015,Meadowdale Middle School,f
+3355,31025,Marysville Middle School,f
+3356,32081,Sacajawea Middle School,f
+3357,32081,Balboa Elementary,f
+3360,32361,East Valley High School,f
+3361,34003,Chinook Middle School,f
+3362,34033,Tumwater High School,f
+3363,29801,Skagit County Detention Center,f
+3365,37507,Harmony Elementary,f
+3366,38300,Colfax High School,f
+3368,39007,Wilson Middle School,f
+3369,3017,Vista Elementary School,f
+3370,4246,Orchard Middle School,f
+3371,6101,La Center Middle School,f
+3372,9206,Eastmont Junior High,f
+3373,13165,Ephrata Middle School,f
+3374,14066,Simpson Avenue Elementary,f
+3375,14117,Wishkah Valley Elementary/High School,f
+3377,15201,Crescent Harbor Elem,f
+3378,17001,Graham Hill Elementary School,f
+3380,17001,Rainier View Elementary School,f
+3381,17210,Lakota Middle School,f
+3382,17401,Seahurst Elementary School,f
+3385,17411,Issaquah High School,f
+3386,17411,Sunny Hills Elementary,f
+3387,17412,Kellogg Middle School,f
+3388,17415,Covington Elementary School,f
+3389,17415,Scenic Hill Elementary School,f
+3390,17417,Lockwood Elementary,f
+3391,18400,Suquamish Elementary School,f
+3392,20203,Bickleton Elementary & High Schl,f
+3393,20404,Goldendale Middle School,f
+3394,20405,Wayne M Henkle Middle School,f
+3396,17417,Woodinville Community Center,f
+3397,27010,Bryant,f
+3398,27010,Mt Tahoma,f
+3399,27320,Eismann Elementary,f
+3401,27402,Perry G Keithley Middle School,f
+3402,29101,Samish Elementary School,f
+3403,29101,Clear Lake Elementary School,f
+3404,29103,Whitney Early Childhood Education Center,f
+3405,30002,Skamania Elementary,f
+3406,30031,Mill A Elementary School,f
+3407,31002,Cascade High School,f
+3408,31004,Lake Stevens Middle School,f
+3409,31015,Cedar Valley Community School,f
+3412,32081,Ferris High School,f
+3413,32081,Salk Middle School,f
+3414,32354,Evergreen Elementary School,f
+3415,32356,University High School,f
+3416,32362,Liberty High School,f
+3417,37504,Fisher Elementary School,f
+3418,38265,Tekoa High School,f
+3419,38267,Lincoln Middle School,f
+3420,29801,Whatcom Co Detention Ctr,f
+3421,1158,Lind Elementary School,f
+3422,5401,Clallam Bay High & Elementary,f
+3423,6037,Columbia River High,f
+3424,6037,George C Marshall Elementary,f
+3425,11001,Edwin Markham Elementary,f
+3426,13144,George Elementary,f
+3429,17001,Genesee Hill Elementary,f
+3430,17216,Black Diamond Elementary,f
+3431,17210,Totem Middle School,f
+3432,17210,Olympic View Elementary School,f
+3433,17400,West Mercer Elementary,f
+3434,17403,Nelsen Middle School,f
+3435,17405,Tillicum Middle School,f
+3436,17405,Medina Elementary School,f
+3437,17405,Newport Heights Elementary,f
+3439,17408,Chinook Elementary School,f
+3440,17411,Briarwood Elementary,f
+3441,17414,Twain Elementary,f
+3442,17417,Moorlands Elementary,f
+3444,25160,Willapa Elementary,f
+3446,27001,Cherrydale Elementary,f
+3447,27003,Aylen Jr High,f
+3448,27010,Truman,f
+3449,27010,Birney,f
+3452,27010,Whittier,f
+3453,27010,McCarver,f
+3454,27400,Beachwood Elementary School,f
+3455,27400,Dower Elementary School,f
+3456,27400,Lakes High School,f
+3457,27400,Carter Lake Elementary School,f
+3458,27416,Glacier Middle School,f
+3459,30029,Mount Pleasant School,f
+3461,31015,Seaview Elementary,f
+3463,31015,Madrona K-8 School,f
+3464,31015,Meadowdale High School,f
+3465,32356,Summit School,f
+3466,32416,Riverside Middle School,f
+3467,35200,Wahkiakum High School,f
+3468,36140,Walla Walla High School,f
+3469,3400,Twin Rivers Group Home,f
+3471,1147,McFarland Middle School,f
+3472,3017,Park Middle School,f
+3473,5313,Crescent School,f
+3474,6117,Lacamas Lake Elementary,f
+3475,8122,Cascade Middle School,f
+3476,14005,J M Weatherwax High School,f
+3477,15201,Broadview Elementary,f
+3478,17001,Kimball Elementary School,f
+3479,17001,Nathan Hale High School,f
+3481,18801,Kitsap Co Detention Ctr,f
+3483,17401,Tyee High School,f
+3485,17403,Hazelwood Elementary School,f
+3486,17405,Newport Senior High School,f
+3488,17406,Tukwila Elementary,f
+3489,17412,Parkwood Elementary,f
+3490,17414,Thoreau Elementary,f
+3491,17415,Park Orchard Elementary School,f
+3492,17417,Inglemoor HS,f
+3493,17417,Canyon Park Middle School,f
+3494,20402,Klickitat Elem & High,f
+3496,17001,Interagency Detention School,f
+3497,26070,Selkirk Jr-Sr High,f
+3498,27010,Skyline,f
+3499,27320,Sumner Middle School,f
+3500,27400,Thomas Middle School,f
+3503,31015,Lynnwood Elementary,f
+3504,31015,Meadowdale Elementary,f
+3506,32081,Indian Trail Elementary,f
+3507,32801,Structural Alt Confinement School,f
+3508,33206,Columbia High And Elementary,f
+3509,34402,Tenino High School,f
+3510,36140,Garrison Middle School,f
+3511,3400,Richland High School,f
+3513,8404,Yale Elementary,f
+3515,11001,Robert Frost Elementary,f
+3516,13160,Royal High School,f
+3517,17001,McClure Middle School,f
+3518,17001,Fairmount Park Elementary School,f
+3519,17210,Adelaide Elementary School,f
+3521,17403,Renton Park Elementary School,f
+3522,17405,International School,f
+3524,17407,Cedarcrest High School,f
+3525,17408,Lea Hill Elementary School,f
+3526,32801,Spokane Juvenile Detention School,f
+3527,17412,Melvin G Syre Elementary,f
+3528,17414,Redmond High,f
+3529,17414,Mann Elementary,f
+3530,20403,Roosevelt Elementary School,f
+3531,25101,Long Beach Elementary School,f
+3532,27402,Elmhurst Elementary School,f
+3533,31002,Jefferson Elementary,f
+3534,31015,Chase Lake Elementary,f
+3536,31015,Brier Elementary,f
+3537,31025,Sunnyside Elementary,f
+3538,32363,Centennial Middle School,f
+3539,34003,Lakes Elementary School,f
+3540,34111,Leland P Brown Elementary,f
+3541,36250,John Sager Middle School,f
+3543,6037,Jason Lee Middle School,f
+3545,6119,Laurin Middle School,f
+3546,8404,Woodland High School,f
+3547,17210,Camelot Elementary School,f
+3548,17414,Audubon Elementary,f
+3549,17414,Ready Start Preschool,f
+3550,17415,Lake Youngs Elementary School,f
+4495,17411,Skyline High School,f
+3552,18303,Capt Johnston Blakely Elem Sch,f
+3553,17401,Raisbeck Aviation High School,f
+3554,19028,Easton School,f
+3555,21303,White Pass Elementary School,f
+3556,6037,Vancouver Home Connection,f
+3557,27003,Fruitland Elementary,f
+3558,27003,Wildwood Elementary,f
+3559,10309,Republic Junior High,f
+3560,31015,Alderwood Middle School,f
+3561,31201,Riverview Elementary,f
+3562,32354,Colbert Elementary School,f
+3564,4228,Cascade High School,f
+3565,6037,Washington Elementary,f
+3566,15201,Olympic View Elem,f
+3567,17210,Sunnycrest Elementary School,f
+3568,17210,Lake Grove Elementary School,f
+3569,17411,Echo Glen School,f
+3572,27003,Mt View Elementary,f
+3573,32356,Greenacres Middle School,f
+3574,36402,Prescott Elementary School,f
+3575,36402,Prescott Jr Sr High,f
+3576,37501,Sehome High School,f
+3578,8458,Beacon Hill Elementary,f
+3579,10309,Republic Senior High School,f
+3580,14077,Taholah High School,f
+3581,17001,Wing Luke Elementary School,f
+3582,17210,Valhalla Elementary School,f
+3583,17210,Wildwood Elementary School,f
+3584,17210,Thomas Jefferson High School,f
+3585,17216,Westwood Elementary School,f
+3586,17403,Maplewood Heights Elementary School,f
+3587,17403,Benson Hill Elementary School,f
+3588,17405,Interlake Senior High School,f
+3589,17409,Shadow Lake Elementary,f
+3590,17414,Finn Hill Middle School,f
+3591,17414,Franklin Elementary,f
+3592,17414,Bell Elementary,f
+3593,17415,Pine Tree Elementary School,f
+3594,18401,John D. Bud Hawk Elementary at Jackson Park,f
+3596,19401,Mt. Stuart Elementary,f
+3597,21232,Winlock Senior High,f
+3598,21926,Garrett Heyns High School,f
+3600,27083,Curtis Senior High,f
+3601,27083,Sunset Primary,f
+3602,27400,Lochburn Middle School,f
+3603,29100,Allen Elementary,f
+3605,31015,Sherwood Elementary,f
+3606,31015,Edmonds Elementary,f
+3607,31015,Hazelwood Elementary,f
+3608,31015,Oak Heights Elementary,f
+3609,31330,Darrington Elementary School,f
+3610,32360,Cheney High School,f
+3611,34003,Nisqually Middle School,f
+3612,34033,Tumwater Middle School,f
+3613,36400,Columbia Elementary,f
+3614,38267,Sunnyside Elementary,f
+3615,39007,Lewis & Clark Middle School,f
+3616,2250,Special Services,f
+3618,6114,Marrion Elementary School,f
+3620,13160,Royal Middle School,f
+3621,14028,Lincoln Elementary,f
+3622,14028,Hoquiam High School,f
+3625,17210,Nautilus K-8 School,f
+3626,17210,Sacajawea Middle School,f
+3627,17210,Mark Twain Elementary School,f
+3628,17210,Twin Lakes Elementary School,f
+3630,17403,Hazen Senior High School,f
+3631,17405,Odle Middle School,f
+3633,17405,Ardmore Elementary School,f
+3634,17405,Spiritridge Elementary School,f
+3635,17406,Thorndyke Elementary,f
+3636,17411,Maywood Middle School,f
+3637,17411,Maple Hills Elementary,f
+3640,17415,Kentridge High School,f
+3641,18100,Armin Jahr Elementary,f
+3643,20406,Lyle Middle School,f
+3645,27003,Rogers High School,f
+3648,27402,Washington High School,f
+3649,27403,Chester H Thompson Elementary,f
+3650,31015,Brier Terrace Middle School,f
+3651,31025,Pinewood Elementary,f
+3653,34003,Lacey Elementary,f
+3658,8122,Mint Valley Elementary,f
+3659,9206,Cascade Elementary,f
+3661,14066,Beacon Avenue Elementary School,f
+3662,15201,Special Education,f
+3664,15204,Coupeville Elementary School,f
+3665,17001,Sanislo Elementary School,f
+3667,17402,McMurray Middle School,f
+3668,17403,Sierra Heights Elementary School,f
+3669,17408,Gildo Rey Elementary School,f
+3673,17411,Issaquah Valley Elementary,f
+3674,17412,Albert Einstein Middle School,f
+3675,17414,Frost Elementary,f
+3676,17415,Cedar Valley Elementary School,f
+3677,17415,Springbrook Elementary School,f
+3678,17415,Fairwood Elementary School,f
+3679,17417,Shelton View Elementary,f
+3680,18402,Cedar Heights Middle School,f
+3683,27343,Lake Tapps Elementary,f
+3685,27401,Purdy Elementary School,f
+3686,31002,Monroe Elementary,f
+3687,31006,Serene Lake Elementary,f
+3688,31006,Mariner High School,f
+3689,31015,Hilltop Elementary,f
+3691,31015,College Place Elementary,f
+3693,32354,Brentwood Elementary School,f
+3696,34111,Reeves Middle School,f
+3697,34111,Pioneer Elementary School,f
+3699,39208,Apple Valley Elementary,f
+3700,17210,Brigadoon Elementary School,f
+3701,17210,Kilo Middle School,f
+3702,17403,Tiffany Park Elementary School,f
+3703,17414,Rush Elementary,f
+3704,17414,Keller Elementary,f
+3705,17405,Bennett Elementary School,f
+3706,17414,Rose Hill Middle School,f
+3707,17415,Soos Creek Elementary School,f
+3708,17415,Grass Lake Elementary School,f
+3709,34003,Olympic View Elementary,f
+3710,34003,Timberline High School,f
+3711,34111,Washington Middle School,f
+3714,17001,Lowell Elementary School,f
+3717,17001,B F Day Elementary School,f
+3718,32081,Longfellow Elementary,f
+3719,32081,Logan Elementary,f
+3723,32123,Orchard Prairie Elementary,f
+3725,28010,Shaw Island Elementary School,f
+3727,32081,Garfield Elementary,f
+3728,36140,Sharpstein Elementary School,f
+3729,32081,Grant Elementary,f
+3730,1147,Scootney Springs Elementary,f
+3731,3017,Kamiakin High School,f
+3732,3400,Sacajawea Elementary,f
+3733,6037,Dwight D Eisenhower Elementary,f
+3734,6037,Martin Luther King Elementary,f
+3735,6037,Harry S Truman Elementary School,f
+3736,6114,Burton Elementary School,f
+3737,5402,Forks Elementary School,f
+3738,17210,Lake Dolloff Elementary School,f
+3739,17216,Southwood Elementary School,f
+3740,17403,Talbot Hill Elementary School,f
+3741,17403,Lindbergh Senior High School,f
+3742,17405,Cherry Crest Elementary School,f
+3745,17408,Evergreen Heights Elementary,f
+3746,17411,Apollo Elementary,f
+3747,17414,Sandburg Elementary,f
+3748,17414,Muir Elementary,f
+3749,17417,Woodin Elementary,f
+3750,27003,Ballou Jr High,f
+3751,27403,Spanaway Middle School,f
+3752,31002,Eisenhower Middle School,f
+3753,31004,Sunnycrest Elementary School,f
+3754,31015,College Place Middle School,f
+3755,31015,Lynnwood High School,f
+3758,32081,Garry Middle School,f
+3759,32354,Farwell Elementary School,f
+3761,32360,Salnave Elementary,f
+3762,37502,Vista Middle School,f
+3763,27400,Oakbrook Elementary School,f
+3764,17415,Meeker Middle School,f
+3766,17210,Decatur High School,f
+3771,17414,Juanita High,f
+3774,17001,Aki Kurose Middle School,f
+3778,17001,South Lake High School,f
+3779,13161,North Elementary,f
+3785,6114,Cascade Middle School,f
+3786,6122,Union Ridge Elementary,f
+3787,14064,Ocean Shores Elementary,f
+3788,14064,North Beach Junior High School,f
+3789,17405,Somerset Elementary School,f
+3790,17417,Leota Middle School,f
+3791,18401,Fairview Middle School,f
+3792,27083,Chambers Elementary,f
+3794,32358,Freeman Elementary School,f
+3795,34402,Tenino Middle School,f
+3796,37503,Blaine Middle School,f
+3798,27417,Surprise Lake Middle School,f
+3799,34974,Washington State School for the Blind,f
+3800,30303,Wind River Middle School,f
+3801,34401,Grand Mound Elementary,f
+3803,17001,Dearborn Park International School,f
+3808,28137,Waldron Island School,f
+3811,17417,Secondary Academy for Success,f
+3817,39007,Martin Luther King Jr Elementary,f
+3818,31015,Maplewood Center,f
+3819,32081,Excelsior Youth Center School,f
+3821,29320,La Venture Middle School,f
+3822,6114,Crestline Elementary School,f
+3823,6114,Silver Star Elementary School,f
+3825,17408,Alpac Elementary School,f
+3827,27001,Saltars Point Elementary,f
+3829,29320,Mount Vernon Special Ed,f
+3831,33115,Colville Junior High School,f
+3833,3400,Hanford High School,f
+3848,34002,Southworth Elementary,f
+3851,32354,Northwood Middle School,f
+3854,31015,Scriber Lake High School,f
+3855,17414,Emerson High School,f
+3856,17414,Community School,f
+3857,14005,Harbor High School,f
+3861,4129,Holden Village Community School,f
+3868,17001,Nova High School,f
+3874,17001,Licton Springs K-8,f
+3879,17411,Pine Lake Middle School,f
+3880,27010,Foss,f
+3883,18100,Morgan Center School,f
+3890,32356,Evergreen Middle School,f
+3891,6122,View Ridge Middle School,f
+3893,31306,Lakewood Middle School,f
+3894,33207,Springdale Middle School,f
+3896,27003,Sunrise Elementary,f
+3898,17210,Illahee Middle School,f
+3899,18402,Discovery,f
+3900,29311,La Conner Middle,f
+3902,6037,Gaiser Middle School,f
+3903,31002,Special Services,f
+3909,13146,Warden Middle School,f
+3910,27400,Oak Grove,f
+3912,11001,New Horizons High School,f
+3913,8122,Longview School District Special Services,f
+3918,32356,Mica Peak High School,f
+3921,17412,Shorewood High School,f
+3922,17414,Kamiakin Middle School,f
+3925,34033,Thurs Co Juv Det/Tumwater West E,f
+3926,3400,Enterprise Middle School,f
+3927,27003,Northwood Elementary,f
+3929,32356,Chester Elementary School,f
+3930,37505,Meridian Middle School,f
+3932,6037,Lewis and Clark High School,f
+3936,18401,Alternative High School,f
+3937,17409,Maple View Middle School,f
+3939,15201,North Whidbey Middle School,f
+3941,17414,Kirk Elementary,f
+3942,29101,Evergreen Elementary School,f
+3951,27003,PSD Special Services,f
+3958,17412,Meridian Park Elementary School,f
+3960,34111,Capital High School,f
+3961,3052,Kiona-Benton City Middle School,f
+3962,17411,Liberty Sr High School,f
+3964,31025,Liberty Elementary,f
+3965,32326,Medical Lake Middle School,f
+3968,26056,Sadie Halstead Middle School,f
+3969,8401,Castle Rock Middle School,f
+3970,6114,Sunset Elementary School,f
+3971,6114,Fircrest Elementary School,f
+3972,27003,Walker High School,f
+3974,17001,Thornton Creek Elementary School,f
+3977,21237,Toledo Middle School,f
+3981,31201,High School Re Entry,f
+3994,6114,Image Elementary School,f
+3995,6114,Riverview Elementary School,f
+3996,6119,Pleasant Valley Primary,f
+3997,6119,Pleasant Valley Middle,f
+4000,39201,Chief Kamiakin Elementary School,f
+4003,5121,Lincoln High School,f
+4004,15204,Coupeville Middle School,f
+4007,3017,Benton/Franklin Juvenile Justice Center,f
+4011,7002,Dayton Middle School,f
+4013,29320,Little Mountain Elementary,f
+4014,18401,Cottonwood Elementary School,f
+4015,18401,Esquire Hills Elementary,f
+4016,18401,Clear Creek Elementary School,f
+4017,17417,Canyon Creek Elementary,f
+4018,17414,Dickinson Elementary,f
+4019,31006,Sno-Isle Skills Center,f
+4020,39007,Yakima Valley Technical Skills Center,f
+4021,17417,Northshore Middle School,f
+4022,39207,Pace Alternative High School,f
+4028,3017,Desert Hills Middle School,f
+4029,18402,Burley Glenwood Elementary,f
+4031,3053,Finley Middle School,f
+4033,32416,Riverside Elementary,f
+4034,6037,Sacajawea Elementary School,f
+4035,32081,Mullan Road Elementary,f
+4036,32325,Lake Spokane Elementary,f
+4038,18100,West Sound Technical Skills Center,f
+4039,25101,Ocean Park Elementary,f
+4040,39208,West Valley Jr High,f
+4041,11001,Ruth Livingston Elementary,f
+4042,6114,Legacy High School,f
+4049,36400,Columbia High School,f
+4051,6114,Wyeast Middle School,f
+4055,39090,East Valley Central Middle School,f
+4058,34003,Evergreen Forest Elementary,f
+4059,3400,Tapteal Elementary School,f
+4060,3400,Badger Mountain Elementary,f
+4062,18303,Ordway Elementary,f
+4063,27402,Gates Secondary School,f
+4064,17001,Washington Middle School,f
+4065,17001,Orca K-8 School,f
+4069,17417,Wellington Elementary,f
+4071,36140,Lincoln High School,f
+4072,3017,Canyon View Elementary School,f
+4073,3017,Southgate Elementary School,f
+4075,6037,Felida Elementary School,f
+4079,18402,Manchester Elementary School,f
+4080,27401,Discovery Elementary School,f
+4081,27401,Gig Harbor High,f
+4092,39007,Juvenile Detention Center,f
+4093,39007,Stanton Academy,f
+4095,9206,Sterling School,f
+4096,17414,Mead Elementary,f
+4097,32361,East Farms STEAM School,f
+4098,32356,Ponderosa Elementary,f
+4099,27403,Evergreen Elementary,f
+4100,18401,Olympic High School,f
+4101,18401,Silverdale Elementary,f
+4102,27403,Naches Trail Elementary,f
+4103,27403,Shining Mountain Elementary,f
+4104,6119,Prairie High School,f
+4105,4246,Wenatchee Valley Technical Skills Center,f
+4106,39202,Kirkwood Elementary School,f
+4107,28144,Lopez Elementary School,f
+4108,6119,Preschool Infant Other,f
+4109,27010,Oakland High School,f
+4110,27003,Chief Leschi Schools,f
+4113,31332,Granite Falls Middle School,f
+4118,3017,Tri-Tech Skills Center,f
+4120,17408,Lake View Elementary School,f
+4121,27003,Ridgecrest Elementary,f
+4122,34003,Woodland Elementary,f
+4123,32414,Deer Park High School,f
+4124,17417,Hollywood Hill Elementary,f
+4125,31002,Woodside Elementary,f
+4126,17415,Crestwood Elementary School,f
+4127,17415,Mattson Middle School,f
+4128,17415,Kentwood High School,f
+4130,37502,Skyline Elementary School,f
+4131,27001,Steilacoom High,f
+4132,27320,Lakeridge Middle School,f
+4133,32354,Midway Elementary,f
+4134,32354,Shiloh Hills Elementary,f
+4496,27003,Zeiger Elementary,f
+4135,18401,Woodlands Elementary,f
+4136,3017,Sunset View Elementary School,f
+5545,8402,Kalama High School,f
+4137,31002,Sequoia High School,f
+4139,31004,North Lake Middle School,f
+4140,31004,Prove High School,f
+4141,18402,Sunnyslope Elementary School,f
+4142,18402,John Sedgwick Middle School,f
+4144,6119,Maple Grove Primary,f
+4145,31201,Valley View Middle School,f
+4146,27003,Pope Elementary,f
+4147,17414,Rockwell Elementary,f
+4148,17414,Evergreen Middle School,f
+4149,15206,South Whidbey High School,f
+4150,31025,Marshall Elementary,f
+4154,31016,Presidents Elementary,f
+4155,11001,James McGee Elementary,f
+4156,27401,Key Peninsula Middle School,f
+4158,27403,Spanaway Lake High School,f
+4159,31103,Salem Woods Elementary School,f
+4160,32356,Sunrise Elementary,f
+4162,6114,Mountain View High School,f
+4163,6114,Hearthwood Elementary School,f
+4164,31006,Mukilteo Elementary,f
+4165,31006,Picnic Point Elementary,f
+4166,27320,Victor Falls Elementary,f
+4167,17414,Northstar Middle School,f
+4170,27416,Wilkeson Elementary School,f
+4175,5121,North Olympic Peninsula Skills Center,f
+4178,28144,Decatur Elementary,f
+4180,33115,Fort Colville Elementary,f
+4181,3017,Lincoln Elementary School,f
+4182,6117,Dorothy Fox,f
+4183,27003,Ferrucci Jr High,f
+4184,31201,Seattle Hill Elementary,f
+4185,32356,Horizon Middle School,f
+4186,27403,Cedarcrest Middle School,f
+4187,17417,Sunrise Elementary,f
+4189,27401,Minter Creek Elementary,f
+4191,32081,Spokane Area Professional-Technical Skills Center,f
+4192,32081,Woodridge Elementary,f
+4193,36140,Blue Ridge Elementary,f
+4196,24404,Tonasket Middle School,f
+4201,37504,Lynden High School,f
+4202,3017,Cascade Elementary School,f
+4203,6114,Cascadia Technical Academy Skills Center,f
+4204,31306,Lakewood High School,f
+4205,34033,Black Lake Elementary,f
+4206,33212,Kettle Falls High School,f
+4207,6112,Jemtegaard Middle School,f
+4208,17417,Woodinville HS,f
+4209,6114,Pacific Middle School,f
+4210,17216,Enumclaw Middle School,f
+4213,9075,Bridgeport Middle School,f
+4214,10070,Inchelium Middle School,f
+4215,10070,Inchelium Elementary School,f
+4218,17001,South Shore PK-8 School,f
+4219,27401,Kopachuck Middle School,f
+4220,25101,Ilwaco High School,f
+4221,39205,Zillah Intermediate School,f
+4222,13073,Morris Schott Elementary,f
+4223,24111,Brewster Middle School,f
+4224,34002,Yelm Prairie Elementary,f
+4225,34033,New Market Skills Center,f
+4226,32362,Liberty Jr High & Elementary,f
+4227,27403,Rocky Ridge Elementary,f
+4228,32416,Riverside High School,f
+4229,13165,Beezley Springs Elementary,f
+4230,27404,Eatonville Middle School,f
+4231,31006,Explorer Middle School,f
+4232,33049,Wellpinit Middle School,f
+4233,31025,Marysville Mountain View High School,f
+4237,24019,Omak Middle School,f
+4238,34402,Tenino Elementary School,f
+4241,31201,Dutch Hill Elementary,f
+4245,14068,Elma Middle School,f
+4246,34975,Washington State School for the Deaf,f
+4247,31006,ACES High School,f
+4248,17001,Hawthorne Elementary School - Seattle,f
+4249,18401,Ridgetop Middle School,f
+4250,27320,Emerald Hills Elementary,f
+4254,13073,Wahluke High School,f
+4255,34003,Meadows Elementary,f
+4256,17414,Alcott Elementary,f
+4260,4129,Chelan High School,f
+4261,16049,Chimacum Middle School,f
+4262,27344,Orting Middle School,f
+4263,17001,Residential Consortium,f
+4264,8130,Toutle Lake Elementary,f
+4265,31201,AIM High School,f
+4267,14005,Grays Harbor Juvenile Detention,f
+4271,34003,Pleasant Glade Elementary,f
+4272,39119,Selah Academy Online,f
+4274,31311,Sultan Senior High School,f
+4277,17001,Hutch School,f
+4278,24019,Paschal Sherman,f
+4279,24019,Highlands High School,f
+4283,27010,Pearl Street Center,f
+4286,32081,Sacred Heart Hospital,f
+4287,31016,Weston High School,f
+4288,23309,Choice Middle and High School,f
+4289,17216,Sunrise Elementary,f
+4293,17415,Ridgewood Elementary School,f
+4294,17415,Martin Sortun Elementary School,f
+4295,3400,Rivers Edge High School,f
+4296,27403,Camas Prairie Elementary,f
+4297,27403,Graham Elementary,f
+4298,31002,Silver Firs Elementary,f
+4299,6114,Burnt Bridge Creek Elementary Sch,f
+4300,17411,Challenger Elementary,f
+4301,17415,Jenkins Creek Elementary School,f
+4302,17414,Smith Elementary,f
+4303,31006,Challenger Elementary,f
+4304,31006,Discovery Elementary,f
+4305,17417,Bear Creek Elementary,f
+4306,17417,Fernwood Elementary,f
+4307,27401,Voyager Elementary,f
+4308,17410,Edwin R Opstad Elementary,f
+4309,27416,Foothills Elementary,f
+4311,21302,Chehalis Middle School,f
+4314,34003,South Sound High School,f
+4316,31002,Mill Creek Elementary,f
+4318,17407,Tolt Middle School,f
+4320,23403,Sand Hill Elementary,f
+4321,15206,South Whidbey Elementary,f
+4323,31025,Kellogg Marsh Elementary School,f
+4324,37504,Isom Elementary School,f
+4325,27083,Drum Intermediate,f
+4326,34401,Rochester High School,f
+4327,31016,Eagle Creek Elementary,f
+4328,15201,Hillcrest Elementary,f
+4329,29320,Centennial Elementary School,f
+4330,31332,Mountain Way Elementary,f
+4331,27403,Centennial Elementary Bethel,f
+4332,17407,Stillwater Elementary,f
+4333,32325,Lakeside High School,f
+4334,31002,Heatherwood Middle School,f
+4335,21300,Onalaska Middle School,f
+4336,17414,Wilder Elementary,f
+4341,18401,Cougar Valley Elementary,f
+4342,31006,Columbia Elementary,f
+4343,17210,Silver Lake Elementary School - Federal Way,f
+4344,31006,Horizon Elementary,f
+4345,17415,Horizon Elementary School,f
+4346,34002,Fort Stevens Elementary,f
+4347,17408,Hazelwood Elementary School,f
+4348,18402,Hidden Creek Elementary School,f
+4349,18402,Sidney Glen Elementary School,f
+4350,18402,Mullenix Ridge Elementary School,f
+4352,6119,Captain Strong,f
+4353,17415,Carriage Crest Elementary School,f
+4354,17414,Mcauliffe Elementary,f
+4355,17417,Frank Love Elementary,f
+4356,17415,Neely O Brien Elementary School,f
+4357,31025,Cedarcrest School,f
+4359,18400,Kingston Middle School,f
+4360,27003,Hunt Elementary,f
+4361,27003,Brouillet Elementary,f
+4362,31103,Chain Lake Elementary School,f
+4363,23309,Oakland Bay Junior High School,f
+4364,31401,Twin City Elementary,f
+4365,34033,East Olympia Elementary,f
+4366,31201,Cascade View Elementary,f
+4367,34111,Centennial Elementary Olympia,f
+4368,34003,Seven Oaks Elementary,f
+4369,21232,Winlock Middle School,f
+4371,17417,Skyview Middle School,f
+4372,18401,Silver Ridge Elementary,f
+4373,34033,Tumwater Hill Elementary,f
+4374,17210,Sherwood Forest Elementary School,f
+4375,17411,Cougar Ridge Elementary,f
+4376,17411,Discovery Elementary,f
+4377,17417,Woodmoor Elementary,f
+4378,5323,Greywolf Elementary School,f
+4379,17417,East Ridge Elementary,f
+4380,6114,Harmony Elementary School,f
+4381,27403,Pioneer Valley Elementary,f
+4382,31002,Cedar Wood Elementary,f
+4383,31201,Totem Falls,f
+4384,2250,Heights Elementary,f
+4385,17408,Rainier Middle School,f
+4386,17414,Inglewood Middle School,f
+4387,27401,Harbor Ridge Middle School,f
+4389,32081,Moran Prairie Elementary,f
+4391,31004,Glenwood Elementary,f
+4392,31004,Skyline Elementary,f
+4393,18401,Green Mountain Elementary,f
+4394,33202,Summit Valley School,f
+4395,31201,Centennial Middle School,f
+4396,27400,Evergreen Elementary School,f
+4397,17410,Chief Kanim Middle School,f
+4399,31311,Gold Bar Elementary,f
+4400,32354,Meadow Ridge Elementary,f
+4402,27320,Liberty Ridge Elementary,f
+4403,4228,Icicle River Middle School,f
+4405,6037,Chinook Elementary School,f
+4406,6037,Alki Middle School,f
+4407,27403,Frontier Middle School,f
+4408,34003,Horizons Elementary,f
+4409,34003,Komachin Middle School,f
+4410,6037,Roosevelt Elementary School,f
+4411,19401,Valley View Elementary School,f
+4412,29100,Bay View Elementary,f
+4413,17415,George T. Daniel Elementary School,f
+4414,27003,Shaw Road Elementary,f
+4415,17409,Rock Creek Elementary,f
+4416,27343,North Tapps Middle School,f
+4417,17408,Ilalko Elementary School,f
+4418,3017,Amistad Elementary School,f
+4420,17415,Sunrise Elementary School,f
+4421,18100,Kitsap Lake Elementary,f
+4422,17210,Rainier View Elementary School,f
+4423,4246,John Newbery Elementary,f
+4424,17414,Einstein Elementary,f
+4425,31006,Voyager Middle School,f
+4426,17210,Green Gables Elementary School,f
+4427,34003,River Ridge High School,f
+4428,37506,Everson Elementary,f
+4429,3017,Horse Heaven Hills Middle School,f
+4430,31006,Harbour Pointe Middle School,f
+4431,6101,La Center High School,f
+4432,4246,Foothills Middle School,f
+4433,31006,Kamiak High School,f
+4435,27320,Crestwood Elementary,f
+4436,31016,Kent Prairie Elementary,f
+4437,31002,Gateway Middle School,f
+4438,31002,Henry M. Jackson High School,f
+4439,17414,Eastlake High School,f
+4440,17415,Cedar Heights Middle School,f
+4441,18100,Mountain View Middle School,f
+4442,37501,Kulshan Middle School,f
+4443,27003,Stahl Junior High,f
+4444,18401,Emerald Heights Elementary,f
+4445,6114,Pioneer Elementary School,f
+4446,3017,Ridge View Elementary School,f
+4447,27083,Evergreen Primary,f
+4448,39208,Cottonwood Elementary School,f
+4450,6119,Summit View High School,f
+4451,34002,Mill Pond Elementary School,f
+4452,34033,George Washington Bush Middle Sch,f
+4453,17409,Glacier Park Elementary,f
+4454,31025,Allen Creek Elementary School,f
+4455,17417,Kokanee Elementary,f
+4456,17210,Saghalie Middle School,f
+4457,32081,Chase Middle School,f
+4458,34111,McKenny Elementary,f
+4459,37503,Point Roberts Primary,f
+4460,17411,Beaver Lake Middle School,f
+4461,18400,Vinland Elementary,f
+4462,17408,Mt Baker Middle School,f
+4463,23402,Pioneer Elementary School,f
+4465,17415,Meadow Ridge Elementary School,f
+4466,17415,Sawyer Woods Elementary School,f
+4467,18400,Richard Gordon Elementary,f
+4468,17402,Chautauqua Elementary,f
+4469,31006,Endeavour Elementary,f
+4470,17210,Enterprise Elementary School,f
+4471,27416,Mountain Meadow Elementary,f
+4472,34111,Julia Butler Hansen Elementary,f
+4473,34111,Thurgood Marshall Middle School,f
+4474,17408,Auburn Riverside High School,f
+4475,16050,Blue Heron Middle School,f
+4476,37503,Blaine Primary School,f
+4477,31306,English Crossing Elementary,f
+4478,26056,Stratton Elementary,f
+4479,31332,Monte Cristo Elementary,f
+4480,17210,Meredith Hill Elementary School,f
+4481,39205,Zillah Middle School,f
+4482,37502,Eagleridge Elementary,f
+4483,32326,Hallett Elementary,f
+4484,3017,Southridge High School,f
+4485,17415,Northwood Middle School,f
+4486,34307,Rainier Elementary School,f
+4487,39090,East Valley Elementary,f
+4489,17415,Glenridge Elementary,f
+4490,13073,Saddle Mountain Elementary,f
+4491,32354,Mt Spokane High School,f
+4492,17415,Kentlake High School,f
+4493,17411,Endeavour Elementary School,f
+4494,5121,Dry Creek Elementary,f
+4497,39201,Pioneer Elementary School,f
+4498,6114,Frontier Middle School,f
+4499,6114,Fishers Landing Elementary School,f
+4500,34033,A G West Black Hills High School,f
+4501,24350,Methow Valley Elementary,f
+4502,27320,Mountain View Middle School,f
+4503,6037,Discovery Middle School,f
+4504,6037,Skyview High School,f
+4505,18303,Woodward Middle School,f
+4506,39208,West Valley Middle School,f
+4508,6117,Skyridge Middle School,f
+4509,18401,Klahowya Secondary,f
+4511,29320,Mount Baker Middle School,f
+4512,31401,Port Susan Middle School,f
+4513,31401,Cedarhome Elementary School,f
+4515,37501,Squalicum High School,f
+4516,17417,Timbercrest Middle School,f
+4517,37504,Vossbeck Elementary School,f
+4518,39207,Adams Elementary,f
+4519,5323,Sequim Middle School,f
+4520,17415,Kent Elementary School,f
+4521,32325,Lakeside Middle School,f
+4523,6114,Heritage High School,f
+4524,6037,Vancouver Alternative Programs,f
+4525,37506,Nooksack Elementary,f
+4526,11001,Whittier Elementary,f
+4527,18401,Pinecrest Elementary,f
+4528,31103,Monroe High School,f
+4529,32356,Liberty Lake Elementary,f
+4530,31002,Penny Creek Elementary,f
+4532,17414,Blackwell Elementary,f
+4533,37507,Kendall Elementary,f
+4534,31004,Highland Elementary,f
+4535,39204,Roosevelt Elementary,f
+4536,13144,Monument Elementary,f
+4537,27010,Crescent Heights,f
+4538,27403,North Star Elementary,f
+4540,27003,Emerald Ridge High School,f
+4541,27320,Daffodil Valley Elementary,f
+4542,18303,Sakai Intermediate,f
+4543,3400,William Wiley Elementary School,f
+4544,31103,Hidden River Middle School,f
+4545,17415,Emerald Park Elementary School,f
+4547,27344,Ptarmigan Ridge Elementary School,f
+4548,27343,Dieringer Heights Elementary,f
+4549,6112,Canyon Creek Middle School,f
+4550,17216,Thunder Mountain Middle School,f
+4551,31401,Utsalady Elementary,f
+4552,16049,Chimacum Creek Primary School,f
+4553,31401,Elger Bay Elementary,f
+4554,37502,Horizon Middle School,f
+4555,11001,Rowena Chess Elementary,f
+4556,17409,Tahoma Jr High,f
+4557,27417,Hedden Elementary School,f
+5546,18400,CHOICE Academy,f
+4558,28137,Orcas Island Middle School,f
+4559,39203,Highland High School,f
+4560,6114,Illahee Elementary School,f
+4561,6114,Shahala Middle School,f
+4562,27001,Chloe Clark Elementary,f
+4563,6117,Prune Hill Elem,f
+4564,11001,Ellen Ochoa Middle School,f
+4565,17411,Cascade Ridge Elementary,f
+4566,4228,Beaver Valley School,f
+4567,6117,Camas High School,f
+4568,6098,Hockinson High School,f
+4569,27416,White River High School,f
+4570,17210,Todd Beamer High School,f
+4571,37501,Northern Heights Elementary Schl,f
+4573,31016,Pioneer Elementary,f
+4574,8122,Mt. Solo Middle School,f
+4575,27010,Angelo Giaudrone Middle School,f
+4576,31306,Cougar Creek Elementary School,f
+4577,32326,Michael Anderson Elementary,f
+4578,27403,Cougar Mountain Middle School,f
+4579,6114,York Elementary School,f
+4581,17415,Millennium Elementary School,f
+4582,27417,Columbia Junior High School,f
+4583,31006,Odyssey Elementary,f
+4585,27320,Bonney Lake High School,f
+4586,23309,Olympic Middle School,f
+4587,6114,Columbia Valley Elementary,f
+4588,39202,Valley View Elementary,f
+4590,9206,Clovis Point,f
+4591,6037,Jefferson Middle School,f
+4592,17411,Newcastle Elementary School,f
+4593,32358,Freeman Middle School,f
+4594,31103,Fryelands Elementary,f
+4595,11001,Maya Angelou Elementary,f
+5003,32356,School to Life,f
+5004,31401,Saratoga School,f
+5008,39208,West Valley Preschool,f
+5010,31016,Haller Middle School,f
+5011,27344,Orting Special Education,f
+5012,20404,Goldendale Support Service Center,f
+5013,27001,Developmental Preschool,f
+5014,34033,New Market High School,f
+5015,17410,Cascade View Elementary School,f
+5016,17415,Mill Creek Middle School,f
+5018,34002,Lackamas Elementary,f
+5019,39007,Early Childhood Center,f
+5020,11001,Virgie Robinson Elementary,f
+5021,37503,Blaine Home Connections,f
+5027,27400,Harrison Prep School,f
+5028,17401,Big Picture School,f
+5029,17210,Sequoyah Middle School,f
+5030,5313,HomeConnection,f
+5032,14077,Taholah Elementary & Middle School,f
+5033,27403,Graham Kapowsin High School,f
+5034,15204,Toddler Learning Center,f
+5035,32360,HomeWorks,f
+5037,17408,Auburn Mountainview High School,f
+5040,31103,Park Place Middle School,f
+5043,32356,Central Valley Early Learning Center,f
+5045,27416,White River Special Ed Services,f
+5046,17001,Private School Services,f
+5047,37505,Meridian Parent Partnership Program,f
+5048,17001,Birth to 3 Contracts,f
+5049,39201,Sierra Vista Middle School,f
+5051,17408,Lakeland Hills Elementary,f
+5052,34002,Ridgeline Middle School,f
+5053,17414,Rosa Parks Elementary,f
+5054,6117,Liberty Middle School,f
+5055,6117,Papermaker Preschool,f
+5056,17411,Grand Ridge Elementary,f
+5057,17414,Renaissance School,f
+5058,29101,Good Beginnings Center,f
+5059,15204,Island Juvenile Detention Education Program,f
+5062,17411,Issaquah ECEAP,f
+5063,17401,Academy of Citizenship and Empowerment,f
+5064,17401,Global Connections High School,f
+5066,27010,Helen B. Stafford Elementary,f
+5068,32356,Central Valley Kindergarten Center,f
+5070,17403,Renton Academy,f
+5071,5402,Insight School of Washington,f
+5072,18402,Madrona Heights PreSchool Program,f
+5073,27003,Quest,f
+5075,26070,Selkirk Elementary,f
+5076,8458,Special Education,f
+5077,20405,White Salmon Academy,f
+5078,34111,Olympia Regional Learning Academy,f
+5079,27404,Eatonville Developmental Pre-School,f
+5081,16048,Crossroads Community School,f
+5082,17408,Arthur Jacobsen Elementary,f
+5084,37502,Ferndale Special Services,f
+5085,18400,Kingston High School,f
+5086,19403,Kittitas B-5 Special Ed Program,f
+5087,29011,Special Services School,f
+5088,27003,Carson Elementary,f
+5089,6119,Daybreak Middle,f
+5090,6119,Daybreak Primary,f
+5091,31002,Forest View Elementary School,f
+5092,3400,White Bluffs Elementary School,f
+5093,27003,Edgerton Elementary,f
+5094,32354,Prairie View Elementary,f
+5096,39208,Children's Village,f
+5097,19401,K-12 Ellensburg Learning Center,f
+5098,17415,Kent Phoenix Academy,f
+5099,31004,Cavelero Mid High School,f
+5100,31201,Little Cedars Elementary School,f
+5101,17401,Health Sciences & Human Services,f
+5102,17401,Arts & Academics Academy,f
+5103,17401,Technology - Engineeering & Communications,f
+5104,6117,Hayes Freedom High School,f
+5106,3017,Phoenix High School,f
+5107,17210,Federal Way Running Start Home School,f
+5108,31401,Lincoln Academy,f
+5374,17410,SVSD OPEN DOORS,f
+5111,6114,Union High School,f
+5112,37507,Mount Baker Academy,f
+5113,32081,Spokane Regional Health District,f
+5114,31311,Sky Valley Options,f
+5115,5121,Roosevelt Elementary School,f
+5116,17401,Career Link,f
+5118,26056,Pend Oreille River School,f
+5119,17401,Valley View Early Childhood Center,f
+5120,13073,Mattawa Elementary Pre-School,f
+5122,32354,Mead PreSchool,f
+5123,31025,Grove Elementary,f
+5124,32414,BIRTH TO 2 PRESCHOOL,f
+5125,37501,Wade King Elementary School,f
+5126,32360,Birth To Three,f
+5128,31201,Glacier Peak High School,f
+5129,27402,Learning Support,f
+5130,9206,Eastmont Preschools,f
+5131,6119,Tukes Valley Middle School,f
+5132,6119,Tukes Valley Primary,f
+5133,6119,Chief Umtuch Middle,f
+5135,17410,Twin Falls Middle School,f
+5136,6114,Endeavour Elementary School,f
+5137,39201,Sun Valley Elementary,f
+5138,17210,Technology Access Foundation Academy,f
+5139,17414,Carson Elementary,f
+5141,27403,Spanaway Elementary Preschool,f
+5142,27003,Glacier View Junior High,f
+5144,13073,Wahluke Junior High,f
+5146,21300,CVA - Onalaska,f
+5149,6037,Vancouver Virtual Learning Academy,f
+5150,17415,Birth to Age 2,f
+5151,24105,Okanogan Outreach Alternative School,f
+5152,31311,Columbia Virtual Academy - Sultan,f
+5153,39007,Yakima Online,f
+5155,10065,Columbia Virtual Academy-Orient,f
+5157,36402,Prescott Special Ed Pre-school,f
+5158,6117,Grass Valley Elementary,f
+5159,27403,Frederickson Elementary,f
+5160,27403,Nelson Elementary School,f
+5161,18100,Special Services,f
+5163,17210,Career Academy at Truman High School,f
+5164,11001,Chiawana High School,f
+5165,3400,Three Rivers Home Link,f
+5167,34003,Chambers Prairie Elementary School,f
+5168,34003,Aspire Middle School,f
+5169,27010,Science and Math Institute,f
+5170,27010,First Creek Middle School,f
+5171,31332,Crossroads High School,f
+5172,17401,Puget Sound High School,f
+5173,13161,Sage Point Elementary School,f
+5175,17001,Hazel Wolf K-8,f
+5176,29103,Cap Sante High School,f
+5178,17415,Panther Lake Elementary School,f
+5179,25101,Ocean Beach Early Childhood Center,f
+5180,33212,Columbia Virtual Academy - Kettle Falls,f
+5181,17410,Snoqualmie Access,f
+5184,27010,Tacoma Pierce County Education Center,f
+5186,19401,Excel High School,f
+5187,36140,HEAD START/ECEAP PRESCHOOL,f
+5190,21237,Cowlitz Prairie Academy,f
+5191,14028,Hoquiam Homelink School,f
+5192,27010,Special Services,f
+5194,8458,Kelso Virtual Academy,f
+5195,24019,Washington Virtual Academy Omak Elementary,f
+5196,24019,Washington Virtual Academy Omak Middle School,f
+5197,24019,Washington Virtual Academy Omak High School,f
+5200,17411,Pacific Cascade Middle School,f
+5201,17411,Creekside Elementary,f
+5203,17001,McDonald International School,f
+5204,17001,Queen Anne Elementary,f
+5205,17001,Sand Point Elementary,f
+5206,27403,Liberty Middle School,f
+5207,37502,Cascadia Elementary,f
+5208,14005,Twin Harbors - A Branch of New Market Skills Center,f
+5209,31025,Academy of Const and Engineering,f
+5210,31025,Bio Med Academy,f
+5211,31025,Intl Sch of Communications,f
+5213,31025,Marysville Pilchuck High School,f
+5214,31025,School for the Entrepreneur,f
+5216,27403,Bethel Elementary Learning Academy,f
+5217,33049,WSD Columbia Basin J.C.,f
+5218,17210,Federal Way Public School ECEAP,f
+5219,17210,Federal Way Public Schools Headstart,f
+5220,3017,Cottonwood Elementary,f
+5221,39208,West Valley High School Freshman Campus,f
+5223,33070,Paideia High School,f
+5224,39007,Yakima Satellite Alternative Programs,f
+5225,26070,Selkirk Middle School,f
+5226,26070,Selkirk High School,f
+5228,9206,Eastmont Columbia Virtual Academy,f
+5229,17403,Honey Dew Elementary,f
+5231,39119,Selah HomeLink,f
+5232,39119,Robert Lince Early Learning Center,f
+5233,39209,American Academy,f
+5234,15204,ICCF Ed Program,f
+5235,3017,Benton County Jail,f
+5236,16048,PEARL,f
+5238,25155,Naselle Homelink,f
+5239,37501,Cordata Elementary School,f
+5240,17405,Bellevue Big Picture School,f
+5242,19028,Easton Secondary School,f
+5243,25118,Pacific Virtual Learning,f
+5244,17407,Choice,f
+5245,37502,WINDWARD HIGH SCHOOL,f
+5246,8404,Lewis River Academy,f
+5247,25118,Pacific County Jail,f
+5248,34111,Olympia Regional Learning Academy - Montessori School,f
+5249,32081,Spokane County Jail,f
+5250,32081,On Track Academy,f
+5440,17415,The Outreach Program,f
+5251,13161,Park Orchard Elementary School,f
+5252,33211,Northport Homelink Program,f
+5254,17401,Gateway to College,f
+5255,17210,Gateway to College,f
+5258,6037,Vancouver Contracted Programs,f
+5259,34111,Touchstone,f
+5260,17001,Seattle Skills Center,f
+5262,39202,NW Allprep,f
+5263,39007,Yakima Adult Jail,f
+5264,39007,Ridgeview Group Home,f
+5265,17414,Tesla STEM High School,f
+5268,32354,Riverpoint Academy,f
+5269,32360,Westwood Middle School,f
+5270,32414,Deer Park Early Learning Center,f
+5271,6037,Vancouver iTech Preparatory,f
+5272,24111,Brewster Alternative School,f
+5273,13161,Columbia Basin Technical Skills Center,f
+5275,17415,iGrad,f
+5276,17001,Louisa Boren STEM K-8,f
+5277,17401,Southwest Youth and Family Services,f
+5278,32356,Spokane Valley Tech,f
+5279,17210,Birth to Three Development Center,f
+5280,17210,Dynamic Family Services,f
+5281,17405,Central Educational Services,f
+5282,17403,Talley High School,f
+5283,33206,Columbia Alternative School,f
+5284,17406,Gateway,f
+5285,1147,Wahitis Elementary School,f
+5286,4019,Manson Middle School,f
+5287,17412,Early Childhood Education,f
+5288,27403,Birth to Three,f
+5289,39120,Mabton Jr. Sr. High,f
+5290,6801,Clark County Juvenile Detention School,f
+5291,6119,Maple Grove K-8,f
+5292,17001,Cascadia Elementary,f
+5293,1158,Lind-Ritzville Middle School,f
+5294,32360,Phil Snowdon Elementary,f
+5296,17410,Snoqualmie Parent Partnership Program,f
+5297,27400,Transition Day Students,f
+5298,27400,Oakridge Group Home,f
+5299,28144,CVA-Lopez Island,f
+5300,27404,Mt. Rainier Parent Partnership,f
+5301,32081,The Community School,f
+5302,34979,Washington Youth Academy,f
+5303,1160,Lind Ritzville Middle School,f
+5305,34801,GRAVITY High School,f
+5306,17937,Open Doors at LWIT,f
+5307,27010,Tacoma Open Doors,f
+5308,17405,Jing Mei Elementary School,f
+5309,6117,Woodburn Elementary,f
+5310,6114,Henrietta Lacks Health and Bioscience High School,f
+5311,6098,Hockinson Heights Elementary School,f
+5312,8122,Discovery High School,f
+5313,17403,Meadow Crest Early Childhood Education Center,f
+5314,17412,Head Start,f
+5315,17406,Youthsource,f
+5316,4246,Open Doors  Re-Engagement Wenatchee,f
+5317,21302,Lewis County Jail,f
+5319,18902,Chief Kitsap Academy,f
+5320,27010,Willie Stewart Academy,f
+5321,27003,Puyallup Open Doors/POD,f
+5322,27003,Puyallup Parent Partnership Program,f
+5323,13161,Skill Source Learning Center,f
+5325,17405,Grad Alliance Program,f
+5326,6101,La Center Home School Academy,f
+5327,27010,Goodwill GED,f
+5328,32356,CVSD Open Doors Programs,f
+5329,31311,Open Doors Youth Reengagement Sultan,f
+5330,31002,Everett Reengagement Academy,f
+5331,17417,Northshore Online School,f
+5332,27404,New Beginnings,f
+5334,39119,SELAH ACADEMY REENGAGEMENT PROGRAM,f
+5335,17403,Open Door Youth Reengagement Renton,f
+5336,13301,Lake Roosevelt Alternative School,f
+5337,36140,SE AREA TECHNICAL SKILLS CENTER,f
+5338,27416,White River Reengagement Program,f
+5339,32907,PRIDE Prep School,f
+5340,37501,Bellingham Re-Engagement Program,f
+5342,6037,Open Doors Vancouver,f
+5343,15201,iGrad Academy,f
+5344,32081,Open Doors Youth Re-Engagement Spokane,f
+5345,11001,Rosalind Franklin STEM Elementary,f
+5346,32361,East Valley Middle School,f
+5348,17210,Open Doors Youth Reengagement (1418),f
+5349,31332,Granite Falls Open Doors,f
+5350,31025,Quil Ceda Tulalip Elementary,f
+5351,17001,Jane Addams Middle School,f
+5352,39201,SHS Graduation Alliance,f
+5353,27083,CHS Drop-Out Reengagement Program,f
+5354,13161,Endeavor Middle School,f
+5355,39007,Yakima Open Doors,f
+5356,32363,re-engagement,f
+5357,33070,Valley Early Learning Center,f
+5358,31015,Edmonds Career Access Program,f
+5359,21401,Futurus High School,f
+5360,6119,Open Doors Battle Ground,f
+5361,32081,Spokane Public Montessori,f
+5362,36250,College Place High School,f
+5363,5402,Forks Intermediate School,f
+5364,27400,Meriwether Elementary School,f
+5365,27400,Rainier Elementary School,f
+5366,37501,Bellingham Family Partnership Program,f
+5367,1147,Desert Oasis High School,f
+5368,20405,Wallace & Priscilla Stevenson Intermediate School,f
+5369,21302,Lewis County Alternative School,f
+5370,17401,Highline Open Doors 1418,f
+5371,17401,Highline Home School Center,f
+5372,27403,Acceleration Academy,f
+5373,37903,Lummi Nation School,f
+5375,17902,Summit Public School: Sierra,f
+5376,27905,Summit Public School: Olympus,f
+5377,17906,Excel Public Charter School,f
+5378,27904,Destiny Middle School,f
+5379,27909,SOAR Academy Public Charter School,f
+5380,17908,Rainier Prep,f
+5381,32901,Spokane International Academy,f
+5382,6119,Summit View Middle School,f
+5383,39119,John Campbell Primary School,f
+5384,39119,Selah Intermediate School,f
+5385,39119,Selah Middle School,f
+5386,27400,Clover Park Early Learning Program,f
+5387,27400,Four Heroes Elementary,f
+5388,13160,Royal Intermediate School,f
+5389,27001,Birth to Three,f
+5390,27416,White River Homeschool,f
+5391,11001,Barbara McClintock STEM Elementary,f
+5392,11001,Captain Gray STEM Elementary,f
+5393,11001,Internet Pasco Academy of Learning,f
+5394,11001,Marie Curie STEM Elementary,f
+5396,32360,Cheney Open Doors,f
+5397,16049,Open Doors Reengagement Program,f
+5398,6801,ESD 112 Open Doors Reengagement,f
+5399,39200,Step Up to College Open Doors High School,f
+5400,8122,Discovery High School-Achieve,f
+5401,32354,Mead Open Doors,f
+5402,31025,Marysville NWESD 189 Youth Engagement,f
+5403,11801,Ugrad – ESD123 Re-Engagement Program,f
+5404,31306,Lakewood NWESD 189 Open Door Program,f
+5405,17001,Interagency Open Doors,f
+5406,17001,Bridges Transition,f
+5407,8404,Woodland Primary School,f
+5408,8404,Woodland Intermediate School,f
+5409,8404,Woodland Middle School,f
+5410,27001,Futures Program,f
+5411,27400,CPSD Open Doors Program,f
+5412,15204,Open Den,f
+5413,2250,Educational Opportunity Center Reengagement,f
+5414,31002,Other Schools,f
+5415,21206,Mossyrock Academy,f
+5416,14068,East Grays Harbor Open Doors,f
+5417,32325,Re-Engagement School (Nine Mile Falls),f
+5418,4228,Cascade Home-Link,f
+5419,3400,Orchard Elementary,f
+5430,5903,Quileute Tribal School,f
+5431,27931,Bates Technical College - Open Doors,f
+5432,32361,EV Online,f
+5433,32361,EV Parent Partnership,f
+5434,32801,NEWESD 101 Open Doors,f
+5435,6114,Open Doors Evergreen,f
+5436,27402,Early Learning Center,f
+5437,17411,Gibson Ek High School,f
+5438,3017,Sage Crest Elementary,f
+5439,3017,Chinook Middle School,f
+5441,31004,Early Learning Center,f
+5442,31004,Outcomes for Academic Resilience,f
+5443,39120,Mabton Step Up To College,f
+5444,23311,Mary M. Knight School,f
+5445,23311,Washington Connections Academy,f
+5446,33207,Mary Walker Alternative Learning Experience,f
+5447,17400,Northwood Elementary School,f
+5448,37505,Meridian Impact Re-Engagement,f
+5449,29320,Mount Vernon Open Doors,f
+5450,31006,Lake Stickney Elementary School,f
+5451,39003,Naches Valley Elementary School,f
+5452,34003,Salish Middle School,f
+5453,17417,Northshore Primary Center,f
+5454,25101,Ocean Beach Alternative School,f
+5456,29101,Connections Academy,f
+5457,17410,Timber Ridge Elementary School,f
+5458,27010,Industrial Design Engineering and Art,f
+5459,27010,Hoyt Early Learning Center,f
+5460,36140,Walla Walla Open Doors,f
+5461,33049,Wellpinit Fort Simcoe SEA,f
+5462,32363,West Valley Early Learning Center,f
+5463,21401,Early Learning Center,f
+5464,37502,FERNDALE RE-ENGAGEMENT,f
+5465,37503,Blaine Re-Engagement,f
+5466,37504,IMPACT Reengagement Program,f
+5467,6701,ESA 112 Special Ed Co-Op,f
+5468,17910,Rainier Valley Leadership Academy,f
+5469,17905,Summit Public School: Atlas,f
+5470,36901,Innovation Charter School,f
+5471,27403,Bethel Elementary Learning Academy,f
+5472,18401,Barker Creek Community School,f
+5473,17210,TAFA at Saghalie,f
+5474,37502,Parent Community Connection,f
+5477,31004,Stevens Creek Elementary,f
+5478,31025,Marysville Getchell High School,f
+5479,17414,Birth - 2 Program,f
+5480,30031,Pacific Crest Innovation Academy,f
+5481,17417,North Creek High School,f
+5482,31006,Pathfinder Kindergarten Center,f
+5483,11001,Pasco Early Learning Center,f
+5484,17403,Risdon Middle School,f
+5485,17001,Meany Middle School,f
+5486,17001,Robert Eagle Staff Middle School,f
+5487,17001,Cedar Park Elementary School,f
+5488,17001,Decatur Elementary School,f
+5489,17409,Cedar River Elementary,f
+5490,17409,Tahoma Elementary,f
+5491,17216,JJ Smith Elementary,f
+5493,3400,Leona Libby Middle School,f
+5494,6112,Columbia River Gorge Elementary School,f
+5495,31016,Arlington Open Doors,f
+5496,34901,Wa He Lut Indian School,f
+5497,13165,Sage Hills Open Doors,f
+5498,31006,Mukilteo Reengagement Academy Open Doors,f
+5499,11051,CRCC-Open Doors,f
+5501,29801,Open Doors - Youth Reengagement Program,f
+5502,6119,Daybreak Youth Services,f
+5503,20406,Student Success Open Doors Academy,f
+5504,39208,WEST VALLEY VIRTUAL ACADEMY K-6,f
+5505,39208,WEST VALLEY VIRTUAL ACADEMY 7-8,f
+5506,39208,WEST VALLEY VIRTUAL ACADEMY 9-12,f
+5507,32356,Liberty Creek Elementary School,f
+5508,17405,Wilburton Elementary School,f
+5509,21302,James W Lintott Elementary School,f
+5510,21302,Orin C Smith Elementary School,f
+5511,17414,Clara Barton Elementary School,f
+5512,17414,Ella Baker Elementary School,f
+5513,23403,Mary E. Theler Early Learning Center,f
+5514,14005,Grays Harbor Academy,f
+5515,23404,Hood Canal Middle School,f
+5516,33212,Kettle Falls Early Learning Center,f
+5517,17911,Impact | Puget Sound Elementary,f
+5518,6122,Sunset Ridge Intermediate School,f
+5519,17403,Sartori Elementary School,f
+5520,3017,Amon Creek Elementary,f
+5521,3017,Fuerza Elementary,f
+5522,17408,Auburn Opportunity Project,f
+5523,33036,Chewelah Open Doors Reengagement Program,f
+5524,27320,Tehaleh Heights Elementary,f
+5525,29100,Open Doors,f
+5526,3400,Richland School District Early Learning Center,f
+5527,27001,Steilacoom PRIDE Academy,f
+5528,1147,Early Childhood Center,f
+5529,5402,Insight School of WA Open Doors Program,f
+5530,10050,Ferry County Open Doors,f
+5531,27404,Eatonville Online Academy,f
+5532,6117,Camas School District Open Doors,f
+5533,6117,Discovery High School,f
+5534,6117,Odyssey Middle School,f
+5535,6114,Cascadia Technical Academy ALE,f
+5536,17406,Tukwila Online Learning,f
+5537,3116,Prosser Opportunity Academy,f
+5538,26059,Home Pride,f
+5539,26059,Kalispel Language Immersion School,f
+5540,39208,West Valley Open Doors,f
+5541,32356,Riverbend Elementary School,f
+5542,32356,STEM Academy at SVT,f
+5543,39207,Simcoe Elementary School,f
+5544,39207,Camas Elementary,f
+5547,8458,Kelso Goal Oriented Learning Design,f
+5548,23309,Shelton Open Doors,f
+5549,27901,Chief Leschi Schools,f
+5550,39901,Yakama Nation School,f
+5551,17401,Glacier Middle School,f
+5552,32356,Selkirk Middle School,f
+5553,13165,Sage Hills ECEAP,f
+5554,37506,Nooksack Reengagement,f
+5555,28137,Orcas Island Montessori Public,f
+5556,11001,Three Rivers Elementary,f
+5557,27003,Dessie F Evans Elementary,f
+5558,6122,Ridgefield Early Learning Center,f
+5559,28149,Griffin Bay School Open Doors,f
+5560,39119,Selah Academy Auxiliary,f
+5561,39119,Selah Academy BPL,f
+5563,17409,Tahoma Open Doors,f
+5564,27416,White River Early Learning Center,f
+5565,17001,Magnolia Elementary,f
+5566,17001,Lincoln High School,f
+5567,36140,ECEAP,f
+5568,27010,Willard Early Learning Center,f
+5569,4246,Valley Academy of Learning K-8,f
+5570,31002,Tambark Creek Elementary School,f
+5571,32354,Highland Middle School,f
+5572,32354,Creekside Elementary School,f
+5573,6117,The Heights Learning Center,f
+5574,38267,Kamiak Elementary,f
+5575,36250,College Place Open Doors Program,f
+5576,39203,Highland ESD 105 Open Doors,f
+5577,17411,Issaquah Preschool,f
+5578,39801,ESD 105 Open Doors,f
+5579,37502,Ferndale Virtual Academy,f
+5580,39003,Naches Valley ESD 105 Open Doors,f
+5581,30303,Open Doors for SHS - Stevenson,f
+5582,27417,Fife Open Doors,f
+5583,17417,Northshore Family Partnership,f
+5584,14400,Oakville Homelink,f
+5585,13144,Ancient Lakes Elementary,f
+5586,24404,Tonasket Choice High School,f
+5587,24404,Tonasket Outreach School,f
+5588,29103,Open Doors,f
+5589,29320,Harriet Rowley Elementary,f
+5590,17941,Ella Baker High School (Open Doors),f
+5591,17941,Renton Technical High School,f
+5592,17412,North City,f
+5593,17412,Edwin Pratt Learning Center,f
+5594,14400,Oakville Preschool,f
+5595,39207,Wapato ESD 105 Open Doors,f
+5596,11001,Soar to Success,f
+5597,17414,Timberline Middle School,f
+5598,17414,Old Redmond Schoolhouse,f
+5599,8404,Columbia Elementary,f
+5600,8404,North Fork Elementary School,f
+5602,17915,Ashe Preparatory Academy,f
+5603,22207,Lincoln County Tech,f
+5604,33115,Colville Fish Hatchery,f
+5605,17417,Ruby Bridges Elementary,f
+5606,17417,Innovation Lab High School,f
+5607,18901,Catalyst Public Schools,f
+5608,17916,Impact | Salish Sea Elementary,f
+5609,32903,Lumen High School,f
+5610,17408,Bowman Creek Elementary,f
+5611,5121,Seaview Academy,f
+5612,6114,Emerald Elementary School,f
+5613,5323,Dungeness Virtual School,f
+5614,8122,Longview Virtual Academy,f
+5615,6112,Washougal Learning Academy,f
+5616,36140,Walla Walla Center for Children and Families,f
+5617,7002,Dayton School District Alternative Program,f
+5618,20404,Washington Connections Academy Goldendale,f
+5619,17801,Dropout Prevention and Reengagement Academy,f
+5620,39208,West Valley Virtual University,f
+5621,23309,Cedar High School,f
+5622,17401,Highline Public Schools Virtual Academy,f
+5623,11001,Columbia River Elementary,f
+5624,11001,Ray Reynolds Middle School,f
+5625,29320,Aspire Academy,f
+5626,15201,Oak Harbor Virtual Academy,f
+5627,27010,Bryant Montessori Middle School,f
+5629,34033,Tumwater Virtual Academy,f
+5630,32081,West Central Community Center,f
+5631,27401,Pioneer Elementary School,f
+5632,27401,Peninsula Alternative Programs,f
+5633,27403,Bethel Virtual Academy,f
+5634,1147,Open Door Re-Engagement,f
+5635,27403,Katherine G. Johnson Elementary School,f
+5636,36140,Walla Walla Online,f
+5637,4246,Wenatchee Internet Academy,f
+5638,17403,Renton Online School,f
+5639,24122,Pateros Alternative School,f
+5640,4228,Kodiak Virtual Academy,f
+5642,31311,Sultan Virtual Academy,f
+5643,22207,Lincoln County Virtual Academy,f
+5644,2250,Clarkston Home Alliance,f
+5645,32363,Spokane Valley High School,f
+5646,18400,North Kitsap Options,f
+5647,25101,Ocean Beach Alternative School,f
+5648,13144,Quincy Innovation Academy,f
+5649,17001,Cascade Parent Partnership Program,f
+5650,13144,Quincy Innovation Academy Big Picture,f
+5651,23403,North Mason Online,f
+5652,13161,Moses Lake Early Learning Center,f
+5653,11051,North Franklin Virtual Academy,f
+5654,34003,Envision Career Academy,f
+5655,37502,North Bell Learning Center,f
+5656,27344,Orting Elementary Online Academy,f
+5657,27344,Orting Secondary Online Academy,f
+5658,32354,Skyline Elementary,f
+5659,38901,Pullman Community Montessori,f
+5660,32356,Ridgeline High School,f
+5661,27902,Impact Public Schools,f
+5662,17917,Cascade Public Schools,f
+5663,14005,Harbor Open Doors,f
+5664,17408,Auburn Online,f
+5665,27403,Pre-Primary School,f
+5666,8401,Rocket Virtual Academy,f
+5667,32356,Central Valley Virtual Learning,f
+5668,9206,Eastmont Academy,f
+5669,31015,Woodway Center,f
+5670,31002,Everett Virtual Academy,f
+5671,27417,Fife Elementary School,f
+5672,17401,Maritime High School,f
+5673,17411,CEDAR TRAILS ELEMENTARY,f
+5674,17411,COUGAR MOUNTAIN MIDDLE SCHOOL,f
+5675,8458,Lexington Elementary,f
+5676,17415,Kent Laboratory Academy,f
+5677,17415,River Ridge Elementary,f
+5678,17414,Lake Washington SD Online School,f
+5679,13161,Digital Learning Center,f
+5680,13161,Vicki I. Groff Elementary,f
+5681,26056,Newport Home Link,f
+5682,34003,Ignite Family Academy,f
+5683,34003,Summit Virtual Academy,f
+5685,27401,Swift Water Elementary,f
+5686,4901,Pinnacles Prep Charter School,f
+5687,36402,Prescott Middle School,f
+5688,22009,Reardan Options' Program,f
+5689,3400,Pacific Crest Online Academy,f
+5690,6122,Wisdom Ridge Academy,f
+5691,34401,Rochester Virtual Academy,f
+5692,29101,Sedro-Woolley Virtual Learning Academy,f
+5693,32081,Flett Middle School,f
+5694,32081,Spokane Virtual Academy,f
+5695,32081,Yasuhara Middle School,f
+5696,7035,Virtual Preparatory Academy,f
+5697,27010,Hunt Middle School,f
+5698,32363,West Valley Virtual Learning Center,f
+5699,39208,West Valley Innovation Center,f
+5700,9206,Clovis Point Elementary School,f
+5701,9206,Sterling Jr. High School,f
+5702,6117,Camas Connect Academy,f
+5703,31006,Mukilteo Virtual Academy,f
+5704,23402,Pioneer Virtual Academy,f
+5705,36140,Walla Walla County Juvenile Detention,f
+5707,17401,Peninsula Alternative Programs,f
+5710,37902,Whatcom Intergenerational High School,f
+5711,11001,Pasco Innovative Experiences and e-Learning,f
+5712,31201,Central Primary Center,f
+5713,6037,Vancouver Alternative Programs,f
+5714,17405,Bellevue Digital Discovery,f
+5715,14068,Eagle Virtual Sky Acadmey,f
+5716,6037,Vancouver Intensive Communications Center,f
+5717,17408,Willow Crest Elementary,f
+5718,19401,Ida Nason Aronica Elementary,f
+5719,3052,Kiona-Benton City Elementary,f
+5720,27010,Tacoma Online Elementary School,f
+5721,27010,Tacoma Online Middle School,f
+5722,27010,Tacoma Online High School,f
+5723,39207,Wapato Online Academy K-5,f
+5724,39207,Wapato Online Academy 6-8,f
+5725,39207,Wapato Online Academy 9-12,f
+5726,13161,Vanguard Academy,f
+5727,3017,Endeavor High School,f
+5728,22207,Lincoln County Pathways Academy,f
+5729,17415,Kent Virtual Academy,f
+5730,32081,Peperzak Middle School,f
+5731,31025,Marysville Online High School,f
+5732,3400,Desert Sky Elementary,f
+5733,17408,West Auburn Senior High School,f
+5734,32414,Deer Park Achievement High School,f
+5735,31002,Everett Virtual Academy,f
+5736,17919,Impact | Black River Elementary,f
+5737,27403,Naches Trail Preschool,f
+5738,17415,Canyon Ridge Middle School,f
+5739,4019,Manson Early Learning Center,f
+5740,24014,Nespelem High School,f
+5741,17403,Hilltop Heritage Elementary School,f
+5742,31004,LSSD Open Doors,f
+5743,32081,Spokane Public Language Immersion,f
+5744,6037,Ruth Bader Ginsburg Elementary School,f
+5745,6037,Vancouver Innovation Technology and Arts Elementary,f
+5746,24019,Highlands,f
+5747,37502,Mountain View Elementary,f
+5748,21234,Boistfort Online School,f
+5749,6119,Battle Ground Virtual Academy,f
+5750,32360,WIN Academy,f
+5751,27400,Gravelly Lake K-12 Academy,f
+5752,32325,Nine Mile Family Partnership Program,f
+5753,17417,Northshore Learning Options,f
+5754,27403,Transition 18-21 Program,f
+5755,6901,Rooted School Washington,f
+5756,24915,Paschal Sherman Tribal,f
+5950,27931,Bates Technical High School,f
+5951,27932,Northwest Career and Technical High School,f
+5953,17937,Lake Washington Technical Academy,f
+5958,17414,Washington Network for Innovative Careers,f
+5960,29320,Northwest Career & Technical Academy,f
+5961,27403,Pierce County Skills Center,f
+8407,34003,Wa He Lut Indian School,f

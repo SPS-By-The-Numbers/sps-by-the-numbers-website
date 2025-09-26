@@ -6,7 +6,8 @@ import MenuItem from '@mui/material/MenuItem';
 
 import type { SxProps, Theme } from '@mui/material';
 
-export type MetricVariant = "amount" | "pctexp" | "pctcomp" | "ppe";
+// TODO Metric Variant is wrong. We need Normalizaiton.
+export type MetricVariant = "amount" | "pctexp" | "pctcomp" | "ppe" | "fte" | 'finalSalary';
 
 type Params = {
   variant: MetricVariant;

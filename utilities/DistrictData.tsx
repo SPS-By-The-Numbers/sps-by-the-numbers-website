@@ -145,7 +145,7 @@ export default class DistrictData {
       ]
     );
     return new DistrictData(enrollment_df, gf_expenditure_df, gf_revenue_df,
-                           budget_items_df, actuals_items_df, s275_summary_df);
+                            budget_items_df, actuals_items_df, s275_summary_df);
   }
 
   staffingSummary() {
