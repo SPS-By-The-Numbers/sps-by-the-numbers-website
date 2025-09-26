@@ -1,6 +1,8 @@
 import * as aq from 'arquero';
 import { op } from 'arquero';
 
+import DutyRoots from 'app/finance/DutyRoots';
+
 import type { ColumnTable } from 'arquero';
 export type SortType = "variance";
 export type SortOrder = "ascending" | "descending";
@@ -9,12 +11,22 @@ export type FacetInfo = {
   title: string;
 };
 
+function sortOrderOp(sortOrder : SortOrder, expr) {
+  if (sortOrder === 'ascending') {
+    return expr;
+  } else if (sortOrder === 'descending') {
+    return aq.desc(expr);
+  }
+
+  throw `Unknown sort order ${sortOrder}`;
+}
+
 // Returns data with one entry in the "class_of" column for each year and most column
 // representing one chartable metric or aggregation.
 //
 // Columns representing a chartable metric has a column name with this format:
 //
-//   ${ccddd]_${metric_name}_${facet}_${budget/actual}
+//   ${ccddd]_${metric_name}_${facet}_${budget/actuals}
 //
 //  Example for amount of activity_code 11 in actuals for 17001 would be:
 //
@@ -46,7 +58,7 @@ export function makeChartableExpenditures(
     const facetInfoSorted = varianceDf
       .groupby(facetColumn, facetCodeColumn)
       .rollup({absmedian: d => op.abs(op.median(d.variance))})
-      .orderby(aq.desc('absmedian'))
+      .orderby(sortOrderOp(sortOrder, 'absmedian'))
       .derive({
         facet_info: aq.escape(
           d => ({
@@ -96,7 +108,7 @@ export function makeChartableNces(
       .rollup({amount: op.sum('amount') })
       .groupby(facetColumn, facetCodeColumn)
       .rollup({medamount: op.median(`amount`)})
-      .orderby(aq.desc('medamount'))
+      .orderby(sortOrderOp(sortOrder, 'medamount'))
       .derive({
         facet_info: aq.escape(
           d => ({
@@ -187,4 +199,61 @@ export function makeChartableVitals(
       ]);
 
   return enrollment.join_full(staffing).join_full(balances).join_full(compensation);
+}
+
+// Returns data with one entry in the "class_of" column for each year and most column
+// representing one duty_root.  It uses the same format as makeChartableExpenditures
+// but facet is always dutyRoot data is always actuals.
+//
+// The metric_name can be fte or salary or estTotalComp.
+//
+//   ${ccddd]_${metric_name}_dutyRoot_actuals
+export function makeChartableStaffing(
+    ccddd: number,
+    rawDf: ColumnTable,
+    sortType: "range",
+    sortOrder: SortOrder) : [ColumnTable, Array<FacetInfo>] {
+  try {
+    const df = rawDf
+      .groupby('class_of', 'duty_root_code')
+      .rollup({
+        finalSalary: op.sum('c_est_total_final_salary'),
+        fte: op.sum('fte_in_assignment'),
+      })
+      .derive({data_type: () => 'actuals'});  // synthetically make it actuals.
+
+      // TODO: is this conceptually a budget?
+      //initial_sal: op.sum('c_est_total_initial_salary'),
+
+    const facetInfoSorted = df
+      .groupby('duty_root_code')
+      .derive({
+        lastFte: d => op.last_value(d.fte),
+        firstFte: d => op.last_value(d.fte),
+      })
+      .derive({growth: d => d.lastFte - d.firstFte})
+      .orderby(aq.desc('lastFte'))
+      .derive({
+        facet_info: aq.escape(
+          d => ({
+            code: d['duty_root_code'],
+            title: DutyRoots[d['duty_root_code']] ?? "Unknown",
+          })
+        )
+      })
+      .array('facet_info');
+
+    const data = df
+      .groupby('class_of')
+      .pivot(['duty_root_code', 'data_type'], {
+        // TODO: rename to total_initial_assignment_salary.
+        [`${ccddd}_finalSalary`]: d => op.sum(d.finalSalary),
+        [`${ccddd}_fte`]: d => op.sum(d.fte),
+      });
+
+    return [data, facetInfoSorted as Array<FacetInfo>];
+  } catch (e) {
+    console.warn("No data", e);
+    return [rawDf.groupby('class_of').rollup(), []];
+  }
 }

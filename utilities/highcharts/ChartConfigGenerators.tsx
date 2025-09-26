@@ -148,6 +148,9 @@ function inferLabel(valueFormat : ValueFormat) {
     case 'decimal':
       return undefined;
 
+    case 'fte':
+      return 'FTE';
+
     case 'year':
       return 'Class of';
 
@@ -180,6 +183,7 @@ function inferAxisType(valueFormat) {
   switch (valueFormat) {
     case 'currency':
     case 'decimal':
+    case 'fte':
       return 'linear';
 
     case 'pctexp':

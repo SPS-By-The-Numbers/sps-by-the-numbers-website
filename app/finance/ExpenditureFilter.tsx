@@ -27,6 +27,8 @@ function allItems(config) {
   return itemIds;
 };
 
+export const ALL_SCHOOL_ITEMS = allItems(SafsObjectsTreeItems);
+export const ALL_DUTY_ROOT_ITEMS = allItems(SafsObjectsTreeItems);
 export const ALL_COMP_OBJECT_ITEMS = allItems(SafsCompObjectsTreeItems);
 export const ALL_OBJECT_ITEMS = allItems(SafsObjectsTreeItems);
 export const ALL_ACTIVITY_ITEMS = allItems(SpsActivityCategoryTreeItems);

@@ -37,7 +37,8 @@ function makeCellId(idPrefix, metricOrdinal, facetInfo) {
 }
 
 function formatForVariant(variant) : ValueFormat {
-  if (variant === 'amount') {
+  if (variant === 'amount' ||
+      variant === 'finalSalary') {
     return 'currency' as const;
   } else if (variant === 'pctexp') {
     return 'pctexp' as const;
@@ -53,6 +54,10 @@ function metricVariantToTitle(variant: MetricVariant) {
     return 'amount';
   } else if (variant === 'pctexp') {
     return '% of expenditures';
+  } else if (variant === 'fte') {
+    return 'FTE';
+  } else if (variant === 'finalSalary') {
+    return 's275 estimated Final Salary';
   }
 
   throw `Unexpected variant ${variant}`;

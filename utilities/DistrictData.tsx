@@ -11,6 +11,13 @@ export type FilterSelection = {
   selectedProgramCodes: Array<number>,
 };
 
+export type StaffingFilterSelection = {
+  selectedDutyRootCodes: Array<number>,
+  selectedSchoolCodes: Array<number>,
+  selectedActivityCodes: Array<number>,
+  selectedProgramCodes: Array<number>,
+}
+
 const YEAR_GROUP_BY = ["class_of"];
 const FINANCE_GROUP_BY = ["data_type", ...YEAR_GROUP_BY];
 
@@ -252,6 +259,16 @@ export default class DistrictData {
 
   s275Summary() {
     return this.s275_summary_df;
+  }
+
+  filteredS275Summary(filterSelection) {
+    return this.s275_summary_df
+      .params(filterSelection)
+      .filter((d, $) =>
+//              d.includes($.selectedSchoolCodes, d.school_code) &&
+              d.includes($.selectedActivityCodes, d.activity_code) &&
+              d.includes($.selectedProgramCodes, d.program_code)); // &&
+//              d.includes($.selectedDutyRootCodes, d.duty_root_code));
   }
 
   balances() {
