@@ -76,7 +76,7 @@ export default function ExpenditureFilter({filterState} : { filterState: FilterS
     <Paper>
       <Stack>
         <Typography component="h2" variant="h2" textAlign="center" style={{fontSize: "1.4rem"}}>Filters</Typography>
-          <Stack direction="row" justifyContent="space-between">
+          <Stack justifyContent="space-between">
             <FilterTree
               title="Object"
               items={SafsObjectsTreeItems}

@@ -10,6 +10,7 @@ import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
 import Loading from 'components/Loading';
 import MetricVariantSelector from 'app/finance/MetricVariantSelector';
 import Stack from '@mui/material/Stack';
+import SettingsDrawer from 'app/finance/nces/SettingsDrawer';
 
 import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
 import type { MetricDef } from 'app/finance/FacetedBudgetActualCharts';
@@ -132,52 +133,56 @@ export default function NcesDashboard() {
   };
 
   return (
-    <div>
-      {/* This section is configuration of the data set. */}
-      <ExpenditureFilter
-        filterState={
-          {
-            selectedObjects,
-            setSelectedObjects,
-            selectedActivities,
-            setSelectedActivities,
-            selectedPrograms,
-            setSelectedPrograms
-          }}
-      />
+    <SettingsDrawer>
+      <div>
+        {/* This section is configuration of the data set. */}
+        <ExpenditureFilter
+          filterState={
+            {
+              selectedObjects,
+              setSelectedObjects,
+              selectedActivities,
+              setSelectedActivities,
+              selectedPrograms,
+              setSelectedPrograms
+            }}
+        />
 
-      {/* This section is configuration of each comparison */}
-      <Stack direction="row" spacing={4}>
-        {metricList.map(
-          (def,i) => (
-              <Stack key={i} spacing={4} direction="column">
-                <DistrictSelector
-                  ccddd={def.ccddd}
-                  onChange={ccddd => {
-                    updateMetricList(i, {
-                      ccddd,
-                      selectedSchools: getSchoolItems(ccddd),
+        {/* This section is configuration of each comparison */}
+        <Stack spacing={4}>
+          {metricList.map(
+            (def,i) => (
+                <Stack key={i} spacing={4} direction="column">
+                  <DistrictSelector
+                    ccddd={def.ccddd}
+                    onChange={ccddd => {
+                      updateMetricList(i, {
+                        ccddd,
+                        selectedSchools: getSchoolItems(ccddd),
+                      }
+                    )}}
+                  />
+                  <SchoolFilter
+                    ccddd={def.ccddd}
+                    selectedSchools={def.selectedSchools}
+                    setSelectedSchools={
+                      selectedSchools => updateMetricList(i, {selectedSchools})
                     }
-                  )}}
-                />
-                <SchoolFilter
-                  ccddd={def.ccddd}
-                  selectedSchools={def.selectedSchools}
-                  setSelectedSchools={
-                    selectedSchools => updateMetricList(i, {selectedSchools})
-                  }
-                />
-                <MetricVariantSelector
-                  label={`Column ${i} variant`}
-                  variant={metricList[i].metricVariant}
-                  onChange={metricVariant => updateMetricList(i, {metricVariant})}
-                />
-              </Stack>
-          ))
-        }
-      </Stack>
+                  />
+                  <MetricVariantSelector
+                    label={`Column ${i} variant`}
+                    variant={metricList[i].metricVariant}
+                    onChange={metricVariant => updateMetricList(i, {metricVariant})}
+                  />
+                </Stack>
+            ))
+          }
+        </Stack>
+      </div>
 
       {/* Draw the Charts */}
+      <div>
+        hi
       <FacetedBudgetActualCharts
         idPrefix={facet}
         data={data}
@@ -186,6 +191,7 @@ export default function NcesDashboard() {
         facetOrder={facetOrder}
         metricList={metricList}
       />
-    </div>
+      </div>
+    </SettingsDrawer>
   );
 }
