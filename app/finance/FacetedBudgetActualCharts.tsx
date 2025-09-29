@@ -70,10 +70,22 @@ function makeTitle(facetInfo, metricDef) {
   </div>`;
 }
 
-export function makeFacetComponents(idPrefix, xColumn, xLabel, facetOrder,
+// Produces all "component" which is basically a chart in the cell. This of
+// this as the constructor for all the charts. The total number of elements will be
+// number of facets times metricList.
+//
+// The metric list may have semantic repeats as they represent columns.
+//
+// idPrefix - prefix to the id. Must match with the GUI.
+// xColumn - what column from the data connector to use for "x".
+// xLabel - Label for the x axis.
+// facets - an array of facets to render.  The ordering does not matter as that is defined by the gui.
+// connectorId - the ID of the data pool to conect to.
+// metricList - the metrics to generate for each facet.
+export function makeFacetComponents(idPrefix, xColumn, xLabel, facets,
                                     connectorId, metricList) {
   const r = metricList.flatMap(
-    (metricDef, metricOrdinal) => facetOrder.map(
+    (metricDef, metricOrdinal) => facets.map(
       facetInfo => (
         makeBudgetActualsChartConfig(
           {
@@ -95,8 +107,14 @@ export function makeFacetComponents(idPrefix, xColumn, xLabel, facetOrder,
   return r;
 }
 
-export function makeSortedGui(idPrefix, facetOrder : Array<FacetInfo>,
-                              metricList: Array<MetricDef>) {
+// Takes a set of ordered facets and set of metrics per facet and produces
+// a highcharts Dashboard GUI config object with each facet as a row and each
+// metric as a column in the row.
+//
+// idPrefix is used to prefix each cell ID to avoid collisions if doing multiple
+// graphs in one document.
+export function makeComparisonGui(idPrefix, facetOrder: Array<FacetInfo>,
+                                  metricList: Array<MetricDef>) {
   const r = {
     layouts: [
       {
@@ -119,7 +137,7 @@ export function makeSortedGui(idPrefix, facetOrder : Array<FacetInfo>,
 export default function FacetedBudgetActualCharts({idPrefix, data, xColumn, xLabel,
                                                   facetOrder, metricList} : Params) {
   const connectorId = `${idPrefix}-data-connector`;
-  const gui = makeSortedGui(idPrefix, facetOrder, metricList);
+  const gui = makeComparisonGui(idPrefix, facetOrder, metricList);
   const components = makeFacetComponents(idPrefix, xColumn, xLabel,
                                          facetOrder, connectorId, metricList);
 

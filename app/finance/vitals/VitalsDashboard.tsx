@@ -7,13 +7,35 @@ import { useDistrictData } from '../DistrictDataProvider';
 import { useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react';
 import DistrictSelector from 'app/finance/DistrictSelector';
+import SettingsLayout from 'app/finance/SettingsLayout';
 import HcDashboard from 'components/HcDashboard';
 import Loading from 'components/Loading';
 import MetricVariantSelector from 'app/finance/MetricVariantSelector';
 import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 
 import type { BudgetActualsChartOptions } from "utilities/highcharts/ChartConfigGenerators";
 import type { MetricVariant } from 'app/finance/MetricVariantSelector';
+import type { DatasetSettings } from 'app/finance/SettingsLayout';
+
+
+interface VitalsSettings extends DatasetSettings {
+  ccddd: number;
+  metricVariant: MetricVariant;
+};
+
+function VitalsSettingsPanel({datasetSettings, setDatasetSettings} : {datasetSettings: VitalsSettings, setDatasetSettings: (x: VitalsSettings) => void}) {
+  return (
+    <div>
+      {datasetSettings.ccddd}
+    </div>
+  );
+}
+
+interface Props {
+  datasetSettings: VitalsSettings;
+  setDatasetSettings: (x: VitalsSettings) => void;
+};
 
 const CONNECTOR_ID = 'vitals-connector';
 
@@ -52,6 +74,14 @@ function makeBudgetActualsChartOptions(ccddd, metricVariant) : Array<BudgetActua
 export default function VitalsDashboard() {
   const { districtDataMap, loadCcddd } = useDistrictData();
   const searchParams = useSearchParams();
+  const [allVitalsSettings, setAllVitalsSettings] = useState<Array<VitalsSettings>>([
+    {
+      name: 'SPS',
+      id: 'foo',
+      ccddd: 17001,
+      metricVariant: 'pctcomp' as const,
+    }]
+                                                                                   );
   const [metricVariant, setMetricVariant] = useState<MetricVariant>('pctcomp' as const);
   const [ccddd, setCcddd] = useState<number>(parseInt(searchParams.get('ccddd') ?? '17001'));
 
@@ -99,8 +129,12 @@ export default function VitalsDashboard() {
 
 
   return (
-    <Stack>
-      <Stack direction="row">
+    <SettingsLayout
+        allDatasetSettings={allVitalsSettings}
+        setAllDatasetSettings={setAllVitalsSettings}
+        SettingsRenderComponent={VitalsSettingsPanel}
+    >
+      <Stack>
         <DistrictSelector
           ccddd={ccddd}
           onChange={(selection) => setCcddd(selection)}
@@ -111,7 +145,11 @@ export default function VitalsDashboard() {
           onChange={newValue => setMetricVariant(newValue)}
         />
       </Stack>
+
+      <Typography className="analysis-title" component="h1" variant="h1">
+        Vitals Dashboard
+      </Typography>
       <HcDashboard config={config} />
-    </Stack>
+    </SettingsLayout>
   );
 }

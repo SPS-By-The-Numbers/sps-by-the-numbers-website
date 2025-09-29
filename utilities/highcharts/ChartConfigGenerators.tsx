@@ -380,7 +380,7 @@ export function makeBudgetActualsChartConfig(options : BudgetActualsChartOptions
           type: "column",
         },
         xAxis: {
-          // TODO: This is  in a weird spot.
+          // TODO: This is in a weird spot.
           reversed: true,
           events: {
             afterSetExtremes: function(event) {

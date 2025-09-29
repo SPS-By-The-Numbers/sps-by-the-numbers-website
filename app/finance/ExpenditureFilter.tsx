@@ -1,6 +1,5 @@
 'use client';
 
-import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
@@ -44,15 +43,19 @@ export type ExpenditureFilterState = {
 
 function FilterTree({title, items, selectedItems, setSelectedItems}) {
   return (
-    <Stack>
-      <RichTreeView
-        checkboxSelection
-        multiSelect
-        selectedItems={selectedItems}
-        onSelectedItemsChange={(e,i) => setSelectedItems(i)}
-        selectionPropagation={{descendants: true, parents: true}}
-        items={items} />
-    </Stack>
+    <RichTreeView
+      checkboxSelection
+      multiSelect
+      selectedItems={selectedItems}
+      onSelectedItemsChange={(e,i) => setSelectedItems(i)}
+      selectionPropagation={{descendants: true, parents: true}}
+      items={items}
+      sx={{
+        "& .MuiRichTreeView-itemLabel": {
+          fontSize: "0.85rem",
+        },
+      }}
+      />
   );
 }
 
@@ -73,27 +76,25 @@ export default function ExpenditureFilter({filterState} : { filterState: FilterS
   const {selectedPrograms, setSelectedPrograms} = filterState;
 
   return (
-    <Paper>
-      <Stack>
-        <Typography component="h2" variant="h2" textAlign="center" style={{fontSize: "1.4rem"}}>Filters</Typography>
-          <Stack justifyContent="space-between">
-            <FilterTree
-              title="Object"
-              items={SafsObjectsTreeItems}
-              selectedItems={selectedObjects}
-              setSelectedItems={setSelectedObjects} />
-            <FilterTree
-              title="Activity"
-              items={SpsActivityCategoryTreeItems}
-              selectedItems={selectedActivities}
-              setSelectedItems={setSelectedActivities} />
-            <FilterTree
-              title="Program"
-              items={SpsProgramGroupingTreeItems}
-              selectedItems={selectedPrograms}
-              setSelectedItems={setSelectedPrograms} />
-          </Stack>
-      </Stack>
-    </Paper>
+    <Stack>
+      <Typography component="h2" variant="h2" textAlign="center" style={{fontSize: "1.4rem"}}>Filters</Typography>
+        <Stack justifyContent="space-between">
+          <FilterTree
+            title="Object"
+            items={SafsObjectsTreeItems}
+            selectedItems={selectedObjects}
+            setSelectedItems={setSelectedObjects} />
+          <FilterTree
+            title="Activity"
+            items={SpsActivityCategoryTreeItems}
+            selectedItems={selectedActivities}
+            setSelectedItems={setSelectedActivities} />
+          <FilterTree
+            title="Program"
+            items={SpsProgramGroupingTreeItems}
+            selectedItems={selectedPrograms}
+            setSelectedItems={setSelectedPrograms} />
+        </Stack>
+    </Stack>
   );
 }

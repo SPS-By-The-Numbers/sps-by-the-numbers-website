@@ -10,7 +10,8 @@ import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
 import Loading from 'components/Loading';
 import MetricVariantSelector from 'app/finance/MetricVariantSelector';
 import Stack from '@mui/material/Stack';
-import SettingsDrawer from 'app/finance/nces/SettingsDrawer';
+import SettingsLayout from 'app/finance/SettingsLayout';
+import Typography from '@mui/material/Typography';
 
 import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
 import type { MetricDef } from 'app/finance/FacetedBudgetActualCharts';
@@ -133,7 +134,11 @@ export default function NcesDashboard() {
   };
 
   return (
-    <SettingsDrawer>
+    <>
+    <Typography className="analysis-title" component="h1" variant="h1">
+      NCES Dashboard -- Spending classification for Actual spend.
+    </Typography>
+    <SettingsLayout>
       <div>
         {/* This section is configuration of the data set. */}
         <ExpenditureFilter
@@ -149,7 +154,7 @@ export default function NcesDashboard() {
         />
 
         {/* This section is configuration of each comparison */}
-        <Stack spacing={4}>
+        <Stack direction="row" spacing={4}>
           {metricList.map(
             (def,i) => (
                 <Stack key={i} spacing={4} direction="column">
@@ -181,8 +186,6 @@ export default function NcesDashboard() {
       </div>
 
       {/* Draw the Charts */}
-      <div>
-        hi
       <FacetedBudgetActualCharts
         idPrefix={facet}
         data={data}
@@ -191,7 +194,7 @@ export default function NcesDashboard() {
         facetOrder={facetOrder}
         metricList={metricList}
       />
-      </div>
-    </SettingsDrawer>
+    </SettingsLayout>
+    </>
   );
 }

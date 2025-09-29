@@ -100,6 +100,7 @@ export function makeChartableNces(
     const facetCodeColumn = `${facetColumn}_code`;
 
     // NCES codes only work with actuals.
+    // TODO: Remove sample!
     const df = raw_df.filter(d => d.nces_code !== null);
 
     // Sort by biggest.

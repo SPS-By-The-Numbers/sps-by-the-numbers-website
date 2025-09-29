@@ -13,7 +13,15 @@ type Params = {
 
 export default function FinanceNav({sx=[]} : Params) {
   return (
-    <AppBar position="sticky" color="primary">
+    <AppBar
+        position="sticky"
+        color="primary"
+        sx={[{
+          zIndex: (theme) => theme.zIndex.drawer + 1
+        },
+        ...(Array.isArray(sx) ? sx : [sx])
+        ]}
+    >
       <Toolbar
           variant="dense"
           sx={{

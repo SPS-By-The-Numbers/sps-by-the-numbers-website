@@ -36,14 +36,7 @@ export default function RootLayout({ children }: {children: React.ReactNode}) {
           <HighchartsProvider>
             <CssBaseline />
             <InitColorSchemeScript attribute="class"/>
-            <Box sx={{
-              marginTop: "0.5ex",
-              height: "100%",
-              maxWidth: "120ch",
-              marginX: 'auto',
-              }}>
-              {children}
-            </Box>
+            {children}
           </HighchartsProvider>
         </MuiProviders>
       </body>
