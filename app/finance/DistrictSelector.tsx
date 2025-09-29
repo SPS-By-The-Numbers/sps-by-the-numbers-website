@@ -49,12 +49,6 @@ export default function DistrictSelector({ccddd, onChange, sx=[]} : Params) {
       }
       sx={[
         {
-          width: "100%",
-          minWidth: "40rex",
-          bgcolor: 'primary.main',
-          "& .MuiOutlinedInput-root": {
-            color: 'primary.contrastText',
-          },
         },
         ...(Array.isArray(sx) ? sx : [sx])
       ]}

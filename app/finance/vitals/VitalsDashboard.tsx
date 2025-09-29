@@ -27,7 +27,15 @@ interface VitalsSettings extends DatasetSettings {
 function VitalsSettingsPanel({datasetSettings, setDatasetSettings} : {datasetSettings: VitalsSettings, setDatasetSettings: (x: VitalsSettings) => void}) {
   return (
     <div>
-      {datasetSettings.ccddd}
+      <DistrictSelector
+        ccddd={datasetSettings.ccddd}
+        onChange={(ccddd) => setDatasetSettings(Object.assign({}, datasetSettings, {ccddd}))}
+      />
+      <MetricVariantSelector
+        label={`Key Expenditure Unit`}
+        variant={datasetSettings.metricVariant}
+        onChange={(metricVariant) => setDatasetSettings(Object.assign({}, datasetSettings, {metricVariant}))}
+      />
     </div>
   );
 }

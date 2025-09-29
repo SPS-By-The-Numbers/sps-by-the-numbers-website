@@ -4,15 +4,9 @@ import * as React from 'react';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
-import AppBar from '@mui/material/AppBar';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Box from '@mui/material/Box';
-import CssBaseline from '@mui/material/CssBaseline';
-import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
-import SettingsIcon from '@mui/icons-material/Settings';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 
@@ -34,24 +28,12 @@ interface SettingsLayoutProps<SettingsType extends DatasetSettings> {
   children : ReactNode;
 }
 
-interface DatasetAccordionProps<T extends DatasetSettings> {
-  datasetSettings: T;
-  setDatasetSettings: (newSettings: T) => void;
-  SettingsRenderComponent: SettingsRenderComponentType<T>;
-}
-
-interface DrawerContentsProps<T extends DatasetSettings> {
-  allDatasetSettings: Array<T>;
-  updateDatasetSettings: (i: number, v: T) => void;
-  SettingsRenderComponent: SettingsRenderComponentType<T>;
-}
-
 function DatasetAccordion<T extends DatasetSettings>(
-    {datasetSettings, setDatasetSettings, SettingsRenderComponent} : DatasetAccordionProps<T>) {
+    {datasetSettings, setDatasetSettings, SettingsRenderComponent}) {
   return (
     <Accordion>
       <AccordionSummary
-        expandIcon={<ArrowDownwardIcon />}
+        expandIcon={<ArrowDropDownIcon />}
         aria-controls={`${datasetSettings.id}`}
         id={`panel-${datasetSettings.id}-header`}
       >
@@ -65,7 +47,7 @@ function DatasetAccordion<T extends DatasetSettings>(
 }
 
 function DrawerContents<T extends DatasetSettings>(
-    {allDatasetSettings, updateDatasetSettings, SettingsRenderComponent} : DrawerContentsProps<T>) {
+    {allDatasetSettings, updateDatasetSettings, SettingsRenderComponent}) {
   const panels = allDatasetSettings.map(
     (datasetSettings, index) => (
       <DatasetAccordion
@@ -156,7 +138,6 @@ export default function SettingsLayout<T extends DatasetSettings>(props: Setting
         </Drawer>
       </Box>
       <Box
-        component="main"
         sx={{ flexGrow: 1, p: 0, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         {children}
