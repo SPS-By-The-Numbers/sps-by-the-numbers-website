@@ -3,6 +3,7 @@
 import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import { makeChartableVitals } from 'utilities/ChartableMetrics';
 import { makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGenerators";
+import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { useDistrictData } from '../DistrictDataProvider';
 import { useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react';
@@ -13,32 +14,11 @@ import Loading from 'components/Loading';
 import MetricVariantSelector from 'app/finance/MetricVariantSelector';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import VitalsSettingsContents from 'app/finance/vitals/VitalsSettingsContents';
 
 import type { BudgetActualsChartOptions } from "utilities/highcharts/ChartConfigGenerators";
 import type { MetricVariant } from 'app/finance/MetricVariantSelector';
-import type { DatasetSettings } from 'app/finance/SettingsLayout';
-
-
-interface VitalsSettings extends DatasetSettings {
-  ccddd: number;
-  metricVariant: MetricVariant;
-};
-
-function VitalsSettingsPanel({datasetSettings, setDatasetSettings} : {datasetSettings: VitalsSettings, setDatasetSettings: (x: VitalsSettings) => void}) {
-  return (
-    <div>
-      <DistrictSelector
-        ccddd={datasetSettings.ccddd}
-        onChange={(ccddd) => setDatasetSettings(Object.assign({}, datasetSettings, {ccddd}))}
-      />
-      <MetricVariantSelector
-        label={`Key Expenditure Unit`}
-        variant={datasetSettings.metricVariant}
-        onChange={(metricVariant) => setDatasetSettings(Object.assign({}, datasetSettings, {metricVariant}))}
-      />
-    </div>
-  );
-}
+import type { VitalsSettings } from 'app/finance/vitals/VitalsSettingsContents';
 
 interface Props {
   datasetSettings: VitalsSettings;
@@ -61,26 +41,35 @@ function makeCell(renderTo, ccddd, metricColumnRoot, title, yValueFormat, yLabel
     };
 }
 
-function makeBudgetActualsChartOptions(ccddd, metricVariant) : Array<BudgetActualsChartOptions> {
+function makeBudgetActualsChartOptions(idPrefix, ccddd, metricVariant) : Array<BudgetActualsChartOptions> {
   let compFormat = 'currency'
 
   if (metricVariant === 'pctcomp') {
     compFormat = 'pctcomp'
   }
   return [
-    makeCell('enrollment-chart', ccddd, 'enrollment', 'Enrollment', 'decimal', 'AFTE'),
-    makeCell('staffing-chart', ccddd, 'amount_staff_fte', 'Staffing FTE', 'decimal', 'FTE'),
-    makeCell('cashflow-chart', ccddd, 'cashflow', 'Cashflow', 'currency', '$'),
-    makeCell('beginning-balance-chart', ccddd, 'beginning_balance', 'Beginning Balance', 'currency'),
-    makeCell('teaching-related-comp', ccddd, 'teachingComp', 'Teaching Related Comp', compFormat),
-    makeCell('student-support-comp', ccddd, 'studentSupportComp', 'Student Support Comp', compFormat),
-    makeCell('building-support-comp', ccddd, 'buildingSupportComp', 'Buildling Support Comp', compFormat),
-    makeCell('other-comp', ccddd, 'otherComp', 'Other Comp', compFormat),
+    makeCell(`${idPrefix}-enrollment-chart`, ccddd, 'enrollment', 'Enrollment', 'decimal', 'AFTE'),
+    makeCell(`${idPrefix}-staffing-chart`, ccddd, 'amount_staff_fte', 'Staffing FTE', 'decimal', 'FTE'),
+    makeCell(`${idPrefix}-cashflow-chart`, ccddd, 'cashflow', 'Cashflow', 'currency', '$'),
+    makeCell(`${idPrefix}-beginning-balance-chart`, ccddd, 'beginning_balance', 'Beginning Balance', 'currency'),
+    makeCell(`${idPrefix}-teaching-related-comp`, ccddd, 'teachingComp', 'Teaching Related Comp', compFormat),
+    makeCell(`${idPrefix}-student-support-comp`, ccddd, 'studentSupportComp', 'Student Support Comp', compFormat),
+    makeCell(`${idPrefix}-building-support-comp`, ccddd, 'buildingSupportComp', 'Buildling Support Comp', compFormat),
+    makeCell(`${idPrefix}-other-comp`, ccddd, 'otherComp', 'Other Comp', compFormat),
   ];
 }
 
+function componentsGenerator(vitalsSettings : VitalsSettings) {
+  const budgetActualsChartOptions = makeBudgetActualsChartOptions(
+    vitalsSettings.id,
+    vitalsSettings.ccddd,
+    vitalsSettings.metricVariant
+  );
+  return budgetActualsChartOptions.map(c => makeBudgetActualsChartConfig(c));
+}
+
 export default function VitalsDashboard() {
-  const { districtDataMap, loadCcddd } = useDistrictData();
+  const {districtDataMap, loadCcddd} = useDistrictData();
   const searchParams = useSearchParams();
   const [allVitalsSettings, setAllVitalsSettings] = useState<Array<VitalsSettings>>([
     {
@@ -90,35 +79,33 @@ export default function VitalsDashboard() {
       metricVariant: 'pctcomp' as const,
     }]
                                                                                    );
-  const [metricVariant, setMetricVariant] = useState<MetricVariant>('pctcomp' as const);
-  const [ccddd, setCcddd] = useState<number>(parseInt(searchParams.get('ccddd') ?? '17001'));
-
-  const budgetActualsChartOptions = makeBudgetActualsChartOptions(ccddd, metricVariant);
-  const components = budgetActualsChartOptions.map(c => makeBudgetActualsChartConfig(c));
-  const gui = { layouts: [{rows: [
-    { cells: [{id: 'enrollment-chart'}, {id: 'staffing-chart'}]},
-    { cells: [{id: 'cashflow-chart'}, {id: 'beginning-balance-chart'}]},
-    { cells: [{id: 'teaching-related-comp'}, {id: 'student-support-comp'}]},
-    { cells: [{id: 'building-support-comp'}, {id: 'other-comp'}]},
-    ]}]};
+  const result = makeDatasetFacetedDashboard(allVitalsSettings, componentsGenerator);
+  if (result === undefined) {
+    return <div>No Datasets defined.</div>;
+  }
+  const {components, gui} = result;
 
 
   // TODO: Pull this into a component.
   useEffect(
-    () => { loadCcddd(ccddd); },
-    [ccddd, loadCcddd]);
+    () => { 
+      for (const settings of allVitalsSettings) {
+        loadCcddd(settings.ccddd);
+      }
+    },
+    [allVitalsSettings, loadCcddd]);
 
-  if (!(ccddd in districtDataMap)) {
+  const districtData = districtDataMap[allVitalsSettings[0].ccddd];
+  if (!districtData) {
     return <Loading text="Loading dataset..." />
   }
 
-  const districtData = districtDataMap[ccddd];
   const data = makeChartableVitals(
-    ccddd,
+    allVitalsSettings[0].ccddd,
     districtData.enrollmentSummary(),
     districtData.staffingSummary(),
     districtData.balances(),
-    districtData.compensation(metricVariant),
+    districtData.compensation(allVitalsSettings[0].metricVariant),
   );
 
   const config = ({
@@ -140,20 +127,8 @@ export default function VitalsDashboard() {
     <SettingsLayout
         allDatasetSettings={allVitalsSettings}
         setAllDatasetSettings={setAllVitalsSettings}
-        SettingsRenderComponent={VitalsSettingsPanel}
+        SettingsRenderComponent={VitalsSettingsContents}
     >
-      <Stack>
-        <DistrictSelector
-          ccddd={ccddd}
-          onChange={(selection) => setCcddd(selection)}
-        />
-        <MetricVariantSelector
-          label={`Key Expenditure Unit`}
-          variant={metricVariant}
-          onChange={newValue => setMetricVariant(newValue)}
-        />
-      </Stack>
-
       <Typography className="analysis-title" component="h1" variant="h1">
         Vitals Dashboard
       </Typography>
