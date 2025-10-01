@@ -14,7 +14,8 @@ export type FacetInfo = {
 };
 
 export type MetricNormalization =
-  "pctexp"       // Percent of total expenditures.
+  "amount"       // Raw amount. No normalization
+  | "pctexp"     // Percent of total expenditures.
   | "pctrev"     // Percent of total revenues.
   | "pctcomp"    // Percent total expenditures on compensation.
   | "pctsalary"  // Percent total expenditures on salary.
@@ -35,11 +36,13 @@ function sortOrderOp(sortOrder : SortOrder, expr) {
 //
 // Columns representing a chartable metric has a column name with this format:
 //
-//   ${ccddd]_${metric_name}_${facet}_${budget/actuals}
+//   ${ccddd]_${normalization}_${metric}_${budget/actuals}
 //
 //  Example for amount of activity_code 11 in actuals for 17001 would be:
 //
-//    17001_amount_11_actuals
+//    17001_amount_act11_actuals
+//
+//  where act is the shortening for activity_code
 //
 // Columns providing more info on the row itself do not follow
 // any specific form. An example of such a column is "covid_type"
@@ -203,7 +206,6 @@ export function makeChartableStaffing(
 export function extractNormalizationDf(districtData: DistrictData,
                                        metricNormalization: MetricNormalization) {
   if (metricNormalization === "amount") {
-    // TODO: Ensure all class_of and budget and actuals
     const data_types = aq.table({data_type: ['budget', 'actuals']});
     return districtData.all_class_ofs()
       .cross(data_types)

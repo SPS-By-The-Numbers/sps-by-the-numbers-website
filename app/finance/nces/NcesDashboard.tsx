@@ -8,7 +8,7 @@ import SchoolFilter, {getSchoolItems} from 'app/finance/SchoolFilter';
 import ExpenditureFilter, { ALL_PROGRAM_ITEMS, ALL_ACTIVITY_ITEMS, ALL_OBJECT_ITEMS } from 'app/finance/ExpenditureFilter';
 import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
 import Loading from 'components/Loading';
-import MetricVariantSelector from 'app/finance/MetricVariantSelector';
+import MetricNormalizationSelector from 'app/finance/MetricNormalizationSelector';
 import Stack from '@mui/material/Stack';
 import SettingsLayout from 'app/finance/SettingsLayout';
 import Typography from '@mui/material/Typography';
@@ -87,7 +87,7 @@ export default function NcesDashboard() {
     [
       {
         ccddd: initialCcddd,
-        metricVariant: 'amount' as const,
+        metricNormalization: 'amount' as const,
         selectedSchools: getSchoolItems(initialCcddd),
       },
     ]
@@ -135,7 +135,7 @@ export default function NcesDashboard() {
 
   return (
     <>
-    <Typography className="analysis-title" component="h1" variant="h1">
+    <Typography className="analysis-title" component="h1" normalization="h1">
       NCES Dashboard -- Spending classification for Actual spend.
     </Typography>
     <SettingsLayout>
@@ -174,10 +174,10 @@ export default function NcesDashboard() {
                       selectedSchools => updateMetricList(i, {selectedSchools})
                     }
                   />
-                  <MetricVariantSelector
-                    label={`Column ${i} variant`}
-                    variant={metricList[i].metricVariant}
-                    onChange={metricVariant => updateMetricList(i, {metricVariant})}
+                  <MetricNormalizationSelector
+                    label={`Column ${i} normalization`}
+                    normalization={metricList[i].metricNormalization}
+                    onChange={metricNormalization => updateMetricList(i, {metricNormalization})}
                   />
                 </Stack>
             ))

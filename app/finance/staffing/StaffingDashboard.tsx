@@ -7,7 +7,7 @@ import DistrictSelector from 'app/finance/DistrictSelector';
 import ExpenditureFilter, { ALL_SCHOOL_ITEMS, ALL_DUTY_ROOT_ITEMS, ALL_PROGRAM_ITEMS, ALL_ACTIVITY_ITEMS } from 'app/finance/ExpenditureFilter';
 import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
 import Loading from 'components/Loading';
-import MetricVariantSelector from 'app/finance/MetricVariantSelector';
+import MetricNormalizationSelector from 'app/finance/MetricNormalizationSelector';
 import Stack from '@mui/material/Stack';
 
 import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
@@ -78,11 +78,11 @@ export default function StaffingDashboard() {
     [
       {
         ccddd: initialCcddd,
-        metricVariant: 'fte' as const,
+        metricNormalization: 'fte' as const,
       },
       {
         ccddd: initialCcddd,
-        metricVariant: 'finalSalary' as const,
+        metricNormalization: 'finalSalary' as const,
       },
     ]
   );
@@ -154,10 +154,10 @@ export default function StaffingDashboard() {
                     updateMetricList(i, {ccddd: selection})
                   }}
                 />
-                <MetricVariantSelector
-                  label={`Column ${i} variant`}
-                  variant={metricList[i].metricVariant}
-                  onChange={newValue => updateMetricList(i, {metricVariant: newValue})}
+                <MetricNormalizationSelector
+                  label={`Column ${i} normalization`}
+                  normalization={metricList[i].metricNormalization}
+                  onChange={newValue => updateMetricList(i, {metricNormalization: newValue})}
                 />
               </Stack>
           ))

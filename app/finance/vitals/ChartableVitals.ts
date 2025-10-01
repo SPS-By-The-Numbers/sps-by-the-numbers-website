@@ -5,7 +5,6 @@ import { extractNormalizationDf } from 'utilities/ChartableMetrics';
 
 import type { ColumnTable } from 'arquero';
 import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
-import type { MetricVariant } from 'app/finance/MetricVariantSelector';
 import type { VitalsSettings } from 'app/finance/vitals/VitalsSettingsContents';
 import type { MetricNormalization } from 'utilities/ChartableMetrics';
 
@@ -51,11 +50,10 @@ function makeVitalsForDistrict(districtDataMap, ccddd, rawVariants) : ColumnTabl
   const rawVitals = extractRawVitals(districtData, ccddd);
 
   let data = normalizeColumn(districtData, rawVitals, AMOUNT_ONLY_COLUMN_NAMES, 'amount' as const);
-  const variants = new Set(rawVariants);
-  variants.add('amount' as const);
-  for (const v of variants) {
-    // TODO: remove cast.
-    const normalizedDf = normalizeColumn(districtData, rawVitals, NORMALIZED_COLUMN_NAMES, v as MetricNormalization);
+  const normalizations = new Set(rawVariants);
+  normalizations.add('amount' as const);
+  for (const v of normalizations) {
+    const normalizedDf = normalizeColumn(districtData, rawVitals, NORMALIZED_COLUMN_NAMES, v);
     data = data.join_left(normalizedDf);
   }
 
@@ -75,18 +73,18 @@ export function makeChartableVitals(
   // Some settings can be repeated. Naively joining through those will misname
   // the columns and add duplicates. Generate a unique list of settings makes
   // generating data next easier.
-  const uniqueSettings = new Map<number, Set<MetricVariant>>;
+  const uniqueSettings = new Map<number, Set<MetricNormalization>>;
   for (const vitalsSettings of allVitalsSettings) {
     if (!uniqueSettings.has(vitalsSettings.ccddd)) {
-      uniqueSettings.set(vitalsSettings.ccddd, new Set<MetricVariant>);
+      uniqueSettings.set(vitalsSettings.ccddd, new Set<MetricNormalization>);
     }
-    uniqueSettings.get(vitalsSettings.ccddd).add(vitalsSettings.metricVariant);
+    uniqueSettings.get(vitalsSettings.ccddd).add(vitalsSettings.metricNormalization);
   }
 
   // Get the data tables.
   const allDatasets = new Array<ColumnTable>;
-  for (const [ccddd, variants] of uniqueSettings.entries()) {
-    allDatasets.push(makeVitalsForDistrict(districtDataMap, ccddd, variants));
+  for (const [ccddd, normalizations] of uniqueSettings.entries()) {
+    allDatasets.push(makeVitalsForDistrict(districtDataMap, ccddd, normalizations));
   }
 
   let data = allDatasets[0];

@@ -14,13 +14,13 @@ import { makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGe
 import HcDashboard from 'components/HcDashboard';
 
 import type { ColumnTable } from 'arquero';
-import type { FacetInfo } from 'utilities/ChartableMetrics';
-import type { MetricVariant } from 'app/finance/MetricVariantSelector';
+import type { FacetInfo, MetricNormalization } from 'utilities/ChartableMetrics';
 import type { ValueFormat } from 'utilities/highcharts/ChartConfigGenerators';
 
 export type MetricDef ={
   ccddd: number;
-  metricVariant: MetricVariant;
+  metricNormalization: MetricNormalization;
+  yUnit?: string;
 };
 
 type Params = {
@@ -36,37 +36,38 @@ function makeCellId(idPrefix, metricOrdinal, facetInfo) {
   return `chart-${idPrefix}-${facetInfo.code}-${metricOrdinal}`;
 }
 
-function formatForVariant(variant) : ValueFormat {
-  if (variant === 'amount' ||
-      variant === 'finalSalary') {
+function formatForVariant(normalization) : ValueFormat {
+  if (normalization === 'amount' ||
+      normalization === 'finalSalary') {
     return 'currency' as const;
-  } else if (variant === 'pctexp') {
+  } else if (normalization === 'pctexp') {
     return 'pctexp' as const;
-  } else if (variant === 'pctcomp') {
+  } else if (normalization === 'pctcomp') {
     return 'pctcomp' as const;
   }
 
   return 'decimal' as const;
 }
 
-function metricVariantToTitle(variant: MetricVariant) {
-  if (variant === 'amount') {
+function inferTitle(metricDef : MetricDef) {
+  if (metricDef.metricNormalization === 'amount') {
+    if (metricDef.yUnit) {
+      return metricDef.yUnit;
+    }
     return 'amount';
-  } else if (variant === 'pctexp') {
+  } else if (metricDef.metricNormalization === 'pctexp') {
     return '% of expenditures';
-  } else if (variant === 'fte') {
-    return 'FTE';
-  } else if (variant === 'finalSalary') {
-    return 's275 estimated Final Salary';
+  } else if (metricDef.metricNormalization === 'pctcomp') {
+    return '% of total compensation';
   }
 
-  throw `Unexpected variant ${variant}`;
+  throw `Unexpected normalization ${metricDef.metricNormalization}`;
 }
 
 function makeTitle(facetInfo, metricDef) {
   return `<div class='chart-title'>
     <h3>${facetInfo.title}</h3>
-    <h4>${metricVariantToTitle(metricDef.metricVariant)} - ${metricDef.ccddd}</h4>
+    <h4>${inferTitle(metricDef)} - ${metricDef.ccddd}</h4>
   </div>`;
 }
 
@@ -92,10 +93,10 @@ export function makeFacetComponents(idPrefix, xColumn, xLabel, facets,
             title: makeTitle(facetInfo, metricDef),
             renderTo: makeCellId(idPrefix, metricOrdinal, facetInfo),
             metricSuffix: facetInfo.code,
-            metricColumn: [metricDef.ccddd, metricDef.metricVariant].join('_'),
+            metricColumn: [metricDef.ccddd, metricDef.metricNormalization].join('_'),
             connectorId,
             xDataColumn: xColumn,
-            yValueFormat: formatForVariant(metricDef.metricVariant),
+            yValueFormat: formatForVariant(metricDef.metricNormalization),
             xValueFormat: 'year',
             xLabel,
           }

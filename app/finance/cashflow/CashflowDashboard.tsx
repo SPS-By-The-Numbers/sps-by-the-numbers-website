@@ -9,11 +9,11 @@ import { useSearchParams } from 'next/navigation'
 import DistrictSelector from 'app/finance/DistrictSelector';
 import HcDashboard from 'components/HcDashboard';
 import Loading from 'components/Loading';
-import MetricVariantSelector from 'app/finance/MetricVariantSelector';
+import MetricNormalizationSelector from 'app/finance/MetricNormalizationSelector';
 import Stack from '@mui/material/Stack';
 
 import type { BudgetActualsChartOptions, CorrelationChartOptions } from "utilities/highcharts/ChartConfigGenerators";
-import type { MetricVariant } from 'app/finance/MetricVariantSelector';
+import type { MetricNormalization } from 'utilities/ChartableMetrics';
 
 const CONNECTOR_ID = 'vitals-connector';
 
@@ -112,7 +112,7 @@ function makeCorrelationChartOptions(ccddd) : Array<CorrelationChartOptions> {
 export default function CashflowDashboard() {
   const { districtDataMap, loadCcddd } = useDistrictData();
   const searchParams = useSearchParams();
-  const [metricVariant, setMetricVariant] = useState<MetricVariant>('pctcomp' as const);
+  const [metricNormalization, setMetricNormalization] = useState<MetricNormalization>('pctcomp' as const);
   const [ccddd, setCcddd] = useState<number>(parseInt(searchParams.get('ccddd') ?? '17001'));
 
   const correlationChartOptions = makeCorrelationChartOptions(ccddd);
@@ -152,7 +152,7 @@ export default function CashflowDashboard() {
     districtData.enrollmentSummary(),
     districtData.staffingSummary(),
     districtData.balances(),
-    districtData.compensation(metricVariant),
+    districtData.compensation(metricNormalization),
   );
 
   const config = ({
@@ -177,10 +177,10 @@ export default function CashflowDashboard() {
           ccddd={ccddd}
           onChange={(selection) => setCcddd(selection)}
         />
-        <MetricVariantSelector
+        <MetricNormalizationSelector
           label={`Money Variants`}
-          variant={metricVariant}
-          onChange={newValue => setMetricVariant(newValue)}
+          normalization={metricNormalization}
+          onChange={newValue => setMetricNormalization(newValue)}
         />
       </Stack>
       <HcDashboard config={config} />
