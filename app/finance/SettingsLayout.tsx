@@ -7,29 +7,25 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
+import SettingsContents from 'app/finance/SettingsContents';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 
 import type { ReactNode, ComponentType } from 'react';
+import type { SettingsRenderComponentType, DatasetSettings } from 'app/finance/SettingsContents';
 
 const drawerWidth = 240;
-
-export interface DatasetSettings {
-  name: string;
-  id: string;
-};
-
-type SettingsRenderComponentType<T extends DatasetSettings> = ComponentType<{ datasetSettings: T, setDatasetSettings: (newSettings: T) => void }>;
 
 interface SettingsLayoutProps<SettingsType extends DatasetSettings> {
   allDatasetSettings: Array<SettingsType>;
   setAllDatasetSettings: (v: Array<SettingsType>) => void;
-  SettingsRenderComponent: SettingsRenderComponentType<SettingsType>;
+  settingsContentsComponents: Array<SettingsRenderComponentType<SettingsType>>;
+
   children : ReactNode;
 }
 
 function DatasetAccordion<T extends DatasetSettings>(
-    {datasetSettings, setDatasetSettings, SettingsRenderComponent}) {
+    {datasetSettings, setDatasetSettings, settingsContentsComponents}) {
   return (
     <Accordion>
       <AccordionSummary
@@ -40,21 +36,21 @@ function DatasetAccordion<T extends DatasetSettings>(
         <Typography component="span">{datasetSettings.name}</Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <SettingsRenderComponent datasetSettings={datasetSettings} setDatasetSettings={setDatasetSettings} />
+        <SettingsContents datasetSettings={datasetSettings} setDatasetSettings={setDatasetSettings} components={settingsContentsComponents} />
       </AccordionDetails>
     </Accordion>
   );
 }
 
 function DrawerContents<T extends DatasetSettings>(
-    {allDatasetSettings, updateDatasetSettings, SettingsRenderComponent}) {
+    {allDatasetSettings, updateDatasetSettings, settingsContentsComponents}) {
   const panels = allDatasetSettings.map(
     (datasetSettings, index) => (
       <DatasetAccordion
           key={index}
           datasetSettings={datasetSettings}
           setDatasetSettings={v => updateDatasetSettings(index, v)}
-          SettingsRenderComponent={SettingsRenderComponent}
+          settingsContentsComponents={settingsContentsComponents}
           />
     ));
   return (
@@ -64,8 +60,8 @@ function DrawerContents<T extends DatasetSettings>(
   );
 }
 
-export default function SettingsLayout<T extends DatasetSettings>(props: SettingsLayoutProps<T>) {
-  const {allDatasetSettings, setAllDatasetSettings, SettingsRenderComponent, children} = props;
+export default function SettingsLayout<SettingsType extends DatasetSettings>(props: SettingsLayoutProps<SettingsType>) {
+  const {allDatasetSettings, setAllDatasetSettings, settingsContentsComponents, children} = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [isClosing, setIsClosing] = React.useState(false);
 
@@ -96,7 +92,7 @@ export default function SettingsLayout<T extends DatasetSettings>(props: Setting
       <DrawerContents
           allDatasetSettings={allDatasetSettings}
           updateDatasetSettings={updateDatasetSettings}
-          SettingsRenderComponent={SettingsRenderComponent}
+          settingsContentsComponents={settingsContentsComponents}
       />
     </div>
   );

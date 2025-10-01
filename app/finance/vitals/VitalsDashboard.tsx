@@ -14,15 +14,12 @@ import Loading from 'components/Loading';
 import CurrencyNormalizationSelector from 'app/finance/CurrencyNormalizationSelector';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import VitalsSettingsContents from 'app/finance/vitals/VitalsSettingsContents';
+import MetricSettingsContents, { DEFAULT_METRIC_SETTINGS } from 'app/finance/MetricSettingsContents';
 
 import type { BudgetActualsChartOptions } from "utilities/highcharts/ChartConfigGenerators";
-import type { CurrencyNormalization } from 'app/finance/CurrencyNormalizationSelector';
-import type { VitalsSettings } from 'app/finance/vitals/VitalsSettingsContents';
+import type { MetricSettings } from 'app/finance/MetricSettingsContents';
 
-interface Props {
-  datasetSettings: VitalsSettings;
-  setDatasetSettings: (x: VitalsSettings) => void;
+export interface VitalsSettings extends MetricSettings {
 };
 
 const CONNECTOR_ID = 'vitals-connector';
@@ -72,26 +69,7 @@ function componentsGenerator(vitalsSettings : VitalsSettings) {
 export default function VitalsDashboard() {
   const {districtDataMap, loadCcddd} = useDistrictData();
   const searchParams = useSearchParams();
-  const [allVitalsSettings, setAllVitalsSettings] = useState<Array<VitalsSettings>>([
-    {
-      name: 'SPS',
-      id: 'foo',
-      ccddd: 17001,
-      currencyNormalization: 'pctcomp' as const,
-    },
-    {
-      name: 'SPS',
-      id: 'foo2',
-      ccddd: 17001,
-      currencyNormalization: 'amount' as const,
-    },
-  ]);
-
-  const result = makeDatasetFacetedDashboard(allVitalsSettings, componentsGenerator);
-  if (result === undefined) {
-    return <div>No Datasets defined.</div>;
-  }
-  const {components, gui} = result;
+  const [allVitalsSettings, setAllVitalsSettings] = useState<Array<VitalsSettings>>(DEFAULT_METRIC_SETTINGS);
 
   // TODO: Pull this into a component.
   useEffect(
@@ -101,6 +79,12 @@ export default function VitalsDashboard() {
       }
     },
     [allVitalsSettings, loadCcddd]);
+
+  const result = makeDatasetFacetedDashboard(allVitalsSettings, componentsGenerator);
+  if (result === undefined) {
+    return <div>No Datasets defined.</div>;
+  }
+  const {components, gui} = result;
 
   for (const vitalsSettings of allVitalsSettings) {
     if (!(vitalsSettings.ccddd in districtDataMap)) {
@@ -118,7 +102,7 @@ export default function VitalsDashboard() {
         {
           id: CONNECTOR_ID,
           type: 'JSON',
-          options: dfToJSONConnectorOptions(data),
+          options: data ? dfToJSONConnectorOptions(data) : undefined,
         },
       ],
     },
@@ -129,7 +113,7 @@ export default function VitalsDashboard() {
     <SettingsLayout
         allDatasetSettings={allVitalsSettings}
         setAllDatasetSettings={setAllVitalsSettings}
-        SettingsRenderComponent={VitalsSettingsContents}
+        settingsContentsComponents={[MetricSettingsContents]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">
         Vitals Dashboard

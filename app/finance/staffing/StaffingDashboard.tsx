@@ -9,9 +9,15 @@ import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
 import Loading from 'components/Loading';
 import CurrencyNormalizationSelector from 'app/finance/CurrencyNormalizationSelector';
 import Stack from '@mui/material/Stack';
+import SettingsLayout from 'app/finance/SettingsLayout';
+import MetricSettingsContents, {DEFAULT_METRIC_SETTINGS} from 'app/finance/MetricSettingsContents';
 
 import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
 import type { MetricDef } from 'app/finance/FacetedBudgetActualCharts';
+import type { MetricSettings } from 'app/finance/MetricSettingsContents';
+
+interface StaffingSettings extends MetricSettings {
+};
 
 function extractCodes(prefix, selectedItems) {
   const selectedCodes = new Array<number>;
@@ -69,6 +75,7 @@ function compileData(districtDataMap, firstCcddd, otherCcddds, filterSelection) 
 // Charts expenditures for 
 export default function StaffingDashboard() {
   const {districtDataMap, loadCcddd} = useDistrictData();
+  const [allStaffingSettings, setAllStaffingSettings] = useState<Array<StaffingSettings>>(DEFAULT_METRIC_SETTINGS);
   const initialCcddd = 17001;
   const [selectedSchoolCodes, setSelectedSchoolCodes] = useState<string[]>(ALL_SCHOOL_ITEMS);
   const [selectedDutyRootCodes, setSelectedDutyRootCodes] = useState<string[]>(ALL_DUTY_ROOT_ITEMS);
@@ -78,11 +85,11 @@ export default function StaffingDashboard() {
     [
       {
         ccddd: initialCcddd,
-        currencyNormalization: 'fte' as const,
+        currencyNormalization: 'amount' as const,
       },
       {
         ccddd: initialCcddd,
-        currencyNormalization: 'finalSalary' as const,
+        currencyNormalization: 'amount' as const,
       },
     ]
   );
@@ -129,13 +136,17 @@ export default function StaffingDashboard() {
   };
 
   return (
-    <div>
+    <SettingsLayout
+        allDatasetSettings={allStaffingSettings}
+        setAllDatasetSettings={setAllStaffingSettings}
+        settingsContentsComponents={[MetricSettingsContents]}
+    >
       {/* This section is configuration of the data set. */}
       <ExpenditureFilter
         filterState={
           {
-            selectedDutyRootCodes,
-            setSelectedDutyRootCodes,
+            selectedObjects: selectedDutyRootCodes,
+            setSelectedObjects: setSelectedDutyRootCodes,
             selectedActivities,
             setSelectedActivities,
             selectedPrograms,
@@ -173,6 +184,6 @@ export default function StaffingDashboard() {
         facetOrder={facetOrder}
         metricList={metricList}
       />
-    </div>
+    </SettingsLayout>
   );
 }

@@ -5,16 +5,16 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 
 import type { SxProps, Theme } from '@mui/material';
-import type { CurrencyNormalization } from 'utilities/ChartableMetrics';
+import type { StaffingNormalization } from 'utilities/ChartableMetrics';
 
 type Params = {
-  normalization: CurrencyNormalization;
+  normalization: StaffingNormalization;
   label: string;
-  onChange: (newVariant: CurrencyNormalization) => void;
+  onChange: (newVariant: StaffingNormalization) => void;
   sx?: SxProps<Theme>;
 };
 
-export default function CurrencyNormalizationSelector({normalization, label, onChange, sx=[]} : Params) {
+export default function StaffingNormalizationSelector({normalization, label, onChange, sx=[]} : Params) {
   const selectId = useId();
   return (
     <FormControl size="small">
@@ -22,16 +22,14 @@ export default function CurrencyNormalizationSelector({normalization, label, onC
       <Select
         labelId={selectId}
         value={normalization}
-        onChange={e => onChange(e.target.value as CurrencyNormalization)}
+        onChange={e => onChange(e.target.value as StaffingNormalization)}
         sx={[{
         },
         ...(Array.isArray(sx) ? sx : [sx])
         ]}
       >
         <MenuItem value="amount">Amount</MenuItem>
-        <MenuItem value="pctexp">% of Expenditures</MenuItem>
-        <MenuItem value="pctcomp">% of All Compensation</MenuItem>
-        <MenuItem value="pctsalary">% of All Salaries</MenuItem>
+        <MenuItem value="pctfte">% of All FTE</MenuItem>
       </Select>
     </FormControl>
   );

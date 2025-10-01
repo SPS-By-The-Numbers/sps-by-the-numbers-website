@@ -5,7 +5,7 @@ import { extractNormalizationDf } from 'utilities/ChartableMetrics';
 
 import type { ColumnTable } from 'arquero';
 import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
-import type { VitalsSettings } from 'app/finance/vitals/VitalsSettingsContents';
+import type { VitalsSettings } from 'app/finance/vitals/VitalsDashboard';
 import type { CurrencyNormalization } from 'utilities/ChartableMetrics';
 
 function extractRawVitals(districtData, ccddd) {
@@ -78,7 +78,13 @@ export function makeChartableVitals(
     if (!uniqueSettings.has(vitalsSettings.ccddd)) {
       uniqueSettings.set(vitalsSettings.ccddd, new Set<CurrencyNormalization>);
     }
-    uniqueSettings.get(vitalsSettings.ccddd).add(vitalsSettings.currencyNormalization);
+    const x = uniqueSettings.get(vitalsSettings.ccddd);
+
+    // TODO: This is ugly. There's gotta be a typesafe way to do this.
+    // Make typescript shutup.
+    if (x !== undefined) {
+      x.add(vitalsSettings.currencyNormalization);
+    }
   }
 
   // Get the data tables.

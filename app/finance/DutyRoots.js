@@ -1,4 +1,4 @@
-export default {
+const DUTY_ROOTS = {
   11: 'Superintendent',
   12: 'Deputy/Assistant Superintendent',
   13: 'Other District Administrator',
@@ -38,3 +38,5 @@ export default {
   98: 'Technical',
   99: 'Director or Supervisor',
 };
+
+export default DUTY_ROOTS;

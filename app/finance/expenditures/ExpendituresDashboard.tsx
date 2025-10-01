@@ -8,10 +8,16 @@ import ExpenditureFilter, { ALL_PROGRAM_ITEMS, ALL_ACTIVITY_ITEMS, ALL_OBJECT_IT
 import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
 import Loading from 'components/Loading';
 import CurrencyNormalizationSelector from 'app/finance/CurrencyNormalizationSelector';
+import MetricSettingsContents, {DEFAULT_METRIC_SETTINGS} from 'app/finance/MetricSettingsContents';
+import SettingsLayout from 'app/finance/SettingsLayout';
 import Stack from '@mui/material/Stack';
 
 import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
 import type { MetricDef } from 'app/finance/FacetedBudgetActualCharts';
+import type { MetricSettings } from 'app/finance/MetricSettingsContents';
+
+interface ExpendituresSettings extends MetricSettings {
+};
 
 type Params = {
   facet: "program" | "activity" | "object";
@@ -75,6 +81,7 @@ function compileData(districtDataMap, firstCcddd, otherCcddds, filterSelection, 
 // Charts expenditures for 
 export default function ExpendituresDashboard({facet} : Params) {
   const {districtDataMap, loadCcddd} = useDistrictData();
+  const [allExpendituresSettings, setAllExpendituresSettings] = useState<Array<ExpendituresSettings>>(DEFAULT_METRIC_SETTINGS);
   const initialCcddd = 17001;
   const [selectedObjects, setSelectedObjects] = useState<string[]>(ALL_OBJECT_ITEMS);
   const [selectedActivities, setSelectedActivities] = useState<string[]>(ALL_ACTIVITY_ITEMS);
@@ -133,7 +140,11 @@ export default function ExpendituresDashboard({facet} : Params) {
   };
 
   return (
-    <div>
+    <SettingsLayout
+        allDatasetSettings={allExpendituresSettings}
+        setAllDatasetSettings={setAllExpendituresSettings}
+        settingsContentsComponents={[MetricSettingsContents]}
+    >
       {/* This section is configuration of the data set. */}
       <ExpenditureFilter
         filterState={
@@ -177,6 +188,6 @@ export default function ExpendituresDashboard({facet} : Params) {
         facetOrder={facetOrder}
         metricList={metricList}
       />
-    </div>
+    </SettingsLayout>
   );
 }

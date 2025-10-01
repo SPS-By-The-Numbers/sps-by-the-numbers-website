@@ -21,6 +21,11 @@ export type CurrencyNormalization =
   | "pctsalary"  // Percent total expenditures on salary.
 ;
 
+export type StaffingNormalization =
+  "amount"       // Raw amount. No normalization.
+  | "pctfte"     // Percent of total staffing.
+;
+
 function sortOrderOp(sortOrder : SortOrder, expr) {
   if (sortOrder === 'ascending') {
     return expr;

@@ -11,13 +11,19 @@ import Loading from 'components/Loading';
 import CurrencyNormalizationSelector from 'app/finance/CurrencyNormalizationSelector';
 import Stack from '@mui/material/Stack';
 import SettingsLayout from 'app/finance/SettingsLayout';
+import MetricSettingsContents, { DEFAULT_METRIC_SETTINGS } from 'app/finance/MetricSettingsContents';
 import Typography from '@mui/material/Typography';
 
 import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
 import type { MetricDef } from 'app/finance/FacetedBudgetActualCharts';
+import type { MetricSettings } from 'app/finance/MetricSettingsContents';
 
 type CompareState = MetricDef & {
   selectedSchools: Array<string>,
+};
+
+
+export interface NcesSettings extends MetricSettings {
 };
 
 function extractCodes(prefix, selectedItems) {
@@ -79,6 +85,8 @@ function compileData(districtDataMap, firstCcddd, otherCcddds, filterSelection, 
 export default function NcesDashboard() {
   const facet = 'nces';
   const {districtDataMap, loadCcddd} = useDistrictData();
+  const [allNcesSettings, setAllNcesSettings] = useState<Array<NcesSettings>>(DEFAULT_METRIC_SETTINGS);
+
   const initialCcddd = 17001;
   const [selectedObjects, setSelectedObjects] = useState<string[]>(ALL_OBJECT_ITEMS);
   const [selectedActivities, setSelectedActivities] = useState<string[]>(ALL_ACTIVITY_ITEMS);
@@ -134,11 +142,14 @@ export default function NcesDashboard() {
   };
 
   return (
-    <>
-    <Typography className="analysis-title" component="h1" normalization="h1">
-      NCES Dashboard -- Spending classification for Actual spend.
-    </Typography>
-    <SettingsLayout>
+    <SettingsLayout
+        allDatasetSettings={allNcesSettings}
+        setAllDatasetSettings={setAllNcesSettings}
+        settingsContentsComponents={[MetricSettingsContents]}
+    >
+      <Typography className="analysis-title" component="h1" variant="h1">
+        NCES Dashboard -- Spending classification for Actual spend.
+      </Typography>
       <div>
         {/* This section is configuration of the data set. */}
         <ExpenditureFilter
@@ -195,6 +206,5 @@ export default function NcesDashboard() {
         metricList={metricList}
       />
     </SettingsLayout>
-    </>
   );
 }

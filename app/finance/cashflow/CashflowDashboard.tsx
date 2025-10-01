@@ -10,16 +10,18 @@ import { useSearchParams } from 'next/navigation'
 import DistrictSelector from 'app/finance/DistrictSelector';
 import HcDashboard from 'components/HcDashboard';
 import Loading from 'components/Loading';
-import CurrencyNormalizationSelector from 'app/finance/CurrencyNormalizationSelector';
 import SettingsLayout from 'app/finance/SettingsLayout';
 import Typography from '@mui/material/Typography';
-import VitalsSettingsContents from 'app/finance/vitals/VitalsSettingsContents';
+import MetricSettingsContents, {DEFAULT_METRIC_SETTINGS} from 'app/finance/MetricSettingsContents';
 
 import type { BudgetActualsChartOptions, CorrelationChartOptions } from "utilities/highcharts/ChartConfigGenerators";
 import type { CurrencyNormalization } from 'utilities/ChartableMetrics';
-import type { VitalsSettings } from 'app/finance/vitals/VitalsSettingsContents';
+import type { MetricSettings } from 'app/finance/MetricSettingsContents';
 
-const CONNECTOR_ID = 'vitals-connector';
+const CONNECTOR_ID = 'cashflow-connector';
+
+interface CashflowSettings extends MetricSettings {
+};
 
 function makeEnrollmentCashflowConfig(idPrefix, ccddd, name, columnSuffix, currencyNormalization, colorIndex) {
   return {
@@ -115,11 +117,11 @@ function makeCorrelationChartOptions(idPrefix, ccddd, currencyNormalization, sta
   return retval;
 }
 
-function componentsGenerator(vitalsSettings : VitalsSettings) {
+function componentsGenerator(cashflowSettings : CashflowSettings) {
   const correlationChartOptions = makeCorrelationChartOptions(
-    vitalsSettings.id,
-    vitalsSettings.ccddd,
-    vitalsSettings.currencyNormalization,
+    cashflowSettings.id,
+    cashflowSettings.ccddd,
+    cashflowSettings.currencyNormalization,
     'amount' as const);
 
   return correlationChartOptions.map(c => makeCorrelationChartConfig(c));
@@ -128,43 +130,30 @@ function componentsGenerator(vitalsSettings : VitalsSettings) {
 export default function CashflowDashboard() {
   const {districtDataMap, loadCcddd} = useDistrictData();
   const searchParams = useSearchParams();
-  const [allVitalsSettings, setAllVitalsSettings] = useState<Array<VitalsSettings>>([
-    {
-      name: 'SPS',
-      id: 'foo',
-      ccddd: 17001,
-      currencyNormalization: 'amount' as const,
-    },
-    {
-      name: 'SPS',
-      id: 'foo2',
-      ccddd: 17001,
-      currencyNormalization: 'pctexp' as const,
-    },
-  ]);
+  const [allCashflowSettings, setAllCashflowSettings] = useState<Array<CashflowSettings>>(DEFAULT_METRIC_SETTINGS);
 
   // TODO: Pull this into a component.
   useEffect(
     () => { 
-      for (const settings of allVitalsSettings) {
+      for (const settings of allCashflowSettings) {
         loadCcddd(settings.ccddd);
       }
     },
-    [allVitalsSettings, loadCcddd]);
+    [allCashflowSettings, loadCcddd]);
 
-  for (const vitalsSettings of allVitalsSettings) {
-    if (!(vitalsSettings.ccddd in districtDataMap)) {
+  for (const cashflowSettings of allCashflowSettings) {
+    if (!(cashflowSettings.ccddd in districtDataMap)) {
       return <Loading text="Loading dataset..." />
     }
   }
 
-  const result = makeDatasetFacetedDashboard(allVitalsSettings, componentsGenerator);
+  const result = makeDatasetFacetedDashboard(allCashflowSettings, componentsGenerator);
   if (result === undefined) {
     return <div>No Datasets defined.</div>;
   }
   const {components, gui} = result;
 
-  const data = makeChartableVitals(districtDataMap, allVitalsSettings);
+  const data = makeChartableVitals(districtDataMap, allCashflowSettings);
   console.log(data);
   console.log(components);
     
@@ -185,9 +174,9 @@ export default function CashflowDashboard() {
 
   return (
     <SettingsLayout
-        allDatasetSettings={allVitalsSettings}
-        setAllDatasetSettings={setAllVitalsSettings}
-        SettingsRenderComponent={VitalsSettingsContents}
+        allDatasetSettings={allCashflowSettings}
+        setAllDatasetSettings={setAllCashflowSettings}
+        settingsContentsComponents={[MetricSettingsContents]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">
         Cashflow Dashboard
