@@ -10,13 +10,13 @@ import { useSearchParams } from 'next/navigation'
 import DistrictSelector from 'app/finance/DistrictSelector';
 import HcDashboard from 'components/HcDashboard';
 import Loading from 'components/Loading';
-import MetricNormalizationSelector from 'app/finance/MetricNormalizationSelector';
+import CurrencyNormalizationSelector from 'app/finance/CurrencyNormalizationSelector';
 import SettingsLayout from 'app/finance/SettingsLayout';
 import Typography from '@mui/material/Typography';
 import VitalsSettingsContents from 'app/finance/vitals/VitalsSettingsContents';
 
 import type { BudgetActualsChartOptions, CorrelationChartOptions } from "utilities/highcharts/ChartConfigGenerators";
-import type { MetricNormalization } from 'utilities/ChartableMetrics';
+import type { CurrencyNormalization } from 'utilities/ChartableMetrics';
 import type { VitalsSettings } from 'app/finance/vitals/VitalsSettingsContents';
 
 const CONNECTOR_ID = 'vitals-connector';
@@ -119,7 +119,7 @@ function componentsGenerator(vitalsSettings : VitalsSettings) {
   const correlationChartOptions = makeCorrelationChartOptions(
     vitalsSettings.id,
     vitalsSettings.ccddd,
-    vitalsSettings.metricNormalization,
+    vitalsSettings.currencyNormalization,
     'amount' as const);
 
   return correlationChartOptions.map(c => makeCorrelationChartConfig(c));
@@ -133,13 +133,13 @@ export default function CashflowDashboard() {
       name: 'SPS',
       id: 'foo',
       ccddd: 17001,
-      metricNormalization: 'amount' as const,
+      currencyNormalization: 'amount' as const,
     },
     {
       name: 'SPS',
       id: 'foo2',
       ccddd: 17001,
-      metricNormalization: 'pctexp' as const,
+      currencyNormalization: 'pctexp' as const,
     },
   ]);
 

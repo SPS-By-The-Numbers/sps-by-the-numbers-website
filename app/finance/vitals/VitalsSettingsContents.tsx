@@ -1,13 +1,13 @@
 import DistrictSelector from 'app/finance/DistrictSelector';
-import MetricNormalizationSelector from 'app/finance/MetricNormalizationSelector';
+import CurrencyNormalizationSelector from 'app/finance/CurrencyNormalizationSelector';
 import Stack from '@mui/material/Stack';
 
-import type { MetricNormalization } from 'app/finance/VitalsSettings';
+import type { CurrencyNormalization } from 'app/finance/VitalsSettings';
 import type { DatasetSettings } from 'app/finance/SettingsLayout';
 
 export interface VitalsSettings extends DatasetSettings {
   ccddd: number;
-  metricNormalization: MetricNormalization;
+  currencyNormalization: CurrencyNormalization;
 };
 
 export default function VitalsSettingsContents({datasetSettings, setDatasetSettings} : {datasetSettings: VitalsSettings, setDatasetSettings: (x: VitalsSettings) => void}) {
@@ -17,10 +17,10 @@ export default function VitalsSettingsContents({datasetSettings, setDatasetSetti
         ccddd={datasetSettings.ccddd}
         onChange={(ccddd) => setDatasetSettings(Object.assign({}, datasetSettings, {ccddd}))}
       />
-      <MetricNormalizationSelector
+      <CurrencyNormalizationSelector
         label={`Money Normalization`}
-        normalization={datasetSettings.metricNormalization}
-        onChange={(metricNormalization) => setDatasetSettings(Object.assign({}, datasetSettings, {metricNormalization}))}
+        normalization={datasetSettings.currencyNormalization}
+        onChange={(currencyNormalization) => setDatasetSettings(Object.assign({}, datasetSettings, {currencyNormalization}))}
       />
     </Stack>
   );

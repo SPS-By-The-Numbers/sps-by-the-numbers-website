@@ -13,7 +13,7 @@ export type FacetInfo = {
   title: string;
 };
 
-export type MetricNormalization =
+export type CurrencyNormalization =
   "amount"       // Raw amount. No normalization
   | "pctexp"     // Percent of total expenditures.
   | "pctrev"     // Percent of total revenues.
@@ -204,28 +204,28 @@ export function makeChartableStaffing(
 }
 
 export function extractNormalizationDf(districtData: DistrictData,
-                                       metricNormalization: MetricNormalization) {
-  if (metricNormalization === "amount") {
+                                       currencyNormalization: CurrencyNormalization) {
+  if (currencyNormalization === "amount") {
     const data_types = aq.table({data_type: ['budget', 'actuals']});
     return districtData.all_class_ofs()
       .cross(data_types)
       .derive({norm: 1});
-  } if (metricNormalization === "pctexp") {
+  } if (currencyNormalization === "pctexp") {
     return districtData.expenditures()
       .groupby(['data_type', 'class_of'])
       .rollup({norm: d => op.sum(d.amount) / 100});
-  } else if (metricNormalization === "pctrev") {
+  } else if (currencyNormalization === "pctrev") {
     return districtData.revenues()
       .groupby(['data_type', 'class_of'])
       .rollup({norm: d => op.sum(d.amount) / 100});
-  } else if (metricNormalization === "pctcomp") {
+  } else if (currencyNormalization === "pctcomp") {
     return districtData.compensation()
       .groupby(['data_type', 'class_of'])
       .derive({norm: d => d.allStaffComp / 100});
-  } else if (metricNormalization === "pctsalary") {
+  } else if (currencyNormalization === "pctsalary") {
     throw `Not implemented`;
   }
 
-  throw `Invalid Normalizaiton: ${metricNormalization}`;
+  throw `Invalid Normalizaiton: ${currencyNormalization}`;
 }
 

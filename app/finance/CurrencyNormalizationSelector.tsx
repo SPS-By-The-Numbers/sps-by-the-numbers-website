@@ -5,24 +5,24 @@ import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 
 import type { SxProps, Theme } from '@mui/material';
-import type { MetricNormalization } from 'utilities/ChartableMetrics';
+import type { CurrencyNormalization } from 'utilities/ChartableMetrics';
 
 type Params = {
-  variant: MetricNormalization;
+  variant: CurrencyNormalization;
   label: string;
-  onChange: (newVariant: MetricNormalization) => void;
+  onChange: (newVariant: CurrencyNormalization) => void;
   sx?: SxProps<Theme>;
 };
 
-export default function MetricNormalizationSelector({variant, label, onChange, sx=[]} : Params) {
+export default function CurrencyNormalizationSelector({normalization, label, onChange, sx=[]} : Params) {
   const selectId = useId();
   return (
     <FormControl size="small">
       <InputLabel id={selectId}>{label}</InputLabel>
       <Select
         labelId={selectId}
-        value={variant}
-        onChange={e => onChange(e.target.value as MetricNormalization)}
+        value={normalization}
+        onChange={e => onChange(e.target.value as CurrencyNormalization)}
         sx={[{
         },
         ...(Array.isArray(sx) ? sx : [sx])

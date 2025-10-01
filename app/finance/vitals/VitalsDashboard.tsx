@@ -11,13 +11,13 @@ import DistrictSelector from 'app/finance/DistrictSelector';
 import SettingsLayout from 'app/finance/SettingsLayout';
 import HcDashboard from 'components/HcDashboard';
 import Loading from 'components/Loading';
-import MetricNormalizationSelector from 'app/finance/MetricNormalizationSelector';
+import CurrencyNormalizationSelector from 'app/finance/CurrencyNormalizationSelector';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import VitalsSettingsContents from 'app/finance/vitals/VitalsSettingsContents';
 
 import type { BudgetActualsChartOptions } from "utilities/highcharts/ChartConfigGenerators";
-import type { MetricNormalization } from 'app/finance/MetricNormalizationSelector';
+import type { CurrencyNormalization } from 'app/finance/CurrencyNormalizationSelector';
 import type { VitalsSettings } from 'app/finance/vitals/VitalsSettingsContents';
 
 interface Props {
@@ -41,22 +41,22 @@ function makeCell(renderTo, ccddd, metricColumnRoot, title, yValueFormat, yLabel
     };
 }
 
-function makeBudgetActualsChartOptions(idPrefix, ccddd, metricNormalization) : Array<BudgetActualsChartOptions> {
+function makeBudgetActualsChartOptions(idPrefix, ccddd, currencyNormalization) : Array<BudgetActualsChartOptions> {
   let compFormat = 'currency'
 
-  if (metricNormalization === 'pctcomp' || metricNormalization === 'pctexp' || metricNormalization === 'pctrev') {
-    compFormat = metricNormalization;
+  if (currencyNormalization === 'pctcomp' || currencyNormalization === 'pctexp' || currencyNormalization === 'pctrev') {
+    compFormat = currencyNormalization;
   }
   return [
     makeCell(`${idPrefix}-enrollment-chart`, ccddd, 'amount_enrollment', 'Enrollment', 'decimal', 'AFTE'),
     makeCell(`${idPrefix}-staffing-chart`, ccddd, 'amount_staffFte', 'Staffing FTE', 'decimal', 'FTE'),
-    {...makeCell(`${idPrefix}-cashflow-chart`, ccddd, `${metricNormalization}_cashflow`, 'Cashflow', compFormat),
+    {...makeCell(`${idPrefix}-cashflow-chart`, ccddd, `${currencyNormalization}_cashflow`, 'Cashflow', compFormat),
      yValueShowNegative: true},
-    makeCell(`${idPrefix}-beginning-balance-chart`, ccddd, `${metricNormalization}_beginningBalance`, 'Beginning Balance', compFormat),
-    makeCell(`${idPrefix}-teaching-related-comp`, ccddd, `${metricNormalization}_teachingComp`, 'Teaching Related Comp', compFormat),
-    makeCell(`${idPrefix}-student-support-comp`, ccddd, `${metricNormalization}_studentSupportComp`, 'Student Support Comp', compFormat),
-    makeCell(`${idPrefix}-building-support-comp`, ccddd, `${metricNormalization}_buildingSupportComp`, 'Buildling Support Comp', compFormat),
-    makeCell(`${idPrefix}-other-comp`, ccddd, `${metricNormalization}_otherComp`, 'Other Comp', compFormat),
+    makeCell(`${idPrefix}-beginning-balance-chart`, ccddd, `${currencyNormalization}_beginningBalance`, 'Beginning Balance', compFormat),
+    makeCell(`${idPrefix}-teaching-related-comp`, ccddd, `${currencyNormalization}_teachingComp`, 'Teaching Related Comp', compFormat),
+    makeCell(`${idPrefix}-student-support-comp`, ccddd, `${currencyNormalization}_studentSupportComp`, 'Student Support Comp', compFormat),
+    makeCell(`${idPrefix}-building-support-comp`, ccddd, `${currencyNormalization}_buildingSupportComp`, 'Buildling Support Comp', compFormat),
+    makeCell(`${idPrefix}-other-comp`, ccddd, `${currencyNormalization}_otherComp`, 'Other Comp', compFormat),
   ];
 }
 
@@ -64,7 +64,7 @@ function componentsGenerator(vitalsSettings : VitalsSettings) {
   const budgetActualsChartOptions = makeBudgetActualsChartOptions(
     vitalsSettings.id,
     vitalsSettings.ccddd,
-    vitalsSettings.metricNormalization
+    vitalsSettings.currencyNormalization
   );
   return budgetActualsChartOptions.map(c => makeBudgetActualsChartConfig(c));
 }
@@ -77,13 +77,13 @@ export default function VitalsDashboard() {
       name: 'SPS',
       id: 'foo',
       ccddd: 17001,
-      metricNormalization: 'pctcomp' as const,
+      currencyNormalization: 'pctcomp' as const,
     },
     {
       name: 'SPS',
       id: 'foo2',
       ccddd: 17001,
-      metricNormalization: 'amount' as const,
+      currencyNormalization: 'amount' as const,
     },
   ]);
 

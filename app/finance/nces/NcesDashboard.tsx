@@ -8,7 +8,7 @@ import SchoolFilter, {getSchoolItems} from 'app/finance/SchoolFilter';
 import ExpenditureFilter, { ALL_PROGRAM_ITEMS, ALL_ACTIVITY_ITEMS, ALL_OBJECT_ITEMS } from 'app/finance/ExpenditureFilter';
 import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
 import Loading from 'components/Loading';
-import MetricNormalizationSelector from 'app/finance/MetricNormalizationSelector';
+import CurrencyNormalizationSelector from 'app/finance/CurrencyNormalizationSelector';
 import Stack from '@mui/material/Stack';
 import SettingsLayout from 'app/finance/SettingsLayout';
 import Typography from '@mui/material/Typography';
@@ -87,7 +87,7 @@ export default function NcesDashboard() {
     [
       {
         ccddd: initialCcddd,
-        metricNormalization: 'amount' as const,
+        currencyNormalization: 'amount' as const,
         selectedSchools: getSchoolItems(initialCcddd),
       },
     ]
@@ -174,10 +174,10 @@ export default function NcesDashboard() {
                       selectedSchools => updateMetricList(i, {selectedSchools})
                     }
                   />
-                  <MetricNormalizationSelector
+                  <CurrencyNormalizationSelector
                     label={`Column ${i} normalization`}
-                    normalization={metricList[i].metricNormalization}
-                    onChange={metricNormalization => updateMetricList(i, {metricNormalization})}
+                    normalization={metricList[i].currencyNormalization}
+                    onChange={currencyNormalization => updateMetricList(i, {currencyNormalization})}
                   />
                 </Stack>
             ))

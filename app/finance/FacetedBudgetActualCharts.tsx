@@ -14,12 +14,12 @@ import { makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGe
 import HcDashboard from 'components/HcDashboard';
 
 import type { ColumnTable } from 'arquero';
-import type { FacetInfo, MetricNormalization } from 'utilities/ChartableMetrics';
+import type { FacetInfo, CurrencyNormalization } from 'utilities/ChartableMetrics';
 import type { ValueFormat } from 'utilities/highcharts/ChartConfigGenerators';
 
 export type MetricDef ={
   ccddd: number;
-  metricNormalization: MetricNormalization;
+  currencyNormalization: CurrencyNormalization;
   yUnit?: string;
 };
 
@@ -50,18 +50,18 @@ function formatForVariant(normalization) : ValueFormat {
 }
 
 function inferTitle(metricDef : MetricDef) {
-  if (metricDef.metricNormalization === 'amount') {
+  if (metricDef.currencyNormalization === 'amount') {
     if (metricDef.yUnit) {
       return metricDef.yUnit;
     }
     return 'amount';
-  } else if (metricDef.metricNormalization === 'pctexp') {
+  } else if (metricDef.currencyNormalization === 'pctexp') {
     return '% of expenditures';
-  } else if (metricDef.metricNormalization === 'pctcomp') {
+  } else if (metricDef.currencyNormalization === 'pctcomp') {
     return '% of total compensation';
   }
 
-  throw `Unexpected normalization ${metricDef.metricNormalization}`;
+  throw `Unexpected normalization ${metricDef.currencyNormalization}`;
 }
 
 function makeTitle(facetInfo, metricDef) {
@@ -93,10 +93,10 @@ export function makeFacetComponents(idPrefix, xColumn, xLabel, facets,
             title: makeTitle(facetInfo, metricDef),
             renderTo: makeCellId(idPrefix, metricOrdinal, facetInfo),
             metricSuffix: facetInfo.code,
-            metricColumn: [metricDef.ccddd, metricDef.metricNormalization].join('_'),
+            metricColumn: [metricDef.ccddd, metricDef.currencyNormalization].join('_'),
             connectorId,
             xDataColumn: xColumn,
-            yValueFormat: formatForVariant(metricDef.metricNormalization),
+            yValueFormat: formatForVariant(metricDef.currencyNormalization),
             xValueFormat: 'year',
             xLabel,
           }

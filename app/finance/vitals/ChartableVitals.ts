@@ -6,7 +6,7 @@ import { extractNormalizationDf } from 'utilities/ChartableMetrics';
 import type { ColumnTable } from 'arquero';
 import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
 import type { VitalsSettings } from 'app/finance/vitals/VitalsSettingsContents';
-import type { MetricNormalization } from 'utilities/ChartableMetrics';
+import type { CurrencyNormalization } from 'utilities/ChartableMetrics';
 
 function extractRawVitals(districtData, ccddd) {
   return districtData.enrollmentSummary()
@@ -73,12 +73,12 @@ export function makeChartableVitals(
   // Some settings can be repeated. Naively joining through those will misname
   // the columns and add duplicates. Generate a unique list of settings makes
   // generating data next easier.
-  const uniqueSettings = new Map<number, Set<MetricNormalization>>;
+  const uniqueSettings = new Map<number, Set<CurrencyNormalization>>;
   for (const vitalsSettings of allVitalsSettings) {
     if (!uniqueSettings.has(vitalsSettings.ccddd)) {
-      uniqueSettings.set(vitalsSettings.ccddd, new Set<MetricNormalization>);
+      uniqueSettings.set(vitalsSettings.ccddd, new Set<CurrencyNormalization>);
     }
-    uniqueSettings.get(vitalsSettings.ccddd).add(vitalsSettings.metricNormalization);
+    uniqueSettings.get(vitalsSettings.ccddd).add(vitalsSettings.currencyNormalization);
   }
 
   // Get the data tables.

@@ -12,7 +12,6 @@ import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
 import HcChart from 'components/HcChart';
 import Loading from 'components/Loading';
 import { makeCurrencyFormatter } from 'utilities/highcharts/utils';
-import MetricNormalizationSelector from 'app/finance/MetricNormalizationSelector';
 import Stack from '@mui/material/Stack';
 
 import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
