@@ -178,7 +178,7 @@ export default function CashflowDashboard() {
           onChange={(selection) => setCcddd(selection)}
         />
         <MetricVariantSelector
-          label={`Key Expenditure Unit`}
+          label={`Money Variants`}
           variant={metricVariant}
           onChange={newValue => setMetricVariant(newValue)}
         />

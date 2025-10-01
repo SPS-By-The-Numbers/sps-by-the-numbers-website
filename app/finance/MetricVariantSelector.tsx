@@ -30,11 +30,9 @@ export default function MetricVariantSelector({variant, label, onChange, sx=[]} 
         ...(Array.isArray(sx) ? sx : [sx])
         ]}
       >
-        <MenuItem value="amount">Raw Amount</MenuItem>
+        <MenuItem value="amount">Amount</MenuItem>
         <MenuItem value="pctexp">% of Expenditures</MenuItem>
         <MenuItem value="pctcomp">% of Compensation</MenuItem>
-        <MenuItem value="ppe">Per Pupil[not impl]</MenuItem>
-        <MenuItem value="pctexppee">% of Expenditures Per Pupil[not impl]</MenuItem>
       </Select>
     </FormControl>
   );

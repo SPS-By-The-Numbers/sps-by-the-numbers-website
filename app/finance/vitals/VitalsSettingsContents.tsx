@@ -18,7 +18,7 @@ export default function VitalsSettingsContents({datasetSettings, setDatasetSetti
         onChange={(ccddd) => setDatasetSettings(Object.assign({}, datasetSettings, {ccddd}))}
       />
       <MetricVariantSelector
-        label={`Key Expenditure Unit`}
+        label={`Money Normalization`}
         variant={datasetSettings.metricVariant}
         onChange={(metricVariant) => setDatasetSettings(Object.assign({}, datasetSettings, {metricVariant}))}
       />
