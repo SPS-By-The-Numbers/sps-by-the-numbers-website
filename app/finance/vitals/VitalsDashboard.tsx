@@ -85,8 +85,8 @@ export default function VitalsDashboard() {
       ccddd: 17001,
       metricNormalization: 'amount' as const,
     },
-  ]
-                                                                                   );
+  ]);
+
   const result = makeDatasetFacetedDashboard(allVitalsSettings, componentsGenerator);
   if (result === undefined) {
     return <div>No Datasets defined.</div>;

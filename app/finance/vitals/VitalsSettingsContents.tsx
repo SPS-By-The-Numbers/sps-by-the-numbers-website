@@ -2,7 +2,7 @@ import DistrictSelector from 'app/finance/DistrictSelector';
 import MetricNormalizationSelector from 'app/finance/MetricNormalizationSelector';
 import Stack from '@mui/material/Stack';
 
-import type { MetricNormalization } from 'app/finance/MetricNormalizationSelector';
+import type { MetricNormalization } from 'app/finance/VitalsSettings';
 import type { DatasetSettings } from 'app/finance/SettingsLayout';
 
 export interface VitalsSettings extends DatasetSettings {
