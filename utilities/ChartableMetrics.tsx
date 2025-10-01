@@ -4,12 +4,21 @@ import { op } from 'arquero';
 import DutyRoots from 'app/finance/DutyRoots';
 
 import type { ColumnTable } from 'arquero';
+import type DistrictData from 'utilities/DistrictData';
+
 export type SortType = "variance";
 export type SortOrder = "ascending" | "descending";
 export type FacetInfo = {
   code: number;
   title: string;
 };
+
+export type MetricNormalization =
+  "pctexp"       // Percent of total expenditures.
+  | "pctrev"     // Percent of total revenues.
+  | "pctcomp"    // Percent total expenditures on compensation.
+  | "pctsalary"  // Percent total expenditures on salary.
+;
 
 function sortOrderOp(sortOrder : SortOrder, expr) {
   if (sortOrder === 'ascending') {
@@ -134,74 +143,6 @@ export function makeChartableNces(
   }
 }
 
-export function makeChartableVitals(
-    ccddd: number,
-    enrollmentSummaryDf: ColumnTable,
-    staffingSummaryDf: ColumnTable,
-    balancesDf: ColumnTable,
-    compensationDf: ColumnTable) : ColumnTable {
-  const enrollment = enrollmentSummaryDf
-      .select('class_of', 'enrollment_budget', 'enrollment_actuals')
-      .rename(
-        {
-          enrollment_budget: `${ccddd}_enrollment_budget`,
-          enrollment_actuals:`${ccddd}_enrollment_actuals`,
-        }
-      );
-
-  const staffing = staffingSummaryDf
-      .rename(
-        {
-          amount_staff_fte_budget: `${ccddd}_amount_staff_fte_budget`,
-          amount_staff_fte_actuals:`${ccddd}_amount_staff_fte_actuals`,
-
-          amount_teaching_fte_actuals:`${ccddd}_amount_teaching_fte_actuals`,
-
-          amount_student_support_fte_actuals:`${ccddd}_amount_student_support_fte_actuals`,
-
-          amount_building_support_fte_actuals:`${ccddd}_amount_building_support_fte_actuals`,
-
-          amount_other_fte_actuals:`${ccddd}_amount_other_fte_actuals`,
-        }
-      );
-
-  const balances = balancesDf
-      .derive({
-        cashflow_budget: d => (d.ending_balance_budget - d.beginning_balance_budget),
-        cashflow_actuals: d => (d.ending_balance_actuals - d.beginning_balance_actuals),
-      })
-      .select('class_of', 'beginning_balance_budget', 'beginning_balance_actuals',
-              'cashflow_budget', 'cashflow_actuals')
-      .rename(
-        {
-          beginning_balance_budget: `${ccddd}_beginning_balance_budget`,
-          beginning_balance_actuals:`${ccddd}_beginning_balance_actuals`,
-          cashflow_budget: `${ccddd}_cashflow_budget`,
-          cashflow_actuals:`${ccddd}_cashflow_actuals`,
-        }
-      );
-
-  const compensation = compensationDf
-      .groupby('class_of')
-      .rename(
-        {
-          allStaffComp: `${ccddd}_allStaffComp`,
-          teachingComp: `${ccddd}_teachingComp`,
-          studentSupportComp: `${ccddd}_studentSupportComp`,
-          buildingSupportComp: `${ccddd}_buildingSupportComp`,
-          otherComp: `${ccddd}_otherComp`,
-        })
-      .pivot('data_type', [
-        `${ccddd}_allStaffComp`,
-        `${ccddd}_teachingComp`,
-        `${ccddd}_studentSupportComp`,
-        `${ccddd}_buildingSupportComp`,
-        `${ccddd}_otherComp`,
-      ]);
-
-  return enrollment.join_full(staffing).join_full(balances).join_full(compensation);
-}
-
 // Returns data with one entry in the "class_of" column for each year and most column
 // representing one duty_root.  It uses the same format as makeChartableExpenditures
 // but facet is always dutyRoot data is always actuals.
@@ -258,3 +199,31 @@ export function makeChartableStaffing(
     return [rawDf.groupby('class_of').rollup(), []];
   }
 }
+
+export function extractNormalizationDf(districtData: DistrictData,
+                                       metricNormalization: MetricNormalization) {
+  if (metricNormalization === "amount") {
+    // TODO: Ensure all class_of and budget and actuals
+    const data_types = aq.table({data_type: ['budget', 'actuals']});
+    return districtData.all_class_ofs()
+      .cross(data_types)
+      .derive({norm: 1});
+  } if (metricNormalization === "pctexp") {
+    return districtData.expenditures()
+      .groupby(['data_type', 'class_of'])
+      .rollup({norm: d => op.sum(d.amount) / 100});
+  } else if (metricNormalization === "pctrev") {
+    return districtData.revenues()
+      .groupby(['data_type', 'class_of'])
+      .rollup({norm: d => op.sum(d.amount) / 100});
+  } else if (metricNormalization === "pctcomp") {
+    return districtData.compensation()
+      .groupby(['data_type', 'class_of'])
+      .derive({norm: d => d.allStaffComp / 100});
+  } else if (metricNormalization === "pctsalary") {
+    throw `Not implemented`;
+  }
+
+  throw `Invalid Normalizaiton: ${metricNormalization}`;
+}
+

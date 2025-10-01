@@ -13,9 +13,11 @@ export type BaseChartConfigOptions = {
   renderTo: string;
 
   yValueFormat: ValueFormat;
+  yValueShowNegative?: boolean;
   yLabel?: string;
 
   xValueFormat: ValueFormat;
+  xValueShowNegative?: boolean;
   xLabel?: string;
 
   xAxisType?: Highcharts.AxisTypeValue;
@@ -179,7 +181,7 @@ function inferPrecision(valueFormat) {
   return undefined;
 }
 
-function inferAxisType(valueFormat) {
+function inferAxisType(valueFormat, allowNegative) {
   switch (valueFormat) {
     case 'currency':
     case 'decimal':
@@ -188,7 +190,7 @@ function inferAxisType(valueFormat) {
 
     case 'pctexp':
     case 'pctcomp':
-      return 'logarithmic';
+      return allowNegative ? 'linear' : 'logarithmic';
 
     case 'year':
       return 'category';
@@ -197,11 +199,15 @@ function inferAxisType(valueFormat) {
   return 'category';
 }
 
-function inferAxisOptions(valueFormat) {
+function inferAxisOptions(valueFormat, allowNegative) {
   switch (valueFormat) {
     case 'pctexp':
     case 'pctcomp':
-      return ({min:5, max:99});
+      if (allowNegative) {
+        return ({min:-99, max:99});
+      } else {
+        return ({min:5, max:99});
+      }
   }
 
   return {};
@@ -259,7 +265,7 @@ function getBAColumns(metricColumn, facet) {
 //   title
 //   zooming
 //   
-// that handles defauul format/prescision inferrence, sync, legend, tooltip, fixedAxes.  makeBudgetActualsChart()
+// that handles defauul format/prescision inferrence, sync, legend, tooltip, fixedAxes.  makeBudgetActualsChartConfig()
 export function makeBaseChartConfig(options : BaseChartConfigOptions) {
   return  {
     type: 'Highcharts',
@@ -303,14 +309,14 @@ export function makeBaseChartConfig(options : BaseChartConfigOptions) {
       yAxis: {
         crosshair: true,
         minorTickInterval: "auto",
-        type: options.yAxisType ?? inferAxisType(options.yValueFormat),
+        type: options.yAxisType ?? inferAxisType(options.yValueFormat, options.yValueShowNegative),
         title: {
           text: options.yLabel ?? inferLabel(options.yValueFormat)
         },
-        ...inferAxisOptions(options.yValueFormat)
+        ...inferAxisOptions(options.yValueFormat, options.yValueShowNegative)
       },
       xAxis: {
-        type: options.xAxisType ?? inferAxisType(options.xValueFormat),
+        type: options.xAxisType ?? inferAxisType(options.xValueFormat, options.xValueShowNegative),
         title: {
           text: options.xLabel ?? inferLabel(options.xValueFormat)
         },

@@ -38,15 +38,14 @@ export function makeMultipleDatasetFacetedDashboard(datasetSettingsList, compone
   const components = new Array<Dashboards.Component.Options>;
 
   for (const datasetSettings of datasetSettingsList) {
-    // TODO: Remove this any
-    const cells = new Array<any>();
-    for (const cellOptions of componentGenerator(datasetSettings)) {
-      cells.push({id: cellOptions.cell})
+    const allCells = componentGenerator(datasetSettings);
+    for (const i in allCells) {
+      const cellOptions = allCells[i];
+      rows[i] = rows[i] || {cells: new Array<any>};
+      rows[i].cells.push({id: cellOptions.renderTo})
       components.push(cellOptions);
     }
-    rows.push(cells);
   }
-
 
   const gui : Dashboards.Board.GUIOptions = {
     layouts: [

@@ -2,7 +2,7 @@
 
 import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import { makeBudgetActualsChartConfig, makeCorrelationChartConfig } from "utilities/highcharts/ChartConfigGenerators";
-import { makeChartableVitals } from 'utilities/ChartableMetrics';
+import { makeChartableVitals } from 'app/finance/vitals/ChartableVitals';
 import { useDistrictData } from '../DistrictDataProvider';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation'

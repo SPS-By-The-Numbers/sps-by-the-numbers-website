@@ -1,7 +1,7 @@
 'use client';
 
 import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
-import { makeChartableVitals } from 'utilities/ChartableMetrics';
+import { makeChartableVitals } from 'app/finance/vitals/ChartableVitals';
 import { makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGenerators";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { useDistrictData } from '../DistrictDataProvider';
@@ -44,18 +44,19 @@ function makeCell(renderTo, ccddd, metricColumnRoot, title, yValueFormat, yLabel
 function makeBudgetActualsChartOptions(idPrefix, ccddd, metricVariant) : Array<BudgetActualsChartOptions> {
   let compFormat = 'currency'
 
-  if (metricVariant === 'pctcomp') {
-    compFormat = 'pctcomp'
+  if (metricVariant === 'pctcomp' || metricVariant === 'pctexp' || metricVariant === 'pctrev') {
+    compFormat = metricVariant;
   }
   return [
-    makeCell(`${idPrefix}-enrollment-chart`, ccddd, 'enrollment', 'Enrollment', 'decimal', 'AFTE'),
-    makeCell(`${idPrefix}-staffing-chart`, ccddd, 'amount_staff_fte', 'Staffing FTE', 'decimal', 'FTE'),
-    makeCell(`${idPrefix}-cashflow-chart`, ccddd, 'cashflow', 'Cashflow', 'currency', '$'),
-    makeCell(`${idPrefix}-beginning-balance-chart`, ccddd, 'beginning_balance', 'Beginning Balance', 'currency'),
-    makeCell(`${idPrefix}-teaching-related-comp`, ccddd, 'teachingComp', 'Teaching Related Comp', compFormat),
-    makeCell(`${idPrefix}-student-support-comp`, ccddd, 'studentSupportComp', 'Student Support Comp', compFormat),
-    makeCell(`${idPrefix}-building-support-comp`, ccddd, 'buildingSupportComp', 'Buildling Support Comp', compFormat),
-    makeCell(`${idPrefix}-other-comp`, ccddd, 'otherComp', 'Other Comp', compFormat),
+    makeCell(`${idPrefix}-enrollment-chart`, ccddd, 'amount_enrollment', 'Enrollment', 'decimal', 'AFTE'),
+    makeCell(`${idPrefix}-staffing-chart`, ccddd, 'amount_staffFte', 'Staffing FTE', 'decimal', 'FTE'),
+    {...makeCell(`${idPrefix}-cashflow-chart`, ccddd, `${metricVariant}_cashflow`, 'Cashflow', compFormat),
+     yValueShowNegative: true},
+    makeCell(`${idPrefix}-beginning-balance-chart`, ccddd, `${metricVariant}_beginningBalance`, 'Beginning Balance', compFormat),
+    makeCell(`${idPrefix}-teaching-related-comp`, ccddd, `${metricVariant}_teachingComp`, 'Teaching Related Comp', compFormat),
+    makeCell(`${idPrefix}-student-support-comp`, ccddd, `${metricVariant}_studentSupportComp`, 'Student Support Comp', compFormat),
+    makeCell(`${idPrefix}-building-support-comp`, ccddd, `${metricVariant}_buildingSupportComp`, 'Buildling Support Comp', compFormat),
+    makeCell(`${idPrefix}-other-comp`, ccddd, `${metricVariant}_otherComp`, 'Other Comp', compFormat),
   ];
 }
 
@@ -77,14 +78,20 @@ export default function VitalsDashboard() {
       id: 'foo',
       ccddd: 17001,
       metricVariant: 'pctcomp' as const,
-    }]
+    },
+    {
+      name: 'SPS',
+      id: 'foo2',
+      ccddd: 17001,
+      metricVariant: 'amount' as const,
+    },
+  ]
                                                                                    );
   const result = makeDatasetFacetedDashboard(allVitalsSettings, componentsGenerator);
   if (result === undefined) {
     return <div>No Datasets defined.</div>;
   }
   const {components, gui} = result;
-
 
   // TODO: Pull this into a component.
   useEffect(
@@ -95,18 +102,13 @@ export default function VitalsDashboard() {
     },
     [allVitalsSettings, loadCcddd]);
 
-  const districtData = districtDataMap[allVitalsSettings[0].ccddd];
-  if (!districtData) {
-    return <Loading text="Loading dataset..." />
+  for (const vitalsSettings of allVitalsSettings) {
+    if (!(vitalsSettings.ccddd in districtDataMap)) {
+      return <Loading text="Loading dataset..." />
+    }
   }
 
-  const data = makeChartableVitals(
-    allVitalsSettings[0].ccddd,
-    districtData.enrollmentSummary(),
-    districtData.staffingSummary(),
-    districtData.balances(),
-    districtData.compensation(allVitalsSettings[0].metricVariant),
-  );
+  const data = makeChartableVitals(districtDataMap, allVitalsSettings);
 
   const config = ({
     gui,

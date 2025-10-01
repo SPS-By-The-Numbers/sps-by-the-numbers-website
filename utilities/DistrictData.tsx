@@ -3,7 +3,6 @@ import { op } from 'arquero';
 import * as aq from 'arquero';
 
 import type { ColumnTable } from 'arquero';
-import type { MetricVariant } from 'app/finance/MetricVariantSelector';
 
 export type FilterSelection = {
   selectedObjectCodes: Array<number>,
@@ -55,13 +54,6 @@ const BUILDING_SUPPORT = [
   64,  // Maintenance
 ];
 
-function makeNormalizeDerive(metricColumn, normalizeColumn) {
-    return {
-      [metricColumn]: aq.escape(d => 100 * d[metricColumn] / d[normalizeColumn]),
-    };
-}
-
-
 function financeGroupSumAmount(new_col_name, df, col_to_sum) {
   return df
       .groupby(['data_type', 'class_of'])
@@ -97,7 +89,7 @@ function minMaxClassOf(df) {
 // to produce basic filtering and data tables for common semantic
 // groupings of information and calculations.
 //
-// Data is joinable on the 'class_of' column.
+// Data is joinable on the 'class_of' and 'data_type' columns.
 export default class DistrictData {
   private enrollment_df : ColumnTable;
   private gf_expenditure_df : ColumnTable;
@@ -129,7 +121,7 @@ export default class DistrictData {
       all_class_ofs.push(year);
     }
 
-    this.all_class_ofs_df = aq.table({'class_of': all_class_ofs});
+    this.all_class_ofs_df = aq.table({class_of: all_class_ofs});
   }
 
   static async loadFromGcs(ccddd) {
@@ -148,32 +140,60 @@ export default class DistrictData {
                             budget_items_df, actuals_items_df, s275_summary_df);
   }
 
+  // Direct accessors
+  enrollment() {
+    return this.enrollment_df;
+  }
+
+  expenditures() {
+    return this.gf_expenditure_df;
+  }
+
+  revenues() {
+    return this.gf_revenue_df;
+  }
+
+  all_class_ofs() {
+    return this.all_class_ofs_df;
+  }
+
+  // Summary accessors
   staffingSummary() {
     const staffFteActuals = this.s275_summary_df
       .groupby(['class_of'])
-      .rollup({'amount_staff_fte_actuals': op.sum('fte_in_assignment')});
+      .rollup(
+        { data_type: () => 'actuals',
+          staffFte: op.sum('fte_in_assignment')});
 
     // 317 is certificated FTE counts
     // 318 is classified FTE counts.
     const staffFteBudget = this.budget_items_df.filter(
       d => op.includes(['317', '318'], d.item_code))
       .groupby('class_of')
-      .rollup({'amount_staff_fte_budget': op.sum('amount')});
+      .rollup(
+        { data_type: () => 'budget',
+          staffFte: op.sum('amount')});
 
     const teachingFteActuals = this.s275_summary_df
         .filter(aq.escape(d => op.includes(TEACHING_CODES, d.activity_code)))
         .groupby('class_of')
-        .rollup({amount_teaching_fte_actuals: op.sum('fte_in_assignment')});
+        .rollup(
+          { data_type: () => 'actuals',
+            teachingFte: op.sum('fte_in_assignment')});
 
     const studentSupportFte = this.s275_summary_df
         .filter(aq.escape(d => op.includes(STUDENT_SUPPORT_CODES, d.activity_code)))
         .groupby('class_of')
-        .rollup({amount_student_support_fte_actuals: op.sum('fte_in_assignment')});
+        .rollup(
+          { data_type: () => 'actuals',
+            studentSupportFte: op.sum('fte_in_assignment')});
 
     const buildingSupportFte = this.s275_summary_df
         .filter(aq.escape(d => op.includes(BUILDING_SUPPORT, d.activity_code)))
         .groupby('class_of')
-        .rollup({amount_building_support_fte_actuals: op.sum('fte_in_assignment')});
+        .rollup(
+          { data_type: () => 'actuals',
+            buildingSupportFte: op.sum('fte_in_assignment')});
 
     const otherFte = this.s275_summary_df
         .filter(aq.escape(d => !op.includes([
@@ -182,7 +202,9 @@ export default class DistrictData {
             ...BUILDING_SUPPORT],
             d.activity_code)))
         .groupby('class_of')
-        .rollup({amount_other_fte_actuals: op.sum('fte_in_assignment')});
+        .rollup(
+          { data_type: () => 'actuals',
+            otherFte: op.sum('fte_in_assignment')});
 
     return staffFteActuals
         .join_full(staffFteBudget)
@@ -204,7 +226,7 @@ export default class DistrictData {
   // so trying to reconcile total compensation in a way that can be cut apart
   // by consistently is difficult.  The F195 and F196 can be compared by PAO
   // codes, but the s275 cannot be done without making estimates.
-  compensation(metricVariant: MetricVariant) {
+  compensation() {
     const allStaffComp = this.gf_expenditure_df.filter(
       aq.escape(d => op.includes(COMP_OBJECT_CODES, d.object_code)))
       .groupby('data_type', 'class_of')
@@ -245,15 +267,6 @@ export default class DistrictData {
         .join_full(buildingSupportComp)
         .join_full(otherComp);
 
-    if (metricVariant === 'pctcomp')  {
-      return rawResult.derive({
-        ...makeNormalizeDerive('teachingComp', 'allStaffComp'),
-        ...makeNormalizeDerive('studentSupportComp', 'allStaffComp'),
-        ...makeNormalizeDerive('buildingSupportComp', 'allStaffComp'),
-        ...makeNormalizeDerive('otherComp', 'allStaffComp'),
-      });
-    }
-
     return rawResult;
   }
 
@@ -276,30 +289,34 @@ export default class DistrictData {
       aq.escape(d => d.item_code === '275' && d.fund_code === 1))
       .groupby('class_of')
       .rollup(
-        {'beginning_balance_budget': op.sum('amount')});
+        {data_type: () => 'budget',
+         beginningBalance: op.sum('amount')});
 
     const endingBalanceBudget = this.budget_items_df.filter(
       aq.escape(d => d.item_code === '439' && d.fund_code === 1))
       .groupby('class_of')
       .rollup(
-        {'ending_balance_budget': op.sum('amount')});
+        {data_type: () => 'budget',
+         endingBalance: op.sum('amount')});
 
     const beginningBalanceActuals = this.actuals_items_df.filter(
       aq.escape(d => d.item_code === '275' && d.fund_code === 1))
       .groupby('class_of')
       .rollup(
-        {'beginning_balance_actuals': op.sum('amount')});
+        {data_type: () => 'actuals',
+         beginningBalance: op.sum('amount')});
 
     const endingBalanceActuals = this.actuals_items_df.filter(
       aq.escape(d => d.item_code === '439' && d.fund_code === 1))
       .groupby('class_of')
       .rollup(
-        {'ending_balance_actuals': op.sum('amount')});
+        {data_type: () => 'actuals',
+         endingBalance: op.sum('amount')});
 
-    return beginningBalanceBudget
-        .join_full(beginningBalanceActuals)
-        .join_full(endingBalanceBudget)
-        .join_full(endingBalanceActuals);
+    const beginningBalance = beginningBalanceBudget.join_full(beginningBalanceActuals);
+    const endingBalance = endingBalanceBudget.join_full(endingBalanceActuals);
+
+    return beginningBalance.join_full(endingBalance);
   }
 
   cashflow() {
@@ -310,10 +327,7 @@ export default class DistrictData {
     // and calculate cashflow.
     const merged_df = expenditures_df.join_full(revenues_df)
       .derive({cashflow: d => d.revenues - d.expenditures});
-
-    // Pivot out the data_type so the index is just class_of.
-    return merged_df.groupby('class_of').pivot('data_type', ['cashflow', 'revenues', 'expenditures'])
-    .join_full(this.all_class_ofs_df);
+    return merged_df;
   }
 
   enrollmentSummary() {
@@ -322,7 +336,10 @@ export default class DistrictData {
         d => op.includes(['K-12 FTE', 'K-12 FTE - Includes ALE'], d.enrollment_domain)
     )
     .groupby('class_of')
-    .rollup({'enrollment_actuals': op.sum('amount')});
+    .rollup({
+      data_type: () => 'actuals',
+      enrollment: op.sum('amount')
+    });
 
     // K-12 FTE from the p223 confusingly is NOT the
     // "Total K-12 FTE Enrollment Counts" (item code 314) in the F195.
@@ -336,15 +353,13 @@ export default class DistrictData {
         d => op.includes(['327', '148'], d.item_code)
     )
     .groupby('class_of')
-    .rollup({'enrollment_budget': op.sum('amount')});
+    .rollup({
+      data_type: () => 'budget',
+      enrollment: op.sum('amount')
+    });
 
     return k12EnrollmentActuals
       .join_full(k12EnrollmentBudget)
-      .join_full(this.all_class_ofs_df);
-  }
-
-  expenditures() {
-    return this.gf_expenditure_df;
   }
 
   filteredExpenditures(filterSelection: FilterSelection) {
