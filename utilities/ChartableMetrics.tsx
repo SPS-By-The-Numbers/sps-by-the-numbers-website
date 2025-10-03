@@ -233,4 +233,3 @@ export function extractNormalizationDf(districtData: DistrictData,
 
   throw `Invalid Normalizaiton: ${currencyNormalization}`;
 }
-

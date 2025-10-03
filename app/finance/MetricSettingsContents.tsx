@@ -28,6 +28,46 @@ export const DEFAULT_METRIC_SETTINGS : Array<MetricSettings> = [
   },
 ];
 
+export function getCurrencyNomralizations(allMetricSettings: Array<MetricSettings>) {
+  // Some settings can be repeated. Naively joining through those will misname
+  // the columns and add duplicates. Generate a unique list of settings makes
+  // generating data next easier.
+  const currencyNormalizations = new Map<number, Set<CurrencyNormalization>>;
+  for (const metricSettings of allMetricSettings) {
+    if (!currencyNormalizations.has(metricSettings.ccddd)) {
+      currencyNormalizations.set(metricSettings.ccddd, new Set<CurrencyNormalization>);
+    }
+    const x = currencyNormalizations.get(metricSettings.ccddd);
+
+    // TODO: This is ugly. There's gotta be a typesafe way to do this.
+    // Make typescript shutup.
+    if (x !== undefined) {
+      x.add(metricSettings.currencyNormalization);
+    }
+  }
+  return currencyNormalizations;
+}
+
+export function getStaffingNomralizations(allMetricSettings: Array<MetricSettings>) {
+  // Some settings can be repeated. Naively joining through those will misname
+  // the columns and add duplicates. Generate a unique list of settings makes
+  // generating data next easier.
+  const staffingNormalizations = new Map<number, Set<StaffingNormalization>>;
+  for (const metricSettings of allMetricSettings) {
+    if (!staffingNormalizations.has(metricSettings.ccddd)) {
+      staffingNormalizations.set(metricSettings.ccddd, new Set<StaffingNormalization>);
+    }
+    const x = staffingNormalizations.get(metricSettings.ccddd);
+
+    // TODO: This is ugly. There's gotta be a typesafe way to do this.
+    // Make typescript shutup.
+    if (x !== undefined) {
+      x.add(metricSettings.staffingNormalization);
+    }
+  }
+  return staffingNormalizations;
+}
+
 export default function MetricSettingsContents({datasetSettings, setDatasetSettings} : {datasetSettings: MetricSettings, setDatasetSettings: (x: MetricSettings) => void}) {
   return (
     <>
@@ -50,4 +90,3 @@ export default function MetricSettingsContents({datasetSettings, setDatasetSetti
     </>
   );
 }
-

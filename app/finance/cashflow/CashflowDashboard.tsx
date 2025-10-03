@@ -154,8 +154,6 @@ export default function CashflowDashboard() {
   const {components, gui} = result;
 
   const data = makeChartableVitals(districtDataMap, allCashflowSettings);
-  console.log(data);
-  console.log(components);
     
   const config = ({
     gui,

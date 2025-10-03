@@ -1,27 +1,45 @@
 'use client';
 
+import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import { makeChartableExpenditures } from 'utilities/ChartableMetrics';
+import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
+import { getCurrencyNomralizations } from 'app/finance/MetricSettingsContents';
+import { makeFacetComponents } from 'app/finance/FacetedBudgetActualCharts';
+import { ObjectFilterContents, ActivityFilterContents, ProgramFilterContents, ALL_OBJECT_ITEMS, ALL_ACTIVITY_ITEMS, ALL_PROGRAM_ITEMS } from 'app/finance/ExpenditureFilterContents';
 import { useDistrictData } from 'app/finance/DistrictDataProvider';
 import { useState, useEffect } from 'react';
-import DistrictSelector from 'app/finance/DistrictSelector';
-import ExpenditureFilter, { ALL_PROGRAM_ITEMS, ALL_ACTIVITY_ITEMS, ALL_OBJECT_ITEMS } from 'app/finance/ExpenditureFilter';
-import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
-import Loading from 'components/Loading';
 import CurrencyNormalizationSelector from 'app/finance/CurrencyNormalizationSelector';
+import DistrictSelector from 'app/finance/DistrictSelector';
+import ExpenditureFilter from 'app/finance/ExpenditureFilter';
+import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
+import HcDashboard from 'components/HcDashboard';
+import Loading from 'components/Loading';
 import MetricSettingsContents, {DEFAULT_METRIC_SETTINGS} from 'app/finance/MetricSettingsContents';
 import SettingsLayout from 'app/finance/SettingsLayout';
 import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 
+import type { ColumnTable } from 'arquero';
 import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
 import type { MetricDef } from 'app/finance/FacetedBudgetActualCharts';
 import type { MetricSettings } from 'app/finance/MetricSettingsContents';
 
 interface ExpendituresSettings extends MetricSettings {
+  selectedObjects : string[];
+  selectedActivities : string[];
+  selectedPrograms : string[];
 };
 
-type Params = {
-  facet: "program" | "activity" | "object";
-};
+const DEFAULT_EXPENDITURE_SETTINGS = DEFAULT_METRIC_SETTINGS.map(
+  v => ({
+    ...v, 
+    selectedObjects: ALL_OBJECT_ITEMS,
+    selectedActivities: ALL_ACTIVITY_ITEMS,
+    selectedPrograms: ALL_PROGRAM_ITEMS,
+  })
+);
+
+const CONNECTOR_ID = 'expenditures-connector';
 
 function extractCodes(prefix, selectedItems) {
   const selectedCodes = new Array<number>;
@@ -34,6 +52,18 @@ function extractCodes(prefix, selectedItems) {
   return selectedCodes;
 }
 
+function componentsGenerator(expenditureSettings : ExpendituresSettings, facetOrder) {
+  const components =  makeFacetComponents(
+    expenditureSettings.id,
+    'class_of',
+    'Class of',
+    facetOrder,
+    CONNECTOR_ID,
+    [expenditureSettings]);
+
+  return components;
+}
+
 function allInMap(districtDataMap, allCcddds) {
   for (const ccddd of allCcddds) {
     if (!(ccddd in districtDataMap)) {
@@ -43,8 +73,43 @@ function allInMap(districtDataMap, allCcddds) {
 
   return true;
 }
+function compileData(districtDataMap, allExpendituresSettings, facet) {
+  // Some settings can be repeated. Naively joining through those will misname
+  // the columns and add duplicates. Generate a unique list of settings makes
+  // generating data next easier.
+  //
+  // TODO: This is wrong. We need a uniqueness per filter.
+  const uniqueSettings = getCurrencyNomralizations(allExpendituresSettings);
 
-function compileData(districtDataMap, firstCcddd, otherCcddds, filterSelection, facet) {
+  // Get the data tables.
+  const allDatasets = new Array<ColumnTable>;
+  let firstFacetInfo;
+  for (const [ccddd, normalizations] of uniqueSettings.entries()) {
+    const [dataset, facetInfo] = makeChartableExpenditures(
+      ccddd,
+      districtDataMap[ccddd].filteredExpenditures({
+        selectedObjectCodes: extractCodes('obj', allExpendituresSettings[0].selectedObjects),
+        selectedActivityCodes: extractCodes('act', allExpendituresSettings[0].selectedActivities),
+        selectedProgramCodes: extractCodes('prog', allExpendituresSettings[0].selectedPrograms),
+      }),
+      facet,
+      'variance' as const,
+      'descending' as const);
+    if (firstFacetInfo === undefined) {
+      firstFacetInfo = facetInfo;
+    }
+
+    allDatasets.push(dataset);
+  }
+
+  let data = allDatasets[0];
+  for (const d of allDatasets.slice(1)) {
+    data = data.join(d);
+  }
+  return [data, firstFacetInfo];
+}
+
+function oldCompileData(districtDataMap, firstCcddd, otherCcddds, filterSelection, facet) {
   if (!allInMap(districtDataMap, [firstCcddd, ...otherCcddds])) {
     return [null,null];
   }
@@ -79,115 +144,63 @@ function compileData(districtDataMap, firstCcddd, otherCcddds, filterSelection, 
 }
 
 // Charts expenditures for 
-export default function ExpendituresDashboard({facet} : Params) {
+export default function ExpendituresDashboard() {
+  const facet = 'activity';
   const {districtDataMap, loadCcddd} = useDistrictData();
-  const [allExpendituresSettings, setAllExpendituresSettings] = useState<Array<ExpendituresSettings>>(DEFAULT_METRIC_SETTINGS);
-  const initialCcddd = 17001;
-  const [selectedObjects, setSelectedObjects] = useState<string[]>(ALL_OBJECT_ITEMS);
-  const [selectedActivities, setSelectedActivities] = useState<string[]>(ALL_ACTIVITY_ITEMS);
-  const [selectedPrograms, setSelectedPrograms] = useState<string[]>(ALL_PROGRAM_ITEMS);
-  const [metricList, setMetricList] = useState<Array<MetricDef>>(
-    [
-      {
-        ccddd: initialCcddd,
-        currencyNormalization: 'amount' as const,
-      },
-      {
-        ccddd: initialCcddd,
-        currencyNormalization: 'pctexp' as const,
-      },
-    ]
-  );
+  const [allExpendituresSettings, setAllExpendituresSettings] = useState<Array<ExpendituresSettings>>(DEFAULT_EXPENDITURE_SETTINGS);
 
   useEffect(
-    () => {
-      for (const metricDef of metricList) {
-        loadCcddd(metricDef.ccddd);
+    () => { 
+      for (const settings of allExpendituresSettings) {
+        loadCcddd(settings.ccddd);
       }
     },
-    [loadCcddd, metricList]
-  );
+    [allExpendituresSettings, loadCcddd]);
 
-  // Create filters for expenditures.
-  const filterSelection = {
-    selectedObjectCodes: extractCodes('obj', selectedObjects),
-    selectedActivityCodes: extractCodes('act', selectedActivities),
-    selectedProgramCodes: extractCodes('prog', selectedPrograms),
-  };
-
-  const firstCcddd = metricList[0].ccddd;
-  const otherCcddds = new Set(metricList.map(def => def.ccddd));
-  otherCcddds.delete(firstCcddd);
-
-  const [data, facetOrder] = compileData(districtDataMap, firstCcddd, otherCcddds,
-                                         filterSelection, facet);
-
-  if (data === null) {
-    return (
-      <Loading text="Loading data" />
-    );
+  for (const expenditureSettings of allExpendituresSettings) {
+    if (!(expenditureSettings.ccddd in districtDataMap)) {
+      return <Loading text="Loading dataset..." />
+    }
   }
 
-  // Merge all the data.
-  // Create handlers used to update the metricList from the correct set of controls.
-  const updateMetricList = (i, newState) => {
-    // Copy the list.
-    const newList = [...metricList];
+  const [data, facetOrder] = compileData(districtDataMap, allExpendituresSettings, facet);
 
-    // Override the fields in the right MetricDef then set.
-    newList[i] = {...metricList[i], ...newState};
-    setMetricList(newList);
-  };
+  const result = makeDatasetFacetedDashboard(allExpendituresSettings, s => componentsGenerator(s, facetOrder));
+  if (result === undefined) {
+    return <div>No Datasets defined.</div>;
+  }
+  const {components, gui} = result;
+
+
+  const config = ({
+    gui,
+    components,
+    dataPool: {
+      connectors: [
+        {
+          id: CONNECTOR_ID,
+          type: 'JSON',
+          options: dfToJSONConnectorOptions(data),
+        },
+      ],
+    },
+  });
 
   return (
     <SettingsLayout
         allDatasetSettings={allExpendituresSettings}
         setAllDatasetSettings={setAllExpendituresSettings}
-        settingsContentsComponents={[MetricSettingsContents]}
+        settingsContentsComponents={[
+          MetricSettingsContents,
+          ObjectFilterContents,
+          ActivityFilterContents,
+          ProgramFilterContents,
+      ]}
     >
-      {/* This section is configuration of the data set. */}
-      <ExpenditureFilter
-        filterState={
-          {
-            selectedObjects,
-            setSelectedObjects,
-            selectedActivities,
-            setSelectedActivities,
-            selectedPrograms,
-            setSelectedPrograms
-          }}
-      />
-
-      {/* This section is configuration of each comparison */}
-      <Stack direction="row" spacing={4}>
-        {metricList.map(
-          (def,i) => (
-              <Stack key={i} spacing={4} direction="column">
-                <DistrictSelector
-                  ccddd={def.ccddd}
-                  onChange={(selection) => {
-                    updateMetricList(i, {ccddd: selection})
-                  }}
-                />
-                <CurrencyNormalizationSelector
-                  label={`Column ${i} normalization`}
-                  normalization={metricList[i].currencyNormalization}
-                  onChange={newValue => updateMetricList(i, {currencyNormalization: newValue})}
-                />
-              </Stack>
-          ))
-        }
-      </Stack>
-
-      {/* Draw the Charts */}
-      <FacetedBudgetActualCharts
-        idPrefix={facet}
-        data={data}
-        xColumn="class_of"
-        xLabel="Class of"
-        facetOrder={facetOrder}
-        metricList={metricList}
-      />
+      <Typography className="analysis-title" component="h1" variant="h1">
+        Expenditures Dashboard
+      </Typography>
+      <HcDashboard config={config} />
     </SettingsLayout>
   );
 }

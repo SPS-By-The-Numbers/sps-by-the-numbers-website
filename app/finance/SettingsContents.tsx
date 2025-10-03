@@ -1,4 +1,5 @@
 import Stack from '@mui/material/Stack';
+import Paper from '@mui/material/Paper';
 
 import type { ReactNode, ComponentType } from 'react';
 
@@ -23,7 +24,7 @@ interface Props<SettingsType extends DatasetSettings> {
 export default function SettingsContents<SettingsType extends DatasetSettings>(
     {datasetSettings, setDatasetSettings, components} : Props<SettingsType>) {
   const allFragments = components.map((C, i) => (
-        <C key={`comp-${i}`}datasetSettings={datasetSettings} setDatasetSettings={setDatasetSettings} />
+    <C key={`comp-${i}`}datasetSettings={datasetSettings} setDatasetSettings={setDatasetSettings} />
   ));
   return (
     <Stack gap="0.4rem">

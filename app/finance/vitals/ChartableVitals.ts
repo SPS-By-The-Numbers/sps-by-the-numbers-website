@@ -2,6 +2,7 @@ import * as aq from 'arquero';
 import { op } from 'arquero';
 
 import { extractNormalizationDf } from 'utilities/ChartableMetrics';
+import { getCurrencyNomralizations } from 'app/finance/MetricSettingsContents';
 
 import type { ColumnTable } from 'arquero';
 import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
@@ -73,19 +74,7 @@ export function makeChartableVitals(
   // Some settings can be repeated. Naively joining through those will misname
   // the columns and add duplicates. Generate a unique list of settings makes
   // generating data next easier.
-  const uniqueSettings = new Map<number, Set<CurrencyNormalization>>;
-  for (const vitalsSettings of allVitalsSettings) {
-    if (!uniqueSettings.has(vitalsSettings.ccddd)) {
-      uniqueSettings.set(vitalsSettings.ccddd, new Set<CurrencyNormalization>);
-    }
-    const x = uniqueSettings.get(vitalsSettings.ccddd);
-
-    // TODO: This is ugly. There's gotta be a typesafe way to do this.
-    // Make typescript shutup.
-    if (x !== undefined) {
-      x.add(vitalsSettings.currencyNormalization);
-    }
-  }
+  const uniqueSettings = getCurrencyNomralizations(allVitalsSettings);
 
   // Get the data tables.
   const allDatasets = new Array<ColumnTable>;

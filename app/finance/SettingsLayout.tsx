@@ -19,7 +19,7 @@ const drawerWidth = 240;
 interface SettingsLayoutProps<SettingsType extends DatasetSettings> {
   allDatasetSettings: Array<SettingsType>;
   setAllDatasetSettings: (v: Array<SettingsType>) => void;
-  settingsContentsComponents: Array<SettingsRenderComponentType<SettingsType>>;
+  settingsContentsComponents: Array<SettingsRenderComponentType<any>>;
 
   children : ReactNode;
 }
@@ -27,7 +27,7 @@ interface SettingsLayoutProps<SettingsType extends DatasetSettings> {
 function DatasetAccordion<T extends DatasetSettings>(
     {datasetSettings, setDatasetSettings, settingsContentsComponents}) {
   return (
-    <Accordion>
+    <Accordion defaultExpanded>
       <AccordionSummary
         expandIcon={<ArrowDropDownIcon />}
         aria-controls={`${datasetSettings.id}`}
@@ -36,7 +36,11 @@ function DatasetAccordion<T extends DatasetSettings>(
         <Typography component="span">{datasetSettings.name}</Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <SettingsContents datasetSettings={datasetSettings} setDatasetSettings={setDatasetSettings} components={settingsContentsComponents} />
+        <SettingsContents
+          datasetSettings={datasetSettings}
+          setDatasetSettings={setDatasetSettings}
+          components={settingsContentsComponents}
+        />
       </AccordionDetails>
     </Accordion>
   );

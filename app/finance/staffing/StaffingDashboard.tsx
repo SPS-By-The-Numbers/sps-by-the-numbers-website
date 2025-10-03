@@ -3,14 +3,15 @@
 import { makeChartableStaffing } from 'utilities/ChartableMetrics';
 import { useDistrictData } from 'app/finance/DistrictDataProvider';
 import { useState, useEffect } from 'react';
+import CurrencyNormalizationSelector from 'app/finance/CurrencyNormalizationSelector';
 import DistrictSelector from 'app/finance/DistrictSelector';
 import ExpenditureFilter, { ALL_SCHOOL_ITEMS, ALL_DUTY_ROOT_ITEMS, ALL_PROGRAM_ITEMS, ALL_ACTIVITY_ITEMS } from 'app/finance/ExpenditureFilter';
 import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
 import Loading from 'components/Loading';
-import CurrencyNormalizationSelector from 'app/finance/CurrencyNormalizationSelector';
-import Stack from '@mui/material/Stack';
-import SettingsLayout from 'app/finance/SettingsLayout';
 import MetricSettingsContents, {DEFAULT_METRIC_SETTINGS} from 'app/finance/MetricSettingsContents';
+import SettingsLayout from 'app/finance/SettingsLayout';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 
 import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
 import type { MetricDef } from 'app/finance/FacetedBudgetActualCharts';
@@ -175,6 +176,9 @@ export default function StaffingDashboard() {
         }
       </Stack>
 
+      <Typography className="analysis-title" component="h1" variant="h1">
+        Staffing Dashboard
+      </Typography>
       {/* Draw the Charts */}
       <FacetedBudgetActualCharts
         idPrefix="dutyRoot"
