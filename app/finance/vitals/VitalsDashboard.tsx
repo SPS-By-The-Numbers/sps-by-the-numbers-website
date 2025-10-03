@@ -24,11 +24,11 @@ export interface VitalsSettings extends MetricSettings {
 
 const CONNECTOR_ID = 'vitals-connector';
 
-function makeCell(renderTo, ccddd, metricColumnRoot, title, yValueFormat, yLabel ?: string) {
+function makeCell(renderTo, metricColumn, title, yValueFormat, yLabel ?: string) {
     return {
       renderTo,
       title,
-      metricColumn: `${ccddd}_${metricColumnRoot}`,
+      metricColumn,
       connectorId: CONNECTOR_ID,
       xDataColumn: 'class_of',
       xValueFormat: 'year' as const,
@@ -38,29 +38,29 @@ function makeCell(renderTo, ccddd, metricColumnRoot, title, yValueFormat, yLabel
     };
 }
 
-function makeBudgetActualsChartOptions(idPrefix, ccddd, currencyNormalization) : Array<BudgetActualsChartOptions> {
+function makeBudgetActualsChartOptions(idPrefix, currencyNormalization) : Array<BudgetActualsChartOptions> {
   let compFormat = 'currency'
 
+  // TODO: combine these normalizaitons.
   if (currencyNormalization === 'pctcomp' || currencyNormalization === 'pctexp' || currencyNormalization === 'pctrev') {
     compFormat = currencyNormalization;
   }
   return [
-    makeCell(`${idPrefix}-enrollment-chart`, ccddd, 'amount_enrollment', 'Enrollment', 'decimal', 'AFTE'),
-    makeCell(`${idPrefix}-staffing-chart`, ccddd, 'amount_staffFte', 'Staffing FTE', 'decimal', 'FTE'),
-    {...makeCell(`${idPrefix}-cashflow-chart`, ccddd, `${currencyNormalization}_cashflow`, 'Cashflow', compFormat),
+    makeCell(`${idPrefix}-enrollment-chart`, `${idPrefix}_amount_enrollment`, 'Enrollment', 'decimal', 'AFTE'),
+    makeCell(`${idPrefix}-staffing-chart`, `${idPrefix}_amount_staffFte`, 'Staffing FTE', 'decimal', 'FTE'),
+    {...makeCell(`${idPrefix}-cashflow-chart`, `${idPrefix}_${currencyNormalization}_cashflow`, 'Cashflow', compFormat),
      yValueShowNegative: true},
-    makeCell(`${idPrefix}-beginning-balance-chart`, ccddd, `${currencyNormalization}_beginningBalance`, 'Beginning Balance', compFormat),
-    makeCell(`${idPrefix}-teaching-related-comp`, ccddd, `${currencyNormalization}_teachingComp`, 'Teaching Related Comp', compFormat),
-    makeCell(`${idPrefix}-student-support-comp`, ccddd, `${currencyNormalization}_studentSupportComp`, 'Student Support Comp', compFormat),
-    makeCell(`${idPrefix}-building-support-comp`, ccddd, `${currencyNormalization}_buildingSupportComp`, 'Buildling Support Comp', compFormat),
-    makeCell(`${idPrefix}-other-comp`, ccddd, `${currencyNormalization}_otherComp`, 'Other Comp', compFormat),
+    makeCell(`${idPrefix}-beginning-balance-chart`, `${idPrefix}_${currencyNormalization}_beginningBalance`, 'Beginning Balance', compFormat),
+    makeCell(`${idPrefix}-teaching-related-comp`, `${idPrefix}_${currencyNormalization}_teachingComp`, 'Teaching Related Comp', compFormat),
+    makeCell(`${idPrefix}-student-support-comp`, `${idPrefix}_${currencyNormalization}_studentSupportComp`, 'Student Support Comp', compFormat),
+    makeCell(`${idPrefix}-building-support-comp`, `${idPrefix}_${currencyNormalization}_buildingSupportComp`, 'Buildling Support Comp', compFormat),
+    makeCell(`${idPrefix}-other-comp`, `${idPrefix}_${currencyNormalization}_otherComp`, 'Other Comp', compFormat),
   ];
 }
 
 function componentsGenerator(vitalsSettings : VitalsSettings) {
   const budgetActualsChartOptions = makeBudgetActualsChartOptions(
     vitalsSettings.id,
-    vitalsSettings.ccddd,
     vitalsSettings.currencyNormalization
   );
   return budgetActualsChartOptions.map(c => makeBudgetActualsChartConfig(c));

@@ -1,9 +1,10 @@
 'use client';
 
+import * as aq from 'arquero';
+import { op } from 'arquero';
 import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
-import { makeChartableExpenditures } from 'utilities/ChartableMetrics';
+import { extractRawExpenditures, toChartableDataset, getDataColumnNames } from 'utilities/ChartableMetrics';
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
-import { getCurrencyNomralizations } from 'app/finance/MetricSettingsContents';
 import { makeFacetComponents } from 'app/finance/FacetedBudgetActualCharts';
 import { ObjectFilterContents, ActivityFilterContents, ProgramFilterContents, ALL_OBJECT_ITEMS, ALL_ACTIVITY_ITEMS, ALL_PROGRAM_ITEMS } from 'app/finance/ExpenditureFilterContents';
 import { useDistrictData } from 'app/finance/DistrictDataProvider';
@@ -21,7 +22,6 @@ import Typography from '@mui/material/Typography';
 
 import type { ColumnTable } from 'arquero';
 import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
-import type { MetricDef } from 'app/finance/FacetedBudgetActualCharts';
 import type { MetricSettings } from 'app/finance/MetricSettingsContents';
 
 interface ExpendituresSettings extends MetricSettings {
@@ -57,6 +57,7 @@ function componentsGenerator(expenditureSettings : ExpendituresSettings, facetOr
     expenditureSettings.id,
     'class_of',
     'Class of',
+    'amount',
     facetOrder,
     CONNECTOR_ID,
     [expenditureSettings]);
@@ -73,74 +74,54 @@ function allInMap(districtDataMap, allCcddds) {
 
   return true;
 }
-function compileData(districtDataMap, allExpendituresSettings, facet) {
-  // Some settings can be repeated. Naively joining through those will misname
-  // the columns and add duplicates. Generate a unique list of settings makes
-  // generating data next easier.
-  //
-  // TODO: This is wrong. We need a uniqueness per filter.
-  const uniqueSettings = getCurrencyNomralizations(allExpendituresSettings);
 
-  // Get the data tables.
+function makeFacetedExpendituresForDistrict(districtData, facet, expenditureSettings) {
+  const filteredExpenditures = districtData.filteredExpenditures({
+    selectedObjectCodes: extractCodes('obj', expenditureSettings.selectedObjects),
+    selectedActivityCodes: extractCodes('act', expenditureSettings.selectedActivities),
+    selectedProgramCodes: extractCodes('prog', expenditureSettings.selectedPrograms),
+  });
+  const {data, facetInfo} = extractRawExpenditures(
+    filteredExpenditures,
+    "activity" as const,  // TODO: Merge with activity
+    "descending" as const);
+
+  const pdata = data.groupby(['class_of', 'data_type'])
+    .pivot(['activity_code'], {
+      amount: d => op.sum(d.amount),
+        _pivot_name_hack_: d => op.any('_pivot_name_hack_')
+    })
+    .select(aq.not('_pivot_name_hack_'));
+
+  const names = getDataColumnNames(pdata);
+  const result = {
+    data: toChartableDataset(districtData, pdata,
+                             expenditureSettings, [], names),
+    facetInfo
+  };
+
+  return result;
+}
+
+function compileData(districtDataMap, allExpendituresSettings, facet) {
   const allDatasets = new Array<ColumnTable>;
   let firstFacetInfo;
-  for (const [ccddd, normalizations] of uniqueSettings.entries()) {
-    const [dataset, facetInfo] = makeChartableExpenditures(
-      ccddd,
-      districtDataMap[ccddd].filteredExpenditures({
-        selectedObjectCodes: extractCodes('obj', allExpendituresSettings[0].selectedObjects),
-        selectedActivityCodes: extractCodes('act', allExpendituresSettings[0].selectedActivities),
-        selectedProgramCodes: extractCodes('prog', allExpendituresSettings[0].selectedPrograms),
-      }),
+  for (const expenditureSettings of allExpendituresSettings) {
+    const {data, facetInfo} = makeFacetedExpendituresForDistrict(
+      districtDataMap[expenditureSettings.ccddd],
       facet,
-      'variance' as const,
-      'descending' as const);
+      expenditureSettings);
+    allDatasets.push(data);
     if (firstFacetInfo === undefined) {
       firstFacetInfo = facetInfo;
     }
-
-    allDatasets.push(dataset);
   }
-
+  
   let data = allDatasets[0];
   for (const d of allDatasets.slice(1)) {
     data = data.join(d);
   }
   return [data, firstFacetInfo];
-}
-
-function oldCompileData(districtDataMap, firstCcddd, otherCcddds, filterSelection, facet) {
-  if (!allInMap(districtDataMap, [firstCcddd, ...otherCcddds])) {
-    return [null,null];
-  }
-
-  const [firstData, facetOrder] = makeChartableExpenditures(
-    firstCcddd,
-    districtDataMap[firstCcddd].filteredExpenditures(filterSelection),
-    facet,
-    'variance' as const,
-    'descending' as const);
-
-    const data = [...otherCcddds].reduce(
-      (acc, ccddd) => {
-        if (!(ccddd in districtDataMap)) {
-          console.warn("Not loaded yet " + ccddd);
-          return acc;
-        }
-
-        const [otherData, _] = makeChartableExpenditures(
-          ccddd,
-          districtDataMap[ccddd].filteredExpenditures(filterSelection),
-          facet,
-          'variance' as const,
-          'descending' as const
-        );
-
-        return acc.join_full(otherData);
-      },
-      firstData);
-
-      return [data, facetOrder];
 }
 
 // Charts expenditures for 
@@ -170,7 +151,6 @@ export default function ExpendituresDashboard() {
     return <div>No Datasets defined.</div>;
   }
   const {components, gui} = result;
-
 
   const config = ({
     gui,

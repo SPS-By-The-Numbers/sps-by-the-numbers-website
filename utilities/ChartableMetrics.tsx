@@ -36,16 +36,109 @@ function sortOrderOp(sortOrder : SortOrder, expr) {
   throw `Unknown sort order ${sortOrder}`;
 }
 
+function normalizeColumnDeriveClause(metricColumns, normalization) {
+  const clauses = metricColumns.map(
+    mc => [
+      `${normalization}_${mc}`,
+      aq.escape(d => d[mc] / d.norm)
+    ]);
+
+  return Object.fromEntries(clauses);
+}
+
+export function normalizeColumn(districtData, df, metricColumns, normalization) {
+  // We need to rename the column to amount.
+  const nd = extractNormalizationDf(districtData, normalization);
+  const deriveClause = normalizeColumnDeriveClause(metricColumns, normalization);
+  const normalizedDf = df
+    .join(nd)
+    .derive(deriveClause)
+    .select(['class_of', 'data_type', ...Object.keys(deriveClause)]);
+
+  return normalizedDf;
+}
+
+export function getDataColumnNames(df) {
+  return df.columnNames().filter(x => ! (['class_of', 'data_type'].includes(x)));
+}
+
+
+export function toChartableDataset(districtData, df, metricSettings, amount_only_columns, normalized_columns) : ColumnTable {
+
+  let normalizedData;
+  if (amount_only_columns.length > 0) {
+    normalizedData = normalizeColumn(districtData, df, amount_only_columns, 'amount' as const)
+      .join_left(normalizeColumn(districtData, df, normalized_columns, metricSettings.currencyNormalization));
+  } else {
+    normalizedData = normalizeColumn(districtData, df, normalized_columns, metricSettings.currencyNormalization);
+  }
+
+  // Prefix the dataset id.
+  const prefixedData = normalizedData.rename(
+    Object.fromEntries(getDataColumnNames(normalizedData).map(x => [x, `${metricSettings.id}_${x}`])));
+
+  // Pivot in the budget/actuals.
+  // Do not collapse the two getDataColumnNames() calls as data is modifieid.
+  const data = prefixedData.groupby('class_of').pivot('data_type', getDataColumnNames(prefixedData));
+
+  return data;
+}
+
+export function extractRawExpenditures(df : ColumnTable, facetColumn : string, sortOrder: SortOrder) {
+  const facetCodeColumn = `${facetColumn}_code`;
+
+  // Calculate variance for sort order.
+  const varianceDf = df
+    .groupby('class_of', 'data_type', facetColumn, facetCodeColumn)
+    .rollup({
+      val: op.sum(`amount`),
+    })
+    .groupby('class_of', facetColumn, facetCodeColumn)
+    .pivot(['data_type'], { val: d => op.sum(d.val) })
+    .derive({variance: d => d.budget - d.actuals})
+    .filter(d => !op.is_nan(d.variance));
+
+  const facetInfo = varianceDf
+    .groupby(facetColumn, facetCodeColumn)
+    .rollup({absmedian: d => op.abs(op.median(d.variance))})
+    .orderby(sortOrderOp(sortOrder, 'absmedian'))
+    .derive({
+      facet_info: aq.escape(
+        d => ({
+          code: d[facetCodeColumn],
+          title: d[facetColumn],
+        })
+      )
+    })
+    .array('facet_info');
+
+  const data = df.groupby('class_of', 'data_type', facetCodeColumn)
+    .rollup({
+      amount: op.sum(`amount`),
+    })
+    .groupby('class_of');
+
+    return {data, facetInfo: facetInfo as Array<FacetInfo>};
+}
+
+
+///////////////////////////////
+///////////////////////////////
+///////////////////////////////
+///////////////////////////////
+///////////////////////////////
+// Old
+
 // Returns data with one entry in the "class_of" column for each year and most column
 // representing one chartable metric or aggregation.
 //
 // Columns representing a chartable metric has a column name with this format:
 //
-//   ${ccddd]_${normalization}_${metric}_${budget/actuals}
+//   ${datasetid}_${normalization}_${metric}_${budget/actuals}
 //
 //  Example for amount of activity_code 11 in actuals for 17001 would be:
 //
-//    17001_amount_act11_actuals
+//    ds1_amount_act11_actuals
 //
 //  where act is the shortening for activity_code
 //
@@ -53,7 +146,7 @@ function sortOrderOp(sortOrder : SortOrder, expr) {
 // any specific form. An example of such a column is "covid_type"
 // which lists of the year is before, during, or after covid.
 export function makeChartableExpenditures(
-    ccddd: number,
+    datasetId: string,
     df: ColumnTable,
     facetColumn: string,
     sortType: SortType,
@@ -94,9 +187,9 @@ export function makeChartableExpenditures(
       })
       .groupby('class_of')
       .pivot([facetCodeColumn, 'data_type'], {
-        [`${ccddd}_amount`]: d => op.sum(d.amount),
-        [`${ccddd}_pctexp`]: d => op.sum(d.pctexp) * 100,
-        [`${ccddd}_pctrev`]: d => op.sum(d.pctrev) * 100,
+        [`${datasetId}_amount`]: d => op.sum(d.amount),
+        [`${datasetId}_pctexp`]: d => op.sum(d.pctexp) * 100,
+        [`${datasetId}_pctrev`]: d => op.sum(d.pctrev) * 100,
       });
 
       return [data, facetInfoSorted as Array<FacetInfo>];
@@ -106,9 +199,9 @@ export function makeChartableExpenditures(
   }
 }
 
-// ${ccddd]_amount_${nces_code}_${budget/actual}
+// ${datasetId]_amount_${nces_code}_${budget/actual}
 export function makeChartableNces(
-    ccddd: number,
+    datasetId: string,
     raw_df: ColumnTable,
     facetColumn: string,
     sortType: SortType,
@@ -139,7 +232,7 @@ export function makeChartableNces(
 
     const data = df.groupby('class_of')
       .pivot([facetCodeColumn, 'data_type'], {
-        [`${ccddd}_amount`]: d => op.sum(d.amount),
+        [`${datasetId}_amount`]: d => op.sum(d.amount),
           _pivot_name_hack_: d => op.any('_pivot_name_hack_')
       })
       .select(aq.not('_pivot_name_hack_'));
@@ -157,9 +250,9 @@ export function makeChartableNces(
 //
 // The metric_name can be fte or salary or estTotalComp.
 //
-//   ${ccddd]_${metric_name}_dutyRoot_actuals
+//   ${datasetId]_${metric_name}_dutyRoot_actuals
 export function makeChartableStaffing(
-    ccddd: number,
+    datasetId: string,
     rawDf: ColumnTable,
     sortType: "range",
     sortOrder: SortOrder) : [ColumnTable, Array<FacetInfo>] {
@@ -197,8 +290,8 @@ export function makeChartableStaffing(
       .groupby('class_of')
       .pivot(['duty_root_code', 'data_type'], {
         // TODO: rename to total_initial_assignment_salary.
-        [`${ccddd}_finalSalary`]: d => op.sum(d.finalSalary),
-        [`${ccddd}_fte`]: d => op.sum(d.fte),
+        [`${datasetId}_finalSalary`]: d => op.sum(d.finalSalary),
+        [`${datasetId}_fte`]: d => op.sum(d.fte),
       });
 
     return [data, facetInfoSorted as Array<FacetInfo>];

@@ -16,12 +16,7 @@ import HcDashboard from 'components/HcDashboard';
 import type { ColumnTable } from 'arquero';
 import type { FacetInfo, CurrencyNormalization } from 'utilities/ChartableMetrics';
 import type { ValueFormat } from 'utilities/highcharts/ChartConfigGenerators';
-
-export type MetricDef ={
-  ccddd: number;
-  currencyNormalization: CurrencyNormalization;
-  yUnit?: string;
-};
+import type { MetricSettings } from 'app/finance/MetricSettingsContents';
 
 type Params = {
   idPrefix: string;
@@ -29,7 +24,7 @@ type Params = {
   xColumn: string;
   xLabel: string;
   facetOrder: Array<FacetInfo>;
-  metricList: Array<MetricDef>;
+  metricList: Array<MetricSettings>;
 };
 
 function makeCellId(idPrefix, metricOrdinal, facetInfo) {
@@ -49,25 +44,22 @@ function formatForVariant(normalization) : ValueFormat {
   return 'decimal' as const;
 }
 
-function inferTitle(metricDef : MetricDef) {
-  if (metricDef.currencyNormalization === 'amount') {
-    if (metricDef.yUnit) {
-      return metricDef.yUnit;
-    }
+function inferTitle(metricSettings : MetricSettings) {
+  if (metricSettings.currencyNormalization === 'amount') {
     return 'amount';
-  } else if (metricDef.currencyNormalization === 'pctexp') {
+  } else if (metricSettings.currencyNormalization === 'pctexp') {
     return '% of expenditures';
-  } else if (metricDef.currencyNormalization === 'pctcomp') {
+  } else if (metricSettings.currencyNormalization === 'pctcomp') {
     return '% of total compensation';
   }
 
-  throw `Unexpected normalization ${metricDef.currencyNormalization}`;
+  throw `Unexpected normalization ${metricSettings.currencyNormalization}`;
 }
 
-function makeTitle(facetInfo, metricDef) {
+function makeTitle(facetInfo, metricSettings) {
   return `<div class='chart-title'>
     <h3>${facetInfo.title}</h3>
-    <h4>${inferTitle(metricDef)} - ${metricDef.ccddd}</h4>
+    <h4>${inferTitle(metricSettings)} - ${metricSettings.ccddd}</h4>
   </div>`;
 }
 
@@ -83,20 +75,20 @@ function makeTitle(facetInfo, metricDef) {
 // facets - an array of facets to render.  The ordering does not matter as that is defined by the gui.
 // connectorId - the ID of the data pool to conect to.
 // metricList - the metrics to generate for each facet.
-export function makeFacetComponents(idPrefix, xColumn, xLabel, facets,
+export function makeFacetComponents(idPrefix, xColumn, xLabel, yColumnRoot, facets,
                                     connectorId, metricList) {
   const r = metricList.flatMap(
-    (metricDef, metricOrdinal) => facets.map(
+    (metricSettings, metricOrdinal) => facets.map(
       facetInfo => (
         makeBudgetActualsChartConfig(
           {
-            title: makeTitle(facetInfo, metricDef),
+            title: makeTitle(facetInfo, metricSettings),
             renderTo: makeCellId(idPrefix, metricOrdinal, facetInfo),
             metricSuffix: facetInfo.code,
-            metricColumn: [metricDef.ccddd, metricDef.currencyNormalization].join('_'),
+            metricColumn: [metricSettings.id, metricSettings.currencyNormalization, yColumnRoot].join('_'),
             connectorId,
             xDataColumn: xColumn,
-            yValueFormat: formatForVariant(metricDef.currencyNormalization),
+            yValueFormat: formatForVariant(metricSettings.currencyNormalization),
             xValueFormat: 'year',
             xLabel,
           }
@@ -115,7 +107,7 @@ export function makeFacetComponents(idPrefix, xColumn, xLabel, facets,
 // idPrefix is used to prefix each cell ID to avoid collisions if doing multiple
 // graphs in one document.
 export function makeComparisonGui(idPrefix, facetOrder: Array<FacetInfo>,
-                                  metricList: Array<MetricDef>) {
+                                  metricList: Array<MetricSettings>) {
   const r = {
     layouts: [
       {
@@ -139,7 +131,7 @@ export default function FacetedBudgetActualCharts({idPrefix, data, xColumn, xLab
                                                   facetOrder, metricList} : Params) {
   const connectorId = `${idPrefix}-data-connector`;
   const gui = makeComparisonGui(idPrefix, facetOrder, metricList);
-  const components = makeFacetComponents(idPrefix, xColumn, xLabel,
+  const components = makeFacetComponents(idPrefix, xColumn, xLabel, "amount",
                                          facetOrder, connectorId, metricList);
 
   const config = ({
