@@ -34,7 +34,7 @@ export default function FinanceNav({sx=[]} : Params) {
           <NavLink href={'/finance/vitals'}>Vitals</NavLink>
           <NavLink href={'/finance/cashflow'}>Cashflow</NavLink>
           <NavLink href={'/finance/expenditures'}>Expenditures</NavLink>
-          <NavLink href={'/finance/nces'}>Actual Spend Details</NavLink>
+          <NavLink href={'/finance/nces'}>NCES</NavLink>
           <NavLink href={'/finance/staffing'}>Staffing</NavLink>
           <NavLink href={'/finance/sps/orgchart'}>SPS OrgChart</NavLink>
         </Stack>

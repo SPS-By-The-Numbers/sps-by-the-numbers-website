@@ -1,6 +1,7 @@
 'use client';
 
 import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
+import { ALL_SCHOOLS, sortBySchoolName } from 'app/finance/schools';
 import SafsCompObjectsTreeItems from 'app/finance/SafsCompObjectsTreeItems.json';
 import SafsObjectsTreeItems from 'app/finance/SafsObjectsTreeItems.json';
 import SpsActivityCategoryTreeItems from 'app/finance/SpsActivityCategoryTreeItems.json';
@@ -25,6 +26,21 @@ interface ProgramFilterSettings extends DatasetSettings {
   selectedPrograms: string[];
 };
 
+interface SchoolFilterSettings extends DatasetSettings {
+  selectedSchools: string[];
+};
+
+export function extractCodes(prefix, selectedItems) {
+  const selectedCodes = new Array<number>;
+  for (const id of selectedItems) {
+    const parts = id.split('-');
+    if (parts.length === 2 && parts[0] === prefix) {
+      selectedCodes.push(parseInt(parts[1]));
+    }
+  }
+  return selectedCodes;
+}
+
 // Iterates a TreeViewBaseItem and extracts all IDs with a given prefix.
 // Used to generate default selection.
 export function allItems(config) {
@@ -42,12 +58,33 @@ export function allItems(config) {
   return itemIds;
 };
 
-export const ALL_SCHOOL_ITEMS = allItems(SafsObjectsTreeItems);
+export function makeSchoolItems(ccddd) {
+  return allItems(makeSchools(ccddd));
+}
+
 export const ALL_DUTY_ROOT_ITEMS = allItems(SafsObjectsTreeItems);
 export const ALL_COMP_OBJECT_ITEMS = allItems(SafsCompObjectsTreeItems);
 export const ALL_OBJECT_ITEMS = allItems(SafsObjectsTreeItems);
 export const ALL_ACTIVITY_ITEMS = allItems(SpsActivityCategoryTreeItems);
 export const ALL_PROGRAM_ITEMS = allItems(SpsProgramGroupingTreeItems);
+
+function makeSchools(ccddd) {
+  const schools = ALL_SCHOOLS[ccddd];
+  const schoolItems = new Array<TreeViewBaseItem>;
+  for (const s of schools.sort(sortBySchoolName)) {
+    schoolItems.push({
+      id: `school-${s.school_code}`,
+      label: s.school,
+    });
+  }
+  return [
+    {
+      id: 'all',
+      label: 'All Schools',
+      children: schoolItems,
+    }
+  ];
+}
 
 function FilterTree({title, items, selectedItems, setSelectedItems}) {
   return (
@@ -94,5 +131,17 @@ export function ProgramFilterContents({datasetSettings, setDatasetSettings} : Pr
         items={SpsProgramGroupingTreeItems}
         selectedItems={datasetSettings.selectedPrograms}
         setSelectedItems={selectedPrograms => setDatasetSettings({...datasetSettings, selectedPrograms})} />
+  );
+}
+
+export function SchoolFilterContents({datasetSettings, setDatasetSettings} : Params) {
+  const items = makeSchools(datasetSettings.ccddd);
+
+  return (
+      <FilterTree
+        title="School"
+        items={items}
+        selectedItems={datasetSettings.selectedSchools}
+        setSelectedItems={selectedSchools => setDatasetSettings({...datasetSettings, selectedSchools})} />
   );
 }

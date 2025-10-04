@@ -6,7 +6,27 @@ export type SchoolInfo = {
 
 export type SchoolMap = Record<number, Array<SchoolInfo>>;
 
-export default {
+export function sortBySchoolName(a, b) {
+  if (a.is_district_office && !b.is_district_office) {
+    return -1;
+  }
+
+  if (!a.is_district_office && b.is_district_office) {
+    return 1;
+  }
+
+  if (a.school < b.school) {
+    return -1;
+  }
+
+  if (a.school > b.school) {
+    return 1;
+  }
+
+  return 0;
+}
+
+export const ALL_SCHOOLS : SchoolMap = {
   1109: [
     {
       'school_code': 1217,
@@ -15853,4 +15873,4 @@ export default {
       'is_district_office': false
     }
   ]
-} as SchoolMap;
+};

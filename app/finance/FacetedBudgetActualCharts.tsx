@@ -23,6 +23,7 @@ type Params = {
   data: ColumnTable;
   xColumn: string;
   xLabel: string;
+  yColumnRoot: string;
   facetOrder: Array<FacetInfo>;
   metricList: Array<MetricSettings>;
 };
@@ -128,10 +129,10 @@ export function makeComparisonGui(idPrefix, facetOrder: Array<FacetInfo>,
 }
 
 export default function FacetedBudgetActualCharts({idPrefix, data, xColumn, xLabel,
-                                                  facetOrder, metricList} : Params) {
+                                                  yColumnRoot, facetOrder, metricList} : Params) {
   const connectorId = `${idPrefix}-data-connector`;
   const gui = makeComparisonGui(idPrefix, facetOrder, metricList);
-  const components = makeFacetComponents(idPrefix, xColumn, xLabel, "amount",
+  const components = makeFacetComponents(idPrefix, xColumn, xLabel, yColumnRoot,
                                          facetOrder, connectorId, metricList);
 
   const config = ({

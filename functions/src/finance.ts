@@ -88,8 +88,8 @@ function getExpenditures(ccddd) {
     object,
     nces_code,
     nces,
-    sum(c_pct_expenditure) c_pct_expenditure,
-    sum(c_pct_revenue) c_pct_revenue,
+    school_code,
+    school,
     sum(amount) amount
   FROM
     sps-btn-data.safs_f19x.general_fund_expenditures
@@ -105,7 +105,9 @@ function getExpenditures(ccddd) {
     object_code,
     object,
     nces_code,
-    nces
+    nces,
+    school_code,
+    school
   `;
 }
 

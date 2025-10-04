@@ -1,210 +1,161 @@
 'use client';
 
-import { makeChartableNces } from 'utilities/ChartableMetrics';
+import * as aq from 'arquero';
+import { op } from 'arquero';
+import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
+import { extractRawExpenditures, extractFacetsByAmount, toChartableDataset, getDataColumnNames } from 'utilities/ChartableMetrics';
 import { useDistrictData } from 'app/finance/DistrictDataProvider';
 import { useState, useEffect } from 'react';
+import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
+import { makeFacetComponents } from 'app/finance/FacetedBudgetActualCharts';
 import DistrictSelector from 'app/finance/DistrictSelector';
 import SchoolFilter, {getSchoolItems} from 'app/finance/SchoolFilter';
-import ExpenditureFilter, { ALL_PROGRAM_ITEMS, ALL_ACTIVITY_ITEMS, ALL_OBJECT_ITEMS } from 'app/finance/ExpenditureFilter';
+import { ObjectFilterContents, ActivityFilterContents, ProgramFilterContents,
+  SchoolFilterContents, makeSchoolItems,
+  extractCodes, ALL_OBJECT_ITEMS, ALL_ACTIVITY_ITEMS,
+  ALL_PROGRAM_ITEMS, ALL_SCHOOL_ITEMS } from 'app/finance/ExpenditureFilterContents';
 import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
+import HcDashboard from 'components/HcDashboard';
 import Loading from 'components/Loading';
-import CurrencyNormalizationSelector from 'app/finance/CurrencyNormalizationSelector';
-import Stack from '@mui/material/Stack';
 import SettingsLayout from 'app/finance/SettingsLayout';
 import MetricSettingsContents, { DEFAULT_METRIC_SETTINGS } from 'app/finance/MetricSettingsContents';
 import Typography from '@mui/material/Typography';
 
-import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
-import type { MetricDef } from 'app/finance/FacetedBudgetActualCharts';
 import type { MetricSettings } from 'app/finance/MetricSettingsContents';
 
-type CompareState = MetricDef & {
-  selectedSchools: Array<string>,
-};
-
+const CONNECTOR_ID = 'nces-connector';
 
 export interface NcesSettings extends MetricSettings {
+  selectedObjects : string[];
+  selectedActivities : string[];
+  selectedPrograms : string[];
+  selectedSchools : string[];
 };
 
-function extractCodes(prefix, selectedItems) {
-  const selectedCodes = new Array<number>;
-  for (const id of selectedItems) {
-    const parts = id.split('-');
-    if (parts.length === 2 && parts[0] === prefix) {
-      selectedCodes.push(parseInt(parts[1]));
-    }
-  }
-  return selectedCodes;
+const DEFAULT_NCES_SETTINGS = DEFAULT_METRIC_SETTINGS.map(
+  v => ({
+    ...v, 
+    selectedObjects: ALL_OBJECT_ITEMS,
+    selectedActivities: ALL_ACTIVITY_ITEMS,
+    selectedPrograms: ALL_PROGRAM_ITEMS,
+    selectedSchools: makeSchoolItems(v.ccddd),
+  })
+);
+
+function componentsGenerator(ncesSettings : NcesSettings, facetOrder) {
+  const components =  makeFacetComponents(
+    ncesSettings.id,
+    'class_of',
+    'Class of',
+    'amount',
+    facetOrder,
+    CONNECTOR_ID,
+    [ncesSettings]);
+
+  return components;
 }
 
-function allInMap(districtDataMap, allCcddds) {
-  for (const ccddd of allCcddds) {
-    if (!(ccddd in districtDataMap)) {
-      return false;
-    }
-  }
+function makeFacetedNcesForDistrict(districtData, filteredExpenditures, facet, expenditureSettings) {
+  const data = extractRawExpenditures(filteredExpenditures, facet);
 
-  return true;
+  const pdata = data.groupby(['class_of', 'data_type'])
+    .pivot(['nces_code'], {
+      amount: d => op.sum(d.amount),
+        _pivot_name_hack_: d => op.any('_pivot_name_hack_')
+    })
+    .select(aq.not('_pivot_name_hack_'));
+
+  const names = getDataColumnNames(pdata);
+  return toChartableDataset(districtData, pdata, expenditureSettings, [], names);
 }
 
-function compileData(districtDataMap, firstCcddd, otherCcddds, filterSelection, facet) {
-  if (!allInMap(districtDataMap, [firstCcddd, ...otherCcddds])) {
-    return [null,null];
+function compileData(districtDataMap, allNcesSettings, facet) {
+  const allDatasets = new Array<ColumnTable>;
+  let facetInfo;
+  for (const ncesSettings of allNcesSettings) {
+    const districtData = districtDataMap[ncesSettings.ccddd];
+
+    // IF it has a school code, it has an nces code.
+    // TODO: Filter by NCES codes too.
+    const filteredExpenditures = districtData.filteredExpenditures({
+      selectedObjectCodes: extractCodes('obj', ncesSettings.selectedObjects),
+      selectedActivityCodes: extractCodes('act', ncesSettings.selectedActivities),
+      selectedProgramCodes: extractCodes('prog', ncesSettings.selectedPrograms),
+      selectedSchoolCodes: extractCodes('school', ncesSettings.selectedSchools),
+    });
+
+    const data = makeFacetedNcesForDistrict(districtData, filteredExpenditures, facet, ncesSettings);
+    allDatasets.push(data);
+    if (facetInfo === undefined) {
+      facetInfo = extractFacetsByAmount(filteredExpenditures, facet, "descending" as const);
+    }
   }
-
-  const [firstData, facetOrder] = makeChartableNces(
-    firstCcddd,
-    districtDataMap[firstCcddd].filteredExpenditures(filterSelection),
-    facet,
-    'variance' as const,
-    'descending' as const);
-
-  const data = [...otherCcddds].reduce(
-    (acc, ccddd) => {
-      if (!(ccddd in districtDataMap)) {
-        console.warn("Not loaded yet " + ccddd);
-        return acc;
-      }
-
-      const [otherData, _] = makeChartableNces(
-        ccddd,
-        districtDataMap[ccddd].filteredExpenditures(filterSelection),
-        facet,
-        'variance' as const,
-        'descending' as const
-      );
-
-      return acc.join_full(otherData);
-    },
-    firstData);
-
-    return [data, facetOrder];
+  
+  let data = allDatasets[0];
+  for (const d of allDatasets.slice(1)) {
+    data = data.join(d);
+  }
+  return [data, facetInfo];
 }
 
 // Charts expenditures for 
 export default function NcesDashboard() {
   const facet = 'nces';
   const {districtDataMap, loadCcddd} = useDistrictData();
-  const [allNcesSettings, setAllNcesSettings] = useState<Array<NcesSettings>>(DEFAULT_METRIC_SETTINGS);
-
-  const initialCcddd = 17001;
-  const [selectedObjects, setSelectedObjects] = useState<string[]>(ALL_OBJECT_ITEMS);
-  const [selectedActivities, setSelectedActivities] = useState<string[]>(ALL_ACTIVITY_ITEMS);
-  const [selectedPrograms, setSelectedPrograms] = useState<string[]>(ALL_PROGRAM_ITEMS);
-  const [metricList, setMetricList] = useState<Array<CompareState>>(
-    [
-      {
-        ccddd: initialCcddd,
-        currencyNormalization: 'amount' as const,
-        selectedSchools: getSchoolItems(initialCcddd),
-      },
-    ]
-  );
+  const [allNcesSettings, setAllNcesSettings] = useState<Array<NcesSettings>>(DEFAULT_NCES_SETTINGS);
 
   useEffect(
-    () => {
-      for (const metricDef of metricList) {
-        loadCcddd(metricDef.ccddd);
+    () => { 
+      for (const settings of allNcesSettings) {
+        loadCcddd(settings.ccddd);
       }
     },
-    [loadCcddd, metricList]
-  );
+    [allNcesSettings, loadCcddd]);
 
-  // Create filters for expenditures.
-  const filterSelection = {
-    selectedObjectCodes: extractCodes('obj', selectedObjects),
-    selectedActivityCodes: extractCodes('act', selectedActivities),
-    selectedProgramCodes: extractCodes('prog', selectedPrograms),
-  };
-
-  const firstCcddd = metricList[0].ccddd;
-  const otherCcddds = new Set(metricList.map(def => def.ccddd));
-  otherCcddds.delete(firstCcddd);
-
-  const [data, facetOrder] = compileData(districtDataMap, firstCcddd, otherCcddds,
-                                         filterSelection, facet);
-
-  if (data === null) {
-    return (
-      <Loading text="Loading data" />
-    );
+  for (const ncesSettings of allNcesSettings) {
+    if (!(ncesSettings.ccddd in districtDataMap)) {
+      return <Loading text="Loading dataset..." />
+    }
   }
 
-  // Merge all the data.
-  // Create handlers used to update the metricList from the correct set of controls.
-  const updateMetricList = (i, newState) => {
-    // Copy the list.
-    const newList = [...metricList];
+  const [data, facetOrder] = compileData(districtDataMap, allNcesSettings, "nces" as const);
 
-    // Override the fields in the right MetricDef then set.
-    newList[i] = {...metricList[i], ...newState};
-    setMetricList(newList);
-  };
+  const result = makeDatasetFacetedDashboard(allNcesSettings, s => componentsGenerator(s, facetOrder));
+  if (result === undefined) {
+    return <div>No Datasets defined.</div>;
+  }
+  const {components, gui} = result;
+
+  const config = ({
+    gui,
+    components,
+    dataPool: {
+      connectors: [
+        {
+          id: CONNECTOR_ID,
+          type: 'JSON',
+          options: dfToJSONConnectorOptions(data),
+        },
+      ],
+    },
+  });
 
   return (
     <SettingsLayout
         allDatasetSettings={allNcesSettings}
         setAllDatasetSettings={setAllNcesSettings}
-        settingsContentsComponents={[MetricSettingsContents]}
+        settingsContentsComponents={[
+          MetricSettingsContents,
+          ObjectFilterContents,
+          ActivityFilterContents,
+          ProgramFilterContents,
+          SchoolFilterContents,
+      ]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">
-        NCES Dashboard -- Spending classification for Actual spend.
+        Nces Dashboard
       </Typography>
-      <div>
-        {/* This section is configuration of the data set. */}
-        <ExpenditureFilter
-          filterState={
-            {
-              selectedObjects,
-              setSelectedObjects,
-              selectedActivities,
-              setSelectedActivities,
-              selectedPrograms,
-              setSelectedPrograms
-            }}
-        />
-
-        {/* This section is configuration of each comparison */}
-        <Stack direction="row" spacing={4}>
-          {metricList.map(
-            (def,i) => (
-                <Stack key={i} spacing={4} direction="column">
-                  <DistrictSelector
-                    ccddd={def.ccddd}
-                    onChange={ccddd => {
-                      updateMetricList(i, {
-                        ccddd,
-                        selectedSchools: getSchoolItems(ccddd),
-                      }
-                    )}}
-                  />
-                  <SchoolFilter
-                    ccddd={def.ccddd}
-                    selectedSchools={def.selectedSchools}
-                    setSelectedSchools={
-                      selectedSchools => updateMetricList(i, {selectedSchools})
-                    }
-                  />
-                  <CurrencyNormalizationSelector
-                    label={`Column ${i} normalization`}
-                    normalization={metricList[i].currencyNormalization}
-                    onChange={currencyNormalization => updateMetricList(i, {currencyNormalization})}
-                  />
-                </Stack>
-            ))
-          }
-        </Stack>
-      </div>
-
-      {/* Draw the Charts */}
-      <FacetedBudgetActualCharts
-        idPrefix={facet}
-        data={data}
-        xColumn="class_of"
-        xLabel="Class of"
-        facetOrder={facetOrder}
-        metricList={metricList}
-      />
+      <HcDashboard config={config} />
     </SettingsLayout>
   );
 }

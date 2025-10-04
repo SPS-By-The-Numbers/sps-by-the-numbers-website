@@ -8,6 +8,8 @@ export type FilterSelection = {
   selectedObjectCodes: Array<number>,
   selectedActivityCodes: Array<number>,
   selectedProgramCodes: Array<number>,
+  selectedSchoolCodes?: Array<number>,
+  selectedNcesCodes?: Array<number>,
 };
 
 export type StaffingFilterSelection = {
@@ -363,11 +365,38 @@ export default class DistrictData {
   }
 
   filteredExpenditures(filterSelection: FilterSelection) {
-    return this.gf_expenditure_df
-      .params(filterSelection)
-      .filter((d, $) =>
-              d.includes($.selectedObjectCodes, d.object_code) &&
-              d.includes($.selectedActivityCodes, d.activity_code) &&
-              d.includes($.selectedProgramCodes, d.program_code));
+    let results = this.gf_expenditure_df;
+
+    if (filterSelection.selectedObjectCodes !== undefined) {
+      results = results
+        .params(filterSelection)
+        .filter((d, $) => d.includes($.selectedObjectCodes, d.object_code));
+    }
+
+    if (filterSelection.selectedActivityCodes !== undefined) {
+      results = results
+        .params(filterSelection)
+        .filter((d, $) => d.includes($.selectedActivityCodes, d.activity_code));
+    }
+
+    if (filterSelection.selectedActivityCodes !== undefined) {
+      results = results
+        .params(filterSelection)
+        .filter((d, $) => d.includes($.selectedProgramCodes, d.program_code));
+    }
+
+    if (filterSelection.selectedSchoolCodes !== undefined) {
+      results = results
+        .params(filterSelection)
+        .filter((d, $) => d.includes($.selectedSchoolCodes, d.school_code));
+    }
+
+    if (filterSelection.selectedNcesCodes !== undefined) {
+      results = results
+        .params(filterSelection)
+        .filter((d, $) => d.includes($.selectedNcesCodes, d.nces_code));
+    }
+
+    return results;
   }
 };

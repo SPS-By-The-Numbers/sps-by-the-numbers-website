@@ -84,7 +84,7 @@ export function toChartableDataset(districtData, df, metricSettings, amount_only
   return data;
 }
 
-export function extractRawExpenditures(df : ColumnTable, facetColumn : string, sortOrder: SortOrder) {
+export function extractVarianceFacets(df : ColumnTable, facetColumn : string, sortOrder: SortOrder) {
   const facetCodeColumn = `${facetColumn}_code`;
 
   // Calculate variance for sort order.
@@ -112,13 +112,43 @@ export function extractRawExpenditures(df : ColumnTable, facetColumn : string, s
     })
     .array('facet_info');
 
+  return facetInfo;
+}
+
+export function extractFacetsByAmount(df : ColumnTable,
+                                      facetColumn : string,
+                                      sortOrder: SortOrder) {
+  const facetCodeColumn = `${facetColumn}_code`;
+
+  const sorted = df
+    .groupby(facetColumn, facetCodeColumn)
+    .rollup({sortval: d => op.max(d.amount)})
+    .orderby(aq.desc('sortval'));
+
+  const facetInfo = sorted
+    .derive({
+      facet_info: aq.escape(
+        d => ({
+          code: d[facetCodeColumn],
+          title: d[facetColumn],
+        })
+      )
+    })
+    .array('facet_info');
+
+  return facetInfo;
+}
+
+export function extractRawExpenditures(df : ColumnTable, facetColumn : string) {
+  const facetCodeColumn = `${facetColumn}_code`;
+
   const data = df.groupby('class_of', 'data_type', facetCodeColumn)
     .rollup({
       amount: op.sum(`amount`),
     })
     .groupby('class_of');
 
-    return {data, facetInfo: facetInfo as Array<FacetInfo>};
+  return data;
 }
 
 
@@ -128,121 +158,6 @@ export function extractRawExpenditures(df : ColumnTable, facetColumn : string, s
 ///////////////////////////////
 ///////////////////////////////
 // Old
-
-// Returns data with one entry in the "class_of" column for each year and most column
-// representing one chartable metric or aggregation.
-//
-// Columns representing a chartable metric has a column name with this format:
-//
-//   ${datasetid}_${normalization}_${metric}_${budget/actuals}
-//
-//  Example for amount of activity_code 11 in actuals for 17001 would be:
-//
-//    ds1_amount_act11_actuals
-//
-//  where act is the shortening for activity_code
-//
-// Columns providing more info on the row itself do not follow
-// any specific form. An example of such a column is "covid_type"
-// which lists of the year is before, during, or after covid.
-export function makeChartableExpenditures(
-    datasetId: string,
-    df: ColumnTable,
-    facetColumn: string,
-    sortType: SortType,
-    sortOrder: SortOrder) : [ColumnTable, Array<FacetInfo>] {
-  try {
-    const facetCodeColumn = `${facetColumn}_code`;
-
-    // Calculate variance for sort order.
-    const varianceDf = df
-      .groupby('class_of', 'data_type', facetColumn, facetCodeColumn)
-      .rollup({
-        val: op.sum(`amount`),
-      })
-      .groupby('class_of', facetColumn, facetCodeColumn)
-      .pivot(['data_type'], { val: d => op.sum(d.val) })
-      .derive({variance: d => d.budget - d.actuals})
-      .filter(d => !op.is_nan(d.variance));
-
-    const facetInfoSorted = varianceDf
-      .groupby(facetColumn, facetCodeColumn)
-      .rollup({absmedian: d => op.abs(op.median(d.variance))})
-      .orderby(sortOrderOp(sortOrder, 'absmedian'))
-      .derive({
-        facet_info: aq.escape(
-          d => ({
-            code: d[facetCodeColumn],
-            title: d[facetColumn],
-          })
-        )
-      })
-      .array('facet_info');
-
-    const data = df.groupby('class_of', 'data_type', facetCodeColumn)
-      .rollup({
-        amount: op.sum(`amount`),
-        pctexp: op.sum(`c_pct_expenditure`),
-        pctrev: op.sum(`c_pct_revenue`),
-      })
-      .groupby('class_of')
-      .pivot([facetCodeColumn, 'data_type'], {
-        [`${datasetId}_amount`]: d => op.sum(d.amount),
-        [`${datasetId}_pctexp`]: d => op.sum(d.pctexp) * 100,
-        [`${datasetId}_pctrev`]: d => op.sum(d.pctrev) * 100,
-      });
-
-      return [data, facetInfoSorted as Array<FacetInfo>];
-  } catch (e) {
-    console.warn("No data");
-    return [df.groupby('class_of').rollup(), []];
-  }
-}
-
-// ${datasetId]_amount_${nces_code}_${budget/actual}
-export function makeChartableNces(
-    datasetId: string,
-    raw_df: ColumnTable,
-    facetColumn: string,
-    sortType: SortType,
-    sortOrder: SortOrder) : [ColumnTable, Array<FacetInfo>] {
-  try {
-    const facetCodeColumn = `${facetColumn}_code`;
-
-    // NCES codes only work with actuals.
-    // TODO: Remove sample!
-    const df = raw_df.filter(d => d.nces_code !== null);
-
-    // Sort by biggest.
-    const facetInfoSorted = df
-      .groupby('class_of', facetColumn, facetCodeColumn)
-      .rollup({amount: op.sum('amount') })
-      .groupby(facetColumn, facetCodeColumn)
-      .rollup({medamount: op.median(`amount`)})
-      .orderby(sortOrderOp(sortOrder, 'medamount'))
-      .derive({
-        facet_info: aq.escape(
-          d => ({
-            code: d[facetCodeColumn],
-            title: d[facetColumn],
-          })
-        )
-      })
-      .array('facet_info');
-
-    const data = df.groupby('class_of')
-      .pivot([facetCodeColumn, 'data_type'], {
-        [`${datasetId}_amount`]: d => op.sum(d.amount),
-          _pivot_name_hack_: d => op.any('_pivot_name_hack_')
-      })
-      .select(aq.not('_pivot_name_hack_'));
-
-      return [data, facetInfoSorted as Array<FacetInfo>];
-  } catch (e) {
-    console.warn("No data");
-    return [raw_df.groupby('class_of').rollup(), []];
-  }
-}
 
 // Returns data with one entry in the "class_of" column for each year and most column
 // representing one duty_root.  It uses the same format as makeChartableExpenditures
