@@ -171,10 +171,15 @@ function getS275Summary(ccddd) {
     r.school_year,
     SPLIT(r.school_year, '-')[1] class_of,
     a.school_code,
+    d_s.school,
     a.program_code,
+    d_p.program,
     a.activity_code,
+    d_a.activity,
     a.duty_root_code,
+    d_dr.duty_name duty_root,
     a.duty_suffix_code,
+    d_ds.duty_contract_type duty_suffix,
     sum(a.fte_in_assignment) fte_in_assignment,
     sum(pa.assignment_salary) + sum(pa.c_est_other_salary) c_est_total_initial_salary,
     sum(pa.c_est_total_final_salary) c_est_total_final_salary,
@@ -182,6 +187,11 @@ function getS275Summary(ccddd) {
     sps-btn-data.safs_s275.assignment a
     JOIN sps-btn-data.safs_s275.report r ON (a.report_id = r.report_id)
     JOIN sps-btn-data.safs_s275.private_assignment pa ON (a.assignment_id = pa.assignment_id)
+    JOIN sps-btn-data.safs_domains.d_school d_s ON (a.school_code = d_s.school_code)
+    JOIN sps-btn-data.safs_domains.d_program d_p ON (a.program_code = d_p.program_code)
+    JOIN sps-btn-data.safs_domains.d_activity d_a ON (a.activity_code = d_a.activity_code)
+    JOIN sps-btn-data.safs_domains.d_duty_root d_dr ON (a.duty_root_code = d_dr.duty_root)
+    JOIN sps-btn-data.safs_domains.d_duty_suffix d_ds ON (a.duty_suffix_code = d_ds.duty_suffix)
     WHERE
     r.report_type = 'final' AND
     r.ccddd = ${ccddd}
@@ -189,10 +199,15 @@ function getS275Summary(ccddd) {
     school_year,
     class_of,
     school_code,
+    school,
     program_code,
+    program,
     activity_code,
+    activity,
     duty_root_code,
-    duty_suffix_code
+    duty_root,
+    duty_suffix_code,
+    duty_suffix
   `;
 }
 

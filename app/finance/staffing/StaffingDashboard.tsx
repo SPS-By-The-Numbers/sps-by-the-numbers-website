@@ -1,193 +1,162 @@
 'use client';
 
-import { makeChartableStaffing } from 'utilities/ChartableMetrics';
+import { ActivityFilterContents, ProgramFilterContents, SchoolFilterContents } from 'app/finance/ExpenditureFilterContents';
+import { makeSchoolItems, extractCodes } from 'app/finance/ExpenditureFilterContents';
+import { ALL_ACTIVITY_ITEMS, ALL_PROGRAM_ITEMS, ALL_DUTY_ROOT_ITEMS } from 'app/finance/ExpenditureFilterContents';
+import { extractRawS275Staffing, extractFacetsByAmount, toChartableDataset, getDataColumnNames } from 'utilities/ChartableMetrics';
+import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
+import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
+import { makeFacetComponents } from 'app/finance/FacetedBudgetActualCharts';
+import { op } from 'arquero';
 import { useDistrictData } from 'app/finance/DistrictDataProvider';
 import { useState, useEffect } from 'react';
+import * as aq from 'arquero';
 import CurrencyNormalizationSelector from 'app/finance/CurrencyNormalizationSelector';
 import DistrictSelector from 'app/finance/DistrictSelector';
-import ExpenditureFilter, { ALL_SCHOOL_ITEMS, ALL_DUTY_ROOT_ITEMS, ALL_PROGRAM_ITEMS, ALL_ACTIVITY_ITEMS } from 'app/finance/ExpenditureFilter';
 import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
+import HcDashboard from 'components/HcDashboard';
 import Loading from 'components/Loading';
-import MetricSettingsContents, {DEFAULT_METRIC_SETTINGS} from 'app/finance/MetricSettingsContents';
+import MetricSettingsContents, { DEFAULT_METRIC_SETTINGS } from 'app/finance/MetricSettingsContents';
 import SettingsLayout from 'app/finance/SettingsLayout';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
+import type { ColumnTable } from 'arquero';
 import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
-import type { MetricDef } from 'app/finance/FacetedBudgetActualCharts';
 import type { MetricSettings } from 'app/finance/MetricSettingsContents';
 
+const CONNECTOR_ID = 'settings-connector';
+
 interface StaffingSettings extends MetricSettings {
+  selectedActivities : string[];
+  selectedPrograms : string[];
+  selectedSchools : string[];
+  selectedDutyRoots : string[];
 };
 
-function extractCodes(prefix, selectedItems) {
-  const selectedCodes = new Array<number>;
-  for (const id of selectedItems) {
-    const parts = id.split('-');
-    if (parts.length === 2 && parts[0] === prefix) {
-      selectedCodes.push(parseInt(parts[1]));
-    }
-  }
-  return selectedCodes;
+const DEFAULT_STAFF_SETTINGS = DEFAULT_METRIC_SETTINGS.map(
+  v => ({
+    ...v, 
+    selectedActivities: ALL_ACTIVITY_ITEMS,
+    selectedPrograms: ALL_PROGRAM_ITEMS,
+    selectedSchools: makeSchoolItems(v.ccddd),
+    selectedDutyRoots: ALL_DUTY_ROOT_ITEMS,
+  })
+);
+
+function componentsGenerator(staffingSettings : StaffingSettings, facetOrder) {
+  const components =  makeFacetComponents(
+    staffingSettings.id,
+    'class_of',
+    'Class of',
+    'amount',
+    facetOrder,
+    CONNECTOR_ID,
+    [staffingSettings]);
+
+  return components;
 }
 
-function allInMap(districtDataMap, allCcddds) {
-  for (const ccddd of allCcddds) {
-    if (!(ccddd in districtDataMap)) {
-      return false;
-    }
-  }
+function makeFacetedStaffingForDistrict(districtData, filteredS275Summary, facet, staffingSettings) {
+  const data = extractRawS275Staffing(filteredS275Summary);
 
-  return true;
+  const pdata = data.groupby('class_of')
+    .pivot(['duty_root_code'], {
+      finalSalary: d => op.sum(d.finalSalary),
+      // TODO: This should be fte. but the toChartableDataset code doesn't let changing the default var yet.
+      amount: d => op.sum(d.fte),
+    })
+    .select(aq.not('_pivot_name_hack_'));
+
+  const names = getDataColumnNames(pdata);
+  return toChartableDataset(districtData, pdata, staffingSettings, [], names);
 }
 
-function compileData(districtDataMap, firstCcddd, otherCcddds, filterSelection) {
-  if (!allInMap(districtDataMap, [firstCcddd, ...otherCcddds])) {
-    return [null,null];
+function compileData(districtDataMap, allStaffingSettings, facet) {
+  const allDatasets = new Array<ColumnTable>;
+  let facetInfo;
+  for (const staffingSettings of allStaffingSettings) {
+    const districtData = districtDataMap[staffingSettings.ccddd];
+
+    // IF it has a school code, it has an staffing code.
+    const filteredS275Summary = districtData.filteredS275Summary({
+      selectedActivityCodes: extractCodes('act', staffingSettings.selectedActivities),
+      selectedProgramCodes: extractCodes('prog', staffingSettings.selectedPrograms),
+      selectedSchoolCodes: extractCodes('school', staffingSettings.selectedSchools),
+      selectedDutyRootCodes: extractCodes('duty', staffingSettings.selectedDutyRoots),
+    });
+
+    const data = makeFacetedStaffingForDistrict(districtData, filteredS275Summary, facet, staffingSettings);
+    allDatasets.push(data);
+    if (facetInfo === undefined) {
+      facetInfo = extractFacetsByAmount(filteredS275Summary, facet, "fte_in_assignment", "descending" as const);
+    }
   }
-
-  const [firstData, facetOrder] = makeChartableStaffing(
-    firstCcddd,
-    districtDataMap[firstCcddd].filteredS275Summary(filterSelection),
-    'range' as const,
-    'descending' as const);
-
-    const data = [...otherCcddds].reduce(
-      (acc, ccddd) => {
-        if (!(ccddd in districtDataMap)) {
-          console.warn("Not loaded yet " + ccddd);
-          return acc;
-        }
-
-        const [otherData, _] = makeChartableStaffing(
-          ccddd,
-          districtDataMap[ccddd].filteredStaffing(filterSelection),
-          'range' as const,
-          'descending' as const
-        );
-
-        return acc.join_full(otherData);
-      },
-      firstData);
-
-      return [data, facetOrder];
+  
+  let data = allDatasets[0];
+  for (const d of allDatasets.slice(1)) {
+    data = data.join(d);
+  }
+  return [data, facetInfo];
 }
 
 // Charts expenditures for 
 export default function StaffingDashboard() {
+  const facet = 'dutyRoot';
   const {districtDataMap, loadCcddd} = useDistrictData();
-  const [allStaffingSettings, setAllStaffingSettings] = useState<Array<StaffingSettings>>(DEFAULT_METRIC_SETTINGS);
-  const initialCcddd = 17001;
-  const [selectedSchoolCodes, setSelectedSchoolCodes] = useState<string[]>(ALL_SCHOOL_ITEMS);
-  const [selectedDutyRootCodes, setSelectedDutyRootCodes] = useState<string[]>(ALL_DUTY_ROOT_ITEMS);
-  const [selectedActivities, setSelectedActivities] = useState<string[]>(ALL_ACTIVITY_ITEMS);
-  const [selectedPrograms, setSelectedPrograms] = useState<string[]>(ALL_PROGRAM_ITEMS);
-  const [metricList, setMetricList] = useState<Array<MetricDef>>(
-    [
-      {
-        ccddd: initialCcddd,
-        currencyNormalization: 'amount' as const,
-      },
-      {
-        ccddd: initialCcddd,
-        currencyNormalization: 'amount' as const,
-      },
-    ]
-  );
+  const [allStaffingSettings, setAllStaffingSettings] = useState<Array<StaffingSettings>>(DEFAULT_STAFF_SETTINGS);
 
   useEffect(
-    () => {
-      for (const metricDef of metricList) {
-        loadCcddd(metricDef.ccddd);
+    () => { 
+      for (const settings of allStaffingSettings) {
+        loadCcddd(settings.ccddd);
       }
     },
-    [loadCcddd, metricList]
-  );
+    [allStaffingSettings, loadCcddd]);
 
-  // Create filters for expenditures.
-  const filterSelection = {
-    selectedSchoolCodes: extractCodes('school', selectedSchoolCodes),
-    selectedDutyRootCodes: extractCodes('duty', selectedDutyRootCodes),
-    selectedActivityCodes: extractCodes('act', selectedActivities),
-    selectedProgramCodes: extractCodes('prog', selectedPrograms),
-  };
-
-  const firstCcddd = metricList[0].ccddd;
-  const otherCcddds = new Set(metricList.map(def => def.ccddd));
-  otherCcddds.delete(firstCcddd);
-
-  const [data, facetOrder] = compileData(districtDataMap, firstCcddd, otherCcddds,
-                                         filterSelection);
-
-  if (data === null) {
-    return (
-      <Loading text="Loading data" />
-    );
+  for (const staffingSettings of allStaffingSettings) {
+    if (!(staffingSettings.ccddd in districtDataMap)) {
+      return <Loading text="Loading dataset..." />
+    }
   }
 
-  // Merge all the data.
-  // Create handlers used to update the metricList from the correct set of controls.
-  const updateMetricList = (i, newState) => {
-    // Copy the list.
-    const newList = [...metricList];
+  const [data, facetOrder] = compileData(districtDataMap, allStaffingSettings, "duty_root" as const);
 
-    // Override the fields in the right MetricDef then set.
-    newList[i] = {...metricList[i], ...newState};
-    setMetricList(newList);
-  };
+  const result = makeDatasetFacetedDashboard(allStaffingSettings, s => componentsGenerator(s, facetOrder));
+  if (result === undefined) {
+    return <div>No Datasets defined.</div>;
+  }
+  const {components, gui} = result;
+
+  const config = ({
+    gui,
+    components,
+    dataPool: {
+      connectors: [
+        {
+          id: CONNECTOR_ID,
+          type: 'JSON',
+          options: dfToJSONConnectorOptions(data),
+        },
+      ],
+    },
+  });
 
   return (
     <SettingsLayout
         allDatasetSettings={allStaffingSettings}
         setAllDatasetSettings={setAllStaffingSettings}
-        settingsContentsComponents={[MetricSettingsContents]}
+        settingsContentsComponents={[
+          MetricSettingsContents,
+          ActivityFilterContents,
+          ProgramFilterContents,
+          SchoolFilterContents,
+      ]}
     >
-      {/* This section is configuration of the data set. */}
-      <ExpenditureFilter
-        filterState={
-          {
-            selectedObjects: selectedDutyRootCodes,
-            setSelectedObjects: setSelectedDutyRootCodes,
-            selectedActivities,
-            setSelectedActivities,
-            selectedPrograms,
-            setSelectedPrograms
-          }}
-      />
-
-      {/* This section is configuration of each comparison */}
-      <Stack direction="row" spacing={4}>
-        {metricList.map(
-          (def,i) => (
-              <Stack key={i} spacing={4} direction="column">
-                <DistrictSelector
-                  ccddd={def.ccddd}
-                  onChange={(selection) => {
-                    updateMetricList(i, {ccddd: selection})
-                  }}
-                />
-                <CurrencyNormalizationSelector
-                  label={`Column ${i} normalization`}
-                  normalization={metricList[i].currencyNormalization}
-                  onChange={newValue => updateMetricList(i, {currencyNormalization: newValue})}
-                />
-              </Stack>
-          ))
-        }
-      </Stack>
-
       <Typography className="analysis-title" component="h1" variant="h1">
         Staffing Dashboard
       </Typography>
-      {/* Draw the Charts */}
-      <FacetedBudgetActualCharts
-        idPrefix="dutyRoot"
-        data={data}
-        xColumn="class_of"
-        xLabel="Class of"
-        facetOrder={facetOrder}
-        metricList={metricList}
-      />
+      <HcDashboard config={config} />
     </SettingsLayout>
   );
 }

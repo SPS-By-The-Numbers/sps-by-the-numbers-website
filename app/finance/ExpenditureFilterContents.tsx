@@ -1,13 +1,16 @@
 'use client';
 
 import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
-import { ALL_SCHOOLS, sortBySchoolName } from 'app/finance/schools';
+import { makeSchools } from 'app/finance/schools';
+import { makeDutyRootItems } from 'app/finance/DutyRoots';
 import SafsCompObjectsTreeItems from 'app/finance/SafsCompObjectsTreeItems.json';
 import SafsObjectsTreeItems from 'app/finance/SafsObjectsTreeItems.json';
 import SpsActivityCategoryTreeItems from 'app/finance/SpsActivityCategoryTreeItems.json';
 import SpsProgramGroupingTreeItems from 'app/finance/SpsProgramGroupingTreeItems.json';
 
 import type { DatasetSettings } from 'app/finance/SettingsContents';
+import type { MetricSettings } from 'app/finance/MetricSettingsContents';
+import type { TreeViewBaseItem } from '@mui/x-tree-view';
 
 interface Props<T extends DatasetSettings> {
   datasetSettings: T;
@@ -26,7 +29,7 @@ interface ProgramFilterSettings extends DatasetSettings {
   selectedPrograms: string[];
 };
 
-interface SchoolFilterSettings extends DatasetSettings {
+interface SchoolFilterSettings extends MetricSettings {
   selectedSchools: string[];
 };
 
@@ -62,29 +65,12 @@ export function makeSchoolItems(ccddd) {
   return allItems(makeSchools(ccddd));
 }
 
-export const ALL_DUTY_ROOT_ITEMS = allItems(SafsObjectsTreeItems);
+export const ALL_DUTY_ROOT_ITEMS = allItems(makeDutyRootItems());
 export const ALL_COMP_OBJECT_ITEMS = allItems(SafsCompObjectsTreeItems);
 export const ALL_OBJECT_ITEMS = allItems(SafsObjectsTreeItems);
 export const ALL_ACTIVITY_ITEMS = allItems(SpsActivityCategoryTreeItems);
 export const ALL_PROGRAM_ITEMS = allItems(SpsProgramGroupingTreeItems);
 
-function makeSchools(ccddd) {
-  const schools = ALL_SCHOOLS[ccddd];
-  const schoolItems = new Array<TreeViewBaseItem>;
-  for (const s of schools.sort(sortBySchoolName)) {
-    schoolItems.push({
-      id: `school-${s.school_code}`,
-      label: s.school,
-    });
-  }
-  return [
-    {
-      id: 'all',
-      label: 'All Schools',
-      children: schoolItems,
-    }
-  ];
-}
 
 function FilterTree({title, items, selectedItems, setSelectedItems}) {
   return (
@@ -134,7 +120,7 @@ export function ProgramFilterContents({datasetSettings, setDatasetSettings} : Pr
   );
 }
 
-export function SchoolFilterContents({datasetSettings, setDatasetSettings} : Params) {
+export function SchoolFilterContents({datasetSettings, setDatasetSettings} : Props<SchoolFilterSettings>) {
   const items = makeSchools(datasetSettings.ccddd);
 
   return (

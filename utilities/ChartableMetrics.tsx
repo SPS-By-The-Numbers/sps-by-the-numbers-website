@@ -1,7 +1,7 @@
 import * as aq from 'arquero';
 import { op } from 'arquero';
 
-import DutyRoots from 'app/finance/DutyRoots';
+import { DUTY_ROOTS, makeDutyRootItems } from 'app/finance/DutyRoots';
 
 import type { ColumnTable } from 'arquero';
 import type DistrictData from 'utilities/DistrictData';
@@ -62,6 +62,31 @@ export function getDataColumnNames(df) {
   return df.columnNames().filter(x => ! (['class_of', 'data_type'].includes(x)));
 }
 
+export function extractNormalizationDf(districtData: DistrictData,
+                                       currencyNormalization: CurrencyNormalization) {
+  if (currencyNormalization === "amount") {
+    const data_types = aq.table({data_type: ['budget', 'actuals']});
+    return districtData.all_class_ofs()
+      .cross(data_types)
+      .derive({norm: 1});
+  } if (currencyNormalization === "pctexp") {
+    return districtData.expenditures()
+      .groupby(['data_type', 'class_of'])
+      .rollup({norm: d => op.sum(d.amount) / 100});
+  } else if (currencyNormalization === "pctrev") {
+    return districtData.revenues()
+      .groupby(['data_type', 'class_of'])
+      .rollup({norm: d => op.sum(d.amount) / 100});
+  } else if (currencyNormalization === "pctcomp") {
+    return districtData.compensation()
+      .groupby(['data_type', 'class_of'])
+      .derive({norm: d => d.allStaffComp / 100});
+  } else if (currencyNormalization === "pctsalary") {
+    throw `Not implemented`;
+  }
+
+  throw `Invalid Normalizaiton: ${currencyNormalization}`;
+}
 
 export function toChartableDataset(districtData, df, metricSettings, amount_only_columns, normalized_columns) : ColumnTable {
 
@@ -117,12 +142,13 @@ export function extractVarianceFacets(df : ColumnTable, facetColumn : string, so
 
 export function extractFacetsByAmount(df : ColumnTable,
                                       facetColumn : string,
+                                      sortColumn: string,
                                       sortOrder: SortOrder) {
   const facetCodeColumn = `${facetColumn}_code`;
-
   const sorted = df
     .groupby(facetColumn, facetCodeColumn)
-    .rollup({sortval: d => op.max(d.amount)})
+    .params({sortCol: sortColumn})
+    .rollup({sortval: (d, $) => op.sum(d[$.sortCol])})
     .orderby(aq.desc('sortval'));
 
   const facetInfo = sorted
@@ -151,93 +177,14 @@ export function extractRawExpenditures(df : ColumnTable, facetColumn : string) {
   return data;
 }
 
+export function extractRawS275Staffing(df : ColumnTable) {
+  const data = df.groupby('class_of', 'duty_root_code')
+    .rollup({
+      finalSalary: d => op.sum(d.c_est_total_final_salary),
+      initialSalary: d => op.sum(d.c_est_total_initial_salary),
+      fte: d => op.sum(d.fte_in_assignment),
+    })
+    .groupby('class_of');
 
-///////////////////////////////
-///////////////////////////////
-///////////////////////////////
-///////////////////////////////
-///////////////////////////////
-// Old
-
-// Returns data with one entry in the "class_of" column for each year and most column
-// representing one duty_root.  It uses the same format as makeChartableExpenditures
-// but facet is always dutyRoot data is always actuals.
-//
-// The metric_name can be fte or salary or estTotalComp.
-//
-//   ${datasetId]_${metric_name}_dutyRoot_actuals
-export function makeChartableStaffing(
-    datasetId: string,
-    rawDf: ColumnTable,
-    sortType: "range",
-    sortOrder: SortOrder) : [ColumnTable, Array<FacetInfo>] {
-  try {
-    const df = rawDf
-      .groupby('class_of', 'duty_root_code')
-      .rollup({
-        finalSalary: op.sum('c_est_total_final_salary'),
-        fte: op.sum('fte_in_assignment'),
-      })
-      .derive({data_type: () => 'actuals'});  // synthetically make it actuals.
-
-      // TODO: is this conceptually a budget?
-      //initial_sal: op.sum('c_est_total_initial_salary'),
-
-    const facetInfoSorted = df
-      .groupby('duty_root_code')
-      .derive({
-        lastFte: d => op.last_value(d.fte),
-        firstFte: d => op.last_value(d.fte),
-      })
-      .derive({growth: d => d.lastFte - d.firstFte})
-      .orderby(aq.desc('lastFte'))
-      .derive({
-        facet_info: aq.escape(
-          d => ({
-            code: d['duty_root_code'],
-            title: DutyRoots[d['duty_root_code']] ?? "Unknown",
-          })
-        )
-      })
-      .array('facet_info');
-
-    const data = df
-      .groupby('class_of')
-      .pivot(['duty_root_code', 'data_type'], {
-        // TODO: rename to total_initial_assignment_salary.
-        [`${datasetId}_finalSalary`]: d => op.sum(d.finalSalary),
-        [`${datasetId}_fte`]: d => op.sum(d.fte),
-      });
-
-    return [data, facetInfoSorted as Array<FacetInfo>];
-  } catch (e) {
-    console.warn("No data", e);
-    return [rawDf.groupby('class_of').rollup(), []];
-  }
-}
-
-export function extractNormalizationDf(districtData: DistrictData,
-                                       currencyNormalization: CurrencyNormalization) {
-  if (currencyNormalization === "amount") {
-    const data_types = aq.table({data_type: ['budget', 'actuals']});
-    return districtData.all_class_ofs()
-      .cross(data_types)
-      .derive({norm: 1});
-  } if (currencyNormalization === "pctexp") {
-    return districtData.expenditures()
-      .groupby(['data_type', 'class_of'])
-      .rollup({norm: d => op.sum(d.amount) / 100});
-  } else if (currencyNormalization === "pctrev") {
-    return districtData.revenues()
-      .groupby(['data_type', 'class_of'])
-      .rollup({norm: d => op.sum(d.amount) / 100});
-  } else if (currencyNormalization === "pctcomp") {
-    return districtData.compensation()
-      .groupby(['data_type', 'class_of'])
-      .derive({norm: d => d.allStaffComp / 100});
-  } else if (currencyNormalization === "pctsalary") {
-    throw `Not implemented`;
-  }
-
-  throw `Invalid Normalizaiton: ${currencyNormalization}`;
+  return data;
 }

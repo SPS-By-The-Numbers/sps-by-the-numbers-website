@@ -1,4 +1,6 @@
-const DUTY_ROOTS = {
+import type { TreeViewBaseItem } from '@mui/x-tree-view';
+
+export const DUTY_ROOTS = {
   11: 'Superintendent',
   12: 'Deputy/Assistant Superintendent',
   13: 'Other District Administrator',
@@ -39,4 +41,19 @@ const DUTY_ROOTS = {
   99: 'Director or Supervisor',
 };
 
-export default DUTY_ROOTS;
+export function makeDutyRootItems() {
+  const dutyRootItems = new Array<TreeViewBaseItem>;
+  for (const [dutyRootCode, dutyRoot] of Object.entries(DUTY_ROOTS)) {
+    dutyRootItems.push({
+      id: `duty-${dutyRootCode}`,
+      label: dutyRoot,
+    });
+  }
+  return [
+    {
+      id: 'all',
+      label: 'All Schools',
+      children: dutyRootItems,
+    }
+  ];
+}

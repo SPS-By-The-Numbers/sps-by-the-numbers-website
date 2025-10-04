@@ -7,15 +7,14 @@ import { useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react';
 import * as aq from 'arquero';
 import DistrictSelector from 'app/finance/DistrictSelector';
-import ExpenditureFilter, { ALL_PROGRAM_ITEMS, ALL_ACTIVITY_ITEMS, ALL_COMP_OBJECT_ITEMS } from 'app/finance/ExpenditureFilter';
 import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
+import { ALL_ACTIVITY_ITEMS, ALL_PROGRAM_ITEMS } from 'app/finance/ExpenditureFilterContents';
 import HcChart from 'components/HcChart';
 import Loading from 'components/Loading';
 import { makeCurrencyFormatter } from 'utilities/highcharts/utils';
 import Stack from '@mui/material/Stack';
 
 import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
-import type { MetricDef } from 'app/finance/FacetedBudgetActualCharts';
 
 type StaffInfo = {
   fte: number;
@@ -117,7 +116,7 @@ export default function OrgChartDashboard() {
   const facet = 'nces';
   const searchParams = useSearchParams();
   const {districtDataMap, loadCcddd} = useDistrictData();
-  const [selectedObjects, setSelectedObjects] = useState<string[]>(ALL_COMP_OBJECT_ITEMS);
+  const [selectedObjects, setSelectedObjects] = useState<string[]>();//ALL_COMP_OBJECT_ITEMS);
   const [selectedActivities, setSelectedActivities] = useState<string[]>(ALL_ACTIVITY_ITEMS);
   const [selectedPrograms, setSelectedPrograms] = useState<string[]>(ALL_PROGRAM_ITEMS);
   const [ccddd, setCcddd] = useState<number>(parseInt(searchParams.get('ccddd') ?? '17001'));
@@ -215,23 +214,9 @@ export default function OrgChartDashboard() {
       allowHTML: true,
     }
   };
-  console.log(config);
 
   return (
     <div>
-      {/* This section is configuration of the data set. */}
-      <ExpenditureFilter
-        filterState={
-          {
-            selectedObjects,
-            setSelectedObjects,
-            selectedActivities,
-            setSelectedActivities,
-            selectedPrograms,
-            setSelectedPrograms
-          }}
-      />
-
       {/* This section is configuration of each comparison */}
       <Stack direction="row" spacing={4}>
         <DistrictSelector

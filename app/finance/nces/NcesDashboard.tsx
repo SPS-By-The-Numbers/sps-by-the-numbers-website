@@ -9,11 +9,9 @@ import { useState, useEffect } from 'react';
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { makeFacetComponents } from 'app/finance/FacetedBudgetActualCharts';
 import DistrictSelector from 'app/finance/DistrictSelector';
-import SchoolFilter, {getSchoolItems} from 'app/finance/SchoolFilter';
-import { ObjectFilterContents, ActivityFilterContents, ProgramFilterContents,
-  SchoolFilterContents, makeSchoolItems,
-  extractCodes, ALL_OBJECT_ITEMS, ALL_ACTIVITY_ITEMS,
-  ALL_PROGRAM_ITEMS, ALL_SCHOOL_ITEMS } from 'app/finance/ExpenditureFilterContents';
+import { ObjectFilterContents, ActivityFilterContents, ProgramFilterContents, SchoolFilterContents} from 'app/finance/ExpenditureFilterContents';
+import { makeSchoolItems, extractCodes } from 'app/finance/ExpenditureFilterContents';
+import { ALL_OBJECT_ITEMS, ALL_ACTIVITY_ITEMS, ALL_PROGRAM_ITEMS } from 'app/finance/ExpenditureFilterContents';
 import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
 import HcDashboard from 'components/HcDashboard';
 import Loading from 'components/Loading';
@@ -21,6 +19,7 @@ import SettingsLayout from 'app/finance/SettingsLayout';
 import MetricSettingsContents, { DEFAULT_METRIC_SETTINGS } from 'app/finance/MetricSettingsContents';
 import Typography from '@mui/material/Typography';
 
+import type { ColumnTable } from 'arquero';
 import type { MetricSettings } from 'app/finance/MetricSettingsContents';
 
 const CONNECTOR_ID = 'nces-connector';
@@ -87,7 +86,7 @@ function compileData(districtDataMap, allNcesSettings, facet) {
     const data = makeFacetedNcesForDistrict(districtData, filteredExpenditures, facet, ncesSettings);
     allDatasets.push(data);
     if (facetInfo === undefined) {
-      facetInfo = extractFacetsByAmount(filteredExpenditures, facet, "descending" as const);
+      facetInfo = extractFacetsByAmount(filteredExpenditures, facet, "amount", "descending" as const);
     }
   }
   

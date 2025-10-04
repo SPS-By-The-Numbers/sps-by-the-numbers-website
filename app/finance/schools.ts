@@ -1,3 +1,5 @@
+import type { TreeViewBaseItem } from '@mui/x-tree-view';
+
 export type SchoolInfo = {
   school: string;
   school_code: number;
@@ -15874,3 +15876,21 @@ export const ALL_SCHOOLS : SchoolMap = {
     }
   ]
 };
+
+export function makeSchools(ccddd) {
+  const schools = ALL_SCHOOLS[ccddd];
+  const schoolItems = new Array<TreeViewBaseItem>;
+  for (const s of schools.sort(sortBySchoolName)) {
+    schoolItems.push({
+      id: `school-${s.school_code}`,
+      label: s.school,
+    });
+  }
+  return [
+    {
+      id: 'all',
+      label: 'All Schools',
+      children: schoolItems,
+    }
+  ];
+}

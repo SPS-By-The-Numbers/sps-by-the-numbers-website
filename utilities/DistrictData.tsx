@@ -280,10 +280,10 @@ export default class DistrictData {
     return this.s275_summary_df
       .params(filterSelection)
       .filter((d, $) =>
-//              d.includes($.selectedSchoolCodes, d.school_code) &&
+              d.includes($.selectedSchoolCodes, d.school_code) &&
               d.includes($.selectedActivityCodes, d.activity_code) &&
-              d.includes($.selectedProgramCodes, d.program_code)); // &&
-//              d.includes($.selectedDutyRootCodes, d.duty_root_code));
+              d.includes($.selectedProgramCodes, d.program_code) &&
+              d.includes($.selectedDutyRootCodes, d.duty_root_code));
   }
 
   balances() {

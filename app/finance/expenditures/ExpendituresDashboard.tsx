@@ -11,7 +11,6 @@ import { useDistrictData } from 'app/finance/DistrictDataProvider';
 import { useState, useEffect } from 'react';
 import CurrencyNormalizationSelector from 'app/finance/CurrencyNormalizationSelector';
 import DistrictSelector from 'app/finance/DistrictSelector';
-import ExpenditureFilter from 'app/finance/ExpenditureFilter';
 import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
 import HcDashboard from 'components/HcDashboard';
 import Loading from 'components/Loading';
@@ -57,8 +56,7 @@ function componentsGenerator(expenditureSettings : ExpendituresSettings, facetOr
 function makeFacetedExpendituresForDistrict(districtData, filteredExpenditures, facet, expenditureSettings) {
   const data = extractRawExpenditures(
     filteredExpenditures,
-    "activity" as const,  // TODO: Merge with activity
-    "descending" as const);
+    "activity" as const);
 
   const pdata = data.groupby(['class_of', 'data_type'])
     .pivot(['activity_code'], {
