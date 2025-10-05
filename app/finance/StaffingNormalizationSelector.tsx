@@ -28,8 +28,8 @@ export default function StaffingNormalizationSelector({normalization, label, onC
         ...(Array.isArray(sx) ? sx : [sx])
         ]}
       >
-        <MenuItem value="amount">Amount</MenuItem>
-        <MenuItem value="pctfte">% of All FTE</MenuItem>
+        <MenuItem value="fte">FTE</MenuItem>
+        <MenuItem value="pctfte">% of FTE</MenuItem>
       </Select>
     </FormControl>
   );

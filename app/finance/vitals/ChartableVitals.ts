@@ -17,14 +17,16 @@ function extractRawVitals(districtData, ccddd) {
 }
 
 function makeVitalsForDistrict(districtData, vitalsSettings) : ColumnTable {
-  const AMOUNT_ONLY_COLUMN_NAMES = ['enrollment', 'staffFte', 'teachingFte', 'studentSupportFte', 'buildingSupportFte', 'otherFte'];
-  const NORMALIZED_COLUMN_NAMES = ['cashflow', 'beginningBalance', 'teachingComp', 'studentSupportComp', 'buildingSupportComp', 'otherComp'];
+  const AMOUNT_ONLY_COLUMN_NAMES = ['enrollment'];
+  const CURRENCY_COLUMN_NAMES = ['cashflow', 'beginningBalance', 'teachingComp', 'studentSupportComp', 'buildingSupportComp', 'otherComp'];
+  const STAFFING_COLUMN_NAMES = ['staffFte', 'teachingFte', 'studentSupportFte', 'buildingSupportFte', 'otherFte'];
 
   const rawVitals = extractRawVitals(districtData, vitalsSettings.ccddd);
 
   return toChartableDataset(districtData, rawVitals, vitalsSettings,
                             AMOUNT_ONLY_COLUMN_NAMES,
-                            NORMALIZED_COLUMN_NAMES);
+                            CURRENCY_COLUMN_NAMES,
+                            STAFFING_COLUMN_NAMES);
 }
 
 export function makeChartableVitals(

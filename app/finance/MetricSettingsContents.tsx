@@ -16,7 +16,7 @@ export const DEFAULT_METRIC_SETTINGS : Array<MetricSettings> = [
     name: 'SPS',
     id: 'ms1',
     ccddd: 17001,
-    currencyNormalization: 'pctcomp' as const,
+    currencyNormalization: 'pctexp' as const,
     staffingNormalization: 'pctfte' as const,
   },
   {
@@ -24,7 +24,7 @@ export const DEFAULT_METRIC_SETTINGS : Array<MetricSettings> = [
     id: 'ms2',
     ccddd: 17001,
     currencyNormalization: 'amount' as const,
-    staffingNormalization: 'amount' as const,
+    staffingNormalization: 'fte' as const,
   },
 ];
 

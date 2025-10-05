@@ -4,7 +4,7 @@ import merge from 'lodash.merge';
 import * as aq from 'arquero';
 import { op } from 'arquero';
 
-export type ValueFormat =  'currency' | 'decimal' | 'year' | 'pctexp' | 'pctcomp' | 'fte';
+export type ValueFormat =  'currency' | 'decimal' | 'year' | 'pctexp' | 'pctcomp' | 'fte' | 'pctfte';
 
 export type BaseChartConfigOptions = {
   title: string;
@@ -161,6 +161,9 @@ function inferLabel(valueFormat : ValueFormat) {
 
     case 'pctcomp':
       return '% of compensation';
+
+    case 'pctfte':
+      return '% of FTE';
   }
 
   throw `Cannot infer label for ${valueFormat}`;
@@ -221,16 +224,18 @@ function percentFormatter(value, precision) {
 function getRawFormatter(format : ValueFormat, precision) {
   switch(format) {
     case 'decimal':
+    case 'fte':
       return d => d.toFixed(precision);
     case 'currency':
       return makeCurrencyFormatter(precision);
     case 'pctexp':
     case 'pctcomp':
+    case 'pctfte':
       return d => percentFormatter(d, precision);
     case 'year':
       return x => x;
   }
-  throw `Unkonwn format ${format}`;
+  throw `Unknown format ${format}`;
 }
 
 function getFormatter(format : ValueFormat, precision) {

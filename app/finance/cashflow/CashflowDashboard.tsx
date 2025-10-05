@@ -28,11 +28,11 @@ function makeEnrollmentCashflowConfig(idPrefix, ccddd, name, columnSuffix, curre
     renderTo: `${idPrefix}-enrollment-cashflow-${columnSuffix}`,
     title: `Enrollment-Cashflow Correlation (${name})`,
     connectorId: CONNECTOR_ID,
-    xMetricColumn: `${ccddd}_amount_enrollment`,
+    xMetricColumn: `${idPrefix}_amount_enrollment`,
     xLabel: `${name} Enrollment AFTE`,
     xValueFormat: 'decimal' as const,
 
-    yMetricColumn: `${ccddd}_${currencyNormalization}_cashflow`,
+    yMetricColumn: `${idPrefix}_${currencyNormalization}_cashflow`,
     yLabel: `${name} Cashflow $`,
     yValueFormat: 'currency' as const,
 
@@ -52,10 +52,10 @@ function makeCompCashflowConfig(idPrefix, ccddd, name, metricColumn, columnSuffi
     renderTo: `${idPrefix}-${metricColumn}-cashflow-${columnSuffix}`,
     title: `${name}-Cashflow Correlation (${columnSuffix})`,
     connectorId: CONNECTOR_ID,
-    xMetricColumn: `${ccddd}_${metricColumn}`,
+    xMetricColumn: `${idPrefix}_${metricColumn}`,
     xValueFormat: 'pctcomp' as const,
 
-    yMetricColumn: `${ccddd}_amount_cashflow`,
+    yMetricColumn: `${idPrefix}_amount_cashflow`,
     yLabel: `Cashflow $`,
     yValueFormat: 'currency' as const,
 
@@ -75,11 +75,11 @@ function makeFteCashflowConfig(idPrefix, ccddd, name, metricColumn, columnSuffix
     renderTo: `${idPrefix}-${metricColumn}-cashflow-${columnSuffix}`,
     title: `${name}-Cashflow Correlation (${columnSuffix})`,
     connectorId: CONNECTOR_ID,
-    xMetricColumn: `${ccddd}_${metricColumn}`,
+    xMetricColumn: `${idPrefix}_${metricColumn}`,
     xLabel: 'FTE',
     xValueFormat: 'decimal' as const,
 
-    yMetricColumn: `${ccddd}_amount_cashflow`,
+    yMetricColumn: `${idPrefix}_amount_cashflow`,
     yLabel: `${columnSuffix} Cashflow $`,
     yValueFormat: 'currency' as const,
 
@@ -122,7 +122,7 @@ function componentsGenerator(cashflowSettings : CashflowSettings) {
     cashflowSettings.id,
     cashflowSettings.ccddd,
     cashflowSettings.currencyNormalization,
-    'amount' as const);
+    cashflowSettings.staffingNormalizaiton);
 
   return correlationChartOptions.map(c => makeCorrelationChartConfig(c));
 }

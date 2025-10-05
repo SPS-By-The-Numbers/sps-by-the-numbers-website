@@ -14,7 +14,7 @@ import { makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGe
 import HcDashboard from 'components/HcDashboard';
 
 import type { ColumnTable } from 'arquero';
-import type { FacetInfo, CurrencyNormalization } from 'utilities/ChartableMetrics';
+import type { FacetInfo, CurrencyNormalization, StaffingNormalization } from 'utilities/ChartableMetrics';
 import type { ValueFormat } from 'utilities/highcharts/ChartConfigGenerators';
 import type { MetricSettings } from 'app/finance/MetricSettingsContents';
 
@@ -33,34 +33,38 @@ function makeCellId(idPrefix, metricOrdinal, facetInfo) {
 }
 
 function formatForVariant(normalization) : ValueFormat {
-  if (normalization === 'amount' ||
-      normalization === 'finalSalary') {
+  if (normalization === 'amount') {
     return 'currency' as const;
-  } else if (normalization === 'pctexp') {
-    return 'pctexp' as const;
-  } else if (normalization === 'pctcomp') {
-    return 'pctcomp' as const;
+  } else if (normalization === 'pctexp' ||
+             normalization === 'pctcomp' ||
+             normalization === 'pctfte' ||
+             normalization === 'fte') {
+    return normalization as ValueFormat;
   }
 
   return 'decimal' as const;
 }
 
-function inferTitle(metricSettings : MetricSettings) {
-  if (metricSettings.currencyNormalization === 'amount') {
+function inferTitle(normalization: CurrencyNormalization | StaffingNormalization) {
+  if (normalization === 'amount') {
     return 'amount';
-  } else if (metricSettings.currencyNormalization === 'pctexp') {
+  } else if (normalization === 'pctexp') {
     return '% of expenditures';
-  } else if (metricSettings.currencyNormalization === 'pctcomp') {
+  } else if (normalization === 'pctcomp') {
     return '% of total compensation';
+  } else if (normalization === 'fte') {
+    return 'FTE';
+  } else if (normalization === 'pctfte') {
+    return '% of total FTE';
   }
 
-  throw `Unexpected normalization ${metricSettings.currencyNormalization}`;
+  throw `Unexpected normalization ${normalization}`;
 }
 
-function makeTitle(facetInfo, metricSettings) {
+function makeTitle(facetInfo, normalization) {
   return `<div class='chart-title'>
     <h3>${facetInfo.title}</h3>
-    <h4>${inferTitle(metricSettings)} - ${metricSettings.ccddd}</h4>
+    <h4>${inferTitle(normalization)}</h4>
   </div>`;
 }
 
@@ -75,21 +79,21 @@ function makeTitle(facetInfo, metricSettings) {
 // xLabel - Label for the x axis.
 // facets - an array of facets to render.  The ordering does not matter as that is defined by the gui.
 // connectorId - the ID of the data pool to conect to.
-// metricList - the metrics to generate for each facet.
+// normalizations - the normalizations to generate for each facet.
 export function makeFacetComponents(idPrefix, xColumn, xLabel, yColumnRoot, facets,
-                                    connectorId, metricList) {
-  const r = metricList.flatMap(
-    (metricSettings, metricOrdinal) => facets.map(
+                                    connectorId, normalizations) {
+  const r = normalizations.flatMap(
+    (normalization, normalizationOrdinal) => facets.map(
       facetInfo => (
         makeBudgetActualsChartConfig(
           {
-            title: makeTitle(facetInfo, metricSettings),
-            renderTo: makeCellId(idPrefix, metricOrdinal, facetInfo),
+            title: makeTitle(facetInfo, normalization),
+            renderTo: makeCellId(idPrefix, normalizationOrdinal, facetInfo),
             metricSuffix: facetInfo.code,
-            metricColumn: [metricSettings.id, metricSettings.currencyNormalization, yColumnRoot].join('_'),
+            metricColumn: [idPrefix, normalization, yColumnRoot].join('_'),
             connectorId,
             xDataColumn: xColumn,
-            yValueFormat: formatForVariant(metricSettings.currencyNormalization),
+            yValueFormat: formatForVariant(normalization),
             xValueFormat: 'year',
             xLabel,
           }

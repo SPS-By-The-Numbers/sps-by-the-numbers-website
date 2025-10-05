@@ -49,7 +49,7 @@ function componentsGenerator(ncesSettings : NcesSettings, facetOrder) {
     'amount',
     facetOrder,
     CONNECTOR_ID,
-    [ncesSettings]);
+    [ncesSettings.currencyNormalization]);
 
   return components;
 }
@@ -65,7 +65,7 @@ function makeFacetedNcesForDistrict(districtData, filteredExpenditures, facet, e
     .select(aq.not('_pivot_name_hack_'));
 
   const names = getDataColumnNames(pdata);
-  return toChartableDataset(districtData, pdata, expenditureSettings, [], names);
+  return toChartableDataset(districtData, pdata, expenditureSettings, [], names, []);
 }
 
 function compileData(districtDataMap, allNcesSettings, facet) {

@@ -45,31 +45,35 @@ const DEFAULT_STAFF_SETTINGS = DEFAULT_METRIC_SETTINGS.map(
 );
 
 function componentsGenerator(staffingSettings : StaffingSettings, facetOrder) {
-  const components =  makeFacetComponents(
+  const components = makeFacetComponents(
     staffingSettings.id,
     'class_of',
     'Class of',
-    'amount',
+    'fte',
     facetOrder,
     CONNECTOR_ID,
-    [staffingSettings]);
+    [staffingSettings.staffingNormalization]);
 
   return components;
 }
 
 function makeFacetedStaffingForDistrict(districtData, filteredS275Summary, facet, staffingSettings) {
-  const data = extractRawS275Staffing(filteredS275Summary);
+  const rawData = extractRawS275Staffing(filteredS275Summary);
 
-  const pdata = data.groupby('class_of')
+  const formatedData = rawData.groupby('class_of')
     .pivot(['duty_root_code'], {
       finalSalary: d => op.sum(d.finalSalary),
-      // TODO: This should be fte. but the toChartableDataset code doesn't let changing the default var yet.
-      amount: d => op.sum(d.fte),
+      fte: d => op.sum(d.fte),
     })
-    .select(aq.not('_pivot_name_hack_'));
+    .select(aq.not('_pivot_name_hack_'))
+    .derive({data_type: d => 'actuals'});
 
-  const names = getDataColumnNames(pdata);
-  return toChartableDataset(districtData, pdata, staffingSettings, [], names);
+  const joinedData = formatedData.join_left(districtData.enrollmentSummary());
+  const names = getDataColumnNames(joinedData);
+  return toChartableDataset(districtData, joinedData, staffingSettings, 
+               names.filter(d => (!d.includes('finalSalary_') && !d.includes('amount_'))),
+               names.filter(d => d.includes('finalSalary_')),
+               names.filter(d => d.includes('fte_')));
 }
 
 function compileData(districtDataMap, allStaffingSettings, facet) {

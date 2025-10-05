@@ -48,7 +48,7 @@ function componentsGenerator(expenditureSettings : ExpendituresSettings, facetOr
     'amount',
     facetOrder,
     CONNECTOR_ID,
-    [expenditureSettings]);
+    [expenditureSettings.currencyNormalization]);
 
   return components;
 }
@@ -67,7 +67,7 @@ function makeFacetedExpendituresForDistrict(districtData, filteredExpenditures, 
 
   const names = getDataColumnNames(pdata);
   return toChartableDataset(districtData, pdata,
-                            expenditureSettings, [], names);
+                            expenditureSettings, [], names, []);
 }
 
 function compileData(districtDataMap, allExpendituresSettings, facet) {

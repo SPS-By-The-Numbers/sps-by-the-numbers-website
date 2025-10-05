@@ -22,7 +22,7 @@ export type CurrencyNormalization =
 ;
 
 export type StaffingNormalization =
-  "amount"       // Raw amount. No normalization.
+  "fte"          // Raw amount. No normalization.
   | "pctfte"     // Percent of total staffing.
 ;
 
@@ -63,39 +63,45 @@ export function getDataColumnNames(df) {
 }
 
 export function extractNormalizationDf(districtData: DistrictData,
-                                       currencyNormalization: CurrencyNormalization) {
-  if (currencyNormalization === "amount") {
+                                       normalization: CurrencyNormalization | StaffingNormalization) {
+  if (normalization === "amount" || normalization === 'fte') {
     const data_types = aq.table({data_type: ['budget', 'actuals']});
     return districtData.all_class_ofs()
       .cross(data_types)
       .derive({norm: 1});
-  } if (currencyNormalization === "pctexp") {
+  } if (normalization === "pctexp") {
     return districtData.expenditures()
       .groupby(['data_type', 'class_of'])
       .rollup({norm: d => op.sum(d.amount) / 100});
-  } else if (currencyNormalization === "pctrev") {
+  } else if (normalization === "pctrev") {
     return districtData.revenues()
       .groupby(['data_type', 'class_of'])
       .rollup({norm: d => op.sum(d.amount) / 100});
-  } else if (currencyNormalization === "pctcomp") {
+  } else if (normalization === "pctcomp") {
     return districtData.compensation()
       .groupby(['data_type', 'class_of'])
       .derive({norm: d => d.allStaffComp / 100});
-  } else if (currencyNormalization === "pctsalary") {
+  } else if (normalization === "pctsalary") {
     throw `Not implemented`;
+  } else if (normalization === "pctfte") {
+    return districtData.staffingSummary()
+      .groupby(['data_type', 'class_of'])
+      .derive({norm: d => d.staffFte / 100});
   }
 
-  throw `Invalid Normalizaiton: ${currencyNormalization}`;
+  throw `Invalid Normalizaiton: ${normalization}`;
 }
 
-export function toChartableDataset(districtData, df, metricSettings, amount_only_columns, normalized_columns) : ColumnTable {
+export function toChartableDataset(districtData, df, metricSettings, amount_only_columns, currency_columns, staffing_columns) : ColumnTable {
 
   let normalizedData;
   if (amount_only_columns.length > 0) {
     normalizedData = normalizeColumn(districtData, df, amount_only_columns, 'amount' as const)
-      .join_left(normalizeColumn(districtData, df, normalized_columns, metricSettings.currencyNormalization));
+      .join_left(normalizeColumn(districtData, df, currency_columns, metricSettings.currencyNormalization))
+      .join_left(normalizeColumn(districtData, df, staffing_columns, metricSettings.staffingNormalization));
   } else {
-    normalizedData = normalizeColumn(districtData, df, normalized_columns, metricSettings.currencyNormalization);
+    normalizedData = normalizeColumn(districtData, df, currency_columns, metricSettings.currencyNormalization)
+      .join_left(normalizeColumn(districtData, df, staffing_columns, metricSettings.staffingNormalization));
   }
 
   // Prefix the dataset id.
@@ -171,8 +177,7 @@ export function extractRawExpenditures(df : ColumnTable, facetColumn : string) {
   const data = df.groupby('class_of', 'data_type', facetCodeColumn)
     .rollup({
       amount: op.sum(`amount`),
-    })
-    .groupby('class_of');
+    });
 
   return data;
 }
@@ -183,8 +188,7 @@ export function extractRawS275Staffing(df : ColumnTable) {
       finalSalary: d => op.sum(d.c_est_total_final_salary),
       initialSalary: d => op.sum(d.c_est_total_initial_salary),
       fte: d => op.sum(d.fte_in_assignment),
-    })
-    .groupby('class_of');
+    });
 
   return data;
 }
