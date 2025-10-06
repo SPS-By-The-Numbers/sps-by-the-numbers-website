@@ -9,13 +9,10 @@
 // column 'foo_code' that identifies the facet. This value will be used interally for
 // creating html identifiers etc.
 
-import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
-import { makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGenerators";
-import HcDashboard from 'components/HcDashboard';
+import { makeBudgetActualsChartConfig, makeTitle, formatForNormalization } from "utilities/highcharts/ChartConfigGenerators";
 
 import type { ColumnTable } from 'arquero';
-import type { FacetInfo, CurrencyNormalization, StaffingNormalization } from 'utilities/ChartableMetrics';
-import type { ValueFormat } from 'utilities/highcharts/ChartConfigGenerators';
+import type { FacetInfo } from 'utilities/ChartableMetrics';
 import type { MetricSettings } from 'app/finance/_widgets/MetricSettingsContents';
 
 type Params = {
@@ -30,42 +27,6 @@ type Params = {
 
 function makeCellId(idPrefix, metricOrdinal, facetInfo) {
   return `chart-${idPrefix}-${facetInfo.code}-${metricOrdinal}`;
-}
-
-function formatForVariant(normalization) : ValueFormat {
-  if (normalization === 'amount') {
-    return 'currency' as const;
-  } else if (normalization === 'pctexp' ||
-             normalization === 'pctcomp' ||
-             normalization === 'pctfte' ||
-             normalization === 'fte') {
-    return normalization as ValueFormat;
-  }
-
-  return 'decimal' as const;
-}
-
-function inferTitle(normalization: CurrencyNormalization | StaffingNormalization) {
-  if (normalization === 'amount') {
-    return 'amount';
-  } else if (normalization === 'pctexp') {
-    return '% of expenditures';
-  } else if (normalization === 'pctcomp') {
-    return '% of total compensation';
-  } else if (normalization === 'fte') {
-    return 'FTE';
-  } else if (normalization === 'pctfte') {
-    return '% of total FTE';
-  }
-
-  throw `Unexpected normalization ${normalization}`;
-}
-
-function makeTitle(facetInfo, normalization) {
-  return `<div class='chart-title'>
-    <h3>${facetInfo.title}</h3>
-    <h4>${inferTitle(normalization)}</h4>
-  </div>`;
 }
 
 // Produces all "component" which is basically a chart in the cell. This of
@@ -93,7 +54,7 @@ export function makeFacetComponents(idPrefix, xColumn, xLabel, yColumnRoot, face
             metricColumn: [idPrefix, normalization, yColumnRoot].join('_'),
             connectorId,
             xDataColumn: xColumn,
-            yValueFormat: formatForVariant(normalization),
+            yValueFormat: formatForNormalization(normalization),
             xValueFormat: 'year',
             xLabel,
           }
@@ -130,30 +91,4 @@ export function makeComparisonGui(idPrefix, facetOrder: Array<FacetInfo>,
   };
 
   return r;
-}
-
-export default function FacetedBudgetActualCharts({idPrefix, data, xColumn, xLabel,
-                                                  yColumnRoot, facetOrder, metricList} : Params) {
-  const connectorId = `${idPrefix}-data-connector`;
-  const gui = makeComparisonGui(idPrefix, facetOrder, metricList);
-  const components = makeFacetComponents(idPrefix, xColumn, xLabel, yColumnRoot,
-                                         facetOrder, connectorId, metricList);
-
-  const config = ({
-    gui,
-    components,
-    dataPool: {
-      connectors: [
-        {
-          id: connectorId,
-          type: 'JSON',
-          options: dfToJSONConnectorOptions(data),
-        },
-      ],
-    },
-  });
-
-  return (
-    <HcDashboard config={config} />
-  );
 }

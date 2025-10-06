@@ -4,6 +4,8 @@ import merge from 'lodash.merge';
 import * as aq from 'arquero';
 import { op } from 'arquero';
 
+import type { CurrencyNormalization, StaffingNormalization } from 'utilities/ChartableMetrics';
+
 export type ValueFormat =  'currency' | 'decimal' | 'year' | 'pctexp' | 'pctcomp' | 'fte' | 'pctfte';
 
 export type BaseChartConfigOptions = {
@@ -518,3 +520,40 @@ export function makeCorrelationChartConfig(options : CorrelationChartOptions ) {
 
   return result;
 }
+
+export function inferTitle(normalization: CurrencyNormalization | StaffingNormalization) {
+  if (normalization === 'amount') {
+    return 'amount';
+  } else if (normalization === 'pctexp') {
+    return '% of expenditures';
+  } else if (normalization === 'pctcomp') {
+    return '% of total compensation';
+  } else if (normalization === 'fte') {
+    return 'FTE';
+  } else if (normalization === 'pctfte') {
+    return '% of total FTE';
+  }
+
+  throw `Unexpected normalization ${normalization}`;
+}
+
+export function makeTitle(facetInfo, normalization) {
+  return `<div class='chart-title'>
+    <h3>${facetInfo.title}</h3>
+    <h4>${inferTitle(normalization)}</h4>
+  </div>`;
+}
+
+export function formatForNormalization(normalization) : ValueFormat {
+  if (normalization === 'amount') {
+    return 'currency' as const;
+  } else if (normalization === 'pctexp' ||
+             normalization === 'pctcomp' ||
+             normalization === 'pctfte' ||
+             normalization === 'fte') {
+    return normalization as ValueFormat;
+  }
+
+  return 'decimal' as const;
+}
+

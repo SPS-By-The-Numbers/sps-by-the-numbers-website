@@ -4,7 +4,7 @@ import { ActivityFilterContents, ProgramFilterContents, SchoolFilterContents } f
 import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import { extractRawS275Staffing, extractFacetsByAmount, toChartableDataset, getDataColumnNames } from 'utilities/ChartableMetrics';
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
-import { makeFacetComponents } from 'app/finance/_widgets/FacetedBudgetActualCharts';
+import { makeFacetComponents } from 'utilities/highcharts/FacetedBudgetActualCharts';
 import { extractCodes } from 'app/finance/_widgets/ExpenditureFilterContents';
 import { op } from 'arquero';
 import * as aq from 'arquero';
