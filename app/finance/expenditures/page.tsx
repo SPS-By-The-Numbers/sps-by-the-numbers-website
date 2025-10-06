@@ -1,6 +1,20 @@
+import { ALL_OBJECT_ITEMS, ALL_ACTIVITY_ITEMS, ALL_PROGRAM_ITEMS } from 'app/finance/_widgets/ExpenditureFilterContents';
+import { DEFAULT_METRIC_SETTINGS } from 'app/finance/_widgets/MetricSettingsContents';
+import { EnsureDistrictData } from 'app/finance/_providers/DistrictDataProvider';
 import { Metadata } from 'next';
 import { Suspense } from 'react';
 import ExpendituresDashboard from './ExpendituresDashboard';
+
+import type { ExpendituresSettings } from './ExpendituresDashboard';
+
+const DEFAULT_EXPENDITURE_SETTINGS = DEFAULT_METRIC_SETTINGS.map(
+  v => ({
+    ...v, 
+    selectedObjects: ALL_OBJECT_ITEMS,
+    selectedActivities: ALL_ACTIVITY_ITEMS,
+    selectedPrograms: ALL_PROGRAM_ITEMS,
+  })
+);
 
 export const metadata: Metadata = {
   title: "Expenditures Dashboard for Washingtion State Schools",
@@ -10,7 +24,7 @@ export const metadata: Metadata = {
 export default async function Page() {
   return (
     <Suspense>
-      <ExpendituresDashboard />
+      <EnsureDistrictData initialValue={DEFAULT_EXPENDITURE_SETTINGS} ContentComponent={ExpendituresDashboard} />
     </Suspense>
   );
 }

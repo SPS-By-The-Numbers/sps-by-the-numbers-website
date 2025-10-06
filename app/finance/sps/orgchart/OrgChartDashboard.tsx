@@ -1,20 +1,16 @@
 'use client';
 
 import { DeptToPad } from 'app/finance/sps/orgchart/padOrgMapping';
-import { op } from 'arquero';
-import { useDistrictData } from 'app/finance/_providers/DistrictDataProvider';
-import { useSearchParams } from 'next/navigation'
-import { useState, useEffect } from 'react';
-import * as aq from 'arquero';
-import DistrictSelector from 'app/finance/_widgets/DistrictSelector';
-import FacetedBudgetActualCharts from 'app/finance/_widgets/FacetedBudgetActualCharts';
-import { ALL_ACTIVITY_ITEMS, ALL_PROGRAM_ITEMS } from 'app/finance/_widgets/ExpenditureFilterContents';
-import HcChart from 'components/HcChart';
-import Loading from 'components/Loading';
 import { makeCurrencyFormatter } from 'utilities/highcharts/utils';
-import Stack from '@mui/material/Stack';
+import { op } from 'arquero';
+import * as aq from 'arquero';
+import HcChart from 'components/HcChart';
+import MetricSettingsContents from 'app/finance/_widgets/MetricSettingsContents';
+import SettingsLayout from 'app/finance/_widgets/SettingsLayout';
+import Typography from '@mui/material/Typography';
 
-import type { DistrictDataMap } from 'app/finance/_providers/DistrictDataProvider';
+import type { DistrictDataContentProps } from 'app/finance/_providers/DistrictDataProvider';
+import type { MetricSettings } from 'app/finance/_widgets/MetricSettingsContents';
 
 type StaffInfo = {
   fte: number;
@@ -112,39 +108,15 @@ function getOrgChartNodes(cur, level, s275SummaryDf, allNodes: Array<NodeInfo>) 
 }
 
 // Charts expenditures for 
-export default function OrgChartDashboard() {
-  const facet = 'nces';
-  const searchParams = useSearchParams();
-  const {districtDataMap, loadCcddd} = useDistrictData();
-  const [selectedObjects, setSelectedObjects] = useState<string[]>();//ALL_COMP_OBJECT_ITEMS);
-  const [selectedActivities, setSelectedActivities] = useState<string[]>(ALL_ACTIVITY_ITEMS);
-  const [selectedPrograms, setSelectedPrograms] = useState<string[]>(ALL_PROGRAM_ITEMS);
-  const [ccddd, setCcddd] = useState<number>(parseInt(searchParams.get('ccddd') ?? '17001'));
+export default function OrgChartDashboard({districtDataMap, allSettings, setAllSettings} : DistrictDataContentProps<MetricSettings>) {
   const selectedClassOf = 2024;
-
-  useEffect(
-    () => {
-      loadCcddd(ccddd);
-    },
-    [loadCcddd, ccddd]
-  );
-
-  const districtData = districtDataMap[ccddd];
-  if (!districtData) {
-    return <Loading text="Loading district data." />;
-  }
-
-  // Create filters for expenditures.
-  const filterSelection = {
-    selectedObjectCodes: extractCodes('obj', selectedObjects),
-    selectedActivityCodes: extractCodes('act', selectedActivities),
-    selectedProgramCodes: extractCodes('prog', selectedPrograms),
-  };
 
   const data = new Array<[number, number]>;
   getOrgChartEdges(DeptToPad, null, data);
 
   const nodes = new Array<NodeInfo>;
+  // TODO: Handle multiple settings.
+  const districtData = districtDataMap[allSettings[0].ccddd];
   getOrgChartNodes(DeptToPad, 0,
                    districtData.s275Summary().filter(aq.escape(d => d.class_of == selectedClassOf)),
                    nodes)
@@ -216,17 +188,18 @@ export default function OrgChartDashboard() {
   };
 
   return (
-    <div>
-      {/* This section is configuration of each comparison */}
-      <Stack direction="row" spacing={4}>
-        <DistrictSelector
-          ccddd={ccddd}
-          onChange={(selection) => setCcddd(selection)}
-        />
-      </Stack>
+    <SettingsLayout
+        allDatasetSettings={allSettings}
+        setAllDatasetSettings={setAllSettings}
+        settingsContentsComponents={[
+          MetricSettingsContents,
+        ]}
+    >
+      <Typography className="analysis-title" component="h1" variant="h1">
+        Attempt to reverse engineer an SPS Org chart from P-A-O codes and S275 data.
+      </Typography>
 
-      {/* Draw the Charts */}
       <HcChart config={config} sx={{"overflow": "scroll"}} />
-    </div>
+    </SettingsLayout>
   );
 }

@@ -1,48 +1,30 @@
 'use client';
 
 import { ActivityFilterContents, ProgramFilterContents, SchoolFilterContents } from 'app/finance/_widgets/ExpenditureFilterContents';
-import { ALL_ACTIVITY_ITEMS, ALL_PROGRAM_ITEMS, ALL_DUTY_ROOT_ITEMS } from 'app/finance/_widgets/ExpenditureFilterContents';
 import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import { extractRawS275Staffing, extractFacetsByAmount, toChartableDataset, getDataColumnNames } from 'utilities/ChartableMetrics';
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { makeFacetComponents } from 'app/finance/_widgets/FacetedBudgetActualCharts';
-import { makeSchoolItems, extractCodes } from 'app/finance/_widgets/ExpenditureFilterContents';
+import { extractCodes } from 'app/finance/_widgets/ExpenditureFilterContents';
 import { op } from 'arquero';
-import { useDistrictData } from 'app/finance/_providers/DistrictDataProvider';
-import { useState, useEffect } from 'react';
 import * as aq from 'arquero';
-import CurrencyNormalizationSelector from 'app/finance/_widgets/CurrencyNormalizationSelector';
-import DistrictSelector from 'app/finance/_widgets/DistrictSelector';
-import FacetedBudgetActualCharts from 'app/finance/_widgets/FacetedBudgetActualCharts';
 import HcDashboard from 'components/HcDashboard';
-import Loading from 'components/Loading';
-import MetricSettingsContents, { DEFAULT_METRIC_SETTINGS } from 'app/finance/_widgets/MetricSettingsContents';
+import MetricSettingsContents from 'app/finance/_widgets/MetricSettingsContents';
 import SettingsLayout from 'app/finance/_widgets/SettingsLayout';
-import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import type { ColumnTable } from 'arquero';
-import type { DistrictDataMap } from 'app/finance/_providers/DistrictDataProvider';
+import type { DistrictDataContentProps } from 'app/finance/_providers/DistrictDataProvider';
 import type { MetricSettings } from 'app/finance/_widgets/MetricSettingsContents';
 
 const CONNECTOR_ID = 'settings-connector';
 
-interface StaffingSettings extends MetricSettings {
+export interface StaffingSettings extends MetricSettings {
   selectedActivities : string[];
   selectedPrograms : string[];
   selectedSchools : string[];
   selectedDutyRoots : string[];
 };
-
-const DEFAULT_STAFF_SETTINGS = DEFAULT_METRIC_SETTINGS.map(
-  v => ({
-    ...v, 
-    selectedActivities: ALL_ACTIVITY_ITEMS,
-    selectedPrograms: ALL_PROGRAM_ITEMS,
-    selectedSchools: makeSchoolItems(v.ccddd),
-    selectedDutyRoots: ALL_DUTY_ROOT_ITEMS,
-  })
-);
 
 function componentsGenerator(staffingSettings : StaffingSettings, facetOrder) {
   const components = makeFacetComponents(
@@ -76,10 +58,10 @@ function makeFacetedStaffingForDistrict(districtData, filteredS275Summary, facet
                names.filter(d => d.includes('fte_')));
 }
 
-function compileData(districtDataMap, allStaffingSettings, facet) {
+function compileData(districtDataMap, allSettings, facet) {
   const allDatasets = new Array<ColumnTable>;
   let facetInfo;
-  for (const staffingSettings of allStaffingSettings) {
+  for (const staffingSettings of allSettings) {
     const districtData = districtDataMap[staffingSettings.ccddd];
 
     // IF it has a school code, it has an staffing code.
@@ -105,28 +87,10 @@ function compileData(districtDataMap, allStaffingSettings, facet) {
 }
 
 // Charts expenditures for 
-export default function StaffingDashboard() {
-  const facet = 'dutyRoot';
-  const {districtDataMap, loadCcddd} = useDistrictData();
-  const [allStaffingSettings, setAllStaffingSettings] = useState<Array<StaffingSettings>>(DEFAULT_STAFF_SETTINGS);
+export default function StaffingDashboard({districtDataMap, allSettings, setAllSettings} : DistrictDataContentProps<StaffingSettings>) {
+  const [data, facetOrder] = compileData(districtDataMap, allSettings, "duty_root" as const);
 
-  useEffect(
-    () => { 
-      for (const settings of allStaffingSettings) {
-        loadCcddd(settings.ccddd);
-      }
-    },
-    [allStaffingSettings, loadCcddd]);
-
-  for (const staffingSettings of allStaffingSettings) {
-    if (!(staffingSettings.ccddd in districtDataMap)) {
-      return <Loading text="Loading dataset..." />
-    }
-  }
-
-  const [data, facetOrder] = compileData(districtDataMap, allStaffingSettings, "duty_root" as const);
-
-  const result = makeDatasetFacetedDashboard(allStaffingSettings, s => componentsGenerator(s, facetOrder));
+  const result = makeDatasetFacetedDashboard(allSettings, s => componentsGenerator(s, facetOrder));
   if (result === undefined) {
     return <div>No Datasets defined.</div>;
   }
@@ -148,8 +112,8 @@ export default function StaffingDashboard() {
 
   return (
     <SettingsLayout
-        allDatasetSettings={allStaffingSettings}
-        setAllDatasetSettings={setAllStaffingSettings}
+        allDatasetSettings={allSettings}
+        setAllDatasetSettings={setAllSettings}
         settingsContentsComponents={[
           MetricSettingsContents,
           ActivityFilterContents,

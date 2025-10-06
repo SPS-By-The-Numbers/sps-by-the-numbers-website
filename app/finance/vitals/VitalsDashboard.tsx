@@ -4,19 +4,14 @@ import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import { makeChartableVitals } from 'app/finance/vitals/ChartableVitals';
 import { makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGenerators";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
-import { useDistrictData } from 'app/finance/_providers/DistrictDataProvider';
 import { useSearchParams } from 'next/navigation'
-import { useState, useEffect } from 'react';
-import DistrictSelector from 'app/finance/_widgets/DistrictSelector';
 import SettingsLayout from 'app/finance/_widgets/SettingsLayout';
 import HcDashboard from 'components/HcDashboard';
-import Loading from 'components/Loading';
-import CurrencyNormalizationSelector from 'app/finance/_widgets/CurrencyNormalizationSelector';
-import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import MetricSettingsContents, { DEFAULT_METRIC_SETTINGS } from 'app/finance/_widgets/MetricSettingsContents';
+import MetricSettingsContents from 'app/finance/_widgets/MetricSettingsContents';
 
 import type { BudgetActualsChartOptions, ValueFormat } from "utilities/highcharts/ChartConfigGenerators";
+import type { DistrictDataContentProps } from 'app/finance/_providers/DistrictDataProvider';
 import type { MetricSettings } from 'app/finance/_widgets/MetricSettingsContents';
 
 export interface VitalsSettings extends MetricSettings {
@@ -88,33 +83,16 @@ function componentsGenerator(vitalsSettings : VitalsSettings) {
   return budgetActualsChartOptions.map(c => makeBudgetActualsChartConfig(c));
 }
 
-export default function VitalsDashboard() {
-  const {districtDataMap, loadCcddd} = useDistrictData();
+export default function VitalsDashboard({districtDataMap, allSettings, setAllSettings} : DistrictDataContentProps<VitalsSettings>) {
   const searchParams = useSearchParams();
-  const [allVitalsSettings, setAllVitalsSettings] = useState<Array<VitalsSettings>>(DEFAULT_METRIC_SETTINGS);
 
-  // TODO: Pull this into a component.
-  useEffect(
-    () => { 
-      for (const settings of allVitalsSettings) {
-        loadCcddd(settings.ccddd);
-      }
-    },
-    [allVitalsSettings, loadCcddd]);
-
-  const result = makeDatasetFacetedDashboard(allVitalsSettings, componentsGenerator);
+  const result = makeDatasetFacetedDashboard(allSettings, componentsGenerator);
   if (result === undefined) {
     return <div>No Datasets defined.</div>;
   }
   const {components, gui} = result;
 
-  for (const vitalsSettings of allVitalsSettings) {
-    if (!(vitalsSettings.ccddd in districtDataMap)) {
-      return <Loading text="Loading dataset..." />
-    }
-  }
-
-  const data = makeChartableVitals(districtDataMap, allVitalsSettings);
+  const data = makeChartableVitals(districtDataMap, allSettings);
 
   const config = ({
     gui,
@@ -133,8 +111,8 @@ export default function VitalsDashboard() {
 
   return (
     <SettingsLayout
-        allDatasetSettings={allVitalsSettings}
-        setAllDatasetSettings={setAllVitalsSettings}
+        allDatasetSettings={allSettings}
+        setAllDatasetSettings={setAllSettings}
         settingsContentsComponents={[MetricSettingsContents]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">

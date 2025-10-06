@@ -1,3 +1,5 @@
+import { DEFAULT_METRIC_SETTINGS } from 'app/finance/_widgets/MetricSettingsContents';
+import { EnsureDistrictData } from 'app/finance/_providers/DistrictDataProvider';
 import { Metadata } from 'next';
 import { Suspense } from 'react';
 import VitalsDashboard from './VitalsDashboard';
@@ -10,7 +12,7 @@ export const metadata: Metadata = {
 export default async function Page() {
   return (
     <Suspense>
-      <VitalsDashboard/>
+      <EnsureDistrictData initialValue={DEFAULT_METRIC_SETTINGS} ContentComponent={VitalsDashboard} />
     </Suspense>
   );
 }

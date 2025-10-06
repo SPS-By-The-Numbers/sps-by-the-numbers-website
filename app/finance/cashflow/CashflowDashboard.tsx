@@ -4,23 +4,19 @@ import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import { makeCorrelationChartConfig } from "utilities/highcharts/ChartConfigGenerators";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { makeChartableVitals } from 'app/finance/vitals/ChartableVitals';
-import { useDistrictData } from 'app/finance/_providers/DistrictDataProvider';
-import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation'
-import DistrictSelector from 'app/finance/_widgets/DistrictSelector';
 import HcDashboard from 'components/HcDashboard';
-import Loading from 'components/Loading';
 import SettingsLayout from 'app/finance/_widgets/SettingsLayout';
 import Typography from '@mui/material/Typography';
-import MetricSettingsContents, {DEFAULT_METRIC_SETTINGS} from 'app/finance/_widgets/MetricSettingsContents';
+import MetricSettingsContents from 'app/finance/_widgets/MetricSettingsContents';
 
-import type { BudgetActualsChartOptions, CorrelationChartOptions } from "utilities/highcharts/ChartConfigGenerators";
-import type { CurrencyNormalization } from 'utilities/ChartableMetrics';
+import type { CorrelationChartOptions } from "utilities/highcharts/ChartConfigGenerators";
+import type { DistrictDataContentProps } from 'app/finance/_providers/DistrictDataProvider';
 import type { MetricSettings } from 'app/finance/_widgets/MetricSettingsContents';
 
 const CONNECTOR_ID = 'cashflow-connector';
 
-interface CashflowSettings extends MetricSettings {
+export interface CashflowSettings extends MetricSettings {
 };
 
 function makeEnrollmentCashflowConfig(idPrefix, ccddd, name, columnSuffix, currencyNormalization, colorIndex) {
@@ -127,33 +123,16 @@ function componentsGenerator(cashflowSettings : CashflowSettings) {
   return correlationChartOptions.map(c => makeCorrelationChartConfig(c));
 }
 
-export default function CashflowDashboard() {
-  const {districtDataMap, loadCcddd} = useDistrictData();
+export default function CashflowDashboard({districtDataMap, allSettings, setAllSettings} : DistrictDataContentProps<CashflowSettings>) {
   const searchParams = useSearchParams();
-  const [allCashflowSettings, setAllCashflowSettings] = useState<Array<CashflowSettings>>(DEFAULT_METRIC_SETTINGS);
 
-  // TODO: Pull this into a component.
-  useEffect(
-    () => { 
-      for (const settings of allCashflowSettings) {
-        loadCcddd(settings.ccddd);
-      }
-    },
-    [allCashflowSettings, loadCcddd]);
-
-  for (const cashflowSettings of allCashflowSettings) {
-    if (!(cashflowSettings.ccddd in districtDataMap)) {
-      return <Loading text="Loading dataset..." />
-    }
-  }
-
-  const result = makeDatasetFacetedDashboard(allCashflowSettings, componentsGenerator);
+  const result = makeDatasetFacetedDashboard(allSettings, componentsGenerator);
   if (result === undefined) {
     return <div>No Datasets defined.</div>;
   }
   const {components, gui} = result;
 
-  const data = makeChartableVitals(districtDataMap, allCashflowSettings);
+  const data = makeChartableVitals(districtDataMap, allSettings);
     
   const config = ({
     gui,
@@ -172,8 +151,8 @@ export default function CashflowDashboard() {
 
   return (
     <SettingsLayout
-        allDatasetSettings={allCashflowSettings}
-        setAllDatasetSettings={setAllCashflowSettings}
+        allDatasetSettings={allSettings}
+        setAllDatasetSettings={setAllSettings}
         settingsContentsComponents={[MetricSettingsContents]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">

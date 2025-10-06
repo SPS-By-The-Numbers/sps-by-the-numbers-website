@@ -4,22 +4,18 @@ import * as aq from 'arquero';
 import { op } from 'arquero';
 import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import { extractRawExpenditures, extractFacetsByAmount, toChartableDataset, getDataColumnNames } from 'utilities/ChartableMetrics';
-import { useDistrictData } from 'app/finance/_providers/DistrictDataProvider';
-import { useState, useEffect } from 'react';
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { makeFacetComponents } from 'app/finance/_widgets/FacetedBudgetActualCharts';
-import DistrictSelector from 'app/finance/_widgets/DistrictSelector';
-import { ObjectFilterContents, ActivityFilterContents, ProgramFilterContents, SchoolFilterContents} from 'app/finance/_widgets/ExpenditureFilterContents';
-import { makeSchoolItems, extractCodes } from 'app/finance/_widgets/ExpenditureFilterContents';
-import { ALL_OBJECT_ITEMS, ALL_ACTIVITY_ITEMS, ALL_PROGRAM_ITEMS } from 'app/finance/_widgets/ExpenditureFilterContents';
+import { ObjectFilterContents, ActivityFilterContents, ProgramFilterContents, SchoolFilterContents } from 'app/finance/_widgets/ExpenditureFilterContents';
+import { extractCodes } from 'app/finance/_widgets/ExpenditureFilterContents';
 import FacetedBudgetActualCharts from 'app/finance/_widgets/FacetedBudgetActualCharts';
 import HcDashboard from 'components/HcDashboard';
-import Loading from 'components/Loading';
 import SettingsLayout from 'app/finance/_widgets/SettingsLayout';
-import MetricSettingsContents, { DEFAULT_METRIC_SETTINGS } from 'app/finance/_widgets/MetricSettingsContents';
+import MetricSettingsContents from 'app/finance/_widgets/MetricSettingsContents';
 import Typography from '@mui/material/Typography';
 
 import type { ColumnTable } from 'arquero';
+import type { DistrictDataContentProps } from 'app/finance/_providers/DistrictDataProvider';
 import type { MetricSettings } from 'app/finance/_widgets/MetricSettingsContents';
 
 const CONNECTOR_ID = 'nces-connector';
@@ -30,16 +26,6 @@ export interface NcesSettings extends MetricSettings {
   selectedPrograms : string[];
   selectedSchools : string[];
 };
-
-const DEFAULT_NCES_SETTINGS = DEFAULT_METRIC_SETTINGS.map(
-  v => ({
-    ...v, 
-    selectedObjects: ALL_OBJECT_ITEMS,
-    selectedActivities: ALL_ACTIVITY_ITEMS,
-    selectedPrograms: ALL_PROGRAM_ITEMS,
-    selectedSchools: makeSchoolItems(v.ccddd),
-  })
-);
 
 function componentsGenerator(ncesSettings : NcesSettings, facetOrder) {
   const components =  makeFacetComponents(
@@ -68,10 +54,10 @@ function makeFacetedNcesForDistrict(districtData, filteredExpenditures, facet, e
   return toChartableDataset(districtData, pdata, expenditureSettings, [], names, []);
 }
 
-function compileData(districtDataMap, allNcesSettings, facet) {
+function compileData(districtDataMap, allSettings, facet) {
   const allDatasets = new Array<ColumnTable>;
   let facetInfo;
-  for (const ncesSettings of allNcesSettings) {
+  for (const ncesSettings of allSettings) {
     const districtData = districtDataMap[ncesSettings.ccddd];
 
     // IF it has a school code, it has an nces code.
@@ -98,28 +84,10 @@ function compileData(districtDataMap, allNcesSettings, facet) {
 }
 
 // Charts expenditures for 
-export default function NcesDashboard() {
-  const facet = 'nces';
-  const {districtDataMap, loadCcddd} = useDistrictData();
-  const [allNcesSettings, setAllNcesSettings] = useState<Array<NcesSettings>>(DEFAULT_NCES_SETTINGS);
+export default function NcesDashboard({districtDataMap, allSettings, setAllSettings} : DistrictDataContentProps<NcesSettings>) {
+  const [data, facetOrder] = compileData(districtDataMap, allSettings, "nces" as const);
 
-  useEffect(
-    () => { 
-      for (const settings of allNcesSettings) {
-        loadCcddd(settings.ccddd);
-      }
-    },
-    [allNcesSettings, loadCcddd]);
-
-  for (const ncesSettings of allNcesSettings) {
-    if (!(ncesSettings.ccddd in districtDataMap)) {
-      return <Loading text="Loading dataset..." />
-    }
-  }
-
-  const [data, facetOrder] = compileData(districtDataMap, allNcesSettings, "nces" as const);
-
-  const result = makeDatasetFacetedDashboard(allNcesSettings, s => componentsGenerator(s, facetOrder));
+  const result = makeDatasetFacetedDashboard(allSettings, s => componentsGenerator(s, facetOrder));
   if (result === undefined) {
     return <div>No Datasets defined.</div>;
   }
@@ -141,15 +109,15 @@ export default function NcesDashboard() {
 
   return (
     <SettingsLayout
-        allDatasetSettings={allNcesSettings}
-        setAllDatasetSettings={setAllNcesSettings}
+        allDatasetSettings={allSettings}
+        setAllDatasetSettings={setAllSettings}
         settingsContentsComponents={[
           MetricSettingsContents,
           ObjectFilterContents,
           ActivityFilterContents,
           ProgramFilterContents,
           SchoolFilterContents,
-      ]}
+        ]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">
         Nces Dashboard

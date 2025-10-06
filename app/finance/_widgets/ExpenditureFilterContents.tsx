@@ -1,5 +1,3 @@
-'use client';
-
 import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
 import { makeSchools } from 'app/finance/_domain/schools';
 import { makeDutyRootItems } from 'app/finance/_domain/DutyRoots';

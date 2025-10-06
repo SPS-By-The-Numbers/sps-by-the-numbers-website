@@ -1,6 +1,22 @@
+import { ALL_OBJECT_ITEMS, ALL_ACTIVITY_ITEMS, ALL_PROGRAM_ITEMS } from 'app/finance/_widgets/ExpenditureFilterContents';
+import { DEFAULT_METRIC_SETTINGS } from 'app/finance/_widgets/MetricSettingsContents';
+import { EnsureDistrictData } from 'app/finance/_providers/DistrictDataProvider';
+import { makeSchoolItems } from 'app/finance/_widgets/ExpenditureFilterContents';
 import { Metadata } from 'next';
+import { Suspense } from 'react';
 import NcesDashboard from './NcesDashboard';
-import Box from '@mui/material/Box';
+
+import type { NcesSettings } from './NcesDashboard';
+
+const DEFAULT_NCES_SETTINGS = DEFAULT_METRIC_SETTINGS.map(
+  v => ({
+    ...v, 
+    selectedObjects: ALL_OBJECT_ITEMS,
+    selectedActivities: ALL_ACTIVITY_ITEMS,
+    selectedPrograms: ALL_PROGRAM_ITEMS,
+    selectedSchools: makeSchoolItems(v.ccddd),
+  })
+);
 
 export const metadata: Metadata = {
   title: "Actual Spending Dashboard for Washingtion State Schools",
@@ -9,8 +25,8 @@ export const metadata: Metadata = {
 
 export default async function Page() {
   return (
-    <Box component="main" gap="0.2rem" paddingTop="0.3rem">
-      <NcesDashboard />
-    </Box>
+    <Suspense>
+      <EnsureDistrictData initialValue={DEFAULT_NCES_SETTINGS} ContentComponent={NcesDashboard} />
+    </Suspense>
   );
 }
