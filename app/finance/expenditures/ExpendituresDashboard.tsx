@@ -5,23 +5,23 @@ import { op } from 'arquero';
 import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import { extractRawExpenditures, extractVarianceFacets, toChartableDataset, getDataColumnNames } from 'utilities/ChartableMetrics';
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
-import { makeFacetComponents } from 'app/finance/FacetedBudgetActualCharts';
-import { ObjectFilterContents, ActivityFilterContents, ProgramFilterContents, extractCodes, ALL_OBJECT_ITEMS, ALL_ACTIVITY_ITEMS, ALL_PROGRAM_ITEMS } from 'app/finance/ExpenditureFilterContents';
-import { useDistrictData } from 'app/finance/DistrictDataProvider';
+import { makeFacetComponents } from 'app/finance/_widgets/FacetedBudgetActualCharts';
+import { ObjectFilterContents, ActivityFilterContents, ProgramFilterContents, extractCodes, ALL_OBJECT_ITEMS, ALL_ACTIVITY_ITEMS, ALL_PROGRAM_ITEMS } from 'app/finance/_widgets/ExpenditureFilterContents';
+import { useDistrictData } from 'app/finance/_providers/DistrictDataProvider';
 import { useState, useEffect } from 'react';
-import CurrencyNormalizationSelector from 'app/finance/CurrencyNormalizationSelector';
-import DistrictSelector from 'app/finance/DistrictSelector';
-import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
+import CurrencyNormalizationSelector from 'app/finance/_widgets/CurrencyNormalizationSelector';
+import DistrictSelector from 'app/finance/_widgets/DistrictSelector';
+import FacetedBudgetActualCharts from 'app/finance/_widgets/FacetedBudgetActualCharts';
 import HcDashboard from 'components/HcDashboard';
 import Loading from 'components/Loading';
-import MetricSettingsContents, {DEFAULT_METRIC_SETTINGS} from 'app/finance/MetricSettingsContents';
-import SettingsLayout from 'app/finance/SettingsLayout';
+import MetricSettingsContents, {DEFAULT_METRIC_SETTINGS} from 'app/finance/_widgets/MetricSettingsContents';
+import SettingsLayout from 'app/finance/_widgets/SettingsLayout';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 import type { ColumnTable } from 'arquero';
-import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
-import type { MetricSettings } from 'app/finance/MetricSettingsContents';
+import type { DistrictDataMap } from 'app/finance/_providers/DistrictDataProvider';
+import type { MetricSettings } from 'app/finance/_widgets/MetricSettingsContents';
 
 interface ExpendituresSettings extends MetricSettings {
   selectedObjects : string[];

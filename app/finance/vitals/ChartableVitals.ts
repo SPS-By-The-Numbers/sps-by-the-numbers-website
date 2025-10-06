@@ -4,7 +4,7 @@ import { op } from 'arquero';
 import { toChartableDataset } from 'utilities/ChartableMetrics';
 
 import type { ColumnTable } from 'arquero';
-import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
+import type { DistrictDataMap } from 'app/finance/_providers/DistrictDataProvider';
 import type { VitalsSettings } from 'app/finance/vitals/VitalsDashboard';
 import type { CurrencyNormalization } from 'utilities/ChartableMetrics';
 

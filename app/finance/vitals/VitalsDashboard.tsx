@@ -4,20 +4,20 @@ import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import { makeChartableVitals } from 'app/finance/vitals/ChartableVitals';
 import { makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGenerators";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
-import { useDistrictData } from '../DistrictDataProvider';
+import { useDistrictData } from 'app/finance/_providers/DistrictDataProvider';
 import { useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react';
-import DistrictSelector from 'app/finance/DistrictSelector';
-import SettingsLayout from 'app/finance/SettingsLayout';
+import DistrictSelector from 'app/finance/_widgets/DistrictSelector';
+import SettingsLayout from 'app/finance/_widgets/SettingsLayout';
 import HcDashboard from 'components/HcDashboard';
 import Loading from 'components/Loading';
-import CurrencyNormalizationSelector from 'app/finance/CurrencyNormalizationSelector';
+import CurrencyNormalizationSelector from 'app/finance/_widgets/CurrencyNormalizationSelector';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import MetricSettingsContents, { DEFAULT_METRIC_SETTINGS } from 'app/finance/MetricSettingsContents';
+import MetricSettingsContents, { DEFAULT_METRIC_SETTINGS } from 'app/finance/_widgets/MetricSettingsContents';
 
 import type { BudgetActualsChartOptions, ValueFormat } from "utilities/highcharts/ChartConfigGenerators";
-import type { MetricSettings } from 'app/finance/MetricSettingsContents';
+import type { MetricSettings } from 'app/finance/_widgets/MetricSettingsContents';
 
 export interface VitalsSettings extends MetricSettings {
 };

@@ -1,6 +1,6 @@
 import { fetchDatasetStream } from 'utilities/DistrictData';
 import { parse } from "csv-parse/sync";
-import DistrictDataProvider from './DistrictDataProvider';
+import DistrictDataProvider from 'app/finance/_providers/DistrictDataProvider';
 import FinanceNav from 'app/finance/FinanceNav';
 
 import type { ReactNode } from 'react';

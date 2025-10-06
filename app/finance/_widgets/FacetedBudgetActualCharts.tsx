@@ -16,7 +16,7 @@ import HcDashboard from 'components/HcDashboard';
 import type { ColumnTable } from 'arquero';
 import type { FacetInfo, CurrencyNormalization, StaffingNormalization } from 'utilities/ChartableMetrics';
 import type { ValueFormat } from 'utilities/highcharts/ChartConfigGenerators';
-import type { MetricSettings } from 'app/finance/MetricSettingsContents';
+import type { MetricSettings } from 'app/finance/_widgets/MetricSettingsContents';
 
 type Params = {
   idPrefix: string;

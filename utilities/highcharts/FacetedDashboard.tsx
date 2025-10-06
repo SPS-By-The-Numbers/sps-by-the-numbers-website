@@ -1,4 +1,4 @@
-import type { DatasetSettings } from 'app/finance/SettingsContents';
+import type { DatasetSettings } from 'app/finance/_widgets/SettingsContents';
 import type Dashboards from '@highcharts/dashboards';
 
 type HighchartsComponentConfig = {

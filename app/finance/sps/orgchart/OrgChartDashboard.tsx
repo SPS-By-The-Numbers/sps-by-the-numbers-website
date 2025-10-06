@@ -2,19 +2,19 @@
 
 import { DeptToPad } from 'app/finance/sps/orgchart/padOrgMapping';
 import { op } from 'arquero';
-import { useDistrictData } from 'app/finance/DistrictDataProvider';
+import { useDistrictData } from 'app/finance/_providers/DistrictDataProvider';
 import { useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react';
 import * as aq from 'arquero';
-import DistrictSelector from 'app/finance/DistrictSelector';
-import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
-import { ALL_ACTIVITY_ITEMS, ALL_PROGRAM_ITEMS } from 'app/finance/ExpenditureFilterContents';
+import DistrictSelector from 'app/finance/_widgets/DistrictSelector';
+import FacetedBudgetActualCharts from 'app/finance/_widgets/FacetedBudgetActualCharts';
+import { ALL_ACTIVITY_ITEMS, ALL_PROGRAM_ITEMS } from 'app/finance/_widgets/ExpenditureFilterContents';
 import HcChart from 'components/HcChart';
 import Loading from 'components/Loading';
 import { makeCurrencyFormatter } from 'utilities/highcharts/utils';
 import Stack from '@mui/material/Stack';
 
-import type { DistrictDataMap } from 'app/finance/DistrictDataProvider';
+import type { DistrictDataMap } from 'app/finance/_providers/DistrictDataProvider';
 
 type StaffInfo = {
   fte: number;

@@ -4,19 +4,19 @@ import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import { makeCorrelationChartConfig } from "utilities/highcharts/ChartConfigGenerators";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { makeChartableVitals } from 'app/finance/vitals/ChartableVitals';
-import { useDistrictData } from '../DistrictDataProvider';
+import { useDistrictData } from 'app/finance/_providers/DistrictDataProvider';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation'
-import DistrictSelector from 'app/finance/DistrictSelector';
+import DistrictSelector from 'app/finance/_widgets/DistrictSelector';
 import HcDashboard from 'components/HcDashboard';
 import Loading from 'components/Loading';
-import SettingsLayout from 'app/finance/SettingsLayout';
+import SettingsLayout from 'app/finance/_widgets/SettingsLayout';
 import Typography from '@mui/material/Typography';
-import MetricSettingsContents, {DEFAULT_METRIC_SETTINGS} from 'app/finance/MetricSettingsContents';
+import MetricSettingsContents, {DEFAULT_METRIC_SETTINGS} from 'app/finance/_widgets/MetricSettingsContents';
 
 import type { BudgetActualsChartOptions, CorrelationChartOptions } from "utilities/highcharts/ChartConfigGenerators";
 import type { CurrencyNormalization } from 'utilities/ChartableMetrics';
-import type { MetricSettings } from 'app/finance/MetricSettingsContents';
+import type { MetricSettings } from 'app/finance/_widgets/MetricSettingsContents';
 
 const CONNECTOR_ID = 'cashflow-connector';
 
@@ -94,7 +94,7 @@ function makeFteCashflowConfig(idPrefix, ccddd, name, metricColumn, columnSuffix
   };
 }
 
-function makeCorrelationChartOptions(idPrefix, ccddd, currencyNormalization, staffingNormalizaiton) : Array<CorrelationChartOptions> {
+function makeCorrelationChartOptions(idPrefix, ccddd, currencyNormalization, staffingNormalization) : Array<CorrelationChartOptions> {
   const retval = [
     makeEnrollmentCashflowConfig(idPrefix, ccddd, 'Budget', 'budget', currencyNormalization, 2),
     makeEnrollmentCashflowConfig(idPrefix, ccddd, 'Actuals', 'actuals', currencyNormalization, 1),
@@ -108,10 +108,10 @@ function makeCorrelationChartOptions(idPrefix, ccddd, currencyNormalization, sta
     makeCompCashflowConfig(idPrefix, ccddd, 'Other Comp', `${currencyNormalization}_otherComp`, 'actuals', 1),
     makeCompCashflowConfig(idPrefix, ccddd, 'Other Comp', `${currencyNormalization}_otherComp`, 'budget', 2),
 
-    makeFteCashflowConfig(idPrefix, ccddd, 'Teaching Fte', `${staffingNormalizaiton}_teachingFte`, 'actuals', 1),
-    makeFteCashflowConfig(idPrefix, ccddd, 'Student Support Fte', `${staffingNormalizaiton}_studentSupportFte`, 'actuals', 1),
-    makeFteCashflowConfig(idPrefix, ccddd, 'Building Support Fte', `${staffingNormalizaiton}_buildingSupportFte`, 'actuals', 1),
-    makeFteCashflowConfig(idPrefix, ccddd, 'Other Fte', `${staffingNormalizaiton}_otherFte`, 'actuals', 1),
+    makeFteCashflowConfig(idPrefix, ccddd, 'Teaching Fte', `${staffingNormalization}_teachingFte`, 'actuals', 1),
+    makeFteCashflowConfig(idPrefix, ccddd, 'Student Support Fte', `${staffingNormalization}_studentSupportFte`, 'actuals', 1),
+    makeFteCashflowConfig(idPrefix, ccddd, 'Building Support Fte', `${staffingNormalization}_buildingSupportFte`, 'actuals', 1),
+    makeFteCashflowConfig(idPrefix, ccddd, 'Other Fte', `${staffingNormalization}_otherFte`, 'actuals', 1),
   ];
 
   return retval;
@@ -122,7 +122,7 @@ function componentsGenerator(cashflowSettings : CashflowSettings) {
     cashflowSettings.id,
     cashflowSettings.ccddd,
     cashflowSettings.currencyNormalization,
-    cashflowSettings.staffingNormalizaiton);
+    cashflowSettings.staffingNormalization);
 
   return correlationChartOptions.map(c => makeCorrelationChartConfig(c));
 }

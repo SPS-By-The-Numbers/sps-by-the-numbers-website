@@ -4,23 +4,23 @@ import * as aq from 'arquero';
 import { op } from 'arquero';
 import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import { extractRawExpenditures, extractFacetsByAmount, toChartableDataset, getDataColumnNames } from 'utilities/ChartableMetrics';
-import { useDistrictData } from 'app/finance/DistrictDataProvider';
+import { useDistrictData } from 'app/finance/_providers/DistrictDataProvider';
 import { useState, useEffect } from 'react';
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
-import { makeFacetComponents } from 'app/finance/FacetedBudgetActualCharts';
-import DistrictSelector from 'app/finance/DistrictSelector';
-import { ObjectFilterContents, ActivityFilterContents, ProgramFilterContents, SchoolFilterContents} from 'app/finance/ExpenditureFilterContents';
-import { makeSchoolItems, extractCodes } from 'app/finance/ExpenditureFilterContents';
-import { ALL_OBJECT_ITEMS, ALL_ACTIVITY_ITEMS, ALL_PROGRAM_ITEMS } from 'app/finance/ExpenditureFilterContents';
-import FacetedBudgetActualCharts from 'app/finance/FacetedBudgetActualCharts';
+import { makeFacetComponents } from 'app/finance/_widgets/FacetedBudgetActualCharts';
+import DistrictSelector from 'app/finance/_widgets/DistrictSelector';
+import { ObjectFilterContents, ActivityFilterContents, ProgramFilterContents, SchoolFilterContents} from 'app/finance/_widgets/ExpenditureFilterContents';
+import { makeSchoolItems, extractCodes } from 'app/finance/_widgets/ExpenditureFilterContents';
+import { ALL_OBJECT_ITEMS, ALL_ACTIVITY_ITEMS, ALL_PROGRAM_ITEMS } from 'app/finance/_widgets/ExpenditureFilterContents';
+import FacetedBudgetActualCharts from 'app/finance/_widgets/FacetedBudgetActualCharts';
 import HcDashboard from 'components/HcDashboard';
 import Loading from 'components/Loading';
-import SettingsLayout from 'app/finance/SettingsLayout';
-import MetricSettingsContents, { DEFAULT_METRIC_SETTINGS } from 'app/finance/MetricSettingsContents';
+import SettingsLayout from 'app/finance/_widgets/SettingsLayout';
+import MetricSettingsContents, { DEFAULT_METRIC_SETTINGS } from 'app/finance/_widgets/MetricSettingsContents';
 import Typography from '@mui/material/Typography';
 
 import type { ColumnTable } from 'arquero';
-import type { MetricSettings } from 'app/finance/MetricSettingsContents';
+import type { MetricSettings } from 'app/finance/_widgets/MetricSettingsContents';
 
 const CONNECTOR_ID = 'nces-connector';
 

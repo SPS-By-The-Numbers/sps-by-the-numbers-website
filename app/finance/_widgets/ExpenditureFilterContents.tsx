@@ -1,15 +1,15 @@
 'use client';
 
 import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
-import { makeSchools } from 'app/finance/schools';
-import { makeDutyRootItems } from 'app/finance/DutyRoots';
-import SafsCompObjectsTreeItems from 'app/finance/SafsCompObjectsTreeItems.json';
-import SafsObjectsTreeItems from 'app/finance/SafsObjectsTreeItems.json';
-import SpsActivityCategoryTreeItems from 'app/finance/SpsActivityCategoryTreeItems.json';
-import SpsProgramGroupingTreeItems from 'app/finance/SpsProgramGroupingTreeItems.json';
+import { makeSchools } from 'app/finance/_domain/schools';
+import { makeDutyRootItems } from 'app/finance/_domain/DutyRoots';
+import SafsCompObjectsTreeItems from 'app/finance/_treeitems/SafsCompObjectsTreeItems.json';
+import SafsObjectsTreeItems from 'app/finance/_treeitems/SafsObjectsTreeItems.json';
+import SpsActivityCategoryTreeItems from 'app/finance/_treeitems/SpsActivityCategoryTreeItems.json';
+import SpsProgramGroupingTreeItems from 'app/finance/_treeitems/SpsProgramGroupingTreeItems.json';
 
-import type { DatasetSettings } from 'app/finance/SettingsContents';
-import type { MetricSettings } from 'app/finance/MetricSettingsContents';
+import type { DatasetSettings } from 'app/finance/_widgets/SettingsContents';
+import type { MetricSettings } from 'app/finance/_widgets/MetricSettingsContents';
 import type { TreeViewBaseItem } from '@mui/x-tree-view';
 
 interface Props<T extends DatasetSettings> {

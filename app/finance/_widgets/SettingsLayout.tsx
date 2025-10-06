@@ -7,12 +7,12 @@ import AccordionSummary from '@mui/material/AccordionSummary';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
-import SettingsContents from 'app/finance/SettingsContents';
+import SettingsContents from 'app/finance/_widgets/SettingsContents';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 
 import type { ReactNode, ComponentType } from 'react';
-import type { SettingsRenderComponentType, DatasetSettings } from 'app/finance/SettingsContents';
+import type { SettingsRenderComponentType, DatasetSettings } from 'app/finance/_widgets/SettingsContents';
 
 const drawerWidth = 240;
 
