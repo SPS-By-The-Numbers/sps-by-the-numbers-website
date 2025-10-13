@@ -29,6 +29,7 @@ export default function NavLink({href, children, sx=[]} : {href: string, childre
         sx={{
           backgroundColor: pathname.startsWith(href) ? 'primary.light' : 'primary.main',
           color: 'primary.contrastText',
+          fontSize: 'nav.fontSize',
           alignSelf: "stretch",
           textTransform: 'none',
           paddingX: "1rem",

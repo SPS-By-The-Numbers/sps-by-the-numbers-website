@@ -21,10 +21,10 @@ const DEFAULT_EXPENDITURE_SETTINGS = DEFAULT_METRIC_SETTINGS.map(
 const DEFAULT_DASHBOARD_SETTINGS = {
   ...DEFAULT_COMMON_SHARED_SETTINGS,
   facet: "activity" as const,
+  facetLimit: "10",
   sortOrder: 'descending' as const,
   sortType: 'variance' as const,
-  alwaysZeroY: true,
-  freeYScale: true,
+  yScale: "free" as const,
   disableChartUpdate: true,  // TODO: REmove
 } as ExpendituresDashboardSettings;
 

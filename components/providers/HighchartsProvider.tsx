@@ -33,6 +33,8 @@ export let g_highchartsObjs : HighchartsObjects = DEFAULT_OBJECT;
 async function loadHighchartsModules() {
   const Highcharts = (await import('highcharts')).default;
   await import("highcharts/modules/accessibility");
+  await import("highcharts/modules/exporting");
+  await import("highcharts/modules/export-data");
   await import("highcharts/modules/no-data-to-display");
   await import("highcharts/modules/sankey");
   await import("highcharts/modules/organization");

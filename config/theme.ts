@@ -114,7 +114,13 @@ const roboto = Roboto({
 
 export const muiThemeConfig = {
   typography: {
+    // Default
     fontFamily: roboto.style.fontFamily,
+    fontSize: 11,
+
+    nav: {
+      fontSize: 16,
+    },
   },
   colorSchemes: {
     light: {

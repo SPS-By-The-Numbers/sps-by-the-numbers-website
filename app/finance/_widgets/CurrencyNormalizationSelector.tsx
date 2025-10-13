@@ -15,13 +15,16 @@ type Params = {
 };
 
 export default function CurrencyNormalizationSelector({normalization, label, onChange, sx=[]} : Params) {
-  const selectId = useId();
+  const id = useId();
+  const labelId = useId();
   return (
     <FormControl size="small">
-      <InputLabel id={selectId}>{label}</InputLabel>
+      <InputLabel id={labelId}>{label}</InputLabel>
       <Select
-        labelId={selectId}
+        labelId={labelId}
+        id={id}
         value={normalization}
+        label={label}
         onChange={e => onChange(e.target.value as CurrencyNormalization)}
         sx={[{
         },

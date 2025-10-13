@@ -33,7 +33,7 @@ export default function SettingsContents<SettingsType extends BaseSettings, Shar
           setSettings={setSettings} />
   ));
   return (
-    <Stack direction="column" gap="0.9rem">
+    <Stack direction="column" gap="0.7rem">
       {allFragments}
     </Stack>
   );

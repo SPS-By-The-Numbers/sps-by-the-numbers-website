@@ -87,7 +87,7 @@ function deriveDeltaColumns(df, baselineClassOf) {
   return data;
 }
 
-function compileData(districtDataMap, allSettings, facet) {
+function compileData(districtDataMap, allSettings, facet, sortOrder) {
   const allDatasets = new Array<ColumnTable>;
   let facetInfo;
   for (const expenditureSettings of allSettings) {
@@ -106,7 +106,7 @@ function compileData(districtDataMap, allSettings, facet) {
 
     allDatasets.push(data);
     if (facetInfo === undefined) {
-      facetInfo = extractVarianceFacets(filteredExpenditures, facet, "descending" as const);
+      facetInfo = extractVarianceFacets(filteredExpenditures, facet, sortOrder);
     }
   }
   
@@ -144,10 +144,14 @@ export default function ExpendituresDashboard(
     allSettings,
     setAllSettings
   } : DistrictDataContentProps<ExpendituresSettings, ExpendituresDashboardSettings>) {
-  const [data, facetOrder] = useMemo(
-    () => compileData(districtDataMap, allSettings, sharedSettings.facet),
-    [sharedSettings.facet, districtDataMap, allSettings]
+  const [data, fullFacetOrder] = useMemo(
+    () => compileData(districtDataMap, allSettings,
+                      sharedSettings.facet, sharedSettings.sortOrder),
+    [sharedSettings.facet, districtDataMap, allSettings, sharedSettings.sortOrder]
   );
+
+  // Trim the list for rendering speed.
+  const facetOrder = fullFacetOrder.slice(0, parseInt(sharedSettings.facetLimit));
 
   const result = makeDatasetFacetedDashboard(allSettings, s => componentsGenerator(s, facetOrder));
   if (result === undefined) {

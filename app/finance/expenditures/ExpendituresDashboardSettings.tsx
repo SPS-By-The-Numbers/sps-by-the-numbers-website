@@ -1,12 +1,13 @@
 'use client';
 
-import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
 import { useId } from 'react';
+import * as ChartOptions from 'utilities/ChartOptions';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
+import Stack from '@mui/material/Stack';
 import Switch from '@mui/material/Switch';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -25,22 +26,17 @@ const FACET_OPTIONS : Record<Facet, string> = {
   "school": "School (actuals only)",
 };
 
-const SORT_ORDER_OPTIONS : Record<SortOrder, string> = {
+const YSCALE_OPTIONS : Record<ChartOptions.YScale, string> = {
   "ascending": "Ascending",
   "descending": "Descending",
 };
 
-const SORT_TYPE_OPTIONS : Record<SortType, string> = {
-  "variance": "Variance",
-  "latest": "Latest Year",
-};
-
 export interface ExpendituresDashboardSettings extends CommonSharedSettings {
   facet: Facet;
+  facetLimit: ChartOptions.FacetLimit;
   sortOrder: SortOrder;
   sortType: SortType;
-  alwaysZeroY: boolean;
-  freeYScale: boolean;
+  yScale: ChartOptions.YScale;
 };
 
 interface SettingsSelectProps<T> {
@@ -121,9 +117,10 @@ export default function ExpendituresDashboardSettingsContents(props : SettingsCo
   return (
     <>
       <SettingsSelect {...props} label="Facet" fieldName="facet" options={FACET_OPTIONS} />
-      <SettingsToggleGroup {...props} label="Sort Type" fieldName="sortType" options={SORT_TYPE_OPTIONS} />
-      <SettingsSelect {...props} label="Sort Order" fieldName="sortOrder" options={SORT_ORDER_OPTIONS} />
-      <SettingsSwitch {...props} label="Free Y Scales" fieldName="freeYScale" />
+      <SettingsSelect {...props} label="Facet Limit" fieldName="facetLimit" options={ChartOptions.FACET_LIMIT_OPTIONS} />
+      <SettingsSelect {...props} label="Sort Type" fieldName="sortType" options={ChartOptions.SORT_TYPE_OPTIONS} />
+      <SettingsSelect {...props} label="Sort Order" fieldName="sortOrder" options={ChartOptions.SORT_ORDER_OPTIONS} />
+      <SettingsSelect {...props} label="YScale" fieldName="yScale" options={ChartOptions.YSCALES_OPTIONS} />
       <SettingsSwitch {...props} label="Disable Chart" fieldName="disableChartUpdate" />
     </>
   );

@@ -15,14 +15,15 @@ type Params = {
 };
 
 export default function StaffingNormalizationSelector({normalization, label, onChange, sx=[]} : Params) {
-  const selectId = useId();
+  const labelId = useId();
   return (
     <FormControl size="small">
-      <InputLabel id={selectId}>{label}</InputLabel>
+      <InputLabel id={labelId}>{label}</InputLabel>
       <Select
-        labelId={selectId}
+        labelId={labelId}
         value={normalization}
         onChange={e => onChange(e.target.value as StaffingNormalization)}
+        label={label}
         sx={[{
         },
         ...(Array.isArray(sx) ? sx : [sx])

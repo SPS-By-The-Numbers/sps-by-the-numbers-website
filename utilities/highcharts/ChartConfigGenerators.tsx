@@ -286,6 +286,15 @@ export function makeBaseChartConfig(options : BaseChartConfigOptions) {
       id: options.connectorId,
     },
     chartOptions: {
+      exporting: {
+        chartOptions: {
+          chart: {
+            style: {
+              fontFamily: 'monospace'
+            }
+          }
+        }
+      },
       chart: {
         animation: false,
         styledMode: true,
