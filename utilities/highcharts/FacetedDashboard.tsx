@@ -1,4 +1,4 @@
-import type { DatasetSettings } from 'app/finance/_widgets/SettingsContents';
+import type { BaseSettings } from 'app/finance/_widgets/SettingsContents';
 import type Dashboards from '@highcharts/dashboards';
 
 type HighchartsComponentConfig = {
@@ -64,7 +64,7 @@ export function makeMultipleDatasetFacetedDashboard(datasetSettingsList, compone
 //
 // If there are multiple datasets, each row correponds to one facet and each
 // dataset is in one column.
-export function makeDatasetFacetedDashboard<T extends DatasetSettings>(
+export function makeDatasetFacetedDashboard<T extends BaseSettings>(
       datasetSettingsList: Array<T>,
       componentGenerator: (datasetSettings: T) => Array<Dashboards.Component.Options>
   ) : OptionalHighchartsComponentConfig {

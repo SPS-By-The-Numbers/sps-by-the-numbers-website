@@ -6,8 +6,12 @@ import { DUTY_ROOTS, makeDutyRootItems } from 'app/finance/_domain/DutyRoots';
 import type { ColumnTable } from 'arquero';
 import type DistrictData from 'utilities/DistrictData';
 
-export type SortType = "variance";
-export type SortOrder = "ascending" | "descending";
+export const ALL_SORT_TYPE = ["variance", "latest"];
+export type SortType = typeof ALL_SORT_TYPE[number];
+
+export const ALL_SORT_ORDER = ["ascending", "descending"];
+export type SortOrder = typeof ALL_SORT_ORDER[number];
+
 export type FacetInfo = {
   code: number;
   title: string;
@@ -130,6 +134,7 @@ export function extractVarianceFacets(df : ColumnTable, facetColumn : string, so
     .filter(d => !op.is_nan(d.variance));
 
   const facetInfo = varianceDf
+    .filter(d => d.activity_code != 27 && d.activity_code != 34)
     .groupby(facetColumn, facetCodeColumn)
     .rollup({absmedian: d => op.abs(op.median(d.variance))})
     .orderby(sortOrderOp(sortOrder, 'absmedian'))
@@ -141,7 +146,10 @@ export function extractVarianceFacets(df : ColumnTable, facetColumn : string, so
         })
       )
     })
-    .array('facet_info');
+    .array('facet_info') as Array<{code: string, title: string}>;
+
+  // TODO: Fix this hack. It has to correspond with the data derivation.
+  facetInfo.push({code: 's1', title: 'Teaching/Prof Devel'});
 
   return facetInfo;
 }

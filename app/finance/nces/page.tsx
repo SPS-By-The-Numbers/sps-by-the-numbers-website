@@ -26,7 +26,9 @@ export const metadata: Metadata = {
 export default async function Page() {
   return (
     <Suspense>
-      <EnsureDistrictData initialValue={DEFAULT_NCES_SETTINGS} ContentComponent={NcesDashboard} />
+      <EnsureDistrictData
+          initialValue={DEFAULT_NCES_SETTINGS}
+          ContentComponent={NcesDashboard} />
     </Suspense>
   );
 }

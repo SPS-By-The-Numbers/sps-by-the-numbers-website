@@ -12,33 +12,39 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 
 import type { ReactNode, ComponentType } from 'react';
-import type { SettingsRenderComponentType, DatasetSettings } from 'app/finance/_widgets/SettingsContents';
+import type { SettingsRenderComponentType, BaseSettings } from 'app/finance/_widgets/SettingsContents';
 
 const drawerWidth = 240;
 
-interface SettingsLayoutProps<SettingsType extends DatasetSettings> {
-  allDatasetSettings: Array<SettingsType>;
-  setAllDatasetSettings: (v: Array<SettingsType>) => void;
+// TODO: Remove = {} and ?
+interface SettingsLayoutProps<SettingsType extends BaseSettings, SharedSettingsType extends BaseSettings> {
+  sharedSettings?: SharedSettingsType;
+  setSharedSettings?: (x: SharedSettingsType) => void;
+  sharedSettingsComponents?: Array<SettingsRenderComponentType<any>>;
+
+  allSettings: Array<SettingsType>;
+  setAllSettings: (v: Array<SettingsType>) => void;
   settingsContentsComponents: Array<SettingsRenderComponentType<any>>;
 
   children : ReactNode;
 }
 
-function DatasetAccordion<T extends DatasetSettings>(
-    {datasetSettings, setDatasetSettings, settingsContentsComponents}) {
+function DatasetAccordion<T extends BaseSettings>(
+    {sharedSettings, settings, setSettings, settingsContentsComponents}) {
   return (
     <Accordion defaultExpanded>
       <AccordionSummary
         expandIcon={<ArrowDropDownIcon />}
-        aria-controls={`${datasetSettings.id}`}
-        id={`panel-${datasetSettings.id}-header`}
+        aria-controls={`${settings.id}`}
+        id={`panel-${settings.id}-header`}
       >
-        <Typography component="span">{datasetSettings.name}</Typography>
+        <Typography component="span">{settings.name}</Typography>
       </AccordionSummary>
       <AccordionDetails>
         <SettingsContents
-          datasetSettings={datasetSettings}
-          setDatasetSettings={setDatasetSettings}
+          sharedSettings={sharedSettings}
+          settings={settings}
+          setSettings={setSettings}
           components={settingsContentsComponents}
         />
       </AccordionDetails>
@@ -46,33 +52,48 @@ function DatasetAccordion<T extends DatasetSettings>(
   );
 }
 
-function DrawerContents<T extends DatasetSettings>(
-    {allDatasetSettings, updateDatasetSettings, settingsContentsComponents}) {
-  const panels = allDatasetSettings.map(
-    (datasetSettings, index) => (
+function DrawerContents<T extends BaseSettings>(
+    { sharedSettings, setSharedSettings, sharedSettingsComponents,
+      allSettings, updateAllSettings, settingsContentsComponents }) {
+    let sharedSettingsPanel : ReactNode;
+    if (sharedSettingsComponents) {
+      sharedSettingsPanel = (
+        <DatasetAccordion
+          sharedSettings={sharedSettings}
+          settings={sharedSettings}
+          setSettings={setSharedSettings}
+          settingsContentsComponents={sharedSettingsComponents}
+        />
+      );
+    }
+  const panels = allSettings.map(
+    (settings, index) => (
       <DatasetAccordion
           key={index}
-          datasetSettings={datasetSettings}
-          setDatasetSettings={v => updateDatasetSettings(index, v)}
+          sharedSettings={sharedSettings}
+          settings={settings}
+          setSettings={v => updateAllSettings(index, v)}
           settingsContentsComponents={settingsContentsComponents}
           />
     ));
   return (
     <div>
+      {sharedSettingsPanel}
       {panels}
     </div>
   );
 }
 
-export default function SettingsLayout<SettingsType extends DatasetSettings>(props: SettingsLayoutProps<SettingsType>) {
-  const {allDatasetSettings, setAllDatasetSettings, settingsContentsComponents, children} = props;
+export default function SettingsLayout<SettingsType extends BaseSettings, SharedSettingsType extends BaseSettings>(props: SettingsLayoutProps<SettingsType, SharedSettingsType>) {
+  const { sharedSettings, setSharedSettings, sharedSettingsComponents,
+    allSettings, setAllSettings, settingsContentsComponents, children} = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [isClosing, setIsClosing] = React.useState(false);
 
-  const updateDatasetSettings = (i, v) => {
-    const newSettings = [...allDatasetSettings];
+  const updateAllSettings = (i, v) => {
+    const newSettings = [...allSettings];
     newSettings[i] = v;
-    setAllDatasetSettings(newSettings);
+    setAllSettings(newSettings);
   };
 
   const handleDrawerClose = () => {
@@ -94,8 +115,12 @@ export default function SettingsLayout<SettingsType extends DatasetSettings>(pro
     <div>
       <Toolbar />
       <DrawerContents
-          allDatasetSettings={allDatasetSettings}
-          updateDatasetSettings={updateDatasetSettings}
+          sharedSettings={sharedSettings}
+          setSharedSettings={setSharedSettings}
+          sharedSettingsComponents={sharedSettingsComponents}
+
+          allSettings={allSettings}
+          updateAllSettings={updateAllSettings}
           settingsContentsComponents={settingsContentsComponents}
       />
     </div>

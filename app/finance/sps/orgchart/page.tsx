@@ -13,7 +13,9 @@ export default async function Page() {
   return (
     <Suspense>
       { /* initialValue only uses one district */ }
-      <EnsureDistrictData initialValue={[DEFAULT_METRIC_SETTINGS[0]]} ContentComponent={OrgChartDashboard} />
+      <EnsureDistrictData
+          initialValue={[DEFAULT_METRIC_SETTINGS[0]]}
+          ContentComponent={OrgChartDashboard} />
     </Suspense>
   );
 }

@@ -6,24 +6,24 @@ import SafsObjectsTreeItems from 'app/finance/_treeitems/SafsObjectsTreeItems.js
 import SpsActivityCategoryTreeItems from 'app/finance/_treeitems/SpsActivityCategoryTreeItems.json';
 import SpsProgramGroupingTreeItems from 'app/finance/_treeitems/SpsProgramGroupingTreeItems.json';
 
-import type { DatasetSettings } from 'app/finance/_widgets/SettingsContents';
+import type { BaseSettings } from 'app/finance/_widgets/SettingsContents';
 import type { MetricSettings } from 'app/finance/_widgets/MetricSettingsContents';
 import type { TreeViewBaseItem } from '@mui/x-tree-view';
 
-interface Props<T extends DatasetSettings> {
-  datasetSettings: T;
-  setDatasetSettings: (x: T) => void;
+interface Props<T extends BaseSettings> {
+  settings: T;
+  setSettings: (x: T) => void;
 }
 
-interface ObjectFilterSettings extends DatasetSettings {
+interface ObjectFilterSettings extends BaseSettings {
   selectedObjects: string[];
 };
 
-interface ActivityFilterSettings extends DatasetSettings {
+interface ActivityFilterSettings extends BaseSettings {
   selectedActivities: string[];
 };
 
-interface ProgramFilterSettings extends DatasetSettings {
+interface ProgramFilterSettings extends BaseSettings {
   selectedPrograms: string[];
 };
 
@@ -88,44 +88,44 @@ function FilterTree({title, items, selectedItems, setSelectedItems}) {
   );
 }
 
-export function ObjectFilterContents({datasetSettings, setDatasetSettings} : Props<ObjectFilterSettings>) {
+export function ObjectFilterContents({settings, setSettings} : Props<ObjectFilterSettings>) {
   return (
       <FilterTree
         title="Object"
         items={SafsObjectsTreeItems}
-        selectedItems={datasetSettings.selectedObjects}
-        setSelectedItems={selectedObjects => setDatasetSettings({...datasetSettings, selectedObjects})} />
+        selectedItems={settings.selectedObjects}
+        setSelectedItems={selectedObjects => setSettings({...settings, selectedObjects})} />
   );
 }
 
-export function ActivityFilterContents({datasetSettings, setDatasetSettings} : Props<ActivityFilterSettings>) {
+export function ActivityFilterContents({settings, setSettings} : Props<ActivityFilterSettings>) {
   return (
       <FilterTree
         title="Activity"
         items={SpsActivityCategoryTreeItems}
-        selectedItems={datasetSettings.selectedActivities}
-        setSelectedItems={selectedActivities => setDatasetSettings({...datasetSettings, selectedActivities})} />
+        selectedItems={settings.selectedActivities}
+        setSelectedItems={selectedActivities => setSettings({...settings, selectedActivities})} />
   );
 }
 
-export function ProgramFilterContents({datasetSettings, setDatasetSettings} : Props<ProgramFilterSettings>) {
+export function ProgramFilterContents({settings, setSettings} : Props<ProgramFilterSettings>) {
   return (
       <FilterTree
         title="Program"
         items={SpsProgramGroupingTreeItems}
-        selectedItems={datasetSettings.selectedPrograms}
-        setSelectedItems={selectedPrograms => setDatasetSettings({...datasetSettings, selectedPrograms})} />
+        selectedItems={settings.selectedPrograms}
+        setSelectedItems={selectedPrograms => setSettings({...settings, selectedPrograms})} />
   );
 }
 
-export function SchoolFilterContents({datasetSettings, setDatasetSettings} : Props<SchoolFilterSettings>) {
-  const items = makeSchools(datasetSettings.ccddd);
+export function SchoolFilterContents({settings, setSettings} : Props<SchoolFilterSettings>) {
+  const items = makeSchools(settings.ccddd);
 
   return (
       <FilterTree
         title="School"
         items={items}
-        selectedItems={datasetSettings.selectedSchools}
-        setSelectedItems={selectedSchools => setDatasetSettings({...datasetSettings, selectedSchools})} />
+        selectedItems={settings.selectedSchools}
+        setSelectedItems={selectedSchools => setSettings({...settings, selectedSchools})} />
   );
 }

@@ -4,8 +4,9 @@ import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import DistrictData from 'utilities/DistrictData';
 import Loading from 'components/Loading';
 
-import type { ReactNode, ComponentType } from 'react';
+import type { BaseSettings } from 'app/finance/_widgets/SettingsContents';
 import type { MetricSettings } from 'app/finance/_widgets/MetricSettingsContents';
+import type { ReactNode, ComponentType } from 'react';
 
 export type Ccddd = number;
 export type DistrictDataMap = Map<Ccddd, DistrictData>;
@@ -31,20 +32,31 @@ export function useDistrictData() {
   return context;
 }
 
-export interface DistrictDataContentProps<T extends MetricSettings> {
+export interface DistrictDataContentProps<T extends MetricSettings, U extends BaseSettings = BaseSettings> {
   districtDataMap: DistrictDataMap;
   allSettings: Array<T>;
   setAllSettings: (x: Array<T>) => void;
+
+  sharedSettings: U;
+  setSharedSettings: (x: U) => void;
 }
 
-interface EnsureDistrictDataProps<T extends MetricSettings> {
+interface EnsureDistrictDataProps<T extends MetricSettings, U extends BaseSettings> {
   initialValue: Array<T>;
-  ContentComponent: ComponentType<DistrictDataContentProps<T>>;
+  ContentComponent: ComponentType<DistrictDataContentProps<T, U>>;
+
+  initialSharedSettings?: U;
 };
 
 // Utility component that pairs with DistrictDataProvider to ensure all districts are loaded.
-export function EnsureDistrictData<T extends MetricSettings>(
-    {initialValue, ContentComponent}: EnsureDistrictDataProps<T>) {
+export function EnsureDistrictData<T extends MetricSettings, U extends BaseSettings>(
+    {initialValue, initialSharedSettings, ContentComponent}: EnsureDistrictDataProps<T, U>) {
+  // Make one up for places that don't use it.
+  if (initialSharedSettings === undefined) {
+    initialSharedSettings = {name: 'Undefined', id: 'undefined'} as U;
+  }
+
+  const [sharedSettings, setSharedSettings] = useState<U>(initialSharedSettings);
   const [allSettings, setAllSettings] = useState<Array<T>>(initialValue);
   const {districtDataMap, loadCcddd} = useDistrictData();
 
@@ -63,7 +75,12 @@ export function EnsureDistrictData<T extends MetricSettings>(
   }
 
   return (
-    <ContentComponent districtDataMap={districtDataMap} allSettings={allSettings} setAllSettings={setAllSettings} />
+    <ContentComponent
+        districtDataMap={districtDataMap}
+        allSettings={allSettings}
+        setAllSettings={setAllSettings}
+        sharedSettings={sharedSettings}
+        setSharedSettings={setSharedSettings}/>
   );
 }
 

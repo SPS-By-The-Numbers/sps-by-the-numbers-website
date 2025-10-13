@@ -1,9 +1,9 @@
-import type Highcharts from 'highcharts';
 import { makeCurrencyFormatter } from "utilities/highcharts/utils";
-import merge from 'lodash.merge';
-import * as aq from 'arquero';
 import { op } from 'arquero';
+import * as aq from 'arquero';
+import merge from 'lodash.merge';
 
+import type Highcharts from 'highcharts';
 import type { CurrencyNormalization, StaffingNormalization } from 'utilities/ChartableMetrics';
 
 export type ValueFormat =  'currency' | 'decimal' | 'year' | 'pctexp' | 'pctcomp' | 'fte' | 'pctfte';

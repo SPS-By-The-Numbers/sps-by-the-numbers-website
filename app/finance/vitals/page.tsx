@@ -12,7 +12,9 @@ export const metadata: Metadata = {
 export default async function Page() {
   return (
     <Suspense>
-      <EnsureDistrictData initialValue={DEFAULT_METRIC_SETTINGS} ContentComponent={VitalsDashboard} />
+      <EnsureDistrictData
+        initialValue={DEFAULT_METRIC_SETTINGS}
+        ContentComponent={VitalsDashboard} />
     </Suspense>
   );
 }

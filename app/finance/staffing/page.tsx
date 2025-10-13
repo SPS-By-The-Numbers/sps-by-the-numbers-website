@@ -26,7 +26,9 @@ export const metadata: Metadata = {
 export default async function Page() {
   return (
     <Suspense>
-      <EnsureDistrictData initialValue={DEFAULT_STAFF_SETTINGS} ContentComponent={StaffingDashboard} />
+      <EnsureDistrictData
+        initialValue={DEFAULT_STAFF_SETTINGS}
+        ContentComponent={StaffingDashboard} />
     </Suspense>
   );
 }

@@ -112,8 +112,8 @@ export default function StaffingDashboard({districtDataMap, allSettings, setAllS
 
   return (
     <SettingsLayout
-        allDatasetSettings={allSettings}
-        setAllDatasetSettings={setAllSettings}
+        allSettings={allSettings}
+        setAllSettings={setAllSettings}
         settingsContentsComponents={[
           MetricSettingsContents,
           ActivityFilterContents,

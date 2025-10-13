@@ -108,8 +108,8 @@ export default function NcesDashboard({districtDataMap, allSettings, setAllSetti
 
   return (
     <SettingsLayout
-        allDatasetSettings={allSettings}
-        setAllDatasetSettings={setAllSettings}
+        allSettings={allSettings}
+        setAllSettings={setAllSettings}
         settingsContentsComponents={[
           MetricSettingsContents,
           ObjectFilterContents,

@@ -1,14 +1,14 @@
 'use client';
 
 import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
-import { makeChartableVitals } from 'app/finance/vitals/ChartableVitals';
 import { makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGenerators";
+import { makeChartableVitals } from 'app/finance/vitals/ChartableVitals';
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { useSearchParams } from 'next/navigation'
-import SettingsLayout from 'app/finance/_widgets/SettingsLayout';
 import HcDashboard from 'components/HcDashboard';
-import Typography from '@mui/material/Typography';
 import MetricSettingsContents from 'app/finance/_widgets/MetricSettingsContents';
+import SettingsLayout from 'app/finance/_widgets/SettingsLayout';
+import Typography from '@mui/material/Typography';
 
 import type { BudgetActualsChartOptions, ValueFormat } from "utilities/highcharts/ChartConfigGenerators";
 import type { DistrictDataContentProps } from 'app/finance/_providers/DistrictDataProvider';
@@ -111,8 +111,8 @@ export default function VitalsDashboard({districtDataMap, allSettings, setAllSet
 
   return (
     <SettingsLayout
-        allDatasetSettings={allSettings}
-        setAllDatasetSettings={setAllSettings}
+        allSettings={allSettings}
+        setAllSettings={setAllSettings}
         settingsContentsComponents={[MetricSettingsContents]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">

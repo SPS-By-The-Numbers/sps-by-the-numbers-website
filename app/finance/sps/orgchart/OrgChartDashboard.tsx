@@ -4,7 +4,7 @@ import { DeptToPad } from 'app/finance/sps/orgchart/padOrgMapping';
 import { makeCurrencyFormatter } from 'utilities/highcharts/utils';
 import { op } from 'arquero';
 import * as aq from 'arquero';
-import HcChart from 'components/HcChart';
+import HcDashboard from 'components/HcDashboard';
 import MetricSettingsContents from 'app/finance/_widgets/MetricSettingsContents';
 import SettingsLayout from 'app/finance/_widgets/SettingsLayout';
 import Typography from '@mui/material/Typography';
@@ -189,8 +189,8 @@ export default function OrgChartDashboard({districtDataMap, allSettings, setAllS
 
   return (
     <SettingsLayout
-        allDatasetSettings={allSettings}
-        setAllDatasetSettings={setAllSettings}
+        allSettings={allSettings}
+        setAllSettings={setAllSettings}
         settingsContentsComponents={[
           MetricSettingsContents,
         ]}
@@ -199,7 +199,7 @@ export default function OrgChartDashboard({districtDataMap, allSettings, setAllS
         Attempt to reverse engineer an SPS Org chart from P-A-O codes and S275 data.
       </Typography>
 
-      <HcChart config={config} sx={{"overflow": "scroll"}} />
+      <HcDashboard config={config} />
     </SettingsLayout>
   );
 }

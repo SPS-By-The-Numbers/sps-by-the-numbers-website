@@ -1,20 +1,28 @@
+'use client';
+
 import * as aq from 'arquero';
 import { op } from 'arquero';
 import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import { extractRawExpenditures, extractVarianceFacets, toChartableDataset, getDataColumnNames } from 'utilities/ChartableMetrics';
+import { makeBaseChartConfig, makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGenerators";
+import { makeChartableVitals } from 'app/finance/vitals/ChartableVitals';
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { makeFacetComponents } from 'utilities/highcharts/FacetedBudgetActualCharts';
 import { ObjectFilterContents, ActivityFilterContents, ProgramFilterContents, extractCodes } from 'app/finance/_widgets/ExpenditureFilterContents';
+import { useMemo } from 'react';
+import ExpendituresDashboardSettingsContents from './ExpendituresDashboardSettings';
 import HcDashboard from 'components/HcDashboard';
 import MetricSettingsContents from 'app/finance/_widgets/MetricSettingsContents';
 import SettingsLayout from 'app/finance/_widgets/SettingsLayout';
 import Typography from '@mui/material/Typography';
 
 import type { ColumnTable } from 'arquero';
+import type { ExpendituresDashboardSettings } from './ExpendituresDashboardSettings';
 import type { DistrictDataContentProps } from 'app/finance/_providers/DistrictDataProvider';
 import type { MetricSettings } from 'app/finance/_widgets/MetricSettingsContents';
 
 export interface ExpendituresSettings extends MetricSettings {
+  compNonComp: "comp" | "nonComp" | "all";
   selectedObjects : string[];
   selectedActivities : string[];
   selectedPrograms : string[];
@@ -27,7 +35,7 @@ function componentsGenerator(expenditureSettings : ExpendituresSettings, facetOr
     expenditureSettings.id,
     'class_of',
     'Class of',
-    'amount',
+    'amount',  // TODO: This should be expenditure or something.
     facetOrder,
     CONNECTOR_ID,
     [expenditureSettings.currencyNormalization]);
@@ -41,15 +49,42 @@ function makeFacetedExpendituresForDistrict(districtData, filteredExpenditures, 
     "activity" as const);
 
   const pdata = data.groupby(['class_of', 'data_type'])
-    .pivot(['activity_code'], {
+    .pivot(['activity_code'],{
       amount: d => op.sum(d.amount),
-        _pivot_name_hack_: d => op.any('_pivot_name_hack_')
+      _pivot_name_hack_: d => op.any('_pivot_name_hack_')
     })
-    .select(aq.not('_pivot_name_hack_'));
+    .select(aq.not(aq.startswith('_pivot_name_hack_')));
 
-  const names = getDataColumnNames(pdata);
-  return toChartableDataset(districtData, pdata,
-                            expenditureSettings, [], names, []);
+
+  // TODO: Fix this hack. It has to correspond with the FacetInfo
+  const combinedTeachingPdev = pdata
+    .orderby('class_of')
+    .orderby('data_type')
+    .derive({amount_s1: d => (op.is_finite(d.amount_27) ? d.amount_27 : 0)
+            + (op.is_finite(d.amount_34) ? d.amount_34 : 0)})
+    .select(aq.not('amount_27') && aq.not('amount_34'));
+
+  const names = getDataColumnNames(combinedTeachingPdev);
+  return toChartableDataset(districtData, combinedTeachingPdev, expenditureSettings, [], names, []);
+}
+
+function deriveDeltaColumns(df, baselineClassOf) {
+  const params = {};
+  const clauses = {
+    class_of: d => d.class_of
+  };
+  for (const name of getDataColumnNames(df)) { 
+    const baselineValue = df.params({baselineClassOf}).filter(
+      (d, $) => d.class_of === $.baselineClassOf).get(name);
+    clauses[`delta_${name}`] = aq.escape(d => d[name] - baselineValue);
+  }
+
+  const data = df.join(
+    df
+    .orderby('class_of')
+    .derive(clauses, { drop: true }));
+
+  return data;
 }
 
 function compileData(districtDataMap, allSettings, facet) {
@@ -75,22 +110,114 @@ function compileData(districtDataMap, allSettings, facet) {
     }
   }
   
-  let data = allDatasets[0];
-  for (const d of allDatasets.slice(1)) {
-    data = data.join(d);
+  let data = makeChartableVitals(districtDataMap, [{...allSettings[0], id: 'context', currencyNormalization: 'amount'}]);
+  for (const d of allDatasets) {
+    data = data.join(deriveDeltaColumns(d, 2019));
   }
+
+  data = data.orderby('class_of');
+
   return [data, facetInfo];
 }
 
+// TODO: Dedupe with vitals.
+function makeCell(renderTo, metricColumn, title, yValueFormat, yLabel ?: string) {
+    return {
+      renderTo,
+      title,
+      metricColumn,
+      connectorId: CONNECTOR_ID,
+      xDataColumn: 'class_of',
+      xValueFormat: 'year' as const,
+
+      yValueFormat,
+      yLabel,
+    };
+}
+
 // Charts expenditures for 
-export default function ExpendituresDashboard({districtDataMap, allSettings, setAllSettings} : DistrictDataContentProps<ExpendituresSettings>) {
-  const [data, facetOrder] = compileData(districtDataMap, allSettings, "activity" as const);
+export default function ExpendituresDashboard(
+  {
+    districtDataMap,
+    sharedSettings,
+    setSharedSettings,
+    allSettings,
+    setAllSettings
+  } : DistrictDataContentProps<ExpendituresSettings, ExpendituresDashboardSettings>) {
+  const [data, facetOrder] = useMemo(
+    () => compileData(districtDataMap, allSettings, sharedSettings.facet),
+    [sharedSettings.facet, districtDataMap, allSettings]
+  );
 
   const result = makeDatasetFacetedDashboard(allSettings, s => componentsGenerator(s, facetOrder));
   if (result === undefined) {
     return <div>No Datasets defined.</div>;
   }
+  const showDeltas = false;
+
   const {components, gui} = result;
+  if (showDeltas) {
+    gui.layouts.unshift({
+       rowClassName: 'context-row',
+       cellClassName: 'context-cell',
+
+      rows: [
+        {
+          cells: [
+            { id: 'context-enrollment' },
+            { id: 'context-cashflow' },
+            { id: 'context-revenues' },
+            { id: 'context-expenditures' }
+          ]
+        },
+      ]
+    }, {
+      rows: [
+        {
+          cells: [
+            { id: 'delta-expenditures-budget' },
+            { id: 'delta-expenditures-actuals' }
+          ],
+        }
+      ]
+    });
+  }
+
+  const columnAssignment = facetOrder.map(facetInfo => {
+    return {
+      seriesId: `🍊 ${facetInfo.title} - Budget`,
+      data: {
+        x: 'class_of',
+        y: `delta_${allSettings[0].id}_${allSettings[0].currencyNormalization}_amount_${facetInfo.code}_budget`
+      },
+    };
+  });
+
+  if (showDeltas) {
+    components.push(
+      makeBudgetActualsChartConfig(
+        makeCell(`context-enrollment`,
+                 `context_amount_enrollment`,
+                 'Enrollment',
+                 'fte' as const,
+                 'AFTE')),
+      makeBudgetActualsChartConfig(
+        makeCell(`context-cashflow`,
+                 `context_amount_cashflow`,
+                 'Cashflow',
+                 'currency' as const)),
+      makeBudgetActualsChartConfig(
+        makeCell(`context-revenues`,
+                 `context_amount_revenues`,
+                 'Revenues',
+                 'currency' as const)),
+      makeBudgetActualsChartConfig(
+        makeCell(`context-expenditures`,
+                 `context_amount_expenditures`,
+                 'Expenditures',
+                 'currency' as const)),
+    );
+  }
 
   const config = ({
     gui,
@@ -108,8 +235,12 @@ export default function ExpendituresDashboard({districtDataMap, allSettings, set
 
   return (
     <SettingsLayout
-        allDatasetSettings={allSettings}
-        setAllDatasetSettings={setAllSettings}
+        sharedSettings={sharedSettings}
+        setSharedSettings={setSharedSettings}
+        sharedSettingsComponents={[ExpendituresDashboardSettingsContents]}
+
+        allSettings={allSettings}
+        setAllSettings={setAllSettings}
         settingsContentsComponents={[
           MetricSettingsContents,
           ObjectFilterContents,
@@ -120,7 +251,7 @@ export default function ExpendituresDashboard({districtDataMap, allSettings, set
       <Typography className="analysis-title" component="h1" variant="h1">
         Expenditures Dashboard
       </Typography>
-      <HcDashboard config={config} />
+      <HcDashboard config={config} disableUpdate={sharedSettings.disableChartUpdate} />
     </SettingsLayout>
   );
 }

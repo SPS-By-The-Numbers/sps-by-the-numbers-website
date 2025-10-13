@@ -10,6 +10,7 @@ import SettingsLayout from 'app/finance/_widgets/SettingsLayout';
 import Typography from '@mui/material/Typography';
 import MetricSettingsContents from 'app/finance/_widgets/MetricSettingsContents';
 
+import type { BaseSettings } from 'app/finance/_widgets/SettingsContents';
 import type { CorrelationChartOptions } from "utilities/highcharts/ChartConfigGenerators";
 import type { DistrictDataContentProps } from 'app/finance/_providers/DistrictDataProvider';
 import type { MetricSettings } from 'app/finance/_widgets/MetricSettingsContents';
@@ -123,7 +124,7 @@ function componentsGenerator(cashflowSettings : CashflowSettings) {
   return correlationChartOptions.map(c => makeCorrelationChartConfig(c));
 }
 
-export default function CashflowDashboard({districtDataMap, allSettings, setAllSettings} : DistrictDataContentProps<CashflowSettings>) {
+export default function CashflowDashboard({districtDataMap, allSettings, setAllSettings} : DistrictDataContentProps<CashflowSettings, BaseSettings>) {
   const searchParams = useSearchParams();
 
   const result = makeDatasetFacetedDashboard(allSettings, componentsGenerator);
@@ -151,8 +152,8 @@ export default function CashflowDashboard({districtDataMap, allSettings, setAllS
 
   return (
     <SettingsLayout
-        allDatasetSettings={allSettings}
-        setAllDatasetSettings={setAllSettings}
+        allSettings={allSettings}
+        setAllSettings={setAllSettings}
         settingsContentsComponents={[MetricSettingsContents]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">
