@@ -30,7 +30,10 @@ export interface ExpendituresSettings extends MetricSettings {
 
 const CONNECTOR_ID = 'expenditures-connector';
 
-function componentsGenerator(expenditureSettings : ExpendituresSettings, facetOrder) {
+function componentsGenerator(
+    facetOrder,
+    sharedSettings : ExpendituresDashboardSettings,
+    expenditureSettings : ExpendituresSettings) {
   const components =  makeFacetComponents(
     expenditureSettings.id,
     'class_of',
@@ -153,7 +156,7 @@ export default function ExpendituresDashboard(
   // Trim the list for rendering speed.
   const facetOrder = fullFacetOrder.slice(0, parseInt(sharedSettings.facetLimit));
 
-  const result = makeDatasetFacetedDashboard(allSettings, s => componentsGenerator(s, facetOrder));
+  const result = makeDatasetFacetedDashboard(allSettings, s => componentsGenerator(facetOrder, sharedSettings, s));
   if (result === undefined) {
     return <div>No Datasets defined.</div>;
   }
@@ -187,17 +190,17 @@ export default function ExpendituresDashboard(
     });
   }
 
-  const columnAssignment = facetOrder.map(facetInfo => {
-    return {
-      seriesId: `🍊 ${facetInfo.title} - Budget`,
-      data: {
-        x: 'class_of',
-        y: `delta_${allSettings[0].id}_${allSettings[0].currencyNormalization}_amount_${facetInfo.code}_budget`
-      },
-    };
-  });
-
   if (showDeltas) {
+    const columnAssignment = facetOrder.map(facetInfo => {
+      return {
+        seriesId: `🍊 ${facetInfo.title} - Budget`,
+        data: {
+          x: 'class_of',
+          y: `delta_${allSettings[0].id}_${allSettings[0].currencyNormalization}_amount_${facetInfo.code}_budget`
+        },
+      };
+    });
+
     components.push(
       makeBudgetActualsChartConfig(
         makeCell(`context-enrollment`,
@@ -241,7 +244,12 @@ export default function ExpendituresDashboard(
     <SettingsLayout
         sharedSettings={sharedSettings}
         setSharedSettings={setSharedSettings}
-        sharedSettingsComponents={[ExpendituresDashboardSettingsContents]}
+        sharedSettingsComponents={[
+          ExpendituresDashboardSettingsContents,
+          ObjectFilterContents,
+          ActivityFilterContents,
+          ProgramFilterContents,
+        ]}
 
         allSettings={allSettings}
         setAllSettings={setAllSettings}
@@ -255,7 +263,7 @@ export default function ExpendituresDashboard(
       <Typography className="analysis-title" component="h1" variant="h1">
         Expenditures Dashboard
       </Typography>
-      <HcDashboard config={config} disableUpdate={sharedSettings.disableChartUpdate} />
+      <HcDashboard config={config} />
     </SettingsLayout>
   );
 }

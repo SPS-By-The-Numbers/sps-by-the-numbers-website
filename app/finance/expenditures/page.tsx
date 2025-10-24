@@ -25,7 +25,11 @@ const DEFAULT_DASHBOARD_SETTINGS = {
   sortOrder: 'descending' as const,
   sortType: 'variance' as const,
   yScale: "free" as const,
-  disableChartUpdate: true,  // TODO: REmove
+
+  // Filters settings.
+  selectedObjects: ALL_OBJECT_ITEMS,
+  selectedActivities: ALL_ACTIVITY_ITEMS,
+  selectedPrograms: ALL_PROGRAM_ITEMS,
 } as ExpendituresDashboardSettings;
 
 export const metadata: Metadata = {

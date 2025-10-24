@@ -24,8 +24,9 @@
 }
 
 .highcharts-dashboards-cell {
-  min-width: 320px;
-  max-width: 50%;
+  min-width: 640px;
+  max-width: 640px;
+  min-height: 480px;
 }
 
 // The data tables are waaay larger than the chart area.

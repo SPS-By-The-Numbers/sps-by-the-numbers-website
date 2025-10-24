@@ -121,7 +121,6 @@ export default function ExpendituresDashboardSettingsContents(props : SettingsCo
       <SettingsSelect {...props} label="Sort Type" fieldName="sortType" options={ChartOptions.SORT_TYPE_OPTIONS} />
       <SettingsSelect {...props} label="Sort Order" fieldName="sortOrder" options={ChartOptions.SORT_ORDER_OPTIONS} />
       <SettingsSelect {...props} label="YScale" fieldName="yScale" options={ChartOptions.YSCALES_OPTIONS} />
-      <SettingsSwitch {...props} label="Disable Chart" fieldName="disableChartUpdate" />
     </>
   );
 }

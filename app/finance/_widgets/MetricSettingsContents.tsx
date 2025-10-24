@@ -20,6 +20,7 @@ export const DEFAULT_METRIC_SETTINGS : Array<MetricSettings> = [
     currencyNormalization: 'amount' as const,
     staffingNormalization: 'fte' as const,
   },
+  /*
   {
     name: 'SPS - pct',
     id: 'ms2',
@@ -27,6 +28,7 @@ export const DEFAULT_METRIC_SETTINGS : Array<MetricSettings> = [
     currencyNormalization: 'pctexp' as const,
     staffingNormalization: 'pctfte' as const,
   },
+  */
 ].map(e => ({...e, name: ALL_DISTRICTS[e.ccddd].district}));
 
 export default function MetricSettingsContents({settings, setSettings} : {settings: MetricSettings, setSettings: (x: MetricSettings) => void}) {

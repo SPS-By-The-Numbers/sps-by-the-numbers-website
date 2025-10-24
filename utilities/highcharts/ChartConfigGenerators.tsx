@@ -287,10 +287,11 @@ export function makeBaseChartConfig(options : BaseChartConfigOptions) {
     },
     chartOptions: {
       exporting: {
+        allowHtml: true,
         chartOptions: {
           chart: {
             style: {
-              fontFamily: 'monospace'
+//              fontFamily: 'monospace'
             }
           }
         }
@@ -346,8 +347,8 @@ export function makeBaseChartConfig(options : BaseChartConfigOptions) {
         series: {
           label: {
             enabled: true,
-            useHTML: true
-          }
+            useHTML: true,
+          },
         }
       },
       legend: {
@@ -376,6 +377,10 @@ export function makeBudgetActualsChartConfig(options : BudgetActualsChartOptions
   const precision = options.precision;
   const valueFormatter = getFormatter(valueFormat, precision);
 
+  const dataLabelFormatter = point => {
+    return valueFormatter(point.y);
+  };
+
   return merge(
     baseChartConfig,
     {
@@ -402,8 +407,6 @@ export function makeBudgetActualsChartConfig(options : BudgetActualsChartOptions
           type: "column",
         },
         xAxis: {
-          // TODO: This is in a weird spot.
-          reversed: true,
           events: {
             afterSetExtremes: function(event) {
               try {
@@ -429,9 +432,9 @@ export function makeBudgetActualsChartConfig(options : BudgetActualsChartOptions
           {
             id: 'budget',
             name: 'Budget',
-            dataSorting: {
+            dataLabels: {
               enabled: true,
-              sortKey: 'name',
+              formatter: function() { return dataLabelFormatter(this) },
             },
             colorIndex: 2,
             pointPadding: 0,
@@ -439,6 +442,11 @@ export function makeBudgetActualsChartConfig(options : BudgetActualsChartOptions
           {
             id: 'actuals',
             name: 'Actuals',
+            dataLabels: {
+              enabled: true,
+              formatter: function() { return dataLabelFormatter(this) },
+              y: 30,
+            },
             colorIndex: 1,
             pointPadding: 0.27,
           },
