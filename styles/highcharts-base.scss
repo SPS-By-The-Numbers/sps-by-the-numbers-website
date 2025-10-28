@@ -4,8 +4,26 @@
 
 :root {
       /* Colors for data series and points */
-  --highcharts-color-1: #38b9ff;
+  /*--highcharts-color-1: #38b9ff; */
+  /*
+  --highcharts-color-1: #0093f6;
   --highcharts-color-2: #9c9c9c;
+  */
+  --highcharts-color-1: #006aa3;
+  --highcharts-color-2: #cccccc;
+}
+
+.highcharts-data-label {
+}
+
+.highcharts-data-label-color-1 {
+  text-shadow: 0px 0px 6px black;
+  color: white;
+}
+
+.highcharts-data-label-color-2 {
+  text-shadow: 0px 0px 6px white;
+  color: #555555;
 }
 
 .highcharts-crosshair {
@@ -24,9 +42,9 @@
 }
 
 .highcharts-dashboards-cell {
-  min-width: 640px;
-  max-width: 640px;
-  min-height: 480px;
+  min-width: 800px;
+  max-width: 800px;
+  min-height: 600px;
 }
 
 // The data tables are waaay larger than the chart area.

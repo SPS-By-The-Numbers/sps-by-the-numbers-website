@@ -195,6 +195,7 @@ function inferAxisType(valueFormat, allowNegative) {
 
     case 'pctexp':
     case 'pctcomp':
+      return 'linear';
       return allowNegative ? 'linear' : 'logarithmic';
 
     case 'year':
@@ -404,6 +405,7 @@ export function makeBudgetActualsChartConfig(options : BudgetActualsChartOptions
       },
       chartOptions: {
         chart: {
+          shadow: false,
           type: "column",
         },
         xAxis: {
@@ -432,7 +434,9 @@ export function makeBudgetActualsChartConfig(options : BudgetActualsChartOptions
           {
             id: 'budget',
             name: 'Budget',
+            useHTML: true,
             dataLabels: {
+            useHTML: true,
               enabled: true,
               formatter: function() { return dataLabelFormatter(this) },
             },
@@ -442,13 +446,15 @@ export function makeBudgetActualsChartConfig(options : BudgetActualsChartOptions
           {
             id: 'actuals',
             name: 'Actuals',
+            useHTML: true,
             dataLabels: {
+            useHTML: true,
               enabled: true,
               formatter: function() { return dataLabelFormatter(this) },
               y: 30,
             },
             colorIndex: 1,
-            pointPadding: 0.27,
+            pointPadding: 0.26,
           },
         ],
         plotOptions: {

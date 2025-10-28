@@ -80,6 +80,9 @@ export async function fetchDatasetStream(ccddd : string, dataset : string) {
 
 export async function fetchDataset(ccddd, dataset) {
   const byteStream = await fetchDatasetStream(ccddd, dataset);
+  // TODO: This produced corrupt data midway through the load?????
+  //   Look for something with object=4 instead of just object_code=4.
+  //    Both activity_code and object_code end up with NaN on a few small items.
   return aq.fromCSVStream(byteStream.pipeThrough(new TextDecoderStream()));
 }
 
@@ -366,6 +369,7 @@ export default class DistrictData {
 
   filteredExpenditures(filterSelection: FilterSelection) {
     let results = this.gf_expenditure_df;
+    console.log(results);
 
     if (filterSelection.selectedObjectCodes !== undefined) {
       results = results
@@ -377,9 +381,10 @@ export default class DistrictData {
       results = results
         .params(filterSelection)
         .filter((d, $) => d.includes($.selectedActivityCodes, d.activity_code));
+    console.log(results);
     }
 
-    if (filterSelection.selectedActivityCodes !== undefined) {
+    if (filterSelection.selectedProgramCodes !== undefined) {
       results = results
         .params(filterSelection)
         .filter((d, $) => d.includes($.selectedProgramCodes, d.program_code));

@@ -149,7 +149,8 @@ export function extractVarianceFacets(df : ColumnTable, facetColumn : string, so
     .array('facet_info') as Array<{code: string, title: string}>;
 
   // TODO: Fix this hack. It has to correspond with the data derivation.
-  facetInfo.push({code: 's1', title: 'Teaching/Prof Devel'});
+  facetInfo.push({code: 's1', title: 'Teaching/Profesional Learning'});
+  facetInfo.push({code: 's2', title: "Principal's Office/ Principal"});
 
   return facetInfo;
 }

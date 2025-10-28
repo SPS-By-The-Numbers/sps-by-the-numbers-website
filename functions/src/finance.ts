@@ -180,7 +180,7 @@ function getS275Summary(ccddd) {
     d_dr.duty_name duty_root,
     a.duty_suffix_code,
     d_ds.duty_contract_type duty_suffix,
-    sum(a.fte_in_assignment) fte_in_assignment,
+    sum(COALESCE(a.fte_in_assignment, 0)) fte_in_assignment,
     sum(pa.assignment_salary) + sum(pa.c_est_other_salary) c_est_total_initial_salary,
     sum(pa.c_est_total_final_salary) c_est_total_final_salary,
   FROM

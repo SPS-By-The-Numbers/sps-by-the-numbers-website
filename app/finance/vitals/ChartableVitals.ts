@@ -10,7 +10,7 @@ import type { CurrencyNormalization } from 'utilities/ChartableMetrics';
 
 function extractRawVitals(districtData, ccddd) {
   return districtData.enrollmentSummary()
-    .join_full(districtData.staffingSummary())
+    .join(districtData.staffingSummary())
     .join_full(districtData.balances())
     .join_full(districtData.cashflow())
     .join_full(districtData.compensation())

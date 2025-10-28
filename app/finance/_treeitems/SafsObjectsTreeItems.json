@@ -54,11 +54,11 @@
         "label": "Transfers*",
         "children": [
           {
-            "id": "0",
+            "id": "obj-0",
             "label": "Debit Transfer"
           },
           {
-            "id": "1",
+            "id": "obj-1",
             "label": "Credit Transfer"
           }
         ]

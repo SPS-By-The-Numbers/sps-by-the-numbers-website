@@ -60,15 +60,46 @@ function makeFacetedExpendituresForDistrict(districtData, filteredExpenditures, 
 
 
   // TODO: Fix this hack. It has to correspond with the FacetInfo
-  const combinedTeachingPdev = pdata
+  let manualCombinedPdev = pdata
     .orderby('class_of')
-    .orderby('data_type')
-    .derive({amount_s1: d => (op.is_finite(d.amount_27) ? d.amount_27 : 0)
-            + (op.is_finite(d.amount_34) ? d.amount_34 : 0)})
+    .orderby('data_type');
+
+  /// ZOMG Combine Teaching and Professional Learning - State
+  const hasTeaching = !!manualCombinedPdev.column('amount_27');
+  const hasProfLearn = !!manualCombinedPdev.column('amount_34');
+  if (hasTeaching && hasProfLearn) {
+    manualCombinedPdev = manualCombinedPdev
+      .derive({amount_s1: d => (op.is_finite(d.amount_27) ? d.amount_27 : 0)
+              + (op.is_finite(d.amount_34) ? d.amount_34 : 0)})
+  } else if (hasTeaching) {
+    manualCombinedPdev = manualCombinedPdev
+      .derive({amount_s1: d => (op.is_finite(d.amount_27) ? d.amount_27 : 0)});
+  } else if (hasProfLearn) {
+    manualCombinedPdev = manualCombinedPdev
+      .derive({amount_s1: d => (op.is_finite(d.amount_34) ? d.amount_34 : 0)});
+  }
+  manualCombinedPdev = manualCombinedPdev
     .select(aq.not('amount_27') && aq.not('amount_34'));
 
-  const names = getDataColumnNames(combinedTeachingPdev);
-  return toChartableDataset(districtData, combinedTeachingPdev, expenditureSettings, [], names, []);
+  // Combine Principal Office and Principal.
+  const hasPrincipal = !!manualCombinedPdev.column('amount_84');
+  const hasPrincipalOffice = !!manualCombinedPdev.column('amount_23');
+  if (hasPrincipal && hasPrincipalOffice) {
+    manualCombinedPdev = manualCombinedPdev
+      .derive({amount_s2: d => (op.is_finite(d.amount_84) ? d.amount_84 : 0)
+              + (op.is_finite(d.amount_23) ? d.amount_23 : 0)})
+  } else if (hasPrincipal) {
+    manualCombinedPdev = manualCombinedPdev
+      .derive({amount_s2: d => (op.is_finite(d.amount_84) ? d.amount_84 : 0)});
+  } else if (hasPrincipalOffice) {
+    manualCombinedPdev = manualCombinedPdev
+      .derive({amount_s2: d => (op.is_finite(d.amount_23) ? d.amount_23 : 0)});
+  }
+  manualCombinedPdev = manualCombinedPdev
+    .select(aq.not('amount_84') && aq.not('amount_23'));
+
+  const names = getDataColumnNames(manualCombinedPdev);
+  return toChartableDataset(districtData, manualCombinedPdev, expenditureSettings, [], names, []);
 }
 
 function deriveDeltaColumns(df, baselineClassOf) {

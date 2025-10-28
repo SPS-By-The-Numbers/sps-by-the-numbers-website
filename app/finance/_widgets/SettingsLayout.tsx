@@ -4,10 +4,16 @@ import * as React from 'react';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
+import AddIcon from '@mui/icons-material/Add';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import CloseIcon from '@mui/icons-material/Close';
 import Drawer from '@mui/material/Drawer';
+import Icon from '@mui/material/Icon';
+import IconButton from '@mui/material/IconButton';
 import SettingsContents from 'app/finance/_widgets/SettingsContents';
+import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 
@@ -30,16 +36,24 @@ interface SettingsLayoutProps<SettingsType extends BaseSettings, SharedSettingsT
 }
 
 function DatasetAccordion<T extends BaseSettings>(
-    {sharedSettings, settings, setSettings, settingsContentsComponents}) {
+    {sharedSettings, settings, setSettings, settingsContentsComponents, removeSelf}) {
   return (
     <Accordion defaultExpanded>
-      <AccordionSummary
-        expandIcon={<ArrowDropDownIcon />}
-        aria-controls={`${settings.id}`}
-        id={`panel-${settings.id}-header`}
-      >
-        <Typography component="span">{settings.name}</Typography>
-      </AccordionSummary>
+      <Stack direction="row" sx={{alignItems: "center"}}>
+        <IconButton onClick={removeSelf} size="small" sx={{marginX: "0.5rem"}}>
+          {
+            removeSelf === undefined ? <Icon /> :
+              <CloseIcon fontSize="inherit"/>
+          }
+        </IconButton>
+        <AccordionSummary
+          expandIcon={<ArrowDropDownIcon />}
+          aria-controls={`${settings.id}`}
+          id={`panel-${settings.id}-header`}
+        >
+          <Typography component="span">{settings.name}</Typography>
+        </AccordionSummary>
+      </Stack>
       <AccordionDetails>
         <SettingsContents
           sharedSettings={sharedSettings}
@@ -53,8 +67,10 @@ function DatasetAccordion<T extends BaseSettings>(
 }
 
 function DrawerContents<T extends BaseSettings>(
-    { sharedSettings, setSharedSettings, sharedSettingsComponents,
-      allSettings, updateAllSettings, settingsContentsComponents }) {
+    { sharedSettings, setSharedSettings,
+      sharedSettingsComponents,
+      allSettings, updateAllSettings, settingsContentsComponents,
+      removeSetting, sx }) {
     let sharedSettingsPanel : ReactNode;
     if (sharedSettingsComponents) {
       sharedSettingsPanel = (
@@ -69,18 +85,19 @@ function DrawerContents<T extends BaseSettings>(
   const panels = allSettings.map(
     (settings, index) => (
       <DatasetAccordion
-          key={index}
+          key={settings.id}
           sharedSettings={sharedSettings}
           settings={settings}
+          removeSelf={() => removeSetting(index) }
           setSettings={v => updateAllSettings(index, v)}
           settingsContentsComponents={settingsContentsComponents}
           />
     ));
   return (
-    <div>
+    <Box sx={sx}>
       {sharedSettingsPanel}
       {panels}
-    </div>
+    </Box>
   );
 }
 
@@ -89,6 +106,7 @@ export default function SettingsLayout<SettingsType extends BaseSettings, Shared
     allSettings, setAllSettings, settingsContentsComponents, children} = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [isClosing, setIsClosing] = React.useState(false);
+  const [nextSettingId, setNextSettingId] = React.useState(1);
 
   const updateAllSettings = (i, v) => {
     const newSettings = [...allSettings];
@@ -111,19 +129,41 @@ export default function SettingsLayout<SettingsType extends BaseSettings, Shared
     }
   };
 
+  const removeSetting = (index) => {
+    setAllSettings(allSettings.splice(index, 1));
+  };
+
+  const addComparison = () => {
+    const id = `comp${nextSettingId + 1}`;
+    updateAllSettings(allSettings.length, {...allSettings.at(-1), id});
+    setNextSettingId(id);
+  };
+
   const drawer = (
-    <div>
+    <Stack sx={{height: "100%"}}>
       <Toolbar />
       <DrawerContents
-          sharedSettings={sharedSettings}
-          setSharedSettings={setSharedSettings}
-          sharedSettingsComponents={sharedSettingsComponents}
+        sharedSettings={sharedSettings}
+        setSharedSettings={setSharedSettings}
+        sharedSettingsComponents={sharedSettingsComponents}
 
-          allSettings={allSettings}
-          updateAllSettings={updateAllSettings}
-          settingsContentsComponents={settingsContentsComponents}
+        allSettings={allSettings}
+        updateAllSettings={updateAllSettings}
+        removeSetting={removeSetting}
+        settingsContentsComponents={settingsContentsComponents}
+        sx={{overflowY: "scroll"}}
       />
-    </div>
+      <Toolbar sx={{ justifyContent: 'space-around' }}>
+        <Button
+            size="medium"
+            variant="contained"
+            startIcon={<AddIcon fontSize="inherit" />}
+            onClick={addComparison}
+        >
+          Add Comparison
+        </Button>
+      </Toolbar>
+    </Stack>
   );
 
   return (
