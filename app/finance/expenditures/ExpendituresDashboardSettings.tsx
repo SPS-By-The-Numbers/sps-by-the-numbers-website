@@ -2,15 +2,9 @@
 
 import { useId } from 'react';
 import * as ChartOptions from 'utilities/ChartOptions';
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+import SettingsSelect from 'app/finance/_widgets/SettingsSelect';
 import Stack from '@mui/material/Stack';
-import Switch from '@mui/material/Switch';
-import ToggleButton from '@mui/material/ToggleButton';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
 import type { CommonSharedSettings } from 'app/finance/_widgets/CommonSharedSettingsContents';
 import type { SettingsContentsProps } from 'app/finance/_widgets/SettingsContents';
@@ -31,87 +25,19 @@ const YSCALE_OPTIONS : Record<ChartOptions.YScale, string> = {
   "descending": "Descending",
 };
 
-export interface ExpendituresDashboardSettings extends CommonSharedSettings {
+export interface PAOFilterSettings {
+  selectedObjects : string[];
+  selectedActivities : string[];
+  selectedPrograms : string[];
+}
+
+export interface ExpendituresDashboardSettings extends CommonSharedSettings, PAOFilterSettings {
   facet: Facet;
   facetLimit: ChartOptions.FacetLimit;
   sortOrder: SortOrder;
   sortType: SortType;
   yScale: ChartOptions.YScale;
 };
-
-interface SettingsSelectProps<T> {
-  label: string;
-  settings: T;
-  setSettings: (x: T) => void;
-  fieldName: string;
-  options: Record<string, string>;
-};
-
-function SettingsSelect<T>({label, settings, setSettings, fieldName, options} : SettingsSelectProps<T>) {
-  const id = useId();
-  const labelId = useId();
-
-  const items = Object.entries(options).map(([facet, label]) => (<MenuItem key={facet} value={facet}>{label}</MenuItem>));
-
-  return (
-    <FormControl size="small">
-      <InputLabel id={labelId}>{label}</InputLabel>
-      <Select
-        labelId={labelId}
-        id={id}
-        value={settings[fieldName]}
-        label={label}
-        onChange={e => setSettings({...settings, [fieldName]: e.target.value})}
-      >
-        {items}
-      </Select>
-    </FormControl>
-  );
-}
-
-function SettingsToggleGroup<T>({label, settings, setSettings, fieldName, options} : SettingsSelectProps<T>) {
-  const id = useId();
-  const labelId = useId();
-
-  const items = Object.entries(options).map(([v, l]) => (
-    <ToggleButton key={v} value={v} aria-label={l}> {l} </ToggleButton>
-  ));
-  console.log(items);
-  console.log(settings[fieldName], settings);
-
-  return (
-    <ToggleButtonGroup
-      color="primary"
-      value={settings[fieldName]}
-      exclusive
-      onChange={(_, v) => {
-        if (v !== null) {
-          setSettings({...settings, [fieldName]: v});
-        }
-      }}
-      aria-label={label}
-    >
-      {items}
-    </ToggleButtonGroup>
-  );
-}
-
-function SettingsSwitch({label, settings, setSettings, fieldName}) {
-  return (
-    <FormControl size="small">
-      <FormControlLabel
-        label={label}
-        labelPlacement="start"
-        control={
-          <Switch
-            checked={settings[fieldName]}
-            onChange={e => setSettings({...settings, [fieldName]: e.target.checked})}
-          />
-        }
-      />
-    </FormControl>
-  );
-}
 
 export default function ExpendituresDashboardSettingsContents(props : SettingsContentsProps<ExpendituresDashboardSettings>) {
   return (

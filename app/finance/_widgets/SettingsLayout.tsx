@@ -22,8 +22,8 @@ import type { SettingsRenderComponentType, BaseSettings } from 'app/finance/_wid
 
 const drawerWidth = 240;
 
-// TODO: Remove = {} and ?
 interface SettingsLayoutProps<SettingsType extends BaseSettings, SharedSettingsType extends BaseSettings> {
+  // TODO: Remove ? maybe?
   sharedSettings?: SharedSettingsType;
   setSharedSettings?: (x: SharedSettingsType) => void;
   sharedSettingsComponents?: Array<SettingsRenderComponentType<any>>;
@@ -35,17 +35,23 @@ interface SettingsLayoutProps<SettingsType extends BaseSettings, SharedSettingsT
   children : ReactNode;
 }
 
-function DatasetAccordion<T extends BaseSettings>(
-    {sharedSettings, settings, setSettings, settingsContentsComponents, removeSelf}) {
+function MaybeCloseButton({settings, removeSelf}) {
+  const cannotClose = (settings.id === 'primary' || removeSelf === undefined);
+  return (
+    <IconButton onClick={cannotClose ? undefined : removeSelf} size="small" sx={{marginX: "0.5rem"}}>
+      {
+        cannotClose ? <Icon /> : <CloseIcon fontSize="inherit"/>
+      }
+    </IconButton>
+  );
+}
+
+function DatasetAccordion(
+    {sharedSettings, settings, setSettings, settingsContentsComponents, removeSelf} ) {
   return (
     <Accordion defaultExpanded>
       <Stack direction="row" sx={{alignItems: "center"}}>
-        <IconButton onClick={removeSelf} size="small" sx={{marginX: "0.5rem"}}>
-          {
-            removeSelf === undefined ? <Icon /> :
-              <CloseIcon fontSize="inherit"/>
-          }
-        </IconButton>
+        <MaybeCloseButton settings={settings} removeSelf={removeSelf} />
         <AccordionSummary
           expandIcon={<ArrowDropDownIcon />}
           aria-controls={`${settings.id}`}
@@ -66,7 +72,7 @@ function DatasetAccordion<T extends BaseSettings>(
   );
 }
 
-function DrawerContents<T extends BaseSettings>(
+function DrawerContents(
     { sharedSettings, setSharedSettings,
       sharedSettingsComponents,
       allSettings, updateAllSettings, settingsContentsComponents,
@@ -77,6 +83,7 @@ function DrawerContents<T extends BaseSettings>(
         <DatasetAccordion
           sharedSettings={sharedSettings}
           settings={sharedSettings}
+          removeSelf={undefined}
           setSettings={setSharedSettings}
           settingsContentsComponents={sharedSettingsComponents}
         />
@@ -85,13 +92,13 @@ function DrawerContents<T extends BaseSettings>(
   const panels = allSettings.map(
     (settings, index) => (
       <DatasetAccordion
-          key={settings.id}
-          sharedSettings={sharedSettings}
-          settings={settings}
-          removeSelf={() => removeSetting(index) }
-          setSettings={v => updateAllSettings(index, v)}
-          settingsContentsComponents={settingsContentsComponents}
-          />
+        key={settings.id}
+        sharedSettings={sharedSettings}
+        settings={settings}
+        removeSelf={() => removeSetting(index)}
+        setSettings={v => updateAllSettings(index, v)}
+        settingsContentsComponents={settingsContentsComponents}
+        />
     ));
   return (
     <Box sx={sx}>
@@ -101,7 +108,8 @@ function DrawerContents<T extends BaseSettings>(
   );
 }
 
-export default function SettingsLayout<SettingsType extends BaseSettings, SharedSettingsType extends BaseSettings>(props: SettingsLayoutProps<SettingsType, SharedSettingsType>) {
+export default function SettingsLayout<SettingsType extends BaseSettings, SharedSettingsType extends BaseSettings>(
+    props: SettingsLayoutProps<SettingsType, SharedSettingsType>) {
   const { sharedSettings, setSharedSettings, sharedSettingsComponents,
     allSettings, setAllSettings, settingsContentsComponents, children} = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
@@ -130,13 +138,17 @@ export default function SettingsLayout<SettingsType extends BaseSettings, Shared
   };
 
   const removeSetting = (index) => {
-    setAllSettings(allSettings.splice(index, 1));
+    // Clone the array to avoid messing up state.
+    const newSettings = [...allSettings];
+    newSettings.splice(index, 1);
+    setAllSettings(newSettings);
   };
 
   const addComparison = () => {
-    const id = `comp${nextSettingId + 1}`;
+    const id = `comp${nextSettingId}`;
+    // Clone the most recent comparison into a new id.
     updateAllSettings(allSettings.length, {...allSettings.at(-1), id});
-    setNextSettingId(id);
+    setNextSettingId(nextSettingId + 1);
   };
 
   const drawer = (

@@ -1,6 +1,9 @@
 import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
 import { makeSchools } from 'app/finance/_domain/schools';
 import { makeDutyRootItems } from 'app/finance/_domain/DutyRoots';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 import SafsCompObjectsTreeItems from 'app/finance/_treeitems/SafsCompObjectsTreeItems.json';
 import SafsObjectsTreeItems from 'app/finance/_treeitems/SafsObjectsTreeItems.json';
 import SpsActivityCategoryTreeItems from 'app/finance/_treeitems/SpsActivityCategoryTreeItems.json';
@@ -14,6 +17,10 @@ interface Props<T extends BaseSettings> {
   settings: T;
   setSettings: (x: T) => void;
 }
+
+interface OverridePrimaryFilterSettings extends BaseSettings {
+  overridePrimaryFilter: boolean;
+};
 
 interface ObjectFilterSettings extends BaseSettings {
   selectedObjects: string[];
@@ -31,6 +38,14 @@ interface SchoolFilterSettings extends MetricSettings {
   selectedSchools: string[];
 };
 
+// Takes a set list of RichTreeView item settings and extracts the code for it.
+//
+// The RichTreeView items have the form obj-1 or act-22 which is
+// object_code 1 and activity_code 2.  prefix is used to identify the code.
+//
+// It is not possible to just split by '-' and then take the second element as
+// RichTreeView will have grouping items also that need to recork their selected
+// state. Our convention is to use a different prefix so they can be filtered out.
 export function extractCodes(prefix, selectedItems) {
   const selectedCodes = new Array<number>;
   for (const id of selectedItems) {
@@ -42,8 +57,9 @@ export function extractCodes(prefix, selectedItems) {
   return selectedCodes;
 }
 
-// Iterates a TreeViewBaseItem and extracts all IDs with a given prefix.
-// Used to generate default selection.
+// Iterates a TreeViewBaseItem and extracts all IDs.
+//
+// Mostly used to generate default selection of all items.
 export function allItems(config) {
   const nodes = [...config];  // Take copy of input 
   const itemIds = new Array<string>;
@@ -70,6 +86,7 @@ export const ALL_ACTIVITY_ITEMS = allItems(SpsActivityCategoryTreeItems);
 export const ALL_PROGRAM_ITEMS = allItems(SpsProgramGroupingTreeItems);
 
 
+// Component for showing one filter.
 function FilterTree({title, items, selectedItems, setSelectedItems}) {
   return (
     <RichTreeView
@@ -88,6 +105,24 @@ function FilterTree({title, items, selectedItems, setSelectedItems}) {
   );
 }
 
+export function OverridePrimaryFilterContents({settings, setSettings} : Props<OverridePrimaryFilterSettings>) {
+  return (
+    <FormGroup sx={{marginX: "0.5rem"}}>
+      <FormControlLabel
+        label="Override PAO Filters"
+        control={
+          <Switch
+            checked={settings.overridePrimaryFilter}
+            size="small"
+            onChange={e => setSettings({...settings, overridePrimaryFilter: e.target.checked})}
+          />
+        }
+      />
+    </FormGroup>
+  );
+}
+
+// Settings component to render selection of objects.
 export function ObjectFilterContents({settings, setSettings} : Props<ObjectFilterSettings>) {
   return (
       <FilterTree
@@ -98,6 +133,7 @@ export function ObjectFilterContents({settings, setSettings} : Props<ObjectFilte
   );
 }
 
+// Settings component to render selection of activites.
 export function ActivityFilterContents({settings, setSettings} : Props<ActivityFilterSettings>) {
   return (
       <FilterTree
@@ -108,6 +144,7 @@ export function ActivityFilterContents({settings, setSettings} : Props<ActivityF
   );
 }
 
+// Settings component to render selection of programs.
 export function ProgramFilterContents({settings, setSettings} : Props<ProgramFilterSettings>) {
   return (
       <FilterTree
@@ -118,6 +155,7 @@ export function ProgramFilterContents({settings, setSettings} : Props<ProgramFil
   );
 }
 
+// Settings component to render selection of schools.
 export function SchoolFilterContents({settings, setSettings} : Props<SchoolFilterSettings>) {
   const items = makeSchools(settings.ccddd);
 

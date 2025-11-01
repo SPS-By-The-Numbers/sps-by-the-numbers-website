@@ -8,24 +8,22 @@ import { makeBaseChartConfig, makeBudgetActualsChartConfig } from "utilities/hig
 import { makeChartableVitals } from 'app/finance/vitals/ChartableVitals';
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { makeFacetComponents } from 'utilities/highcharts/FacetedBudgetActualCharts';
-import { ObjectFilterContents, ActivityFilterContents, ProgramFilterContents, extractCodes } from 'app/finance/_widgets/ExpenditureFilterContents';
+import { OverridePrimaryFilterContents, ObjectFilterContents, ActivityFilterContents, ProgramFilterContents, extractCodes } from 'app/finance/_widgets/ExpenditureFilterContents';
 import { useMemo } from 'react';
 import ExpendituresDashboardSettingsContents from './ExpendituresDashboardSettings';
 import HcDashboard from 'components/HcDashboard';
 import MetricSettingsContents from 'app/finance/_widgets/MetricSettingsContents';
 import SettingsLayout from 'app/finance/_widgets/SettingsLayout';
+import { makeMaybeContents } from 'app/finance/_widgets/SettingsContents';
 import Typography from '@mui/material/Typography';
 
 import type { ColumnTable } from 'arquero';
-import type { ExpendituresDashboardSettings } from './ExpendituresDashboardSettings';
+import type { PAOFilterSettings, ExpendituresDashboardSettings } from './ExpendituresDashboardSettings';
 import type { DistrictDataContentProps } from 'app/finance/_providers/DistrictDataProvider';
 import type { MetricSettings } from 'app/finance/_widgets/MetricSettingsContents';
 
-export interface ExpendituresSettings extends MetricSettings {
-  compNonComp: "comp" | "nonComp" | "all";
-  selectedObjects : string[];
-  selectedActivities : string[];
-  selectedPrograms : string[];
+export interface ExpendituresSettings extends MetricSettings, PAOFilterSettings {
+  overridePrimaryFilter: boolean;
 };
 
 const CONNECTOR_ID = 'expenditures-connector';
@@ -169,6 +167,32 @@ function makeCell(renderTo, metricColumn, title, yValueFormat, yLabel ?: string)
     };
 }
 
+function expandFilters(allSettings) : Array<ExpendituresSettings> {
+  const results = new Array<ExpendituresSettings>;
+  const primaryIndex = allSettings.findIndex(v => v.id === 'primary');
+  const primarySettings = allSettings[primaryIndex];
+  results.push(primarySettings);
+
+  for (let i = 0; i < allSettings.length; i++) {
+    if (i === primaryIndex) {
+      continue;
+    }
+
+    const newSetting = {...allSettings[i]};
+
+    // Use the primary settings if this one isn't overriding.
+    if (!newSetting.overridePrimaryFilter) {
+      newSetting.selectedObjects = [...primarySettings.selectedObjects];
+      newSetting.selectedActivities = [...primarySettings.selectedActivities];
+      newSetting.selectedPrograms = [...primarySettings.selectedPrograms];
+    }
+
+    results.push(newSetting);
+  }
+
+  return results;
+}
+
 // Charts expenditures for 
 export default function ExpendituresDashboard(
   {
@@ -178,16 +202,20 @@ export default function ExpendituresDashboard(
     allSettings,
     setAllSettings
   } : DistrictDataContentProps<ExpendituresSettings, ExpendituresDashboardSettings>) {
+
+  const completedAllSettings : Array<ExpendituresSettings> = expandFilters(allSettings);
+
+
   const [data, fullFacetOrder] = useMemo(
-    () => compileData(districtDataMap, allSettings,
+    () => compileData(districtDataMap, completedAllSettings,
                       sharedSettings.facet, sharedSettings.sortOrder),
-    [sharedSettings.facet, districtDataMap, allSettings, sharedSettings.sortOrder]
+    [sharedSettings.facet, districtDataMap, completedAllSettings, sharedSettings.sortOrder]
   );
 
   // Trim the list for rendering speed.
   const facetOrder = fullFacetOrder.slice(0, parseInt(sharedSettings.facetLimit));
 
-  const result = makeDatasetFacetedDashboard(allSettings, s => componentsGenerator(facetOrder, sharedSettings, s));
+  const result = makeDatasetFacetedDashboard(completedAllSettings, s => componentsGenerator(facetOrder, sharedSettings, s));
   if (result === undefined) {
     return <div>No Datasets defined.</div>;
   }
@@ -227,7 +255,7 @@ export default function ExpendituresDashboard(
         seriesId: `🍊 ${facetInfo.title} - Budget`,
         data: {
           x: 'class_of',
-          y: `delta_${allSettings[0].id}_${allSettings[0].currencyNormalization}_amount_${facetInfo.code}_budget`
+          y: `delta_${completedAllSettings[0].id}_${completedAllSettings[0].currencyNormalization}_amount_${facetInfo.code}_budget`
         },
       };
     });
@@ -277,18 +305,17 @@ export default function ExpendituresDashboard(
         setSharedSettings={setSharedSettings}
         sharedSettingsComponents={[
           ExpendituresDashboardSettingsContents,
-          ObjectFilterContents,
-          ActivityFilterContents,
-          ProgramFilterContents,
         ]}
 
         allSettings={allSettings}
         setAllSettings={setAllSettings}
         settingsContentsComponents={[
           MetricSettingsContents,
-          ObjectFilterContents,
-          ActivityFilterContents,
-          ProgramFilterContents,
+
+          makeMaybeContents('overridePrimaryFilter', OverridePrimaryFilterContents, "notPrimary"),
+          makeMaybeContents('overridePrimaryFilter', ObjectFilterContents, "primaryAlways"),
+          makeMaybeContents('overridePrimaryFilter', ActivityFilterContents, "primaryAlways"),
+          makeMaybeContents('overridePrimaryFilter', ProgramFilterContents, "primaryAlways"),
       ]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">

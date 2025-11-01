@@ -369,7 +369,6 @@ export default class DistrictData {
 
   filteredExpenditures(filterSelection: FilterSelection) {
     let results = this.gf_expenditure_df;
-    console.log(results);
 
     if (filterSelection.selectedObjectCodes !== undefined) {
       results = results
@@ -381,7 +380,6 @@ export default class DistrictData {
       results = results
         .params(filterSelection)
         .filter((d, $) => d.includes($.selectedActivityCodes, d.activity_code));
-    console.log(results);
     }
 
     if (filterSelection.selectedProgramCodes !== undefined) {

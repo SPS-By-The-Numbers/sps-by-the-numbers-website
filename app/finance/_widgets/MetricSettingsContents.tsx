@@ -14,8 +14,7 @@ export interface MetricSettings extends BaseSettings {
 
 export const DEFAULT_METRIC_SETTINGS : Array<MetricSettings> = [
   {
-    name: 'SPS - Raw',
-    id: 'ms1',
+    id: 'primary',
     ccddd: 17001,
     currencyNormalization: 'amount' as const,
     staffingNormalization: 'fte' as const,

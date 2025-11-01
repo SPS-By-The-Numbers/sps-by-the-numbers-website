@@ -12,6 +12,8 @@ import type { ExpendituresSettings } from './ExpendituresDashboard';
 const DEFAULT_EXPENDITURE_SETTINGS = DEFAULT_METRIC_SETTINGS.map(
   v => ({
     ...v, 
+    overridePrimaryFilter: false,
+
     selectedObjects: ALL_OBJECT_ITEMS,
     selectedActivities: ALL_ACTIVITY_ITEMS,
     selectedPrograms: ALL_PROGRAM_ITEMS,
@@ -25,11 +27,6 @@ const DEFAULT_DASHBOARD_SETTINGS = {
   sortOrder: 'descending' as const,
   sortType: 'variance' as const,
   yScale: "free" as const,
-
-  // Filters settings.
-  selectedObjects: ALL_OBJECT_ITEMS,
-  selectedActivities: ALL_ACTIVITY_ITEMS,
-  selectedPrograms: ALL_PROGRAM_ITEMS,
 } as ExpendituresDashboardSettings;
 
 export const metadata: Metadata = {

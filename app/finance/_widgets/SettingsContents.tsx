@@ -24,6 +24,47 @@ interface Props<SettingsType extends BaseSettings, SharedSettingsType extends Ba
   components: Array<SettingsRenderComponentType<SettingsType>>;
 };
 
+export abstract class MaybeContentsCondition<T extends BaseSettings> {
+  abstract shouldRender(T): boolean;
+};
+
+type MaybeContentsMode = "primaryAlways" | "notPrimary";
+function MaybeContents({settings, setSettings, conditionalField, Component, mode}) {
+  const isPrimary = settings.id === 'primary';
+
+  // Say you want to explicitly enable filters in a comparison. This is the mode for you.
+  if (mode === 'notPrimary') {
+    if (isPrimary) {
+      return undefined;
+    }
+  } else {
+    // Say it's the primary pane and you always want to show filters.
+    const forceShow = mode === 'primaryAlways' && isPrimary;
+
+    // Do conditional logic here.
+    if (!forceShow && !settings[conditionalField]) {
+      return undefined;
+    }
+  }
+
+  return <Component settings={settings} setSettings={setSettings} />;
+}
+
+export function makeMaybeContents<T extends BaseSettings, U extends BaseSettings>(
+  conditionalField : string,
+  Component : ComponentType<Props<T,U>>,
+  mode: MaybeContentsMode) {
+
+  return (({settings, setSettings}) =>
+    <MaybeContents
+      settings={settings}
+      setSettings={setSettings}
+      conditionalField={conditionalField}
+      Component={Component}
+      mode={mode}
+      />);
+}
+
 export default function SettingsContents<SettingsType extends BaseSettings, SharedSettingsType extends BaseSettings = BaseSettings>(
     {sharedSettings, settings, setSettings, components} : Props<SettingsType, SharedSettingsType>) {
   const allFragments = components.map((ContentFramgent, i) => (
