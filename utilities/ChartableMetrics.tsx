@@ -133,6 +133,8 @@ export function extractVarianceFacets(df : ColumnTable, facetColumn : string, so
     .derive({variance: d => d.budget - d.actuals})
     .filter(d => !op.is_nan(d.variance));
 
+  // TODO: The problem here is activity_code 27 and 34 are hacked in after sorting.
+  // The derviation of s1 and s2 need to happen brefore sorting.
   const facetInfo = varianceDf
     .filter(d => d.activity_code != 27 && d.activity_code != 34)
     .groupby(facetColumn, facetCodeColumn)

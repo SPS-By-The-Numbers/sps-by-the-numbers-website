@@ -219,7 +219,7 @@ export default function ExpendituresDashboard(
   if (result === undefined) {
     return <div>No Datasets defined.</div>;
   }
-  const showDeltas = false;
+  const showDeltas = true;
 
   const {components, gui} = result;
   if (showDeltas) {
@@ -236,15 +236,6 @@ export default function ExpendituresDashboard(
             { id: 'context-expenditures' }
           ]
         },
-      ]
-    }, {
-      rows: [
-        {
-          cells: [
-            { id: 'delta-expenditures-budget' },
-            { id: 'delta-expenditures-actuals' }
-          ],
-        }
       ]
     });
   }
@@ -266,7 +257,7 @@ export default function ExpendituresDashboard(
                  `context_amount_enrollment`,
                  'Enrollment',
                  'fte' as const,
-                 'AFTE')),
+                 'AAFTE')),
       makeBudgetActualsChartConfig(
         makeCell(`context-cashflow`,
                  `context_amount_cashflow`,
@@ -312,15 +303,14 @@ export default function ExpendituresDashboard(
         settingsContentsComponents={[
           MetricSettingsContents,
 
+          // TODO: We need to have the override copy over the current state of primary.
+          //  Maybe intercept at setAllSettings? Seems like wrong separate of concerns.
           makeMaybeContents('overridePrimaryFilter', OverridePrimaryFilterContents, "notPrimary"),
           makeMaybeContents('overridePrimaryFilter', ObjectFilterContents, "primaryAlways"),
           makeMaybeContents('overridePrimaryFilter', ActivityFilterContents, "primaryAlways"),
           makeMaybeContents('overridePrimaryFilter', ProgramFilterContents, "primaryAlways"),
       ]}
     >
-      <Typography className="analysis-title" component="h1" variant="h1">
-        Expenditures Dashboard
-      </Typography>
       <HcDashboard config={config} />
     </SettingsLayout>
   );

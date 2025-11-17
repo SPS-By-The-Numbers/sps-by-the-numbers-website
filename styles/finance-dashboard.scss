@@ -20,8 +20,14 @@
 .context-row {
 }
 
-.context-cell {
-  max-width: 24.5%;
-  height: 300px;
-  max-height: 10%;
+.highcharts-dashboards-row.context-row {
+  position: sticky;
+  top: 0;
+}
+
+.highcharts-dashboards-cell.context-cell {
+  min-width: 25%;
+  max-width: 25%;
+  min-height: 300px;
+  max-height: 300px;
 }
