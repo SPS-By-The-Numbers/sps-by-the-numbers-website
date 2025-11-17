@@ -55,6 +55,7 @@ export function makeMaybeContents<T extends BaseSettings, U extends BaseSettings
   Component : ComponentType<Props<T,U>>,
   mode: MaybeContentsMode) {
 
+  // eslint-disable-next-line react/display-name
   return (({settings, setSettings}) =>
     <MaybeContents
       settings={settings}
