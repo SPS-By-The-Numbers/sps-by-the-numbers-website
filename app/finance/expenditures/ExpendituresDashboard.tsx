@@ -4,7 +4,7 @@ import * as aq from 'arquero';
 import { op } from 'arquero';
 import { dfToJSONConnectorOptions } from 'utilities/highcharts/utils';
 import { extractRawExpenditures, extractVarianceFacets, toChartableDataset, getDataColumnNames } from 'utilities/ChartableMetrics';
-import { makeBaseChartConfig, makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGenerators";
+import { makeBaseChartConfig, makeBudgetActualsChartConfig, makeBudgetActualsContextChartConfig } from "utilities/highcharts/ChartConfigGenerators";
 import { makeChartableVitals } from 'app/finance/vitals/ChartableVitals';
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { makeFacetComponents } from 'utilities/highcharts/FacetedBudgetActualCharts';
@@ -224,8 +224,8 @@ export default function ExpendituresDashboard(
   const {components, gui} = result;
   if (showDeltas) {
     gui.layouts.unshift({
-       rowClassName: 'context-row',
-       cellClassName: 'context-cell',
+      rowClassName: 'context-row',
+      cellClassName: 'context-cell',
 
       rows: [
         {
@@ -252,23 +252,23 @@ export default function ExpendituresDashboard(
     });
 
     components.push(
-      makeBudgetActualsChartConfig(
+      makeBudgetActualsContextChartConfig(
         makeCell(`context-enrollment`,
                  `context_amount_enrollment`,
                  'Enrollment',
                  'fte' as const,
                  'AAFTE')),
-      makeBudgetActualsChartConfig(
+      makeBudgetActualsContextChartConfig(
         makeCell(`context-cashflow`,
                  `context_amount_cashflow`,
                  'Cashflow',
                  'currency' as const)),
-      makeBudgetActualsChartConfig(
+      makeBudgetActualsContextChartConfig(
         makeCell(`context-revenues`,
                  `context_amount_revenues`,
                  'Revenues',
                  'currency' as const)),
-      makeBudgetActualsChartConfig(
+      makeBudgetActualsContextChartConfig(
         makeCell(`context-expenditures`,
                  `context_amount_expenditures`,
                  'Expenditures',
@@ -311,7 +311,7 @@ export default function ExpendituresDashboard(
           makeMaybeContents('overridePrimaryFilter', ProgramFilterContents, "primaryAlways"),
       ]}
     >
-      <HcDashboard config={config} />
+      <HcDashboard config={config} className="expenditures maincharts"/>
     </SettingsLayout>
   );
 }

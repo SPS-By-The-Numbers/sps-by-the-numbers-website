@@ -179,7 +179,7 @@ export default function SettingsLayout<SettingsType extends BaseSettings, Shared
   );
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', height: "100vh" }}>
       <Box
         component="nav"
         sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
@@ -215,7 +215,7 @@ export default function SettingsLayout<SettingsType extends BaseSettings, Shared
         </Drawer>
       </Box>
       <Box
-        sx={{ flexGrow: 1, p: 0, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
+        sx={{ height: "100%", flexGrow: 1, p: 0, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         {children}
       </Box>

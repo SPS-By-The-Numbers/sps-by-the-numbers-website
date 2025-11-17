@@ -476,6 +476,23 @@ export function makeBudgetActualsChartConfig(options : BudgetActualsChartOptions
   );
 }
 
+// Context charts have much smaller space so remove things like legends, etc.
+export function makeBudgetActualsContextChartConfig(options : BudgetActualsChartOptions) {
+  const config = makeBudgetActualsChartConfig(options);
+
+  config.chartOptions.title.text = makeTitleInternal(`${options.title} (${options.yLabel ?? inferLabel(options.yValueFormat)})`);
+  config.chartOptions.yAxis.title.text = "";
+  delete config.chartOptions.xAxis.title;
+  delete config.chartOptions.xAxis.events.afterSetExtremes;  // Remove variance
+  config.chartOptions.legend.enabled = false;
+  config.chartOptions.plotOptions.series.label.enabled = false;
+  for (const s of config.chartOptions.series) {
+    delete s.dataLabels;
+  }
+
+  return config;
+}
+
 export function makeCorrelationChartConfig(options : CorrelationChartOptions ) {
   const {yMetricColumn, xMetricColumn, dataLabelColumn, seriesDefs} = options;
   const columnAssignment = new Array<object>;
@@ -560,11 +577,16 @@ export function inferTitle(normalization: CurrencyNormalization | StaffingNormal
   throw `Unexpected normalization ${normalization}`;
 }
 
-export function makeTitle(facetInfo, normalization) {
+// Merge with makeTitle.
+function makeTitleInternal(title, subtitle?) {
   return `<div class='chart-title'>
-    <h3>${facetInfo.title}</h3>
-    <h4>${inferTitle(normalization)}</h4>
+    <h3>${title}</h3>
+    ${subtitle ? `<h4>${subtitle}</h4>` : ''}
   </div>`;
+}
+
+export function makeTitle(facetInfo, normalization) {
+  return makeTitleInternal(facetInfo.title, inferTitle(normalization));
 }
 
 export function formatForNormalization(normalization) : ValueFormat {

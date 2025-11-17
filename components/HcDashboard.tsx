@@ -8,12 +8,13 @@ import type { ReactNode } from 'react';
 
 type Params = {
   config: object;
+  className?: string;
   disableUpdate?: boolean;
   onBoardRendered?: (board: Dashboards) => void;
   children?: ReactNode;
 };
 
-export default function HcDashboard({config, disableUpdate, onBoardRendered, children} : Params) {
+export default function HcDashboard({config, className, disableUpdate, onBoardRendered, children} : Params) {
   const { highchartsObjs } = useHighcharts();
   const dashboardDiv = useRef<HTMLDivElement>(null);
 
@@ -50,7 +51,7 @@ export default function HcDashboard({config, disableUpdate, onBoardRendered, chi
   );
 
   return (
-    <div ref={dashboardDiv}>
+    <div ref={dashboardDiv} className={className} >
       {children}
     </div>
   );

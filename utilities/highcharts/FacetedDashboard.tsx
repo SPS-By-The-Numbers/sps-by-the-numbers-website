@@ -20,6 +20,9 @@ export function makeOneDatasetFacetedDashboard(datasetSettings, componentGenerat
   const gui : Dashboards.Board.GUIOptions = {
     layouts: [
       {
+        rowClassName: 'faceted-row',
+        cellClassName: 'faceted-cell',
+
         rows: [
           {
             cells
