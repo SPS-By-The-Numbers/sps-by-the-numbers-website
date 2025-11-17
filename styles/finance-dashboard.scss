@@ -20,38 +20,42 @@ $context-chart-row-height: 230px;
 }
 
 // Needed to get the height defined for scrolling.
-.maincharts {
+.hcdashboard {
   height: 100%;
   overflow: hidden;
 }
-.highcharts-dashboards-wrapper {
+.hcdashboard .highcharts-dashboards-wrapper {
   height: 100%;
   overflow: hidden;
 }
-.highcharts-dashboards-layouts-wrapper {
+
+.hcdashboard .highcharts-dashboards-layouts-wrapper {
   height: 100%;
+}
+
+.hcdashboard.hascontext .highcharts-dashboards-layouts-wrapper {
   display: grid;
   grid-template-rows: $context-chart-row-height auto;
 }
 
-.maincharts .highcharts-dashboards-layout.faceted-row {
+.hcdashboard .highcharts-dashboards-layout.faceted-row {
   height: 100%;
   overflow: scroll;
 }
 
-.maincharts .highcharts-dashboards-layout.context-row {
+.hcdashboard .highcharts-dashboards-layout.context-row {
   position: sticky;
   top: 0;
   background-color: #d3d3d3;
   overflow: hidden;
 }
 
-.maincharts .highcharts-dashboards-cell.context-cell div.chart-title h3 {
+.hcdashboard .highcharts-dashboards-cell.context-cell div.chart-title h3 {
   font-size: 1rem;
   margin: 0.2ex 0.2ex;
 }
 
-.maincharts .highcharts-dashboards-cell.context-cell {
+.hcdashboard .highcharts-dashboards-cell.context-cell {
   min-width: 25%;
   max-width: 25%;
   min-height: $context-chart-row-height;

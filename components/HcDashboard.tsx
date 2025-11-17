@@ -51,7 +51,7 @@ export default function HcDashboard({config, className, disableUpdate, onBoardRe
   );
 
   return (
-    <div ref={dashboardDiv} className={className} >
+    <div ref={dashboardDiv} className={`hcdashboard ${className}`} >
       {children}
     </div>
   );

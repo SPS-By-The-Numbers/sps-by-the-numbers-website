@@ -311,7 +311,7 @@ export default function ExpendituresDashboard(
           makeMaybeContents('overridePrimaryFilter', ProgramFilterContents, "primaryAlways"),
       ]}
     >
-      <HcDashboard config={config} className="expenditures maincharts"/>
+      <HcDashboard config={config} className="hascontext"/>
     </SettingsLayout>
   );
 }
