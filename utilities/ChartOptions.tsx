@@ -7,7 +7,7 @@ export const SORT_ORDER_OPTIONS : Record<SortOrder, string> = {
 };
 
 export const SORT_TYPE_OPTIONS : Record<SortType, string> = {
-  "variance": "Average Variance",
+  "variance": "Median Abs(Variance)",
   "latest": "Latest Year",
 };
 

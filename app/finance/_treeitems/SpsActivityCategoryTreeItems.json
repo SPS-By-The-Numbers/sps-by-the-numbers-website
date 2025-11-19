@@ -120,12 +120,8 @@
         "label": "Principal Office",
         "children": [
           {
-            "id": "act-23",
-            "label": "Principal's Office"
-          },
-          {
-            "id": "act-84",
-            "label": "Principal"
+            "id": "act-9991",
+            "label": "Principal's Office / Principal"
           }
         ]
       },
@@ -134,8 +130,8 @@
         "label": "Teaching",
         "children": [
           {
-            "id": "act-27",
-            "label": "Teaching"
+            "id": "act-9990",
+            "label": "Teaching / Professional Learning"
           },
           {
             "id": "act-28",

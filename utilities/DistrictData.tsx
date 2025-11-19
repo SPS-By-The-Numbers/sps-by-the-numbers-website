@@ -4,6 +4,13 @@ import * as aq from 'arquero';
 
 import type { ColumnTable } from 'arquero';
 
+// Combining activities that have been split over the years so they can
+// be compared with history.
+const SYNTH_ACT_CODE_TEACHING = 9990;
+const SYNTH_ACT_TEACHING = "Teaching / Professional Learning";
+const SYNTH_ACT_CODE_PRINCIPAL_OFFICE = 9991;
+const SYNTH_ACT_PRINCPAL_OFFICE = "Principal's Office / Principal";
+
 export type FilterSelection = {
   selectedObjectCodes: Array<number>,
   selectedActivityCodes: Array<number>,
@@ -90,8 +97,36 @@ function minMaxClassOf(df) {
   return df.select('class_of').rollup({min: op.min('class_of'), max: op.max('class_of')});
 }
 
-// Fetches the dataset for one district. Also does minimal processing
-// to produce basic filtering and data tables for common semantic
+function combineActivities(df, codes, synth_activity_code, synth_activity) {
+  const nonActivityColumns = df.columnNames(
+    c => !['activity_code', 'activity', 'amount'].includes(c));
+
+  const summed = df
+  .params({ codes, synth_activity, synth_activity_code })
+  .filter((d,$) => op.includes($.codes, d.activity_code))
+  .groupby(...nonActivityColumns)
+  .rollup({
+    amount: d => op.sum(d.amount),
+    activity_code: (_,$) => $.synth_activity_code,
+    activity: (_,$) => $.synth_activity,
+  });
+
+  const others = df
+  .params({ codes })
+  .filter((d,$) => !op.includes($.codes, d.activity_code));
+
+  return others.union(summed);
+}
+
+function combineCommonActivities(df) {
+  df = combineActivities(df, [27, 34], SYNTH_ACT_CODE_TEACHING, SYNTH_ACT_TEACHING);
+  df = combineActivities(df, [84, 23], SYNTH_ACT_CODE_PRINCIPAL_OFFICE, SYNTH_ACT_PRINCPAL_OFFICE);
+  return df;
+}
+
+// Fetches the dataset for one district. It provides minimal processing
+// to produce consistent data over time (eg combining activities that have been
+// split) basic filtering and data tables for common semantic
 // groupings of information and calculations.
 //
 // Data is joinable on the 'class_of' and 'data_type' columns.
@@ -112,6 +147,14 @@ export default class DistrictData {
     this.budget_items_df = budget_items_df;
     this.actuals_items_df = actuals_items_df;
     this.s275_summary_df = s275_summary_df;
+
+    // Create synthetic activities for categories that have split over the
+    // years such as Teaching + Professional Learning. In this case, it
+    // replaces the activity code 27 and 34 with their summation labeled
+    // with a synthetic activity code such as 9990.
+    this.gf_expenditure_df = combineCommonActivities(this.gf_expenditure_df);
+    // TODO: Handle s275 activities.
+    this.s275_summary_df = this.s275_summary_df;
 
     const minMaxDf = minMaxClassOf(this.fundedEnrollment_df)
         .concat(minMaxClassOf(this.gf_expenditure_df))
