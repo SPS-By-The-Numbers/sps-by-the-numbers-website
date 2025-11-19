@@ -20,13 +20,13 @@ const CONNECTOR_ID = 'cashflow-connector';
 export interface CashflowSettings extends MetricSettings {
 };
 
-function makeEnrollmentCashflowConfig(idPrefix, ccddd, name, columnSuffix, currencyNormalization, colorIndex) {
+function makeFundedEnrollmentCashflowConfig(idPrefix, ccddd, name, columnSuffix, currencyNormalization, colorIndex) {
   return {
-    renderTo: `${idPrefix}-enrollment-cashflow-${columnSuffix}`,
-    title: `Enrollment-Cashflow Correlation (${name})`,
+    renderTo: `${idPrefix}-fundedEnrollment-cashflow-${columnSuffix}`,
+    title: `Funded Enrollment-Cashflow Correlation (${name})`,
     connectorId: CONNECTOR_ID,
-    xMetricColumn: `${idPrefix}_amount_enrollment`,
-    xLabel: `${name} Enrollment AFTE`,
+    xMetricColumn: `${idPrefix}_amount_fundedEnrollment`,
+    xLabel: `${name} Funded Enrollment AFTE`,
     xValueFormat: 'decimal' as const,
 
     yMetricColumn: `${idPrefix}_${currencyNormalization}_cashflow`,
@@ -93,8 +93,8 @@ function makeFteCashflowConfig(idPrefix, ccddd, name, metricColumn, columnSuffix
 
 function makeCorrelationChartOptions(idPrefix, ccddd, currencyNormalization, staffingNormalization) : Array<CorrelationChartOptions> {
   const retval = [
-    makeEnrollmentCashflowConfig(idPrefix, ccddd, 'Budget', 'budget', currencyNormalization, 2),
-    makeEnrollmentCashflowConfig(idPrefix, ccddd, 'Actuals', 'actuals', currencyNormalization, 1),
+    makeFundedEnrollmentCashflowConfig(idPrefix, ccddd, 'Budget', 'budget', currencyNormalization, 2),
+    makeFundedEnrollmentCashflowConfig(idPrefix, ccddd, 'Actuals', 'actuals', currencyNormalization, 1),
 
     makeCompCashflowConfig(idPrefix, ccddd, 'Teaching Comp', `${currencyNormalization}_teachingComp`, 'actuals', 1),
     makeCompCashflowConfig(idPrefix, ccddd, 'Teaching Comp', `${currencyNormalization}_teachingComp`, 'budget', 2),

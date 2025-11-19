@@ -9,7 +9,7 @@ import type { VitalsSettings } from 'app/finance/vitals/VitalsDashboard';
 import type { CurrencyNormalization } from 'utilities/ChartableMetrics';
 
 function extractRawVitals(districtData, ccddd) {
-  return districtData.enrollmentSummary()
+  return districtData.fundedEnrollmentSummary()
     .join(districtData.staffingSummary())
     .join_full(districtData.balances())
     .join_full(districtData.cashflow())
@@ -17,7 +17,7 @@ function extractRawVitals(districtData, ccddd) {
 }
 
 function makeVitalsForDistrict(districtData, vitalsSettings) : ColumnTable {
-  const AMOUNT_ONLY_COLUMN_NAMES = ['enrollment', 'revenues', 'expenditures'];
+  const AMOUNT_ONLY_COLUMN_NAMES = ['fundedEnrollment', 'revenues', 'expenditures'];
   const CURRENCY_COLUMN_NAMES = ['cashflow', 'beginningBalance', 'teachingComp', 'studentSupportComp', 'buildingSupportComp', 'otherComp'];
   const STAFFING_COLUMN_NAMES = ['staffFte', 'teachingFte', 'studentSupportFte', 'buildingSupportFte', 'otherFte'];
 

@@ -37,9 +37,9 @@ function makeBudgetActualsChartOptions(idPrefix, currencyNormalization, staffing
   const currencyFormat : ValueFormat = currencyNormalization === 'amount' ? 'currency' as const : currencyNormalization;
 
   return [
-    makeCell(`${idPrefix}-enrollment-chart`,
-             `${idPrefix}_amount_enrollment`,
-             'Enrollment',
+    makeCell(`${idPrefix}-fundedEnrollment-chart`,
+             `${idPrefix}_amount_fundedEnrollment`,
+             'Funded Enrollment',
              'fte' as const,
              'AFTE'),
     makeCell(`${idPrefix}-staffing-chart`,

@@ -50,7 +50,7 @@ function makeFacetedStaffingForDistrict(districtData, filteredS275Summary, facet
     .select(aq.not('_pivot_name_hack_'))
     .derive({data_type: d => 'actuals'});
 
-  const joinedData = formatedData.join_left(districtData.enrollmentSummary());
+  const joinedData = formatedData.join_left(districtData.fundedEnrollmentSummary());
   const names = getDataColumnNames(joinedData);
   return toChartableDataset(districtData, joinedData, staffingSettings, 
                names.filter(d => (!d.includes('finalSalary_') && !d.includes('amount_'))),

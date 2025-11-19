@@ -96,7 +96,7 @@ function minMaxClassOf(df) {
 //
 // Data is joinable on the 'class_of' and 'data_type' columns.
 export default class DistrictData {
-  private enrollment_df : ColumnTable;
+  private fundedEnrollment_df : ColumnTable;
   private gf_expenditure_df : ColumnTable;
   private gf_revenue_df : ColumnTable;
   private budget_items_df : ColumnTable;
@@ -104,16 +104,16 @@ export default class DistrictData {
   private s275_summary_df : ColumnTable;
   private all_class_ofs_df : ColumnTable;
 
-  constructor(enrollment_df, gf_expenditure_df, gf_revenue_df,
+  constructor(fundedEnrollment_df, gf_expenditure_df, gf_revenue_df,
               budget_items_df, actuals_items_df, s275_summary_df) {
-    this.enrollment_df = enrollment_df;
+    this.fundedEnrollment_df = fundedEnrollment_df;
     this.gf_expenditure_df = gf_expenditure_df;
     this.gf_revenue_df = gf_revenue_df;
     this.budget_items_df = budget_items_df;
     this.actuals_items_df = actuals_items_df;
     this.s275_summary_df = s275_summary_df;
 
-    const minMaxDf = minMaxClassOf(this.enrollment_df)
+    const minMaxDf = minMaxClassOf(this.fundedEnrollment_df)
         .concat(minMaxClassOf(this.gf_expenditure_df))
         .concat(minMaxClassOf(this.gf_revenue_df))
         .rollup({min: op.min('min'), max: op.max('max')});
@@ -130,10 +130,10 @@ export default class DistrictData {
   }
 
   static async loadFromGcs(ccddd) {
-    const [enrollment_df, gf_expenditure_df, gf_revenue_df,
+    const [fundedEnrollment_df, gf_expenditure_df, gf_revenue_df,
            budget_items_df, actuals_items_df, s275_summary_df] = await Promise.all(
       [
-        fetchDataset(ccddd, "enrollment"),
+        fetchDataset(ccddd, "fundedEnrollment"),
         fetchDataset(ccddd, "gf_expenditures"),
         fetchDataset(ccddd, "gf_revenues"),
         fetchDataset(ccddd, "budget_items"),
@@ -141,13 +141,13 @@ export default class DistrictData {
         fetchDataset(ccddd, "s275_summary"),
       ]
     );
-    return new DistrictData(enrollment_df, gf_expenditure_df, gf_revenue_df,
+    return new DistrictData(fundedEnrollment_df, gf_expenditure_df, gf_revenue_df,
                             budget_items_df, actuals_items_df, s275_summary_df);
   }
 
   // Direct accessors
-  enrollment() {
-    return this.enrollment_df;
+  fundedEnrollment() {
+    return this.fundedEnrollment_df;
   }
 
   expenditures() {
@@ -335,15 +335,15 @@ export default class DistrictData {
     return merged_df;
   }
 
-  enrollmentSummary() {
+  fundedEnrollmentSummary() {
     const k12EnrollmentActuals =
-      this.enrollment_df.filter(
-        d => op.includes(['K-12 FTE', 'K-12 FTE - Includes ALE'], d.enrollment_domain)
+      this.fundedEnrollment_df.filter(
+        d => op.includes(['K-12 FTE', 'K-12 FTE - Includes ALE'], d.fundedEnrollment_domain)
     )
     .groupby('class_of')
     .rollup({
       data_type: () => 'actuals',
-      enrollment: op.sum('amount')
+      fundedEnrollment: op.sum('amount')
     });
 
     // K-12 FTE from the p223 confusingly is NOT the
@@ -360,7 +360,7 @@ export default class DistrictData {
     .groupby('class_of')
     .rollup({
       data_type: () => 'budget',
-      enrollment: op.sum('amount')
+      fundedEnrollment: op.sum('amount')
     });
 
     return k12EnrollmentActuals

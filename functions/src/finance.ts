@@ -53,14 +53,14 @@ function prefixWithExport(path, query) {
   `;
 }
 
-function getEnrollment(ccddd) {
+function getFundedEnrollment(ccddd) {
   return `
   SELECT
     report_type,
     school_year,
     class_of,
     ccddd,
-    enrollment_domain,
+    enrollment_domain fundedEnrollment_domain,
     grade_category,
     amount,
   FROM
@@ -220,8 +220,8 @@ function getQueryForDataset(ccddd, dataset) {
   if (ccddd === 'domain') {
     return getDomain(dataset);
   } else {
-    if (dataset === 'enrollment') {
-      return getEnrollment(ccddd);
+    if (dataset === 'fundedEnrollment') {
+      return getFundedEnrollment(ccddd);
     } else if (dataset === 'gf_expenditures') {
       return getExpenditures(ccddd);
     } else if (dataset === 'gf_revenues') {

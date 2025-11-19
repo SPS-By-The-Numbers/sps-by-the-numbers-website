@@ -230,7 +230,7 @@ export default function ExpendituresDashboard(
       rows: [
         {
           cells: [
-            { id: 'context-enrollment' },
+            { id: 'context-fundedEnrollment' },
             { id: 'context-cashflow' },
             { id: 'context-revenues' },
             { id: 'context-expenditures' }
@@ -253,9 +253,9 @@ export default function ExpendituresDashboard(
 
     components.push(
       makeBudgetActualsContextChartConfig(
-        makeCell(`context-enrollment`,
-                 `context_amount_enrollment`,
-                 'Enrollment',
+        makeCell(`context-fundedEnrollment`,
+                 `context_amount_fundedEnrollment`,
+                 'Funded Enrollment',
                  'fte' as const,
                  'AAFTE')),
       makeBudgetActualsContextChartConfig(
