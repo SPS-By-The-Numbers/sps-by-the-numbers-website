@@ -71,6 +71,22 @@ function makeBudgetActualsChartOptions(idPrefix, currencyNormalization, staffing
              `${idPrefix}_${currencyNormalization}_otherComp`,
              'Other Comp',
              currencyFormat),
+    makeCell(`${idPrefix}-teaching-related-fte`,
+             `${idPrefix}_${staffingNormalization}_teachingFte`,
+             'Teaching Related Fte',
+             currencyFormat),
+    makeCell(`${idPrefix}-student-support-fte`,
+             `${idPrefix}_${staffingNormalization}_studentSupportFte`,
+             'Student Support Fte',
+             currencyFormat),
+    makeCell(`${idPrefix}-building-support-fte`,
+             `${idPrefix}_${staffingNormalization}_buildingSupportFte`,
+             'Buildling Support Fte',
+             currencyFormat),
+    makeCell(`${idPrefix}-other-fte`,
+             `${idPrefix}_${staffingNormalization}_otherFte`,
+             'Other Fte',
+             currencyFormat),
   ];
 }
 

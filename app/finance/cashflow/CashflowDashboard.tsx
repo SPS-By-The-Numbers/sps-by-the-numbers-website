@@ -67,18 +67,18 @@ function makeCompCashflowConfig(idPrefix, ccddd, name, metricColumn, columnSuffi
   };
 }
 
-function makeFteCashflowConfig(idPrefix, ccddd, name, metricColumn, columnSuffix, colorIndex) {
+function makeFteEnrollmentConfig(idPrefix, ccddd, name, metricColumn, columnSuffix, colorIndex) {
   return {
     renderTo: `${idPrefix}-${metricColumn}-cashflow-${columnSuffix}`,
-    title: `${name}-Cashflow Correlation (${columnSuffix})`,
+    title: `${name}-Enrollment Correlation (${columnSuffix})`,
     connectorId: CONNECTOR_ID,
-    xMetricColumn: `${idPrefix}_${metricColumn}`,
-    xLabel: 'FTE',
-    xValueFormat: 'decimal' as const,
+    yMetricColumn: `${idPrefix}_${metricColumn}`,
+    yLabel: 'FTE',
+    yValueFormat: 'decimal' as const,
 
-    yMetricColumn: `${idPrefix}_amount_cashflow`,
-    yLabel: `${columnSuffix} Cashflow $`,
-    yValueFormat: 'currency' as const,
+    xMetricColumn: `${idPrefix}_amount_fundedEnrollment`,
+    xLabel: `${name} Funded Enrollment AFTE`,
+    xValueFormat: 'decimal' as const,
 
     dataLabelColumn: 'class_of',
     seriesDefs: [
@@ -105,10 +105,10 @@ function makeCorrelationChartOptions(idPrefix, ccddd, currencyNormalization, sta
     makeCompCashflowConfig(idPrefix, ccddd, 'Other Comp', `${currencyNormalization}_otherComp`, 'actuals', 1),
     makeCompCashflowConfig(idPrefix, ccddd, 'Other Comp', `${currencyNormalization}_otherComp`, 'budget', 2),
 
-    makeFteCashflowConfig(idPrefix, ccddd, 'Teaching Fte', `${staffingNormalization}_teachingFte`, 'actuals', 1),
-    makeFteCashflowConfig(idPrefix, ccddd, 'Student Support Fte', `${staffingNormalization}_studentSupportFte`, 'actuals', 1),
-    makeFteCashflowConfig(idPrefix, ccddd, 'Building Support Fte', `${staffingNormalization}_buildingSupportFte`, 'actuals', 1),
-    makeFteCashflowConfig(idPrefix, ccddd, 'Other Fte', `${staffingNormalization}_otherFte`, 'actuals', 1),
+    makeFteEnrollmentConfig(idPrefix, ccddd, 'Teaching Fte', `${staffingNormalization}_teachingFte`, 'actuals', 1),
+    makeFteEnrollmentConfig(idPrefix, ccddd, 'Student Support Fte', `${staffingNormalization}_studentSupportFte`, 'actuals', 1),
+    makeFteEnrollmentConfig(idPrefix, ccddd, 'Building Support Fte', `${staffingNormalization}_buildingSupportFte`, 'actuals', 1),
+    makeFteEnrollmentConfig(idPrefix, ccddd, 'Other Fte', `${staffingNormalization}_otherFte`, 'actuals', 1),
   ];
 
   return retval;
@@ -134,7 +134,7 @@ export default function CashflowDashboard({districtDataMap, allSettings, setAllS
   const {components, gui} = result;
 
   const data = makeChartableVitals(districtDataMap, allSettings);
-    
+
   const config = ({
     gui,
     components,
