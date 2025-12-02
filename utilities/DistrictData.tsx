@@ -1,6 +1,6 @@
-import { fetchEndpoint } from 'utilities/client/endpoint';
 import { op } from 'arquero';
 import * as aq from 'arquero';
+import { fetchDataset } from 'utilities/client/FetchData';
 
 import type { ColumnTable } from 'arquero';
 
@@ -67,30 +67,6 @@ function financeGroupSumAmount(new_col_name, df, col_to_sum) {
   return df
       .groupby(['data_type', 'class_of'])
       .rollup({[new_col_name]: op.sum(col_to_sum)});
-}
-
-export async function fetchDatasetStream(ccddd : string, dataset : string) {
-  const datasetResponse = await fetchEndpoint('finance', 'GET', {ccddd, dataset});
-  if (!datasetResponse.ok) {
-    console.error(datasetResponse);
-    throw "Unable to read data";
-  }
-
-  const csvResponse = await fetch(datasetResponse.data.dataUrl);
-  if (csvResponse === null || csvResponse.status !== 200 || csvResponse.body === null) {
-    console.error('fetch failed: ', csvResponse);
-    throw 'fetch failed';
-  }
-
-  return csvResponse.body.pipeThrough(new DecompressionStream('gzip'));
-}
-
-export async function fetchDataset(ccddd, dataset) {
-  const byteStream = await fetchDatasetStream(ccddd, dataset);
-  // TODO: This produced corrupt data midway through the load?????
-  //   Look for something with object=4 instead of just object_code=4.
-  //    Both activity_code and object_code end up with NaN on a few small items.
-  return aq.fromCSVStream(byteStream.pipeThrough(new TextDecoderStream()));
 }
 
 function minMaxClassOf(df) {
@@ -406,8 +382,9 @@ export default class DistrictData {
       fundedEnrollment: op.sum('amount')
     });
 
-    return k12EnrollmentActuals
+    const fundedEnrollment = k12EnrollmentActuals
       .join_full(k12EnrollmentBudget)
+    return fundedEnrollment;
   }
 
   filteredExpenditures(filterSelection: FilterSelection) {

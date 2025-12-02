@@ -26,7 +26,7 @@ function makeFundedEnrollmentCashflowConfig(idPrefix, ccddd, name, columnSuffix,
     title: `Funded Enrollment-Cashflow Correlation (${name})`,
     connectorId: CONNECTOR_ID,
     xMetricColumn: `${idPrefix}_amount_fundedEnrollment`,
-    xLabel: `${name} Funded Enrollment AFTE`,
+    xLabel: `${name} Funded Enrollment AAFTE`,
     xValueFormat: 'decimal' as const,
 
     yMetricColumn: `${idPrefix}_${currencyNormalization}_cashflow`,

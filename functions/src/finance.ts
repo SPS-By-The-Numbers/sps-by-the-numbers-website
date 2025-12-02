@@ -6,11 +6,16 @@ import crypto from 'node:crypto';
 
 const CACHE_BUCKET = "sps-by-the-numbers-public";
 
+const EXPORT_FORMAT = 'AVRO';
+const EXPORT_COMPRESSION = 'DEFLATE';
+const EXPORT_FORMAT_EXTENSION = 'avro';
+const EXPORT_EXTRA_OPTIONS = ',use_avro_logical_types=True';
+
 const bigqueryClient = new BigQuery();
 const storageClient = new Storage();
 
 // Change this to force cache invalidaiton of results for queries.
-const CACHE_BREAK_SALT = '1';
+const CACHE_BREAK_SALT = '2';
 
 
 function sha256(str) {
@@ -23,11 +28,11 @@ function makeCachePaths(ccddd, dataset, query) {
   const bucket = CACHE_BUCKET;
   const relativePathRoot = `cache/scratch/${ccddd}/${dataset}/${hash.substr(0, 8)}_`;
   const gsUrlRoot = `gs://${bucket}`;
-  const exportWildcardPath = `${relativePathRoot}_*.csv.gz`;
+  const exportWildcardPath = `${relativePathRoot}_*.${EXPORT_FORMAT_EXTENSION}`;
   const publicUrlRoot = `https://storage.googleapis.com/${bucket}`;
 
   // Assume there is only 1 file output from the dump.
-  const cacheFilePath = `${relativePathRoot}_000000000000.csv.gz`;
+  const cacheFilePath = `${relativePathRoot}_000000000000.${EXPORT_FORMAT_EXTENSION}`;
 
   const publicUrl = `${publicUrlRoot}/${cacheFilePath}`;
   const gsExportPath = `${gsUrlRoot}/${exportWildcardPath}`;
@@ -44,10 +49,11 @@ function prefixWithExport(path, query) {
   return `
     EXPORT DATA OPTIONS(
     uri='${path}',
-    format='CSV',
-    compression='GZIP',
-    overwrite=true,
-    header=true) AS
+    format='${EXPORT_FORMAT}',
+    compression='${EXPORT_COMPRESSION}',
+    overwrite=true
+    ${EXPORT_EXTRA_OPTIONS}
+    ) AS
     ${query}
     LIMIT 999999999999 -- Force to one worker to create 1 file.
   `;
@@ -169,7 +175,7 @@ function getS275Summary(ccddd) {
   return `
   SELECT
     r.school_year,
-    SPLIT(r.school_year, '-')[1] class_of,
+    CAST(SPLIT(r.school_year, '-')[1] as int) class_of,
     a.school_code,
     d_s.school,
     a.program_code,
@@ -275,7 +281,7 @@ async function getDistrictData(req, res) {
       makeResponseJson(false,
                        `Invalid Dataset (${dataset}) or cccddd (${ccddd})`));
   }
-  return res.status(200).send(makeResponseJson(true, "ok", {dataUrl}));
+  return res.status(200).send(makeResponseJson(true, "ok", {dataUrl, format: EXPORT_FORMAT, compression: EXPORT_COMPRESSION}));
 }
 
 export const finance = jsonOnRequest(

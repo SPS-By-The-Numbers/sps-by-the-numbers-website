@@ -41,7 +41,7 @@ function makeBudgetActualsChartOptions(idPrefix, currencyNormalization, staffing
              `${idPrefix}_amount_fundedEnrollment`,
              'Funded Enrollment',
              'fte' as const,
-             'AFTE'),
+             'AAFTE'),
     makeCell(`${idPrefix}-staffing-chart`,
              `${idPrefix}_${staffingNormalization}_staffFte`,
              'Staffing FTE',
