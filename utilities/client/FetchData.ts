@@ -42,8 +42,8 @@ class DecimalType extends avro.types.LogicalType {
         }
 
         // determine if we can work with the specified precision
-        if (avro.Type.isType(this.underlyingType, 'fixed')) {
-            const size = ( this.underlyingType as avro.types.FixedType ).size
+        if (avro.Type.isType(super.underlyingType, 'fixed')) {
+            const size = ( super.underlyingType as avro.types.FixedType ).size
             const maxPrecision = Math.log(Math.pow(2, 8 * size - 1) - 1) / Math.log(10)
             if (s.precision > (maxPrecision | 0)) {
                 throw new Error('fixed size too small to hold required precision')
@@ -81,7 +81,7 @@ export async function fetchJsonDatasetUrl(ccddd : string, dataset : string) {
 export async function fetchDataset(ccddd, dataset) {
   const {dataUrl, format, compression} = await fetchJsonDatasetUrl(ccddd, dataset);
   const response = await fetch(dataUrl);
-  const data = new Array<any>;
+  const data = new Array<object>;
   let metadata : any;
   const blob = await response.blob();
   await new Promise((resolve, reject) => {
@@ -95,7 +95,9 @@ export async function fetchDataset(ccddd, dataset) {
       .on('error', (err) => {console.error(err); reject(false);}) ;
   });
 
-  const df = aq.fromJSON(data, {type: 'rows'});
+  // HACK: This type conversion is completely wrong and arises because arquero fromJSON
+  // does not correctly accept object[].
+  const df = aq.fromJSON(data as unknown as string, {type: 'rows'});
   return df;
 }
 
