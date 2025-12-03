@@ -53,18 +53,11 @@ export class Filter {
     this.domainTree = domainTree;
   }
 
-  public toSelectOptions(selected: FilterSelection) : Array<object> {
-    const result = this.filterDomainLeafs(this.domainTree, selected);
-    return [];
-  }
-
-  public fromSelectOptions(selectedOptions: SelectOption) : FilterSelection {
-    return new Set<number>();
-  }
-
-  public toDisplayString(selected: FilterSelection) : string {
+  public toSummaryString(selected: FilterSelection) : string {
     const result = this.filterDomainCondensed(this.domainTree, selected);
-    return result.matched.map(n => n.name).join(', ');
+    const matchedString = 'Only: ' + result.matched.map(n => n.shortName).join(', ');
+    const skippedString = 'Excl: ' + result.skipped.map(n => n.shortName).join(', ');
+    return this.shorterString(matchedString, skippedString);
   }
 
   public toFilterString(selected: FilterSelection) : string {
@@ -77,11 +70,7 @@ export class Filter {
     const matchedString = result.matched.map(n => n.code).join('_');
     const skippedString = '-' + result.skipped.map(n => n.code).join('_');
 
-    if (matchedString.length <= skippedString.length) {
-      return matchedString;
-    }
-
-    return skippedString;
+    return this.shorterString(matchedString, skippedString);
   }
 
   public fromFilterString(filterString: string) {
@@ -136,5 +125,13 @@ export class Filter {
   private filterDomainLeafs(root: FilterDomainTree, selected: FilterSelection, condense?) {
     const result = this.filterDomainInternal(root, selected, false);
     return result as FilterResult<FilterDomainLeafNode>;
+  }
+
+  private shorterString(matchedString, skippedString) {
+    if (matchedString.length <= skippedString.length) {
+      return matchedString;
+    }
+
+    return skippedString;
   }
 }
