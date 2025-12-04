@@ -4,10 +4,9 @@ import { makeDutyRootItems } from "app/finance/_domain/DutyRoots";
 import FormGroup from "@mui/material/FormGroup";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
-import SafsCompObjectsTreeItems from "app/finance/_treeitems/SafsCompObjectsTreeItems.json";
-import SafsObjectsTreeItems from "app/finance/_treeitems/SafsObjectsTreeItems.json";
-import SpsActivityCategoryTreeItems from "app/finance/_treeitems/SpsActivityCategoryTreeItems.json";
-import SpsProgramGroupingTreeItems from "app/finance/_treeitems/SpsProgramGroupingTreeItems.json";
+import ProgramFilter from "app/finance/_filteritems/program";
+import ActivityFilter from "app/finance/_filteritems/activity";
+import ObjectFilter from "app/finance/_filteritems/object";
 
 import type { BaseSettings } from "app/finance/_widgets/SettingsContents";
 import type { MetricSettings } from "app/finance/_widgets/MetricSettingsContents";
@@ -80,10 +79,9 @@ export function makeSchoolItems(ccddd) {
 }
 
 export const ALL_DUTY_ROOT_ITEMS = allItems(makeDutyRootItems());
-export const ALL_COMP_OBJECT_ITEMS = allItems(SafsCompObjectsTreeItems);
-export const ALL_OBJECT_ITEMS = allItems(SafsObjectsTreeItems);
-export const ALL_ACTIVITY_ITEMS = allItems(SpsActivityCategoryTreeItems);
-export const ALL_PROGRAM_ITEMS = allItems(SpsProgramGroupingTreeItems);
+export const ALL_OBJECT_ITEMS = allItems(ObjectFilter.treeViewItems());
+export const ALL_ACTIVITY_ITEMS = allItems(ActivityFilter.treeViewItems());
+export const ALL_PROGRAM_ITEMS = allItems(ProgramFilter.treeViewItems());
 
 // Component for showing one filter.
 function FilterTree({ title, items, selectedItems, setSelectedItems }) {
@@ -137,7 +135,7 @@ export function ObjectFilterContents({
   return (
     <FilterTree
       title="Object"
-      items={SafsObjectsTreeItems}
+      items={ObjectFilter.treeViewItems()}
       selectedItems={settings.selectedObjects}
       setSelectedItems={(selectedObjects) =>
         setSettings({ ...settings, selectedObjects })
@@ -154,7 +152,7 @@ export function ActivityFilterContents({
   return (
     <FilterTree
       title="Activity"
-      items={SpsActivityCategoryTreeItems}
+      items={ActivityFilter.treeViewItems()}
       selectedItems={settings.selectedActivities}
       setSelectedItems={(selectedActivities) =>
         setSettings({ ...settings, selectedActivities })
@@ -171,7 +169,7 @@ export function ProgramFilterContents({
   return (
     <FilterTree
       title="Program"
-      items={SpsProgramGroupingTreeItems}
+      items={ProgramFilter.treeViewItems()}
       selectedItems={settings.selectedPrograms}
       setSelectedItems={(selectedPrograms) =>
         setSettings({ ...settings, selectedPrograms })

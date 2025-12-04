@@ -1,7 +1,9 @@
-type FilterDomainBaseNode = {
-  selectId: string;
-  name: string;
-  shortName: string;
+import type { TreeViewBaseItem } from "@mui/x-tree-view";
+
+// Using TreeViewBaseItem is a slightly layering violation since this section shouldn't understand
+// UI but tying the two types together just makes everything simpler for now.
+type FilterDomainBaseNode = TreeViewBaseItem & {
+  shortLabel: string;
 };
 
 export type FilterDomainLeafNode = FilterDomainBaseNode & {
@@ -27,26 +29,26 @@ interface FilterResult<NodeType> {
 // Helper for creating a FilterDomainTree internal node.
 export function makeInternalNode(
   baseId,
-  name,
+  label,
   children,
-  shortName?,
+  shortLabel?,
 ): FilterDomainTree {
   return {
     nodeType: "internal",
-    selectId: `i-${baseId}`,
-    name: name,
-    shortName: shortName === undefined ? name : shortName,
+    id: `i-${baseId}`,
+    label: label,
+    shortLabel: shortLabel === undefined ? label : shortLabel,
     children,
   };
 }
 
 // Helper for creating a FilterDomainTree leaf node.
-export function makeLeafNode(prefix, code, name, shortName?): FilterDomainTree {
+export function makeLeafNode(prefix, code, label, shortLabel?): FilterDomainTree {
   return {
     nodeType: "leaf",
-    selectId: `${prefix}-${code}`,
-    name,
-    shortName: shortName === undefined ? name : shortName,
+    id: `${prefix}-${code}`,
+    label,
+    shortLabel: shortLabel === undefined ? label : shortLabel,
     code,
   };
 }
@@ -58,12 +60,29 @@ export class Filter {
     this.domainTree = domainTree;
   }
 
+  public treeViewItems() : Array<TreeViewBaseItem> {
+    return [this.domainTree];
+  }
+
+  public allCodes() {
+    const result = new Set<number>();
+    this.visitDomain(this.domainTree, () => {}, (n) => result.add(n.code));
+    return result;
+  }
+
+  public toTreeViewItems() {
+    const selectItems = new Array<TreeViewBaseItem>();
+    const result = new Set<number>();
+    this.visitDomain(this.domainTree, () => {}, (n) => result.add(n.code));
+    return result;
+  }
+
   public toSummaryText(selected: FilterSelection): string {
     const result = this.filterDomainCondensed(this.domainTree, selected);
     const matchedString =
-      "Only: " + result.matched.map((n) => n.shortName).join(", ");
+      "Only: " + result.matched.map((n) => n.shortLabel).join(", ");
     const skippedString =
-      "Excl: " + result.skipped.map((n) => n.shortName).join(", ");
+      "Excl: " + result.skipped.map((n) => n.shortLabel).join(", ");
     return this.shorterString(matchedString, skippedString);
   }
 
@@ -154,5 +173,22 @@ export class Filter {
     }
 
     return skippedString;
+  }
+
+  private visitDomain(root : FilterDomainTree,
+                      onInternal : (n : FilterDomainInternalNode) => void,
+                      onLeaf : (n : FilterDomainLeafNode) => void) {
+    if (!root) {
+      return;
+    }
+
+    if (root.nodeType === 'internal') {
+      onInternal(root);
+      for (const c of root.children) {
+        this.visitDomain(c, onInternal, onLeaf);
+      }
+    } else {
+      onLeaf(root);
+    }
   }
 }
