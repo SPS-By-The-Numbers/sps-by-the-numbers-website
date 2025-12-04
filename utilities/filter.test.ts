@@ -46,12 +46,10 @@ describe("filter", () => {
     expect(filter.fromFilterString(skippedString)).toStrictEqual(skippedSet);
   });
 
-  it("toSummaryString() chooses produces representations", () => {
-    expect(filter.toSummaryString(new Set([1, 2]))).toEqual(
-      "Only: opt 1, opt 2",
-    );
-    expect(filter.toSummaryString(new Set([2, 3, 4]))).toEqual("Only: grpA");
-    expect(filter.toSummaryString(new Set([1]))).toEqual("Excl: grpA");
-    expect(filter.toSummaryString(new Set([1, 3, 4]))).toEqual("Excl: opt 2");
+  it("toSummaryText() chooses produces representations", () => {
+    expect(filter.toSummaryText(new Set([1, 2]))).toEqual("Only: opt 1, opt 2");
+    expect(filter.toSummaryText(new Set([2, 3, 4]))).toEqual("Only: grpA");
+    expect(filter.toSummaryText(new Set([1]))).toEqual("Excl: grpA");
+    expect(filter.toSummaryText(new Set([1, 3, 4]))).toEqual("Excl: opt 2");
   });
 });

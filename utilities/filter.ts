@@ -58,7 +58,7 @@ export class Filter {
     this.domainTree = domainTree;
   }
 
-  public toSummaryString(selected: FilterSelection): string {
+  public toSummaryText(selected: FilterSelection): string {
     const result = this.filterDomainCondensed(this.domainTree, selected);
     const matchedString =
       "Only: " + result.matched.map((n) => n.shortName).join(", ");
