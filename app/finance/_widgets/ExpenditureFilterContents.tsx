@@ -1,17 +1,17 @@
-import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
-import { makeSchools } from 'app/finance/_domain/schools';
-import { makeDutyRootItems } from 'app/finance/_domain/DutyRoots';
-import FormGroup from '@mui/material/FormGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
-import SafsCompObjectsTreeItems from 'app/finance/_treeitems/SafsCompObjectsTreeItems.json';
-import SafsObjectsTreeItems from 'app/finance/_treeitems/SafsObjectsTreeItems.json';
-import SpsActivityCategoryTreeItems from 'app/finance/_treeitems/SpsActivityCategoryTreeItems.json';
-import SpsProgramGroupingTreeItems from 'app/finance/_treeitems/SpsProgramGroupingTreeItems.json';
+import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
+import { makeSchools } from "app/finance/_domain/schools";
+import { makeDutyRootItems } from "app/finance/_domain/DutyRoots";
+import FormGroup from "@mui/material/FormGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Switch from "@mui/material/Switch";
+import SafsCompObjectsTreeItems from "app/finance/_treeitems/SafsCompObjectsTreeItems.json";
+import SafsObjectsTreeItems from "app/finance/_treeitems/SafsObjectsTreeItems.json";
+import SpsActivityCategoryTreeItems from "app/finance/_treeitems/SpsActivityCategoryTreeItems.json";
+import SpsProgramGroupingTreeItems from "app/finance/_treeitems/SpsProgramGroupingTreeItems.json";
 
-import type { BaseSettings } from 'app/finance/_widgets/SettingsContents';
-import type { MetricSettings } from 'app/finance/_widgets/MetricSettingsContents';
-import type { TreeViewBaseItem } from '@mui/x-tree-view';
+import type { BaseSettings } from "app/finance/_widgets/SettingsContents";
+import type { MetricSettings } from "app/finance/_widgets/MetricSettingsContents";
+import type { TreeViewBaseItem } from "@mui/x-tree-view";
 
 interface Props<T extends BaseSettings> {
   settings: T;
@@ -20,23 +20,23 @@ interface Props<T extends BaseSettings> {
 
 interface OverridePrimaryFilterSettings extends BaseSettings {
   overridePrimaryFilter: boolean;
-};
+}
 
 interface ObjectFilterSettings extends BaseSettings {
   selectedObjects: string[];
-};
+}
 
 interface ActivityFilterSettings extends BaseSettings {
   selectedActivities: string[];
-};
+}
 
 interface ProgramFilterSettings extends BaseSettings {
   selectedPrograms: string[];
-};
+}
 
 interface SchoolFilterSettings extends MetricSettings {
   selectedSchools: string[];
-};
+}
 
 // Takes a set list of RichTreeView item settings and extracts the code for it.
 //
@@ -47,9 +47,9 @@ interface SchoolFilterSettings extends MetricSettings {
 // RichTreeView will have grouping items also that need to recork their selected
 // state. Our convention is to use a different prefix so they can be filtered out.
 export function extractCodes(prefix, selectedItems) {
-  const selectedCodes = new Array<number>;
+  const selectedCodes = new Array<number>();
   for (const id of selectedItems) {
-    const parts = id.split('-');
+    const parts = id.split("-");
     if (parts.length === 2 && parts[0] === prefix) {
       selectedCodes.push(parseInt(parts[1]));
     }
@@ -61,8 +61,8 @@ export function extractCodes(prefix, selectedItems) {
 //
 // Mostly used to generate default selection of all items.
 export function allItems(config) {
-  const nodes = [...config];  // Take copy of input 
-  const itemIds = new Array<string>;
+  const nodes = [...config]; // Take copy of input
+  const itemIds = new Array<string>();
   while (nodes.length > 0) {
     const n = nodes.pop();
     itemIds.push(n.id);
@@ -73,7 +73,7 @@ export function allItems(config) {
   }
 
   return itemIds;
-};
+}
 
 export function makeSchoolItems(ccddd) {
   return allItems(makeSchools(ccddd));
@@ -85,36 +85,43 @@ export const ALL_OBJECT_ITEMS = allItems(SafsObjectsTreeItems);
 export const ALL_ACTIVITY_ITEMS = allItems(SpsActivityCategoryTreeItems);
 export const ALL_PROGRAM_ITEMS = allItems(SpsProgramGroupingTreeItems);
 
-
 // Component for showing one filter.
-function FilterTree({title, items, selectedItems, setSelectedItems}) {
+function FilterTree({ title, items, selectedItems, setSelectedItems }) {
   return (
     <RichTreeView
       checkboxSelection
       multiSelect
       selectedItems={selectedItems}
-      onSelectedItemsChange={(e,i) => setSelectedItems(i)}
-      selectionPropagation={{descendants: true, parents: true}}
+      onSelectedItemsChange={(e, i) => setSelectedItems(i)}
+      selectionPropagation={{ descendants: true, parents: true }}
       items={items}
       sx={{
         "& .MuiRichTreeView-itemLabel": {
           fontSize: "0.85rem",
         },
       }}
-      />
+    />
   );
 }
 
-export function OverridePrimaryFilterContents({settings, setSettings} : Props<OverridePrimaryFilterSettings>) {
+export function OverridePrimaryFilterContents({
+  settings,
+  setSettings,
+}: Props<OverridePrimaryFilterSettings>) {
   return (
-    <FormGroup sx={{marginX: "0.5rem"}}>
+    <FormGroup sx={{ marginX: "0.5rem" }}>
       <FormControlLabel
         label="Override PAO Filters"
         control={
           <Switch
             checked={settings.overridePrimaryFilter}
             size="small"
-            onChange={e => setSettings({...settings, overridePrimaryFilter: e.target.checked})}
+            onChange={(e) =>
+              setSettings({
+                ...settings,
+                overridePrimaryFilter: e.target.checked,
+              })
+            }
           />
         }
       />
@@ -123,47 +130,71 @@ export function OverridePrimaryFilterContents({settings, setSettings} : Props<Ov
 }
 
 // Settings component to render selection of objects.
-export function ObjectFilterContents({settings, setSettings} : Props<ObjectFilterSettings>) {
+export function ObjectFilterContents({
+  settings,
+  setSettings,
+}: Props<ObjectFilterSettings>) {
   return (
-      <FilterTree
-        title="Object"
-        items={SafsObjectsTreeItems}
-        selectedItems={settings.selectedObjects}
-        setSelectedItems={selectedObjects => setSettings({...settings, selectedObjects})} />
+    <FilterTree
+      title="Object"
+      items={SafsObjectsTreeItems}
+      selectedItems={settings.selectedObjects}
+      setSelectedItems={(selectedObjects) =>
+        setSettings({ ...settings, selectedObjects })
+      }
+    />
   );
 }
 
 // Settings component to render selection of activites.
-export function ActivityFilterContents({settings, setSettings} : Props<ActivityFilterSettings>) {
+export function ActivityFilterContents({
+  settings,
+  setSettings,
+}: Props<ActivityFilterSettings>) {
   return (
-      <FilterTree
-        title="Activity"
-        items={SpsActivityCategoryTreeItems}
-        selectedItems={settings.selectedActivities}
-        setSelectedItems={selectedActivities => setSettings({...settings, selectedActivities})} />
+    <FilterTree
+      title="Activity"
+      items={SpsActivityCategoryTreeItems}
+      selectedItems={settings.selectedActivities}
+      setSelectedItems={(selectedActivities) =>
+        setSettings({ ...settings, selectedActivities })
+      }
+    />
   );
 }
 
 // Settings component to render selection of programs.
-export function ProgramFilterContents({settings, setSettings} : Props<ProgramFilterSettings>) {
+export function ProgramFilterContents({
+  settings,
+  setSettings,
+}: Props<ProgramFilterSettings>) {
   return (
-      <FilterTree
-        title="Program"
-        items={SpsProgramGroupingTreeItems}
-        selectedItems={settings.selectedPrograms}
-        setSelectedItems={selectedPrograms => setSettings({...settings, selectedPrograms})} />
+    <FilterTree
+      title="Program"
+      items={SpsProgramGroupingTreeItems}
+      selectedItems={settings.selectedPrograms}
+      setSelectedItems={(selectedPrograms) =>
+        setSettings({ ...settings, selectedPrograms })
+      }
+    />
   );
 }
 
 // Settings component to render selection of schools.
-export function SchoolFilterContents({settings, setSettings} : Props<SchoolFilterSettings>) {
+export function SchoolFilterContents({
+  settings,
+  setSettings,
+}: Props<SchoolFilterSettings>) {
   const items = makeSchools(settings.ccddd);
 
   return (
-      <FilterTree
-        title="School"
-        items={items}
-        selectedItems={settings.selectedSchools}
-        setSelectedItems={selectedSchools => setSettings({...settings, selectedSchools})} />
+    <FilterTree
+      title="School"
+      items={items}
+      selectedItems={settings.selectedSchools}
+      setSelectedItems={(selectedSchools) =>
+        setSettings({ ...settings, selectedSchools })
+      }
+    />
   );
 }

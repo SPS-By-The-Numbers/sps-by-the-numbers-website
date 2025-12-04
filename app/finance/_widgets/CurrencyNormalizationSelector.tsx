@@ -1,11 +1,11 @@
-import { useId } from 'react';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
+import { useId } from "react";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
 
-import type { SxProps, Theme } from '@mui/material';
-import type { CurrencyNormalization } from 'utilities/ChartableMetrics';
+import type { SxProps, Theme } from "@mui/material";
+import type { CurrencyNormalization } from "utilities/ChartableMetrics";
 
 type Params = {
   normalization: CurrencyNormalization;
@@ -14,7 +14,12 @@ type Params = {
   sx?: SxProps<Theme>;
 };
 
-export default function CurrencyNormalizationSelector({normalization, label, onChange, sx=[]} : Params) {
+export default function CurrencyNormalizationSelector({
+  normalization,
+  label,
+  onChange,
+  sx = [],
+}: Params) {
   const id = useId();
   const labelId = useId();
   return (
@@ -25,11 +30,8 @@ export default function CurrencyNormalizationSelector({normalization, label, onC
         id={id}
         value={normalization}
         label={label}
-        onChange={e => onChange(e.target.value as CurrencyNormalization)}
-        sx={[{
-        },
-        ...(Array.isArray(sx) ? sx : [sx])
-        ]}
+        onChange={(e) => onChange(e.target.value as CurrencyNormalization)}
+        sx={[{}, ...(Array.isArray(sx) ? sx : [sx])]}
       >
         <MenuItem value="amount">Amount</MenuItem>
         <MenuItem value="pctexp">% of Expenditures</MenuItem>

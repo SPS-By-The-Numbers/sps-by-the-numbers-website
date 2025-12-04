@@ -1,17 +1,27 @@
 import { makeCurrencyFormatter } from "utilities/highcharts/utils";
-import { op } from 'arquero';
-import * as aq from 'arquero';
-import merge from 'lodash.merge';
+import { op } from "arquero";
+import * as aq from "arquero";
+import merge from "lodash.merge";
 
-import type Highcharts from 'highcharts';
-import type { CurrencyNormalization, StaffingNormalization } from 'utilities/ChartableMetrics';
+import type Highcharts from "highcharts";
+import type {
+  CurrencyNormalization,
+  StaffingNormalization,
+} from "utilities/ChartableMetrics";
 
-export type ValueFormat =  'currency' | 'decimal' | 'year' | 'pctexp' | 'pctcomp' | 'fte' | 'pctfte';
+export type ValueFormat =
+  | "currency"
+  | "decimal"
+  | "year"
+  | "pctexp"
+  | "pctcomp"
+  | "fte"
+  | "pctfte";
 
 export type BaseChartConfigOptions = {
   title: string;
 
-  connectorId : string;
+  connectorId: string;
   renderTo: string;
 
   yValueFormat: ValueFormat;
@@ -39,14 +49,14 @@ export type BudgetActualsChartOptions = BaseChartConfigOptions & {
   metricColumn: string;
   metricSuffix?: string;
 
-  xDataColumn : string;
+  xDataColumn: string;
 };
 
 type SeriesDef = {
   name: string;
   columnSuffix: string;
   colorIndex: number;
-}
+};
 
 export type CorrelationChartOptions = BaseChartConfigOptions & {
   yMetricColumn: string;
@@ -62,28 +72,29 @@ function getSeriesAsDf(series, name, xMin, xMax) {
     if (s.userOptions.id === name) {
       let df = aq.fromJSON(s.userOptions.data);
 
-      if (df.numCols() <  2) {
+      if (df.numCols() < 2) {
         throw `missing ${name}`;
       }
       const columnNames = df.columnNames();
       let normalized = df;
 
-      if (columnNames.includes('0')) {
+      if (columnNames.includes("0")) {
         normalized = normalized
-          .rename({'0':'class_of', '1': name})
-          .derive({'x': op.row_number()});
+          .rename({ "0": "class_of", "1": name })
+          .derive({ x: op.row_number() });
       } else {
-        normalized = normalized.rename({'name':'class_of', 'y': name});
+        normalized = normalized.rename({ name: "class_of", y: name });
       }
 
       // Pull into the right zoom window and drop empty data.
-      const dataDropped = normalized.filter(aq.escape(d =>
-                            d['x'] >= xMin &&
-                            d['x'] <= xMax &&
-                            Number.isFinite(d[name])));
+      const dataDropped = normalized.filter(
+        aq.escape(
+          (d) => d["x"] >= xMin && d["x"] <= xMax && Number.isFinite(d[name]),
+        ),
+      );
 
       // Only return the interested columns so later joins aren't messy.
-      return dataDropped.select('class_of', name);
+      return dataDropped.select("class_of", name);
     }
   }
 
@@ -93,36 +104,37 @@ function getSeriesAsDf(series, name, xMin, xMax) {
 
 // Generate a <td> labeled based on the stat value.
 function generateColoredTd(value, valueFormatter) {
-  const classes = new Array<string>;
+  const classes = new Array<string>();
   if (value > 0) {
-    classes.push('ba-chartstats-good');
+    classes.push("ba-chartstats-good");
   } else if (value < 0) {
-    classes.push('ba-chartstats-bad');
+    classes.push("ba-chartstats-bad");
   }
 
-  return `<td class="${classes.join(' ')}">${valueFormatter(value)}</td>`;
+  return `<td class="${classes.join(" ")}">${valueFormatter(value)}</td>`;
 }
 
 // To be used in the afterSetExtremes() call to generate a caption based on
 // the new x zoom level.
 function generateVarianceCaption(name, series, valueFormatter, minX, maxX) {
-  const budget_df = getSeriesAsDf(series, 'budget', minX, maxX);
-  const actuals_df = getSeriesAsDf(series, 'actuals', minX, maxX);
+  const budget_df = getSeriesAsDf(series, "budget", minX, maxX);
+  const actuals_df = getSeriesAsDf(series, "actuals", minX, maxX);
 
-  const variances_df = budget_df.join(actuals_df)
-    .derive({variance: d => d.budget - d.actuals})
-    .orderby('class_of');
-  
-  const xVal = variances_df.array('class_of').at(-1);
-  const latest = variances_df.array('variance').at(-1);
+  const variances_df = budget_df
+    .join(actuals_df)
+    .derive({ variance: (d) => d.budget - d.actuals })
+    .orderby("class_of");
+
+  const xVal = variances_df.array("class_of").at(-1);
+  const latest = variances_df.array("variance").at(-1);
   const stats = variances_df.rollup({
-    median: d => op.median(d.variance),
-    mean: d => op.mean(d.variance),
+    median: (d) => op.median(d.variance),
+    mean: (d) => op.mean(d.variance),
   });
-  const median = stats.get('median', 0);
-  const mean = stats.get('mean', 0);
+  const median = stats.get("median", 0);
+  const mean = stats.get("mean", 0);
 
-  if ([xVal, latest, median, mean].some(v => v === undefined)) {
+  if ([xVal, latest, median, mean].some((v) => v === undefined)) {
     throw "incomplete data";
   }
 
@@ -144,28 +156,28 @@ function generateVarianceCaption(name, series, valueFormatter, minX, maxX) {
   `;
 }
 
-function inferLabel(valueFormat : ValueFormat) {
+function inferLabel(valueFormat: ValueFormat) {
   switch (valueFormat) {
-    case 'currency':
-      return '$';
+    case "currency":
+      return "$";
 
-    case 'decimal':
+    case "decimal":
       return undefined;
 
-    case 'fte':
-      return 'FTE';
+    case "fte":
+      return "FTE";
 
-    case 'year':
-      return 'Class of';
+    case "year":
+      return "Class of";
 
-    case 'pctexp':
-      return '% of expenditures';
+    case "pctexp":
+      return "% of expenditures";
 
-    case 'pctcomp':
-      return '% of compensation';
+    case "pctcomp":
+      return "% of compensation";
 
-    case 'pctfte':
-      return '% of FTE';
+    case "pctfte":
+      return "% of FTE";
   }
 
   throw `Cannot infer label for ${valueFormat}`;
@@ -173,13 +185,13 @@ function inferLabel(valueFormat : ValueFormat) {
 
 function inferPrecision(valueFormat) {
   switch (valueFormat) {
-    case 'currency':
-    case 'decimal':
-    case 'pctexp':
-    case 'pctcomp':
+    case "currency":
+    case "decimal":
+    case "pctexp":
+    case "pctcomp":
       return 2;
 
-    case 'year':
+    case "year":
       return 0;
   }
 
@@ -188,31 +200,31 @@ function inferPrecision(valueFormat) {
 
 function inferAxisType(valueFormat, allowNegative) {
   switch (valueFormat) {
-    case 'currency':
-    case 'decimal':
-    case 'fte':
-      return 'linear';
+    case "currency":
+    case "decimal":
+    case "fte":
+      return "linear";
 
-    case 'pctexp':
-    case 'pctcomp':
-      return 'linear';
-      return allowNegative ? 'linear' : 'logarithmic';
+    case "pctexp":
+    case "pctcomp":
+      return "linear";
+      return allowNegative ? "linear" : "logarithmic";
 
-    case 'year':
-      return 'category';
+    case "year":
+      return "category";
   }
 
-  return 'category';
+  return "category";
 }
 
 function inferAxisOptions(valueFormat, allowNegative) {
   switch (valueFormat) {
-    case 'pctexp':
-    case 'pctcomp':
+    case "pctexp":
+    case "pctcomp":
       if (allowNegative) {
-        return ({min:-99, max:99});
+        return { min: -99, max: 99 };
       } else {
-        return ({min:5, max:99});
+        return { min: 5, max: 99 };
       }
   }
 
@@ -224,29 +236,29 @@ function percentFormatter(value, precision) {
   return `${value.toFixed(precision)}%`;
 }
 
-function getRawFormatter(format : ValueFormat, precision) {
-  switch(format) {
-    case 'decimal':
-    case 'fte':
-      return d => d.toFixed(precision);
-    case 'currency':
+function getRawFormatter(format: ValueFormat, precision) {
+  switch (format) {
+    case "decimal":
+    case "fte":
+      return (d) => d.toFixed(precision);
+    case "currency":
       return makeCurrencyFormatter(precision);
-    case 'pctexp':
-    case 'pctcomp':
-    case 'pctfte':
-      return d => percentFormatter(d, precision);
-    case 'year':
-      return x => x;
+    case "pctexp":
+    case "pctcomp":
+    case "pctfte":
+      return (d) => percentFormatter(d, precision);
+    case "year":
+      return (x) => x;
   }
   throw `Unknown format ${format}`;
 }
 
-function getFormatter(format : ValueFormat, precision) {
+function getFormatter(format: ValueFormat, precision) {
   const rawFormatter = getRawFormatter(format, precision);
 
   return (v) => {
     if (v === undefined) {
-      return '';
+      return "";
     }
 
     return rawFormatter(v);
@@ -256,11 +268,11 @@ function getFormatter(format : ValueFormat, precision) {
 // Convert a metricColumn to names for the budget and actuals of that column.
 // TODO: Move the metricColumn + suffix out into the faceting code.
 function getBAColumns(metricColumn, facet) {
-  const realFacet = facet ? `_${facet}` : '';
+  const realFacet = facet ? `_${facet}` : "";
   return {
     budgetColumn: `${metricColumn}${realFacet}_budget`,
     actualsColumn: `${metricColumn}${realFacet}_actuals`,
-  }
+  };
 }
 
 // Create the basic chart configuration which specifies defaults for
@@ -272,11 +284,11 @@ function getBAColumns(metricColumn, facet) {
 //   tooltips
 //   title
 //   zooming
-//   
+//
 // that handles defauul format/prescision inferrence, sync, legend, tooltip, fixedAxes.  makeBudgetActualsChartConfig()
-export function makeBaseChartConfig(options : BaseChartConfigOptions) {
-  return  {
-    type: 'Highcharts',
+export function makeBaseChartConfig(options: BaseChartConfigOptions) {
+  return {
+    type: "Highcharts",
     renderTo: options.renderTo,
     sync: {
       visibility: true,
@@ -292,30 +304,30 @@ export function makeBaseChartConfig(options : BaseChartConfigOptions) {
         chartOptions: {
           chart: {
             style: {
-//              fontFamily: 'monospace'
-            }
-          }
-        }
+              //              fontFamily: 'monospace'
+            },
+          },
+        },
       },
       chart: {
         animation: false,
         styledMode: true,
 
         zooming: {
-          type: 'x',
+          type: "x",
           resetButton: {
             position: {
-              align: 'left',
-              verticalAlign: 'top',
+              align: "left",
+              verticalAlign: "top",
               x: 5,
               y: 5,
             },
             theme: {
               width: 70,
-              height: 5
+              height: 5,
             },
-            relativeTo: 'chart'
-          }
+            relativeTo: "chart",
+          },
         },
       },
 
@@ -327,16 +339,20 @@ export function makeBaseChartConfig(options : BaseChartConfigOptions) {
       yAxis: {
         crosshair: true,
         minorTickInterval: "auto",
-        type: options.yAxisType ?? inferAxisType(options.yValueFormat, options.yValueShowNegative),
+        type:
+          options.yAxisType ??
+          inferAxisType(options.yValueFormat, options.yValueShowNegative),
         title: {
-          text: options.yLabel ?? inferLabel(options.yValueFormat)
+          text: options.yLabel ?? inferLabel(options.yValueFormat),
         },
-        ...inferAxisOptions(options.yValueFormat, options.yValueShowNegative)
+        ...inferAxisOptions(options.yValueFormat, options.yValueShowNegative),
       },
       xAxis: {
-        type: options.xAxisType ?? inferAxisType(options.xValueFormat, options.xValueShowNegative),
+        type:
+          options.xAxisType ??
+          inferAxisType(options.xValueFormat, options.xValueShowNegative),
         title: {
-          text: options.xLabel ?? inferLabel(options.xValueFormat)
+          text: options.xLabel ?? inferLabel(options.xValueFormat),
         },
         // TODO: Do better with xaxis scales.
         // ...inferAxisOptions(options.xValueFormat)
@@ -350,27 +366,33 @@ export function makeBaseChartConfig(options : BaseChartConfigOptions) {
             enabled: true,
             useHTML: true,
           },
-        }
+        },
       },
       legend: {
-        layout: 'vertical',
-        verticalAlign: 'bottom',
+        layout: "vertical",
+        verticalAlign: "bottom",
         floating: true,
-        align: 'left',
+        align: "left",
         enabled: true,
       },
       tooltip: {
         outside: true,
         shared: true,
         stickOnContact: true,
-        valueDecimals: options.precision ?? inferPrecision(options.yValueFormat),
+        valueDecimals:
+          options.precision ?? inferPrecision(options.yValueFormat),
       },
-    }
+    },
   };
 }
 
-export function makeBudgetActualsChartConfig(options : BudgetActualsChartOptions) {
-  const {budgetColumn, actualsColumn} = getBAColumns(options.metricColumn, options.metricSuffix);
+export function makeBudgetActualsChartConfig(
+  options: BudgetActualsChartOptions,
+) {
+  const { budgetColumn, actualsColumn } = getBAColumns(
+    options.metricColumn,
+    options.metricSuffix,
+  );
 
   const baseChartConfig = makeBaseChartConfig(options);
 
@@ -378,112 +400,120 @@ export function makeBudgetActualsChartConfig(options : BudgetActualsChartOptions
   const precision = options.precision;
   const valueFormatter = getFormatter(valueFormat, precision);
 
-  const dataLabelFormatter = point => {
+  const dataLabelFormatter = (point) => {
     return valueFormatter(point.y);
   };
 
-  return merge(
-    baseChartConfig,
-    {
-      connector: {
-        columnAssignment: [
-          {
-            seriesId: 'budget',
-            data: {
-              name: options.xDataColumn,
-              y: budgetColumn
-            },
+  return merge(baseChartConfig, {
+    connector: {
+      columnAssignment: [
+        {
+          seriesId: "budget",
+          data: {
+            name: options.xDataColumn,
+            y: budgetColumn,
           },
-          {
-            seriesId: 'actuals',
-            data: {
-              name: options.xDataColumn,
-              y: actualsColumn,
+        },
+        {
+          seriesId: "actuals",
+          data: {
+            name: options.xDataColumn,
+            y: actualsColumn,
+          },
+        },
+      ],
+    },
+    chartOptions: {
+      chart: {
+        shadow: false,
+        type: "column",
+      },
+      xAxis: {
+        events: {
+          afterSetExtremes: function (event) {
+            try {
+              this.chart.setCaption({
+                text: generateVarianceCaption(
+                  "variance",
+                  this.chart.series,
+                  valueFormatter,
+                  event.min,
+                  event.max,
+                ),
+              });
+            } catch (e) {
+              console.warn(
+                `Failed calculating stats for ${options.metricColumn}, ${options.metricSuffix}:`,
+                e,
+              );
+              this.chart.setCaption({
+                text: `<table class="ba-chartstats-table"><tr><td>[${e}]</td></tr></table>`,
+              });
             }
           },
-        ],
+        },
       },
-      chartOptions: {
-        chart: {
-          shadow: false,
-          type: "column",
-        },
-        xAxis: {
-          events: {
-            afterSetExtremes: function(event) {
-              try {
-                this.chart.setCaption({
-                  text: generateVarianceCaption('variance',
-                                        this.chart.series,
-                                        valueFormatter,
-                                        event.min,
-                                        event.max)
-                });
-              } catch(e) {
-                console.warn(
-                  `Failed calculating stats for ${options.metricColumn}, ${options.metricSuffix}:`,
-                  e);
-                this.chart.setCaption({
-                  text: `<table class="ba-chartstats-table"><tr><td>[${e}]</td></tr></table>`
-                });
-              }
-            },
-          }
-        },
-        series: [
-          {
-            id: 'budget',
-            name: 'Budget',
-            useHTML: true,
-            dataLabels: {
-            useHTML: true,
-              enabled: true,
-              formatter: function() { return dataLabelFormatter(this) },
-            },
-            colorIndex: 2,
-            pointPadding: 0,
-          },
-          {
-            id: 'actuals',
-            name: 'Actuals',
-            useHTML: true,
-            dataLabels: {
-            useHTML: true,
-              enabled: true,
-              formatter: function() { return dataLabelFormatter(this) },
-              y: 30,
-            },
-            colorIndex: 1,
-            pointPadding: 0.26,
-          },
-        ],
-        plotOptions: {
-          column: {
-            groupPadding: 0.09,
-          },
-          series: {
-            grouping: false,
-            shadow: false,
-            borderWidth: 0,
-          }
-        },
-        caption: {
+      series: [
+        {
+          id: "budget",
+          name: "Budget",
           useHTML: true,
-          align: 'right',
+          dataLabels: {
+            useHTML: true,
+            enabled: true,
+            formatter: function () {
+              return dataLabelFormatter(this);
+            },
+          },
+          colorIndex: 2,
+          pointPadding: 0,
         },
-      }
+        {
+          id: "actuals",
+          name: "Actuals",
+          useHTML: true,
+          dataLabels: {
+            useHTML: true,
+            enabled: true,
+            formatter: function () {
+              return dataLabelFormatter(this);
+            },
+            y: 30,
+          },
+          colorIndex: 1,
+          pointPadding: 0.26,
+        },
+      ],
+      plotOptions: {
+        column: {
+          groupPadding: 0.09,
+        },
+        series: {
+          grouping: false,
+          shadow: false,
+          borderWidth: 0,
+        },
+      },
+      caption: {
+        useHTML: true,
+        align: "right",
+      },
     },
-  );
+  });
 }
 
 // Context charts have much smaller space so remove things like legends, etc.
-export function makeBudgetActualsContextChartConfig(options : BudgetActualsChartOptions) {
+export function makeBudgetActualsContextChartConfig(
+  options: BudgetActualsChartOptions,
+) {
   const config = makeBudgetActualsChartConfig(options);
 
-  config.chartOptions.title.text = makeTitleInternal(`${options.title} (${options.yLabel ?? inferLabel(options.yValueFormat)})`);
+  config.chartOptions.title.text = makeTitleInternal(
+    `${options.title} (${options.yLabel ?? inferLabel(options.yValueFormat)})`,
+  );
   config.chartOptions.yAxis.title.text = "";
   delete config.chartOptions.xAxis.title;
-  delete config.chartOptions.xAxis.events.afterSetExtremes;  // Remove variance
+  delete config.chartOptions.xAxis.events.afterSetExtremes; // Remove variance
   config.chartOptions.legend.enabled = false;
   config.chartOptions.plotOptions.series.label.enabled = false;
   for (const s of config.chartOptions.series) {
@@ -493,85 +523,80 @@ export function makeBudgetActualsContextChartConfig(options : BudgetActualsChart
   return config;
 }
 
-export function makeCorrelationChartConfig(options : CorrelationChartOptions ) {
-  const {yMetricColumn, xMetricColumn, dataLabelColumn, seriesDefs} = options;
-  const columnAssignment = new Array<object>;
-  const series = new Array<object>;
+export function makeCorrelationChartConfig(options: CorrelationChartOptions) {
+  const { yMetricColumn, xMetricColumn, dataLabelColumn, seriesDefs } = options;
+  const columnAssignment = new Array<object>();
+  const series = new Array<object>();
 
   // Create the column assignment and series.
   for (const def of seriesDefs) {
-    columnAssignment.push(
-      {
-        seriesId: def.columnSuffix,
-        data: {
-          x: `${xMetricColumn}_${def.columnSuffix}`,
-          y: `${yMetricColumn}_${def.columnSuffix}`,
-          name: dataLabelColumn,
-          'marker.radius': 'marker_radius',
-          'marker.symbol': 'covid_shape',
-        },
-      }
-    );
+    columnAssignment.push({
+      seriesId: def.columnSuffix,
+      data: {
+        x: `${xMetricColumn}_${def.columnSuffix}`,
+        y: `${yMetricColumn}_${def.columnSuffix}`,
+        name: dataLabelColumn,
+        "marker.radius": "marker_radius",
+        "marker.symbol": "covid_shape",
+      },
+    });
 
-    series.push(
-      {
-        id: def.columnSuffix,
-        name: def.name,
-        colorIndex: def.colorIndex,
-        dataLabels: {
-          enabled: true,
-          format: '{point.name}',
-          crop: false,
-          overflow: 'allow',
-          allowOverlap: true,
-        }
-      }
-    );
+    series.push({
+      id: def.columnSuffix,
+      name: def.name,
+      colorIndex: def.colorIndex,
+      dataLabels: {
+        enabled: true,
+        format: "{point.name}",
+        crop: false,
+        overflow: "allow",
+        allowOverlap: true,
+      },
+    });
   }
 
-  const result = merge(
-    makeBaseChartConfig(options),
-    {
-      connector: {
-        columnAssignment,
-      },
+  const result = merge(makeBaseChartConfig(options), {
+    connector: {
+      columnAssignment,
+    },
 
-      chartOptions: {
-        chart: {
-          type:'scatter',
-        },
-        series,
-        plotOptions: {
-          scatter: {
-            opacity: 0.5,
-            marker: {
-              states: {
-                hover: {
-                  enabled: true,
-                  lineColor: "rgb(100,100,100)"
-                }
-              }
+    chartOptions: {
+      chart: {
+        type: "scatter",
+      },
+      series,
+      plotOptions: {
+        scatter: {
+          opacity: 0.5,
+          marker: {
+            states: {
+              hover: {
+                enabled: true,
+                lineColor: "rgb(100,100,100)",
+              },
             },
           },
         },
-      }
-    }
-  );
+      },
+    },
+  });
 
   return result;
 }
 
-export function inferTitle(normalization: CurrencyNormalization | StaffingNormalization) {
-  if (normalization === 'amount') {
-    return 'amount';
-  } else if (normalization === 'pctexp') {
-    return '% of expenditures';
-  } else if (normalization === 'pctcomp') {
-    return '% of total compensation';
-  } else if (normalization === 'fte') {
-    return 'FTE';
-  } else if (normalization === 'pctfte') {
-    return '% of total FTE';
+export function inferTitle(
+  normalization: CurrencyNormalization | StaffingNormalization,
+) {
+  if (normalization === "amount") {
+    return "amount";
+  } else if (normalization === "pctexp") {
+    return "% of expenditures";
+  } else if (normalization === "pctcomp") {
+    return "% of total compensation";
+  } else if (normalization === "fte") {
+    return "FTE";
+  } else if (normalization === "pctfte") {
+    return "% of total FTE";
   }
 
   throw `Unexpected normalization ${normalization}`;
@@ -581,7 +606,7 @@ export function inferTitle(normalization: CurrencyNormalization | StaffingNormal
 function makeTitleInternal(title, subtitle?) {
   return `<div class='chart-title'>
     <h3>${title}</h3>
-    ${subtitle ? `<h4>${subtitle}</h4>` : ''}
+    ${subtitle ? `<h4>${subtitle}</h4>` : ""}
   </div>`;
 }
 
@@ -589,16 +614,17 @@ export function makeTitle(facetInfo, normalization) {
   return makeTitleInternal(facetInfo.title, inferTitle(normalization));
 }
 
-export function formatForNormalization(normalization) : ValueFormat {
-  if (normalization === 'amount') {
-    return 'currency' as const;
-  } else if (normalization === 'pctexp' ||
-             normalization === 'pctcomp' ||
-             normalization === 'pctfte' ||
-             normalization === 'fte') {
+export function formatForNormalization(normalization): ValueFormat {
+  if (normalization === "amount") {
+    return "currency" as const;
+  } else if (
+    normalization === "pctexp" ||
+    normalization === "pctcomp" ||
+    normalization === "pctfte" ||
+    normalization === "fte"
+  ) {
     return normalization as ValueFormat;
   }
 
-  return 'decimal' as const;
+  return "decimal" as const;
 }
-

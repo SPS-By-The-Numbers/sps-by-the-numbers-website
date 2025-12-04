@@ -1,20 +1,32 @@
-import React from 'react';
-import Highcharts from 'highcharts'
+import React from "react";
+import Highcharts from "highcharts";
 
-function DataControl({data, year, report_type, survey, stacked, subjects, onChange}) {
+function DataControl({
+  data,
+  year,
+  report_type,
+  survey,
+  stacked,
+  subjects,
+  onChange,
+}) {
   if (!data) {
-    return (<div>Loading Data</div>);
+    return <div>Loading Data</div>;
   }
 
   const makeOptions = (types) => {
     const options = [];
-    [ "", ...types].forEach((type, idx) => options.push(
-      <option key={idx} value={type}>{type}</option>
-    ));
+    ["", ...types].forEach((type, idx) =>
+      options.push(
+        <option key={idx} value={type}>
+          {type}
+        </option>,
+      ),
+    );
     return options;
   };
 
-  const availableYears = [ 2023, 2022 ];
+  const availableYears = [2023, 2022];
   const year_options = makeOptions(availableYears);
 
   // Setup report type Elements.
@@ -26,7 +38,10 @@ function DataControl({data, year, report_type, survey, stacked, subjects, onChan
   const survey_options = makeOptions(raw_surveys);
 
   // Setup subject Elements.
-  const raw_subjects = data[report_type] && data[report_type][survey] ? Object.keys(data[report_type][survey]) : [];
+  const raw_subjects =
+    data[report_type] && data[report_type][survey]
+      ? Object.keys(data[report_type][survey])
+      : [];
   const subject_options = makeOptions(raw_subjects);
 
   const subject_choices = [];
@@ -34,29 +49,57 @@ function DataControl({data, year, report_type, survey, stacked, subjects, onChan
     const name = `choice-${idx}`;
     subject_choices.push(
       <span>
-        <label htmlFor={name}>Series {idx+1}</label>
-        <select key={name} name={name} data-type="subject" data-ordinal={idx} value={subject} onChange={onChange}>
-            {subject_options}
+        <label htmlFor={name}>Series {idx + 1}</label>
+        <select
+          key={name}
+          name={name}
+          data-type="subject"
+          data-ordinal={idx}
+          value={subject}
+          onChange={onChange}
+        >
+          {subject_options}
         </select>
-      </span>
+      </span>,
     );
   });
 
   return (
     <section className="p-2 h-full w-full min-h-screen items-stretch justify-items-stretch bg-gray-300 space-x-1">
       <label htmlFor="report-type">Report Year:</label>
-      <select name="report-year" value={year} data-type="year" onChange={onChange}>
-          {year_options}
+      <select
+        name="report-year"
+        value={year}
+        data-type="year"
+        onChange={onChange}
+      >
+        {year_options}
       </select>
       <label htmlFor="report-type">Report Type:</label>
-      <select name="report-type" value={report_type} data-type="report" onChange={onChange}>
-          {report_type_options}
+      <select
+        name="report-type"
+        value={report_type}
+        data-type="report"
+        onChange={onChange}
+      >
+        {report_type_options}
       </select>
       <label htmlFor="survey">Survey:</label>
-      <select name="survey" value={survey} data-type="survey" onChange={onChange}>
-          {survey_options}
+      <select
+        name="survey"
+        value={survey}
+        data-type="survey"
+        onChange={onChange}
+      >
+        {survey_options}
       </select>
-      <input type="checkbox" name="stacked" checked={stacked} data-type="stacked" onChange={onChange} />
+      <input
+        type="checkbox"
+        name="stacked"
+        checked={stacked}
+        data-type="stacked"
+        onChange={onChange}
+      />
       <label htmlFor="stacked">Stacked Display</label>
       <br />
       {subject_choices}

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 //
 // The FacetedBudgetActualCharts renders a set of metrics on a pair of facet columns.
@@ -9,11 +9,15 @@
 // column 'foo_code' that identifies the facet. This value will be used interally for
 // creating html identifiers etc.
 
-import { makeBudgetActualsChartConfig, makeTitle, formatForNormalization } from "utilities/highcharts/ChartConfigGenerators";
+import {
+  makeBudgetActualsChartConfig,
+  makeTitle,
+  formatForNormalization,
+} from "utilities/highcharts/ChartConfigGenerators";
 
-import type { ColumnTable } from 'arquero';
-import type { FacetInfo } from 'utilities/ChartableMetrics';
-import type { MetricSettings } from 'app/finance/_widgets/MetricSettingsContents';
+import type { ColumnTable } from "arquero";
+import type { FacetInfo } from "utilities/ChartableMetrics";
+import type { MetricSettings } from "app/finance/_widgets/MetricSettingsContents";
 
 type Params = {
   idPrefix: string;
@@ -41,26 +45,29 @@ function makeCellId(idPrefix, metricOrdinal, facetInfo) {
 // facets - an array of facets to render.  The ordering does not matter as that is defined by the gui.
 // connectorId - the ID of the data pool to conect to.
 // normalizations - the normalizations to generate for each facet.
-export function makeFacetComponents(idPrefix, xColumn, xLabel, yColumnRoot, facets,
-                                    connectorId, normalizations) {
-  const r = normalizations.flatMap(
-    (normalization, normalizationOrdinal) => facets.map(
-      facetInfo => (
-        makeBudgetActualsChartConfig(
-          {
-            title: makeTitle(facetInfo, normalization),
-            renderTo: makeCellId(idPrefix, normalizationOrdinal, facetInfo),
-            metricSuffix: facetInfo.code,
-            metricColumn: [idPrefix, normalization, yColumnRoot].join('_'),
-            connectorId,
-            xDataColumn: xColumn,
-            yValueFormat: formatForNormalization(normalization),
-            xValueFormat: 'year',
-            xLabel,
-          }
-        )
-      )
-    )
+export function makeFacetComponents(
+  idPrefix,
+  xColumn,
+  xLabel,
+  yColumnRoot,
+  facets,
+  connectorId,
+  normalizations,
+) {
+  const r = normalizations.flatMap((normalization, normalizationOrdinal) =>
+    facets.map((facetInfo) =>
+      makeBudgetActualsChartConfig({
+        title: makeTitle(facetInfo, normalization),
+        renderTo: makeCellId(idPrefix, normalizationOrdinal, facetInfo),
+        metricSuffix: facetInfo.code,
+        metricColumn: [idPrefix, normalization, yColumnRoot].join("_"),
+        connectorId,
+        xDataColumn: xColumn,
+        yValueFormat: formatForNormalization(normalization),
+        xValueFormat: "year",
+        xLabel,
+      }),
+    ),
   );
 
   return r;
@@ -72,20 +79,19 @@ export function makeFacetComponents(idPrefix, xColumn, xLabel, yColumnRoot, face
 //
 // idPrefix is used to prefix each cell ID to avoid collisions if doing multiple
 // graphs in one document.
-export function makeComparisonGui(idPrefix, facetOrder: Array<FacetInfo>,
-                                  metricList: Array<MetricSettings>) {
+export function makeComparisonGui(
+  idPrefix,
+  facetOrder: Array<FacetInfo>,
+  metricList: Array<MetricSettings>,
+) {
   const r = {
     layouts: [
       {
-        rows: facetOrder.map(facetInfo => (
-          {
-            cells: metricList.map((_, metricOrdinal) => (
-              {
-                id: makeCellId(idPrefix, metricOrdinal, facetInfo)
-              }
-            ))
-          }
-        ))
+        rows: facetOrder.map((facetInfo) => ({
+          cells: metricList.map((_, metricOrdinal) => ({
+            id: makeCellId(idPrefix, metricOrdinal, facetInfo),
+          })),
+        })),
       },
     ],
   };

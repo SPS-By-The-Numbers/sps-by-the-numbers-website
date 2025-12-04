@@ -1,7 +1,10 @@
-import { useCallback } from 'react';
+import { useCallback } from "react";
 
 const SchoolListItem = ({ schoolId, active, name, toggleActive, color }) => {
-  const handleChange = useCallback(() => toggleActive(schoolId), [schoolId, toggleActive]);
+  const handleChange = useCallback(
+    () => toggleActive(schoolId),
+    [schoolId, toggleActive],
+  );
   return (
     <li
       key={name}
@@ -10,7 +13,7 @@ const SchoolListItem = ({ schoolId, active, name, toggleActive, color }) => {
     >
       {/* I think the linter is wrong here — the input is a child of the label and that should
       be fine. */}
-      {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+      {}
       <label className="flex-1 px-2 py-0.5 whitespace-nowrap cursor-pointer">
         <input
           type="checkbox"
@@ -24,12 +27,11 @@ const SchoolListItem = ({ schoolId, active, name, toggleActive, color }) => {
   );
 };
 
-export default function SchoolList({
-  schools,
-  toggleActive,
-  setAllInactive,
-}) {
-  const handleSetAllInactive = useCallback(() => setAllInactive(), [setAllInactive]);
+export default function SchoolList({ schools, toggleActive, setAllInactive }) {
+  const handleSetAllInactive = useCallback(
+    () => setAllInactive(),
+    [setAllInactive],
+  );
 
   return (
     <div className="space-y-1">
@@ -54,4 +56,3 @@ export default function SchoolList({
     </div>
   );
 }
-

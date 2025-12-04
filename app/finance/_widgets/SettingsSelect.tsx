@@ -1,8 +1,8 @@
-import { useId } from 'react';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import Select from '@mui/material/Select';
+import { useId } from "react";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
 
 interface SettingsSelectProps<T> {
   // Text Label for the setting field. Rendered to user.
@@ -18,14 +18,24 @@ interface SettingsSelectProps<T> {
   // The options available in the select. It's {value: label}
   // where value what is stored in the setting.
   options: Record<string, string>;
-};
+}
 
 // Displays a select dialog box for a field in the settings state.
-export default function SettingsSelect<T>({label, settings, setSettings, fieldName, options} : SettingsSelectProps<T>) {
+export default function SettingsSelect<T>({
+  label,
+  settings,
+  setSettings,
+  fieldName,
+  options,
+}: SettingsSelectProps<T>) {
   const id = useId();
   const labelId = useId();
 
-  const items = Object.entries(options).map(([value, optionLabel]) => (<MenuItem key={value} value={value}>{optionLabel}</MenuItem>));
+  const items = Object.entries(options).map(([value, optionLabel]) => (
+    <MenuItem key={value} value={value}>
+      {optionLabel}
+    </MenuItem>
+  ));
 
   return (
     <FormControl size="small">
@@ -35,11 +45,12 @@ export default function SettingsSelect<T>({label, settings, setSettings, fieldNa
         id={id}
         value={settings[fieldName]}
         label={label}
-        onChange={e => setSettings({...settings, [fieldName]: e.target.value})}
+        onChange={(e) =>
+          setSettings({ ...settings, [fieldName]: e.target.value })
+        }
       >
         {items}
       </Select>
     </FormControl>
   );
 }
-

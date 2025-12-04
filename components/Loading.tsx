@@ -1,9 +1,9 @@
-import Paper from '@mui/material/Paper';
-import LinearProgress from '@mui/material/LinearProgress';
-import Typography from '@mui/material/Typography';
+import Paper from "@mui/material/Paper";
+import LinearProgress from "@mui/material/LinearProgress";
+import Typography from "@mui/material/Typography";
 
-export default function Loading({text}) {
-  const message = text ?? "Loading..."
+export default function Loading({ text }) {
+  const message = text ?? "Loading...";
   return (
     <>
       <LinearProgress />
@@ -22,5 +22,5 @@ export default function Loading({text}) {
         </Typography>
       </Paper>
     </>
-  )
+  );
 }

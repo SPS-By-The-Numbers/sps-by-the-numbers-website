@@ -1,8 +1,8 @@
-'use client';
-import { Roboto } from 'next/font/google';
-import { extendTheme } from '@mui/material/styles';
+"use client";
+import { Roboto } from "next/font/google";
+import { extendTheme } from "@mui/material/styles";
 
-declare module '@mui/material/styles' {
+declare module "@mui/material/styles" {
   interface PaletteColor {
     analogous?: string;
     info?: string;
@@ -15,9 +15,9 @@ declare module '@mui/material/styles' {
 }
 
 const roboto = Roboto({
-  weight: ['300', '400', '500', '700'],
-  subsets: ['latin'],
-  display: 'swap',
+  weight: ["300", "400", "500", "700"],
+  subsets: ["latin"],
+  display: "swap",
 });
 
 const theme = extendTheme({
@@ -28,17 +28,17 @@ const theme = extendTheme({
     light: {
       palette: {
         primary: {
-          main: '#0a43ad',
-          analogous: '#0a95ad',
-          info: '#efefef',
-          contrastText: '#ececec',
+          main: "#0a43ad",
+          analogous: "#0a95ad",
+          info: "#efefef",
+          contrastText: "#ececec",
         },
         secondary: {
-          main: '#0a43ad',
+          main: "#0a43ad",
         },
       },
-    }
-  }
+    },
+  },
 });
 
 export default theme;

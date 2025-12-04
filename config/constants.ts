@@ -1,10 +1,10 @@
-export const isProduction = process.env.NODE_ENV === 'production';
+export const isProduction = process.env.NODE_ENV === "production";
 
-export const SITE_ROOT_URL = 'https://app.sps-by-the-numbers.com';
-export const HOME_URL = 'https://sps-by-the-numbers.com';
+export const SITE_ROOT_URL = "https://app.sps-by-the-numbers.com";
+export const HOME_URL = "https://sps-by-the-numbers.com";
 
 // Used to generate the title and description in the <head> element.
-export const APP_TITLE = 'SPS By The Numbers -- Data analysis apps';
+export const APP_TITLE = "SPS By The Numbers -- Data analysis apps";
 
 // Originally this was a static HTML site with files spit into a prefix tree directory
 // structure to avoid having too many files in one directory. This isn't necessary
@@ -14,10 +14,10 @@ export const APP_TITLE = 'SPS By The Numbers -- Data analysis apps';
 export const LEGACY_PREFIX_REDIRECT = true;
 
 // Google analytics ID.
-export const GA_MEASUREMENT_ID = 'GTM-WLJHZHL';
+export const GA_MEASUREMENT_ID = "GTM-WLJHZHL";
 
 // GCP region cloud functions and other things run in.
-export const GCP_REGION = 'us-west1';
+export const GCP_REGION = "us-west1";
 
 function makeEndpointUri(endpoint: string) {
   return `https://${endpoint}-rdcihhc4la-uw.a.run.app`;
@@ -42,25 +42,25 @@ export const WHISPERX_ARCHIVE_SUBDIR = "archive/whisperx";
 
 // Map of ALL_CATEGORIES to information such as channels.
 export const CATEGORY_CHANNEL_MAP = {
-  'sps-board': {
+  "sps-board": {
     id: "UC07MVxpRKdDJmqwWDGYqotA",
-    name: 'SPS Board',
-    type: 'channel',
-    language: 'eng',
+    name: "SPS Board",
+    type: "channel",
+    language: "eng",
   },
-  'seattle-city-council': {
+  "seattle-city-council": {
     id: "PLhfhh0Ed-ZC2d0zuuzyCf1gaPaKfH4k4f",
-    name: 'Seattle City Council',
-    type: 'playlist',
-    language: 'eng',
-  }
+    name: "Seattle City Council",
+    type: "playlist",
+    language: "eng",
+  },
 };
 
 // List of all categories.
 export const ALL_CATEGORIES = Object.keys(CATEGORY_CHANNEL_MAP);
 
 // Default category to use in UI.
-export const DEFAULT_CATEGORY = 'sps-board';
+export const DEFAULT_CATEGORY = "sps-board";
 
 // Storage bucket for whisperx archives. Can be cheaper/slower storage class.
 export const STORAGE_BUCKET = "sps-by-the-numbers.appspot.com";
@@ -74,22 +74,24 @@ export const FIREBASE_CLIENT_CONFIG = {
   storageBucket: "sps-by-the-numbers.appspot.com",
   messagingSenderId: "319988578351",
   appId: "1:319988578351:web:1caaadd0171003126deeda",
-  measurementId: "G-WKM5FTSSLL"
+  measurementId: "G-WKM5FTSSLL",
 };
 
 // Used by appcheck.
-export const RECAPTCHA_KEY = '6LfukwApAAAAAOysCMfJontBc36O2vly91NWpip8';
+export const RECAPTCHA_KEY = "6LfukwApAAAAAOysCMfJontBc36O2vly91NWpip8";
 
 // Generate URLs for use in fetch() calls based on envrionment type.
-const ENDPOINT_NAMES = [
-  'finance',
-];
+const ENDPOINT_NAMES = ["finance"];
 
 // List of production endpoint names.
-export const PRODUCTION_ENDPOINTS = Object.fromEntries(ENDPOINT_NAMES.map(n => [n, makeEndpointUri(n)]));
+export const PRODUCTION_ENDPOINTS = Object.fromEntries(
+  ENDPOINT_NAMES.map((n) => [n, makeEndpointUri(n)]),
+);
 
 // List of testing endpoint names. Should point at the firebase emulator on localhost.
-export const TEST_ENDPOINTS = Object.fromEntries(ENDPOINT_NAMES.map(n => [n, makeTestEndpointUri(n)]));
+export const TEST_ENDPOINTS = Object.fromEntries(
+  ENDPOINT_NAMES.map((n) => [n, makeTestEndpointUri(n)]),
+);
 
 // Constant for the endpoints that changes between the production and test endpoints based on
 // the environment. Most code should use this.
@@ -97,11 +99,11 @@ export const ENDPOINTS = isProduction ? PRODUCTION_ENDPOINTS : TEST_ENDPOINTS;
 
 // Languages listed here are put on the top of the select element list for choosing translations.
 export const TOP_LANGUAGES = [
-  'eng',
-  'spa',
-  'som',
-  'zho-HANS',
-  'zho-HANT',
-  'vie',
-  'amh',
+  "eng",
+  "spa",
+  "som",
+  "zho-HANS",
+  "zho-HANT",
+  "vie",
+  "amh",
 ];

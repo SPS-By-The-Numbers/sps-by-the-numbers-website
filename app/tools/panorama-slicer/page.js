@@ -1,5 +1,5 @@
-import PanoramaSlicer from './PanoramaSlicer';
+import PanoramaSlicer from "./PanoramaSlicer";
 
 export default function PanoramaSlicerPage() {
-  return (<PanoramaSlicer />);
+  return <PanoramaSlicer />;
 }
