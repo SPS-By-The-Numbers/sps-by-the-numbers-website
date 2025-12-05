@@ -115,7 +115,7 @@ function deriveDeltaColumns(df, baselineClassOf) {
 
 function compileData(districtDataMap, allSettings, facet, sortOrder) {
   const allDatasets = new Array<ColumnTable>();
-  let facetInfo;
+  let fullFacetOrder;
   for (const expenditureSettings of allSettings) {
     const districtData = districtDataMap[expenditureSettings.ccddd];
     const filteredExpenditures = districtData.filteredExpenditures({
@@ -141,8 +141,8 @@ function compileData(districtDataMap, allSettings, facet, sortOrder) {
     );
 
     allDatasets.push(data);
-    if (facetInfo === undefined) {
-      facetInfo = extractVarianceFacets(filteredExpenditures, facet, sortOrder);
+    if (fullFacetOrder === undefined) {
+      fullFacetOrder = extractVarianceFacets(filteredExpenditures, facet, sortOrder);
     }
   }
 
@@ -154,8 +154,9 @@ function compileData(districtDataMap, allSettings, facet, sortOrder) {
   }
 
   data = data.orderby("class_of");
+  const filterInfo = {};
 
-  return [data, facetInfo];
+  return {data, fullFacetOrder, filterInfo};
 }
 
 // TODO: Dedupe with vitals.
@@ -219,7 +220,7 @@ export default function ExpendituresDashboard({
   const completedAllSettings: Array<ExpendituresSettings> =
     expandFilters(allSettings);
 
-  const [data, fullFacetOrder] = useMemo(
+  const {data, fullFacetOrder, filterInfo} = useMemo(
     () =>
       compileData(
         districtDataMap,

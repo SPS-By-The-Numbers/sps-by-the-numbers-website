@@ -1,6 +1,6 @@
-const path = require("path");
+/** @type {import('next').NextConfig} */
 
-module.exports = {
+const baseNextConfig = {
   // Append the default value with md extensions
   pageExtensions: ["ts", "tsx", "js", "jsx", "md", "mdx"],
   reactStrictMode: true,
@@ -9,3 +9,5 @@ module.exports = {
     path: "",
   },
 };
+
+export default baseNextConfig;

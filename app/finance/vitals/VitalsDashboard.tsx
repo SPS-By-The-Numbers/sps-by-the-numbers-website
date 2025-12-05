@@ -108,25 +108,25 @@ function makeBudgetActualsChartOptions(
       `${idPrefix}-teaching-related-fte`,
       `${idPrefix}_${staffingNormalization}_teachingFte`,
       "Teaching Related Fte",
-      currencyFormat,
+      staffingNormalization,
     ),
     makeCell(
       `${idPrefix}-student-support-fte`,
       `${idPrefix}_${staffingNormalization}_studentSupportFte`,
       "Student Support Fte",
-      currencyFormat,
+      staffingNormalization,
     ),
     makeCell(
       `${idPrefix}-building-support-fte`,
       `${idPrefix}_${staffingNormalization}_buildingSupportFte`,
       "Buildling Support Fte",
-      currencyFormat,
+      staffingNormalization,
     ),
     makeCell(
       `${idPrefix}-other-fte`,
       `${idPrefix}_${staffingNormalization}_otherFte`,
       "Other Fte",
-      currencyFormat,
+      staffingNormalization,
     ),
   ];
 }

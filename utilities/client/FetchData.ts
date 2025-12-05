@@ -9,7 +9,7 @@ import * as aq from "arquero";
 // over scale and precision than JavaScript's primitive "number"
 export class Decimal {
   constructor(
-    public readonly unscaled: BigInt,
+    public readonly unscaled: bigint,
     public readonly precision = 38,
     public readonly scale = 9,
   ) {}
