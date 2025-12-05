@@ -9,12 +9,19 @@ import * as aq from "arquero";
 // over scale and precision than JavaScript's primitive "number"
 export class Decimal {
   constructor(
-    public readonly unscaled: number,
-    public readonly precision = 32,
-    public readonly scale = 0,
+    public readonly unscaled: BigInt,
+    public readonly precision = 38,
+    public readonly scale = 9,
   ) {}
   public toNumber(): number {
-    return this.unscaled * Math.pow(10, -this.scale);
+    const scaleMultiplier = 10n**BigInt(this.scale);
+    const fractional = Number(this.unscaled % scaleMultiplier) * Math.pow(10, -this.scale);
+    const wholeNumbers = this.unscaled / scaleMultiplier;
+    if (wholeNumbers < Number.MIN_SAFE_INTEGER || wholeNumbers > Number.MAX_SAFE_INTEGER) {
+      throw `${this.unscaled} too large!`
+    }
+    const result = Number(wholeNumbers) + fractional;
+    return result;
   }
 }
 
@@ -53,9 +60,22 @@ class DecimalType extends avro.types.LogicalType {
   }
 
   // convert Buffer to Decimal
-  protected _fromValue(val: Buffer): any {
+  protected _fromValue(rawVal: Buffer): any {
+    if (rawVal.length != 16) {
+      throw "Expected 128-bit buffers to back a decimal";
+    }
+    const first64Bits = rawVal.subarray(0,8);
+
+    if (!first64Bits.every(n => n === 0) && !first64Bits.every(n => n === 255)) {
+      throw "Cannot handle numbers > 64-bit";
+    }
+
+    const upper = BigInt(rawVal.readInt32BE(8));
+    const lower = BigInt(rawVal.readInt32BE(12));
+    const value = (upper << 32n) + lower;
+
     return new Decimal(
-      val.readIntBE(0, val.length),
+      value,
       this.precision,
       this.scale,
     );
@@ -68,7 +88,7 @@ class DecimalToNumberType extends DecimalType {
   }
 }
 
-export async function fetchJsonDatasetUrl(ccddd: string, dataset: string) {
+export async function fetchDatasetUrl(ccddd: string, dataset: string) {
   const datasetResponse = await fetchEndpoint("finance", "GET", {
     ccddd,
     dataset,
@@ -81,13 +101,10 @@ export async function fetchJsonDatasetUrl(ccddd: string, dataset: string) {
   return datasetResponse.data;
 }
 
-export async function fetchDataset(ccddd, dataset) {
-  const { dataUrl, format, compression } = await fetchJsonDatasetUrl(
-    ccddd,
-    dataset,
-  );
+export async function avroToDf(dataUrl) {
   const response = await fetch(dataUrl);
   const data = new Array<object>();
+
   let metadata: any;
   const blob = await response.blob();
   await new Promise((resolve, reject) => {
@@ -113,4 +130,13 @@ export async function fetchDataset(ccddd, dataset) {
   // does not correctly accept object[].
   const df = aq.fromJSON(data as unknown as string, { type: "rows" });
   return df;
+}
+
+export async function fetchDataset(ccddd, dataset) {
+  const { dataUrl } = await fetchDatasetUrl(
+    ccddd,
+    dataset,
+  );
+
+  return await avroToDf(dataUrl);
 }

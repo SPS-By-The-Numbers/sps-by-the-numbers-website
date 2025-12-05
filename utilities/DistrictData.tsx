@@ -91,7 +91,8 @@ function combineActivities(df, codes, synth_activity_code, synth_activity) {
     .params({ codes })
     .filter((d, $) => !op.includes($.codes, d.activity_code));
 
-  return others.union(summed);
+  const result = others.union(summed);
+  return result;
 }
 
 function combineCommonActivities(df) {
