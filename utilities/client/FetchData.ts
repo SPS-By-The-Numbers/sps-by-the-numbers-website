@@ -14,11 +14,15 @@ export class Decimal {
     public readonly scale = 9,
   ) {}
   public toNumber(): number {
-    const scaleMultiplier = 10n**BigInt(this.scale);
-    const fractional = Number(this.unscaled % scaleMultiplier) * Math.pow(10, -this.scale);
+    const scaleMultiplier = 10n ** BigInt(this.scale);
+    const fractional =
+      Number(this.unscaled % scaleMultiplier) * Math.pow(10, -this.scale);
     const wholeNumbers = this.unscaled / scaleMultiplier;
-    if (wholeNumbers < Number.MIN_SAFE_INTEGER || wholeNumbers > Number.MAX_SAFE_INTEGER) {
-      throw `${this.unscaled} too large!`
+    if (
+      wholeNumbers < Number.MIN_SAFE_INTEGER ||
+      wholeNumbers > Number.MAX_SAFE_INTEGER
+    ) {
+      throw `${this.unscaled} too large!`;
     }
     const result = Number(wholeNumbers) + fractional;
     return result;
@@ -64,21 +68,21 @@ class DecimalType extends avro.types.LogicalType {
     if (rawVal.length != 16) {
       throw "Expected 128-bit buffers to back a decimal";
     }
-    const first64Bits = rawVal.subarray(0,8);
+    const first64Bits = rawVal.subarray(0, 8);
 
-    if (!first64Bits.every(n => n === 0) && !first64Bits.every(n => n === 255)) {
+    if (
+      !first64Bits.every((n) => n === 0) &&
+      !first64Bits.every((n) => n === 255)
+    ) {
       throw "Cannot handle numbers > 64-bit";
     }
 
     const upper = BigInt(rawVal.readInt32BE(8));
-    const lower = BigInt(rawVal.readInt32BE(12));
+    // HACK: Should the lower word always be a uint? Think through this.
+    const lower = BigInt(rawVal.readUint32BE(12));
     const value = (upper << 32n) + lower;
 
-    return new Decimal(
-      value,
-      this.precision,
-      this.scale,
-    );
+    return new Decimal(value, this.precision, this.scale);
   }
 }
 
@@ -133,10 +137,7 @@ export async function avroToDf(dataUrl) {
 }
 
 export async function fetchDataset(ccddd, dataset) {
-  const { dataUrl } = await fetchDatasetUrl(
-    ccddd,
-    dataset,
-  );
+  const { dataUrl } = await fetchDatasetUrl(ccddd, dataset);
 
   return await avroToDf(dataUrl);
 }
