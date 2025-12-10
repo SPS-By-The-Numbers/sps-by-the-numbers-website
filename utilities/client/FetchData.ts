@@ -77,11 +77,7 @@ class DecimalType extends avro.types.LogicalType {
       throw "Cannot handle numbers > 64-bit";
     }
 
-    const upper = BigInt(rawVal.readInt32BE(8));
-    // HACK: Should the lower word always be a uint? Think through this.
-    const lower = BigInt(rawVal.readUint32BE(12));
-    const value = (upper << 32n) + lower;
-
+    const value = (new DataView((new Uint8Array(rawVal.subarray(8,16))).buffer)).getBigInt64(0, false);
     return new Decimal(value, this.precision, this.scale);
   }
 }
