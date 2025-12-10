@@ -43,7 +43,12 @@ export function makeInternalNode(
 }
 
 // Helper for creating a FilterDomainTree leaf node.
-export function makeLeafNode(prefix, code, label, shortLabel?): FilterDomainTree {
+export function makeLeafNode(
+  prefix,
+  code,
+  label,
+  shortLabel?,
+): FilterDomainTree {
   return {
     nodeType: "leaf",
     id: `${prefix}-${code}`,
@@ -60,20 +65,28 @@ export class Filter {
     this.domainTree = domainTree;
   }
 
-  public treeViewItems() : Array<TreeViewBaseItem> {
+  public treeViewItems(): Array<TreeViewBaseItem> {
     return [this.domainTree];
   }
 
   public allCodes() {
     const result = new Set<number>();
-    this.visitDomain(this.domainTree, () => {}, (n) => result.add(n.code));
+    this.visitDomain(
+      this.domainTree,
+      () => {},
+      (n) => result.add(n.code),
+    );
     return result;
   }
 
   public toTreeViewItems() {
     const selectItems = new Array<TreeViewBaseItem>();
     const result = new Set<number>();
-    this.visitDomain(this.domainTree, () => {}, (n) => result.add(n.code));
+    this.visitDomain(
+      this.domainTree,
+      () => {},
+      (n) => result.add(n.code),
+    );
     return result;
   }
 
@@ -175,14 +188,16 @@ export class Filter {
     return skippedString;
   }
 
-  private visitDomain(root : FilterDomainTree,
-                      onInternal : (n : FilterDomainInternalNode) => void,
-                      onLeaf : (n : FilterDomainLeafNode) => void) {
+  private visitDomain(
+    root: FilterDomainTree,
+    onInternal: (n: FilterDomainInternalNode) => void,
+    onLeaf: (n: FilterDomainLeafNode) => void,
+  ) {
     if (!root) {
       return;
     }
 
-    if (root.nodeType === 'internal') {
+    if (root.nodeType === "internal") {
       onInternal(root);
       for (const c of root.children) {
         this.visitDomain(c, onInternal, onLeaf);

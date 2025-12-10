@@ -142,7 +142,11 @@ function compileData(districtDataMap, allSettings, facet, sortOrder) {
 
     allDatasets.push(data);
     if (fullFacetOrder === undefined) {
-      fullFacetOrder = extractVarianceFacets(filteredExpenditures, facet, sortOrder);
+      fullFacetOrder = extractVarianceFacets(
+        filteredExpenditures,
+        facet,
+        sortOrder,
+      );
     }
   }
 
@@ -156,7 +160,7 @@ function compileData(districtDataMap, allSettings, facet, sortOrder) {
   data = data.orderby("class_of");
   const filterInfo = {};
 
-  return {data, fullFacetOrder, filterInfo};
+  return { data, fullFacetOrder, filterInfo };
 }
 
 // TODO: Dedupe with vitals.
@@ -220,7 +224,7 @@ export default function ExpendituresDashboard({
   const completedAllSettings: Array<ExpendituresSettings> =
     expandFilters(allSettings);
 
-  const {data, fullFacetOrder, filterInfo} = useMemo(
+  const { data, fullFacetOrder, filterInfo } = useMemo(
     () =>
       compileData(
         districtDataMap,
