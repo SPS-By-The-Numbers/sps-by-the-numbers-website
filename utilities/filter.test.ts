@@ -52,6 +52,8 @@ describe("filter", () => {
   });
 
   it("toSummaryText() chooses produces representations", () => {
+    expect(filter.toSummaryText(filter.allCodes())).toEqual("all");
+    expect(filter.toSummaryText(new Set([]))).toEqual("none");
     expect(filter.toSummaryText(new Set([1, 2]))).toEqual("Only: opt 1, opt 2");
     expect(filter.toSummaryText(new Set([2, 3, 4]))).toEqual("Only: grpA");
     expect(filter.toSummaryText(new Set([1]))).toEqual("Excl: grpA");

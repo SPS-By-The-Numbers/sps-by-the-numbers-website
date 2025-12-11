@@ -508,7 +508,7 @@ export function makeBudgetActualsContextChartConfig(
 ) {
   const config = makeBudgetActualsChartConfig(options);
 
-  config.chartOptions.title.text = makeTitleInternal(
+  config.chartOptions.title.text = makeTitle(
     `${options.title} (${options.yLabel ?? inferLabel(options.yValueFormat)})`,
   );
   config.chartOptions.yAxis.title.text = "";
@@ -602,16 +602,11 @@ export function inferTitle(
   throw `Unexpected normalization ${normalization}`;
 }
 
-// Merge with makeTitle.
-function makeTitleInternal(title, subtitle?) {
+export function makeTitle(title, subtitle?) {
   return `<div class='chart-title'>
     <h3>${title}</h3>
     ${subtitle ? `<h4>${subtitle}</h4>` : ""}
   </div>`;
-}
-
-export function makeTitle(facetInfo, normalization) {
-  return makeTitleInternal(facetInfo.title, inferTitle(normalization));
 }
 
 export function formatForNormalization(normalization): ValueFormat {

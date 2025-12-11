@@ -34,7 +34,7 @@ export default function HcDashboard({
     }
 
     const dashboards = highchartsObjs.dashboards;
-    const board = dashboards.board(dashboardDiv.current, config);
+    let board = dashboards.board(dashboardDiv.current, config);
     if (onBoardRendered) {
       onBoardRendered(board);
     }
@@ -43,12 +43,10 @@ export default function HcDashboard({
       try {
         // Clean up all the Highcharts event handlers, etc, on unmount or
         // this will just accumulate cruft and everything will go slow.
-        if (board !== undefined) {
-          board.destroy();
-        }
+        board?.destroy();
+        board = undefined;
       } catch (e) {
-        // TODO: This happens a lot. Why?
-        console.error("Error destroying dashboard", board, e);
+        console.error("Error destroying dashboard:", board, e);
       }
     };
   }, [highchartsObjs, disableUpdate, dashboardDiv, config, onBoardRendered]);

@@ -92,6 +92,14 @@ export class Filter {
 
   public toSummaryText(selected: FilterSelection): string {
     const result = this.filterDomainCondensed(this.domainTree, selected);
+    if (result.skipped.length === 0) {
+      return "all";
+    }
+
+    if (result.matched.length === 0) {
+      return "none";
+    }
+
     const matchedString =
       "Only: " + result.matched.map((n) => n.shortLabel).join(", ");
     const skippedString =

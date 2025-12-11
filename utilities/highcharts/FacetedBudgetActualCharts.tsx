@@ -53,11 +53,12 @@ export function makeFacetComponents(
   facets,
   connectorId,
   normalizations,
+  subtitle?,
 ) {
   const r = normalizations.flatMap((normalization, normalizationOrdinal) =>
     facets.map((facetInfo) =>
       makeBudgetActualsChartConfig({
-        title: makeTitle(facetInfo, normalization),
+        title: makeTitle(facetInfo.title, subtitle),
         renderTo: makeCellId(idPrefix, normalizationOrdinal, facetInfo),
         metricSuffix: facetInfo.code,
         metricColumn: [idPrefix, normalization, yColumnRoot].join("_"),

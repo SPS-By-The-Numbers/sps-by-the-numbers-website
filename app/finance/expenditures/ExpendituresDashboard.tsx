@@ -25,6 +25,9 @@ import {
   extractCodes,
 } from "app/finance/_widgets/ExpenditureFilterContents";
 import { useMemo } from "react";
+import ObjectFilter from "app/finance/_filteritems/object";
+import ActivityFilter from "app/finance/_filteritems/activity";
+import ProgramFilter from "app/finance/_filteritems/program";
 import ExpendituresDashboardSettingsContents from "./ExpendituresDashboardSettings";
 import HcDashboard from "components/HcDashboard";
 import MetricSettingsContents from "app/finance/_widgets/MetricSettingsContents";
@@ -39,6 +42,7 @@ import type {
 } from "./ExpendituresDashboardSettings";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
 import type { MetricSettings } from "app/finance/_widgets/MetricSettingsContents";
+import type { FilterSelection } from "utilities/DistrictData";
 
 export interface ExpendituresSettings
   extends MetricSettings, PAOFilterSettings {
@@ -47,19 +51,44 @@ export interface ExpendituresSettings
 
 const CONNECTOR_ID = "expenditures-connector";
 
+function settingsToFilter(expenditureSettings : ExpendituresSettings) : FilterSelection {
+  return {
+    selectedObjectCodes: extractCodes(
+      "obj",
+      expenditureSettings.selectedObjects,
+    ),
+    selectedActivityCodes: extractCodes(
+      "act",
+      expenditureSettings.selectedActivities,
+    ),
+    selectedProgramCodes: extractCodes(
+      "prog",
+      expenditureSettings.selectedPrograms,
+    ),
+  };
+}
+
 function componentsGenerator(
   facetOrder,
   sharedSettings: ExpendituresDashboardSettings,
   expenditureSettings: ExpendituresSettings,
 ) {
+  const filterSelection = settingsToFilter(expenditureSettings);
+  const subtitle = `
+  Obj: ${ObjectFilter.toSummaryText(new Set(filterSelection.selectedObjectCodes))} / 
+  Prog: ${ProgramFilter.toSummaryText(new Set(filterSelection.selectedProgramCodes))} /
+  Act: ${ActivityFilter.toSummaryText(new Set(filterSelection.selectedActivityCodes))} 
+  `;
+
   const components = makeFacetComponents(
     expenditureSettings.id,
     "class_of",
     "Class of",
-    "amount", // TODO: This should be expenditure or something.
+    "amount",
     facetOrder,
     CONNECTOR_ID,
     [expenditureSettings.currencyNormalization],
+    subtitle,
   );
 
   return components;
@@ -118,20 +147,7 @@ function compileData(districtDataMap, allSettings, facet, sortOrder) {
   let fullFacetOrder;
   for (const expenditureSettings of allSettings) {
     const districtData = districtDataMap[expenditureSettings.ccddd];
-    const filteredExpenditures = districtData.filteredExpenditures({
-      selectedObjectCodes: extractCodes(
-        "obj",
-        expenditureSettings.selectedObjects,
-      ),
-      selectedActivityCodes: extractCodes(
-        "act",
-        expenditureSettings.selectedActivities,
-      ),
-      selectedProgramCodes: extractCodes(
-        "prog",
-        expenditureSettings.selectedPrograms,
-      ),
-    });
+    const filteredExpenditures = districtData.filteredExpenditures(settingsToFilter(expenditureSettings));
 
     const data = makeFacetedExpendituresForDistrict(
       districtData,
@@ -158,9 +174,8 @@ function compileData(districtDataMap, allSettings, facet, sortOrder) {
   }
 
   data = data.orderby("class_of");
-  const filterInfo = {};
 
-  return { data, fullFacetOrder, filterInfo };
+  return { data, fullFacetOrder };
 }
 
 // TODO: Dedupe with vitals.
@@ -224,7 +239,7 @@ export default function ExpendituresDashboard({
   const completedAllSettings: Array<ExpendituresSettings> =
     expandFilters(allSettings);
 
-  const { data, fullFacetOrder, filterInfo } = useMemo(
+  const { data, fullFacetOrder } = useMemo(
     () =>
       compileData(
         districtDataMap,
@@ -252,74 +267,68 @@ export default function ExpendituresDashboard({
   if (result === undefined) {
     return <div>No Datasets defined.</div>;
   }
-  const showDeltas = true;
-
   const { components, gui } = result;
-  if (showDeltas) {
-    gui.layouts.unshift({
-      rowClassName: "context-row",
-      cellClassName: "context-cell",
+  gui.layouts.unshift({
+    rowClassName: "context-row",
+    cellClassName: "context-cell",
 
-      rows: [
-        {
-          cells: [
-            { id: "context-fundedEnrollment" },
-            { id: "context-cashflow" },
-            { id: "context-revenues" },
-            { id: "context-expenditures" },
-          ],
-        },
-      ],
-    });
-  }
+    rows: [
+      {
+        cells: [
+          { id: "context-fundedEnrollment" },
+          { id: "context-cashflow" },
+          { id: "context-revenues" },
+          { id: "context-expenditures" },
+        ],
+      },
+    ],
+  });
 
-  if (showDeltas) {
-    const columnAssignment = facetOrder.map((facetInfo) => {
-      return {
-        seriesId: `🍊 ${facetInfo.title} - Budget`,
-        data: {
-          x: "class_of",
-          y: `delta_${completedAllSettings[0].id}_${completedAllSettings[0].currencyNormalization}_amount_${facetInfo.code}_budget`,
-        },
-      };
-    });
+  const columnAssignment = facetOrder.map((facetInfo) => {
+    return {
+      seriesId: `🍊 ${facetInfo.title} - Budget`,
+      data: {
+        x: "class_of",
+        y: `delta_${completedAllSettings[0].id}_${completedAllSettings[0].currencyNormalization}_amount_${facetInfo.code}_budget`,
+      },
+    };
+  });
 
-    components.push(
-      makeBudgetActualsContextChartConfig(
-        makeCell(
-          `context-fundedEnrollment`,
-          `context_amount_fundedEnrollment`,
-          "Funded Enrollment",
-          "fte" as const,
-          "AAFTE",
-        ),
+  components.push(
+    makeBudgetActualsContextChartConfig(
+      makeCell(
+        `context-fundedEnrollment`,
+        `context_amount_fundedEnrollment`,
+        "Funded Enrollment",
+        "fte" as const,
+        "AAFTE",
       ),
-      makeBudgetActualsContextChartConfig(
-        makeCell(
-          `context-cashflow`,
-          `context_amount_cashflow`,
-          "Cashflow",
-          "currency" as const,
-        ),
+    ),
+    makeBudgetActualsContextChartConfig(
+      makeCell(
+        `context-cashflow`,
+        `context_amount_cashflow`,
+        "Cashflow",
+        "currency" as const,
       ),
-      makeBudgetActualsContextChartConfig(
-        makeCell(
-          `context-revenues`,
-          `context_amount_revenues`,
-          "Revenues",
-          "currency" as const,
-        ),
+    ),
+    makeBudgetActualsContextChartConfig(
+      makeCell(
+        `context-revenues`,
+        `context_amount_revenues`,
+        "Revenues",
+        "currency" as const,
       ),
-      makeBudgetActualsContextChartConfig(
-        makeCell(
-          `context-expenditures`,
-          `context_amount_expenditures`,
-          "Expenditures",
-          "currency" as const,
-        ),
+    ),
+    makeBudgetActualsContextChartConfig(
+      makeCell(
+        `context-expenditures`,
+        `context_amount_expenditures`,
+        "Expenditures",
+        "currency" as const,
       ),
-    );
-  }
+    ),
+  );
 
   const config = {
     gui,
