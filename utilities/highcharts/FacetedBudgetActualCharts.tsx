@@ -33,6 +33,10 @@ function makeCellId(idPrefix, metricOrdinal, facetInfo) {
   return `chart-${idPrefix}-${facetInfo.code}-${metricOrdinal}`;
 }
 
+export function makeFacetColumnRoot(idPrefix, normalization, metricName, facet) {
+  return [idPrefix, normalization, metricName, facet].join("_");
+}
+
 // Produces all "component" which is basically a chart in the cell. This of
 // this as the constructor for all the charts. The total number of elements will be
 // number of facets times metricList.
@@ -54,19 +58,22 @@ export function makeFacetComponents(
   connectorId,
   normalizations,
   subtitle?,
+  bounds?,
 ) {
   const r = normalizations.flatMap((normalization, normalizationOrdinal) =>
     facets.map((facetInfo) =>
       makeBudgetActualsChartConfig({
         title: makeTitle(facetInfo.title, subtitle),
         renderTo: makeCellId(idPrefix, normalizationOrdinal, facetInfo),
-        metricSuffix: facetInfo.code,
+        facet: facetInfo.code,
         metricColumn: [idPrefix, normalization, yColumnRoot].join("_"),
         connectorId,
         xDataColumn: xColumn,
         yValueFormat: formatForNormalization(normalization),
         xValueFormat: "year",
         xLabel,
+        yMin: bounds?.min,
+        yMax: bounds?.max,
       }),
     ),
   );

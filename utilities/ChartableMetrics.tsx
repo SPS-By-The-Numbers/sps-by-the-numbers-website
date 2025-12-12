@@ -181,20 +181,28 @@ export function extractVarianceFacets(
   const facetCodeColumn = `${facetColumn}_code`;
 
   // Calculate variance for sort order.
-  const varianceDf = df
+  let varianceDf = df
     .groupby("class_of", "data_type", facetColumn, facetCodeColumn)
     .rollup({
       val: op.sum(`amount`),
     })
     .groupby("class_of", facetColumn, facetCodeColumn)
-    .pivot(["data_type"], { val: (d) => op.sum(d.val) })
-    .derive({ variance: (d) => d.budget - d.actuals })
+    .pivot(["data_type"], { val: d => op.sum(d.val) });
+
+  // Ensure the pivot ends up with both a budget and an actual column
+  // in case the dataset was completely missing one or the other.
+  if (!varianceDf.column('budget')) {
+    varianceDf = varianceDf.derive({budget: () => null});
+  }
+  if (!varianceDf.column('actuals')) {
+    varianceDf = varianceDf.derive({actuals: () => null});
+  }
+
+  varianceDf = varianceDf
+    .derive({ variance: d => d.budget - d.actuals })
     .filter((d) => !op.is_nan(d.variance));
 
-  // TODO: The problem here is activity_code 27 and 34 are hacked in after sorting.
-  // The derviation of s1 and s2 need to happen brefore sorting.
   const facetInfo = varianceDf
-    .filter((d) => d.activity_code != 27 && d.activity_code != 34)
     .groupby(facetColumn, facetCodeColumn)
     .rollup({ absmedian: (d) => op.abs(op.median(d.variance)) })
     .orderby(sortOrderOp(sortOrder, "absmedian"))

@@ -25,10 +25,10 @@ const DEFAULT_EXPENDITURE_SETTINGS = DEFAULT_METRIC_SETTINGS.map((v) => ({
 const DEFAULT_DASHBOARD_SETTINGS = {
   ...DEFAULT_COMMON_SHARED_SETTINGS,
   facet: "activity" as const,
-  facetLimit: "10",
+  facetLimit: "99999",
   sortOrder: "descending" as const,
   sortType: "variance" as const,
-  yScale: "free" as const,
+  yScale: "fixed" as const,
 } as ExpendituresDashboardSettings;
 
 export const metadata: Metadata = {

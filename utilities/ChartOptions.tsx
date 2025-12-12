@@ -11,12 +11,11 @@ export const SORT_TYPE_OPTIONS: Record<SortType, string> = {
   latest: "Latest Year",
 };
 
-export const ALL_YSCALES = ["free", "fixed", "free_zoomed"];
+export const ALL_YSCALES = ["free", "fixed"];
 export type YScale = (typeof ALL_YSCALES)[number];
 export const YSCALES_OPTIONS: Record<YScale, string> = {
-  fixed: "Locked over Facets",
+  fixed: "Locked across Facets",
   free: "Facets differ",
-  free_zoomed: "Facets differ (zoomed)",
 };
 
 export const ALL_FACET_LIMIT = ["99999", "10", "25", "50", "100"];

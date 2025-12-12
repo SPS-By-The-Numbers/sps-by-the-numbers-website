@@ -16,7 +16,7 @@ import {
 } from "utilities/highcharts/ChartConfigGenerators";
 import { makeChartableVitals } from "app/finance/vitals/ChartableVitals";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
-import { makeFacetComponents } from "utilities/highcharts/FacetedBudgetActualCharts";
+import { makeFacetColumnRoot, makeFacetComponents } from "utilities/highcharts/FacetedBudgetActualCharts";
 import {
   OverridePrimaryFilterContents,
   ObjectFilterContents,
@@ -26,7 +26,6 @@ import {
 } from "app/finance/_widgets/ExpenditureFilterContents";
 import { useMemo } from "react";
 import ObjectFilter from "app/finance/_filteritems/object";
-import ActivityFilter from "app/finance/_filteritems/activity";
 import ProgramFilter from "app/finance/_filteritems/program";
 import ExpendituresDashboardSettingsContents from "./ExpendituresDashboardSettings";
 import HcDashboard from "components/HcDashboard";
@@ -72,12 +71,12 @@ function componentsGenerator(
   facetOrder,
   sharedSettings: ExpendituresDashboardSettings,
   expenditureSettings: ExpendituresSettings,
+  bounds,
 ) {
   const filterSelection = settingsToFilter(expenditureSettings);
   const subtitle = `
-  Obj: ${ObjectFilter.toSummaryText(new Set(filterSelection.selectedObjectCodes))} / 
   Prog: ${ProgramFilter.toSummaryText(new Set(filterSelection.selectedProgramCodes))} /
-  Act: ${ActivityFilter.toSummaryText(new Set(filterSelection.selectedActivityCodes))} 
+  Obj: ${ObjectFilter.toSummaryText(new Set(filterSelection.selectedObjectCodes))} 
   `;
 
   const components = makeFacetComponents(
@@ -89,6 +88,7 @@ function componentsGenerator(
     CONNECTOR_ID,
     [expenditureSettings.currencyNormalization],
     subtitle,
+    bounds,
   );
 
   return components;
@@ -142,10 +142,10 @@ function deriveDeltaColumns(df, baselineClassOf) {
   return data;
 }
 
-function compileData(districtDataMap, allSettings, facet, sortOrder) {
+function compileData(districtDataMap, expandedAllSettings, facet, sortOrder) {
   const allDatasets = new Array<ColumnTable>();
   let fullFacetOrder;
-  for (const expenditureSettings of allSettings) {
+  for (const expenditureSettings of expandedAllSettings) {
     const districtData = districtDataMap[expenditureSettings.ccddd];
     const filteredExpenditures = districtData.filteredExpenditures(settingsToFilter(expenditureSettings));
 
@@ -167,7 +167,7 @@ function compileData(districtDataMap, allSettings, facet, sortOrder) {
   }
 
   let data = makeChartableVitals(districtDataMap, [
-    { ...allSettings[0], id: "context", currencyNormalization: "amount" },
+    { ...expandedAllSettings[0], id: "context", currencyNormalization: "amount" },
   ]);
   for (const d of allDatasets) {
     data = data.join(deriveDeltaColumns(d, 2019));
@@ -179,14 +179,14 @@ function compileData(districtDataMap, allSettings, facet, sortOrder) {
 }
 
 // TODO: Dedupe with vitals.
-function makeCell(
+function makeContextCell(
   renderTo,
   metricColumn,
   title,
   yValueFormat,
-  yLabel?: string,
+  yBounds
 ) {
-  return {
+  const cell = makeBudgetActualsContextChartConfig({
     renderTo,
     title,
     metricColumn,
@@ -195,8 +195,15 @@ function makeCell(
     xValueFormat: "year" as const,
 
     yValueFormat,
-    yLabel,
-  };
+
+    // Ensure 0 min unless negative.
+    yMin: Math.min(0, yBounds.min),
+    yMax: yBounds.max,
+  });
+
+  cell.sync.extremes = false;
+
+  return cell;
 }
 
 function expandFilters(allSettings): Array<ExpendituresSettings> {
@@ -225,49 +232,65 @@ function expandFilters(allSettings): Array<ExpendituresSettings> {
   return results;
 }
 
-// Charts expenditures for
-export default function ExpendituresDashboard({
-  districtDataMap,
-  sharedSettings,
-  setSharedSettings,
-  allSettings,
-  setAllSettings,
-}: DistrictDataContentProps<
-  ExpendituresSettings,
-  ExpendituresDashboardSettings
->) {
-  const completedAllSettings: Array<ExpendituresSettings> =
-    expandFilters(allSettings);
+// Returns the min/max value for columnRoot in a budget/actual name format. Used for setting
+// yAxis bounds.
+function getDataBounds(data, columnRoot) {
+  const a_name = `${columnRoot}_actuals`;
+  const b_name = `${columnRoot}_budget`;
 
-  const { data, fullFacetOrder } = useMemo(
-    () =>
-      compileData(
-        districtDataMap,
-        completedAllSettings,
-        sharedSettings.facet,
-        sharedSettings.sortOrder,
-      ),
-    [
-      sharedSettings.facet,
-      districtDataMap,
-      completedAllSettings,
-      sharedSettings.sortOrder,
-    ],
-  );
+  const minMaxDf = data
+  .params({
+    a_name: `${columnRoot}_actuals`,
+    b_name: `${columnRoot}_budget`,
+  })
+  .rollup({
+      min_a: (d, $) => op.min(d[$.a_name]),
+      max_a: (d, $) => op.max(d[$.a_name]),
+      min_b: (d, $) => op.min(d[$.b_name]),
+      max_b: (d, $) => op.max(d[$.b_name]),
+  })
+  .derive({
+      min: d => Math.min(d.min_b, d.min_a),
+      max: d => Math.max(d.max_b, d.max_a),
+  },
+  {
+    drop: true
+  });
 
-  // Trim the list for rendering speed.
-  const facetOrder = fullFacetOrder.slice(
-    0,
-    parseInt(sharedSettings.facetLimit),
-  );
+  return {
+    min: minMaxDf.get('min', 0),
+    max: minMaxDf.get('max', 0),
+  };
+}
 
-  const result = makeDatasetFacetedDashboard(completedAllSettings, (s) =>
-    componentsGenerator(facetOrder, sharedSettings, s),
-  );
-  if (result === undefined) {
-    return <div>No Datasets defined.</div>;
+function makeFacetYBounds(facetOrder, expandedAllSettings, data) {
+  const bounds = {
+    min: 0,
+    max: 0,
   }
-  const { components, gui } = result;
+  for (const s of expandedAllSettings) {
+    // TODO: This shouldn't be "amount", it should be "act".
+    for (const f of facetOrder) {
+      const columnRoot = makeFacetColumnRoot(s.id, s.currencyNormalization, "amount", f.code);
+      const facetBounds = getDataBounds(data, columnRoot);
+      bounds.min = Math.min(bounds.min, facetBounds.min);
+      bounds.max = Math.max(bounds.max, facetBounds.max);
+    }
+  }
+
+  return bounds;
+}
+
+function augmentContextComponents(gui, components, data) {
+  const fundedEnrollmentBounds = getDataBounds(data, 'context_amount_fundedEnrollment');
+  const cashflowBounds = getDataBounds(data, 'context_amount_cashflow');
+  const revenuesBounds = getDataBounds(data, 'context_amount_revenues');
+  const expendituresBounds = getDataBounds(data, 'context_amount_expenditures');
+  const revExpBounds = {
+    min: Math.min(revenuesBounds.min, expendituresBounds.min),
+    max: Math.max(revenuesBounds.max, expendituresBounds.max)
+  };
+
   gui.layouts.unshift({
     rowClassName: "context-row",
     cellClassName: "context-cell",
@@ -284,51 +307,58 @@ export default function ExpendituresDashboard({
     ],
   });
 
-  const columnAssignment = facetOrder.map((facetInfo) => {
-    return {
-      seriesId: `🍊 ${facetInfo.title} - Budget`,
-      data: {
-        x: "class_of",
-        y: `delta_${completedAllSettings[0].id}_${completedAllSettings[0].currencyNormalization}_amount_${facetInfo.code}_budget`,
-      },
-    };
-  });
-
+  // Add Context cells.
   components.push(
-    makeBudgetActualsContextChartConfig(
-      makeCell(
-        `context-fundedEnrollment`,
-        `context_amount_fundedEnrollment`,
-        "Funded Enrollment",
-        "fte" as const,
-        "AAFTE",
-      ),
+    makeContextCell(
+      `context-fundedEnrollment`,
+      `context_amount_fundedEnrollment`,
+      "Funded Enrollment",
+      "fte" as const,
+      fundedEnrollmentBounds,
     ),
-    makeBudgetActualsContextChartConfig(
-      makeCell(
-        `context-cashflow`,
-        `context_amount_cashflow`,
-        "Cashflow",
-        "currency" as const,
-      ),
+    makeContextCell(
+      `context-cashflow`,
+      `context_amount_cashflow`,
+      "Cashflow",
+      "currency" as const,
+      cashflowBounds,
     ),
-    makeBudgetActualsContextChartConfig(
-      makeCell(
-        `context-revenues`,
-        `context_amount_revenues`,
-        "Revenues",
-        "currency" as const,
-      ),
+    makeContextCell(
+      `context-revenues`,
+      `context_amount_revenues`,
+      "Revenues",
+      "currency" as const,
+      revExpBounds,
     ),
-    makeBudgetActualsContextChartConfig(
-      makeCell(
-        `context-expenditures`,
-        `context_amount_expenditures`,
-        "Expenditures",
-        "currency" as const,
-      ),
+    makeContextCell(
+      `context-expenditures`,
+      `context_amount_expenditures`,
+      "Expenditures",
+      "currency" as const,
+      revExpBounds,
     ),
   );
+}
+
+function makeHighchartConfig(sharedSettings, expandedAllSettings, fullFacetOrder, data) {
+  // Trim the list for rendering speed.
+  const facetOrder = fullFacetOrder.slice(
+    0,
+    parseInt(sharedSettings.facetLimit),
+  );
+
+  const facetYBounds = sharedSettings.yScale === "fixed" ? makeFacetYBounds(facetOrder, expandedAllSettings, data) : {};
+
+  const result = makeDatasetFacetedDashboard(expandedAllSettings, (s : ExpendituresSettings) =>
+    componentsGenerator(facetOrder, sharedSettings, s, facetYBounds),
+  );
+
+  if (result === undefined) {
+    return <div>No Datasets defined.</div>;
+  }
+  const { gui, components } = result;
+
+  augmentContextComponents(gui, components, data);
 
   const config = {
     gui,
@@ -343,6 +373,40 @@ export default function ExpendituresDashboard({
       ],
     },
   };
+
+  return config;
+}
+
+// Charts expenditures for
+export default function ExpendituresDashboard({
+  districtDataMap,
+  sharedSettings,
+  setSharedSettings,
+  allSettings,
+  setAllSettings,
+}: DistrictDataContentProps<
+  ExpendituresSettings,
+  ExpendituresDashboardSettings
+>) {
+  const config = useMemo(
+    () => {
+      // Expand out the filter per sub-setting.
+      const expandedAllSettings: Array<ExpendituresSettings> = expandFilters(allSettings);
+      const { data, fullFacetOrder } = compileData(
+        districtDataMap,
+        expandedAllSettings,
+        sharedSettings.facet,
+        sharedSettings.sortOrder,
+      );
+
+      return makeHighchartConfig(sharedSettings, expandedAllSettings, fullFacetOrder, data);
+    },
+    [
+      sharedSettings,
+      districtDataMap,
+      allSettings,
+    ],
+  );
 
   return (
     <SettingsLayout

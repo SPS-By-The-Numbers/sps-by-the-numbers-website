@@ -47,7 +47,7 @@ export type BaseChartConfigOptions = {
 
 export type BudgetActualsChartOptions = BaseChartConfigOptions & {
   metricColumn: string;
-  metricSuffix?: string;
+  facet?: string;
 
   xDataColumn: string;
 };
@@ -304,7 +304,7 @@ export function makeBaseChartConfig(options: BaseChartConfigOptions) {
         chartOptions: {
           chart: {
             style: {
-              //              fontFamily: 'monospace'
+              fontFamily: 'monospace'
             },
           },
         },
@@ -339,6 +339,9 @@ export function makeBaseChartConfig(options: BaseChartConfigOptions) {
       yAxis: {
         crosshair: true,
         minorTickInterval: "auto",
+        min: options.yMin,
+        max: options.yMax,
+        tickAmount: 5,
         type:
           options.yAxisType ??
           inferAxisType(options.yValueFormat, options.yValueShowNegative),
@@ -351,6 +354,8 @@ export function makeBaseChartConfig(options: BaseChartConfigOptions) {
         type:
           options.xAxisType ??
           inferAxisType(options.xValueFormat, options.xValueShowNegative),
+        min: options.xMin,
+        max: options.xMax,
         title: {
           text: options.xLabel ?? inferLabel(options.xValueFormat),
         },
@@ -391,7 +396,7 @@ export function makeBudgetActualsChartConfig(
 ) {
   const { budgetColumn, actualsColumn } = getBAColumns(
     options.metricColumn,
-    options.metricSuffix,
+    options.facet,
   );
 
   const baseChartConfig = makeBaseChartConfig(options);
@@ -443,7 +448,7 @@ export function makeBudgetActualsChartConfig(
               });
             } catch (e) {
               console.warn(
-                `Failed calculating stats for ${options.metricColumn}, ${options.metricSuffix}:`,
+                `Failed calculating stats for ${options.metricColumn}, ${options.facet}:`,
                 e,
               );
               this.chart.setCaption({
