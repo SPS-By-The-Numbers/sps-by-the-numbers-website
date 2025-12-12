@@ -77,7 +77,9 @@ class DecimalType extends avro.types.LogicalType {
       throw "Cannot handle numbers > 64-bit";
     }
 
-    const value = (new DataView((new Uint8Array(rawVal.subarray(8,16))).buffer)).getBigInt64(0, false);
+    const value = new DataView(
+      new Uint8Array(rawVal.subarray(8, 16)).buffer,
+    ).getBigInt64(0, false);
     return new Decimal(value, this.precision, this.scale);
   }
 }

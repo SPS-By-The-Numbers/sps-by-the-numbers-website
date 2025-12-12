@@ -33,7 +33,12 @@ function makeCellId(idPrefix, metricOrdinal, facetInfo) {
   return `chart-${idPrefix}-${facetInfo.code}-${metricOrdinal}`;
 }
 
-export function makeFacetColumnRoot(idPrefix, normalization, metricName, facet) {
+export function makeFacetColumnRoot(
+  idPrefix,
+  normalization,
+  metricName,
+  facet,
+) {
   return [idPrefix, normalization, metricName, facet].join("_");
 }
 

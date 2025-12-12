@@ -304,7 +304,7 @@ export function makeBaseChartConfig(options: BaseChartConfigOptions) {
         chartOptions: {
           chart: {
             style: {
-              fontFamily: 'monospace'
+              fontFamily: "monospace",
             },
           },
         },

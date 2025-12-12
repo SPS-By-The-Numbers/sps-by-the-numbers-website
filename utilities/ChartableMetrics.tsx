@@ -187,19 +187,19 @@ export function extractVarianceFacets(
       val: op.sum(`amount`),
     })
     .groupby("class_of", facetColumn, facetCodeColumn)
-    .pivot(["data_type"], { val: d => op.sum(d.val) });
+    .pivot(["data_type"], { val: (d) => op.sum(d.val) });
 
   // Ensure the pivot ends up with both a budget and an actual column
   // in case the dataset was completely missing one or the other.
-  if (!varianceDf.column('budget')) {
-    varianceDf = varianceDf.derive({budget: () => null});
+  if (!varianceDf.column("budget")) {
+    varianceDf = varianceDf.derive({ budget: () => null });
   }
-  if (!varianceDf.column('actuals')) {
-    varianceDf = varianceDf.derive({actuals: () => null});
+  if (!varianceDf.column("actuals")) {
+    varianceDf = varianceDf.derive({ actuals: () => null });
   }
 
   varianceDf = varianceDf
-    .derive({ variance: d => d.budget - d.actuals })
+    .derive({ variance: (d) => d.budget - d.actuals })
     .filter((d) => !op.is_nan(d.variance));
 
   const facetInfo = varianceDf
