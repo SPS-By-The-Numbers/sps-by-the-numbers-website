@@ -17,7 +17,7 @@ import type { MetricSettings } from "app/finance/_widgets/MetricSettingsContents
 
 const CONNECTOR_ID = "cashflow-connector";
 
-export interface CashflowSettings extends MetricSettings {}
+export interface CorrelationsSettings extends MetricSettings {}
 
 function makeFundedEnrollmentCashflowConfig(
   idPrefix,
@@ -118,6 +118,40 @@ function makeCorrelationChartOptions(
   staffingNormalization,
 ): Array<CorrelationChartOptions> {
   const retval = [
+    makeFteEnrollmentConfig(
+      idPrefix,
+      ccddd,
+      "Teaching Fte",
+      `${staffingNormalization}_teachingFte`,
+      "actuals",
+      1,
+    ),
+    makeFteEnrollmentConfig(
+      idPrefix,
+      ccddd,
+      "Student Support Fte",
+      `${staffingNormalization}_studentSupportFte`,
+      "actuals",
+      1,
+    ),
+    makeFteEnrollmentConfig(
+      idPrefix,
+      ccddd,
+      "Building Support Fte",
+      `${staffingNormalization}_buildingSupportFte`,
+      "actuals",
+      1,
+    ),
+    makeFteEnrollmentConfig(
+      idPrefix,
+      ccddd,
+      "Other Fte",
+      `${staffingNormalization}_otherFte`,
+      "actuals",
+      1,
+    ),
+
+
     makeFundedEnrollmentCashflowConfig(
       idPrefix,
       ccddd,
@@ -199,39 +233,6 @@ function makeCorrelationChartOptions(
       "budget",
       2,
     ),
-
-    makeFteEnrollmentConfig(
-      idPrefix,
-      ccddd,
-      "Teaching Fte",
-      `${staffingNormalization}_teachingFte`,
-      "actuals",
-      1,
-    ),
-    makeFteEnrollmentConfig(
-      idPrefix,
-      ccddd,
-      "Student Support Fte",
-      `${staffingNormalization}_studentSupportFte`,
-      "actuals",
-      1,
-    ),
-    makeFteEnrollmentConfig(
-      idPrefix,
-      ccddd,
-      "Building Support Fte",
-      `${staffingNormalization}_buildingSupportFte`,
-      "actuals",
-      1,
-    ),
-    makeFteEnrollmentConfig(
-      idPrefix,
-      ccddd,
-      "Other Fte",
-      `${staffingNormalization}_otherFte`,
-      "actuals",
-      1,
-    ),
   ];
 
   return retval;
@@ -248,11 +249,11 @@ function componentsGenerator(cashflowSettings: CashflowSettings) {
   return correlationChartOptions.map((c) => makeCorrelationChartConfig(c));
 }
 
-export default function CashflowDashboard({
+export default function CorrelationsDashboard({
   districtDataMap,
   allSettings,
   setAllSettings,
-}: DistrictDataContentProps<CashflowSettings, BaseSettings>) {
+}: DistrictDataContentProps<CorrelationsSettings, BaseSettings>) {
   const searchParams = useSearchParams();
 
   const result = makeDatasetFacetedDashboard(allSettings, componentsGenerator);
