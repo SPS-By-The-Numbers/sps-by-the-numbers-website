@@ -31,13 +31,13 @@ function makeFundedEnrollmentCashflowConfig(
     renderTo: `${idPrefix}-fundedEnrollment-cashflow-${columnSuffix}`,
     title: `Funded Enrollment-Cashflow Correlation (${name})`,
     connectorId: CONNECTOR_ID,
-    xMetricColumn: `${idPrefix}_amount_fundedEnrollment`,
-    xLabel: `${name} Funded Enrollment AAFTE`,
-    xValueFormat: "decimal" as const,
+    yMetricColumn: `${idPrefix}_amount_fundedEnrollment`,
+    yLabel: `${name} Funded Enrollment AAFTE`,
+    yValueFormat: "decimal" as const,
 
-    yMetricColumn: `${idPrefix}_${currencyNormalization}_cashflow`,
-    yLabel: `${name} Cashflow $`,
-    yValueFormat: "currency" as const,
+    xMetricColumn: `${idPrefix}_${currencyNormalization}_cashflow`,
+    xLabel: `${name} Cashflow $`,
+    xValueFormat: "currency" as const,
 
     dataLabelColumn: "class_of",
     seriesDefs: [
@@ -62,12 +62,12 @@ function makeCompCashflowConfig(
     renderTo: `${idPrefix}-${metricColumn}-cashflow-${columnSuffix}`,
     title: `${name}-Cashflow Correlation (${columnSuffix})`,
     connectorId: CONNECTOR_ID,
-    xMetricColumn: `${idPrefix}_${metricColumn}`,
-    xValueFormat: "pctcomp" as const,
-
-    yMetricColumn: `${idPrefix}_amount_cashflow`,
-    yLabel: `Cashflow $`,
+    yMetricColumn: `${idPrefix}_${metricColumn}`,
     yValueFormat: "currency" as const,
+
+    xMetricColumn: `${idPrefix}_amount_cashflow`,
+    xLabel: `Cashflow $`,
+    xValueFormat: "currency" as const,
 
     dataLabelColumn: "class_of",
     seriesDefs: [
