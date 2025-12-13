@@ -168,7 +168,8 @@ export function toChartableDataset(
   // Do not collapse the two getDataColumnNames() calls as data is modifieid.
   const data = prefixedData
     .groupby("class_of")
-    .pivot("data_type", getDataColumnNames(prefixedData));
+    .pivot("data_type", getDataColumnNames(prefixedData))
+    .orderby("class_of");
 
   return data;
 }

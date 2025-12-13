@@ -41,17 +41,15 @@ const BENEFITS_OBJECT_CODES = [
 const COMP_OBJECT_CODES = [...SALARY_OBJECT_CODES, ...BENEFITS_OBJECT_CODES];
 
 const TEACHING_CODES = [
-  27, // Teaching
+  SYNTH_ACT_CODE_TEACHING,
   28, // Extracurricular
-  34, // Professional Learning - State (funds part of teacher salary. Not all budget systems can account for it but it shows up in actuals)
 ];
 
 const STUDENT_SUPPORT_CODES = [
-  23, // Principal's Office
+  SYNTH_ACT_CODE_PRINCIPAL_OFFICE,
   24, // Guidance and Counseling
   25, // Pupil Management and Safety
   26, // Health and Related Services
-  84, // Principal
 ];
 
 const BUILDING_SUPPORT = [
@@ -72,7 +70,8 @@ function minMaxClassOf(df) {
     .rollup({ min: op.min("class_of"), max: op.max("class_of") });
 }
 
-function combineActivities(df, codes, synth_activity_code, synth_activity) {
+// TODO: Merge with combineActivitiesS275
+function combineActivitiesF19x(df, codes, synth_activity_code, synth_activity) {
   const nonActivityColumns = df.columnNames(
     (c) => !["activity_code", "activity", "amount"].includes(c),
   );
@@ -95,15 +94,46 @@ function combineActivities(df, codes, synth_activity_code, synth_activity) {
   return result;
 }
 
-function combineCommonActivities(df) {
-  df = combineActivities(
+// TODO: Merge with combineActivitiesF19x
+function combineActivitiesS275(df, codes, synth_activity_code, synth_activity) {
+  const nonActivityColumns = df.columnNames(
+    (c) => !["activity_code", "activity", "c_est_total_initial_salary", "c_est_total_initial_salary", "c_est_total_initial_salary"].includes(c),
+  );
+
+  const summed = df
+    .params({ codes, synth_activity, synth_activity_code })
+    .filter((d, $) => op.includes($.codes, d.activity_code))
+    .groupby(...nonActivityColumns)
+    .rollup({
+      c_est_total_initial_salary: (d) => op.sum(d.c_est_total_initial_salary),
+      c_est_total_final_salary: (d) => op.sum(d.c_est_total_final_salary),
+      fte_in_assignment: (d) => op.sum(d.fte_in_assignment),
+      activity_code: (_, $) => $.synth_activity_code,
+      activity: (_, $) => $.synth_activity,
+    });
+
+  const others = df
+    .params({ codes })
+    .filter((d, $) => !op.includes($.codes, d.activity_code));
+
+  const result = others.union(summed);
+  return result;
+}
+
+function combineCommonActivities(df, combiner) {
+
+  df = combiner(
     df,
+    // 27 - Teaching
+    // 34 - Professional Learning - State (funds part of teacher salary. Not all budget systems can account for it but it shows up in actuals)
     [27, 34],
     SYNTH_ACT_CODE_TEACHING,
     SYNTH_ACT_TEACHING,
   );
-  df = combineActivities(
+  df = combiner(
     df,
+    // 84 - Principal
+    // 23 - Principal's Office
     [84, 23],
     SYNTH_ACT_CODE_PRINCIPAL_OFFICE,
     SYNTH_ACT_PRINCPAL_OFFICE,
@@ -145,9 +175,8 @@ export default class DistrictData {
     // years such as Teaching + Professional Learning. In this case, it
     // replaces the activity code 27 and 34 with their summation labeled
     // with a synthetic activity code such as 9990.
-    this.gf_expenditure_df = combineCommonActivities(this.gf_expenditure_df);
-    // TODO: Handle s275 activities.
-    this.s275_summary_df = this.s275_summary_df;
+    this.gf_expenditure_df = combineCommonActivities(this.gf_expenditure_df, combineActivitiesF19x);
+    this.s275_summary_df = combineCommonActivities(this.s275_summary_df, combineActivitiesS275);
 
     const minMaxDf = minMaxClassOf(this.fundedEnrollment_df)
       .concat(minMaxClassOf(this.gf_expenditure_df))

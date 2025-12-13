@@ -15,8 +15,7 @@ const bigqueryClient = new BigQuery();
 const storageClient = new Storage();
 
 // Change this to force cache invalidaiton of results for queries.
-const CACHE_BREAK_SALT = '2';
-
+const CACHE_BREAK_SALT = '2025-12-03';
 
 function sha256(str) {
   return crypto.createHash('sha256').update(str + CACHE_BREAK_SALT).digest('hex');
