@@ -97,7 +97,14 @@ function combineActivitiesF19x(df, codes, synth_activity_code, synth_activity) {
 // TODO: Merge with combineActivitiesF19x
 function combineActivitiesS275(df, codes, synth_activity_code, synth_activity) {
   const nonActivityColumns = df.columnNames(
-    (c) => !["activity_code", "activity", "c_est_total_initial_salary", "c_est_total_initial_salary", "c_est_total_initial_salary"].includes(c),
+    (c) =>
+      ![
+        "activity_code",
+        "activity",
+        "c_est_total_initial_salary",
+        "c_est_total_initial_salary",
+        "c_est_total_initial_salary",
+      ].includes(c),
   );
 
   const summed = df
@@ -121,7 +128,6 @@ function combineActivitiesS275(df, codes, synth_activity_code, synth_activity) {
 }
 
 function combineCommonActivities(df, combiner) {
-
   df = combiner(
     df,
     // 27 - Teaching
@@ -175,8 +181,14 @@ export default class DistrictData {
     // years such as Teaching + Professional Learning. In this case, it
     // replaces the activity code 27 and 34 with their summation labeled
     // with a synthetic activity code such as 9990.
-    this.gf_expenditure_df = combineCommonActivities(this.gf_expenditure_df, combineActivitiesF19x);
-    this.s275_summary_df = combineCommonActivities(this.s275_summary_df, combineActivitiesS275);
+    this.gf_expenditure_df = combineCommonActivities(
+      this.gf_expenditure_df,
+      combineActivitiesF19x,
+    );
+    this.s275_summary_df = combineCommonActivities(
+      this.s275_summary_df,
+      combineActivitiesS275,
+    );
 
     const minMaxDf = minMaxClassOf(this.fundedEnrollment_df)
       .concat(minMaxClassOf(this.gf_expenditure_df))

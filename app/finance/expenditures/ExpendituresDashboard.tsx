@@ -14,7 +14,7 @@ import {
   makeBudgetActualsChartConfig,
   makeBudgetActualsContextChartConfig,
 } from "utilities/highcharts/ChartConfigGenerators";
-import { makeChartableVitals } from "app/finance/vitals/ChartableVitals";
+import { makeChartableVitals } from "utilities/ChartableVitals";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import {
   makeFacetColumnRoot,

@@ -3,7 +3,7 @@
 import { dfToJSONConnectorOptions } from "utilities/highcharts/utils";
 import { makeCorrelationChartConfig } from "utilities/highcharts/ChartConfigGenerators";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
-import { makeChartableVitals } from "app/finance/vitals/ChartableVitals";
+import { makeChartableVitals } from "utilities/ChartableVitals";
 import { useSearchParams } from "next/navigation";
 import HcDashboard from "components/HcDashboard";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
@@ -151,7 +151,6 @@ function makeCorrelationChartOptions(
       1,
     ),
 
-
     makeFundedEnrollmentCashflowConfig(
       idPrefix,
       ccddd,
@@ -238,12 +237,12 @@ function makeCorrelationChartOptions(
   return retval;
 }
 
-function componentsGenerator(cashflowSettings: CashflowSettings) {
+function componentsGenerator(correlationsSettings: CorrelationsSettings) {
   const correlationChartOptions = makeCorrelationChartOptions(
-    cashflowSettings.id,
-    cashflowSettings.ccddd,
-    cashflowSettings.currencyNormalization,
-    cashflowSettings.staffingNormalization,
+    correlationsSettings.id,
+    correlationsSettings.ccddd,
+    correlationsSettings.currencyNormalization,
+    correlationsSettings.staffingNormalization,
   );
 
   return correlationChartOptions.map((c) => makeCorrelationChartConfig(c));
