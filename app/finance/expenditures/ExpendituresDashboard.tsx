@@ -13,6 +13,7 @@ import {
   makeBaseChartConfig,
   makeBudgetActualsChartConfig,
   makeBudgetActualsContextChartConfig,
+  makeContextCell,
 } from "utilities/highcharts/ChartConfigGenerators";
 import { makeChartableVitals } from "utilities/ChartableVitals";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
@@ -105,14 +106,11 @@ function makeFacetedExpendituresForDistrict(
   facet,
   expenditureSettings,
 ) {
-  const data = extractRawExpenditures(
-    filteredExpenditures,
-    "activity" as const,
-  );
+  const data = extractRawExpenditures(filteredExpenditures, facet);
 
   const pdata = data
     .groupby(["class_of", "data_type"])
-    .pivot(["activity_code"], {
+    .pivot([`${facet}_code`], {
       amount: (d) => op.sum(d.amount),
       _pivot_name_hack_: (d) => op.any("_pivot_name_hack_"),
     })
@@ -187,28 +185,6 @@ function compileData(districtDataMap, expandedAllSettings, facet, sortOrder) {
   data = data.orderby("class_of");
 
   return { data, fullFacetOrder };
-}
-
-// TODO: Dedupe with vitals.
-function makeContextCell(renderTo, metricColumn, title, yValueFormat, yBounds) {
-  const cell = makeBudgetActualsContextChartConfig({
-    renderTo,
-    title,
-    metricColumn,
-    connectorId: CONNECTOR_ID,
-    xDataColumn: "class_of",
-    xValueFormat: "year" as const,
-
-    yValueFormat,
-
-    // Ensure 0 min unless negative.
-    yMin: Math.min(0, yBounds.min),
-    yMax: yBounds.max,
-  });
-
-  cell.sync.extremes = false;
-
-  return cell;
 }
 
 function expandFilters(allSettings): Array<ExpendituresSettings> {
@@ -326,6 +302,7 @@ function augmentContextComponents(gui, components, data) {
   components.push(
     makeContextCell(
       `context-fundedEnrollment`,
+      CONNECTOR_ID,
       `context_amount_fundedEnrollment`,
       "Funded Enrollment",
       "fte" as const,
@@ -333,6 +310,7 @@ function augmentContextComponents(gui, components, data) {
     ),
     makeContextCell(
       `context-cashflow`,
+      CONNECTOR_ID,
       `context_amount_cashflow`,
       "Cashflow",
       "currency" as const,
@@ -340,6 +318,7 @@ function augmentContextComponents(gui, components, data) {
     ),
     makeContextCell(
       `context-revenues`,
+      CONNECTOR_ID,
       `context_amount_revenues`,
       "Revenues",
       "currency" as const,
@@ -347,6 +326,7 @@ function augmentContextComponents(gui, components, data) {
     ),
     makeContextCell(
       `context-expenditures`,
+      CONNECTOR_ID,
       `context_amount_expenditures`,
       "Expenditures",
       "currency" as const,

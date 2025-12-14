@@ -50,12 +50,16 @@ const STUDENT_SUPPORT_CODES = [
   24, // Guidance and Counseling
   25, // Pupil Management and Safety
   26, // Health and Related Services
+  35, // Pupil Safety
 ];
 
 const BUILDING_SUPPORT = [
-  62, // Grounds Maintenanceko
+  62, // Grounds Maintenance
   63, // Operations of Building
   64, // Maintenance
+  65, // Utilities
+  67, // Building and Property Security
+  68, // Insurance - Maintenance and Operations
 ];
 
 function financeGroupSumAmount(new_col_name, df, col_to_sum) {

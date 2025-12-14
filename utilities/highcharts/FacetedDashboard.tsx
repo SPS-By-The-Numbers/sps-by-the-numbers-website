@@ -1,3 +1,5 @@
+import { toEmojiPrefix } from "utilities/emoji";
+
 import type { BaseSettings } from "app/finance/_widgets/SettingsContents";
 import type Dashboards from "@highcharts/dashboards";
 
@@ -46,12 +48,20 @@ export function makeMultipleDatasetFacetedDashboard(
   let rows = new Array<any>();
   const components = new Array<Dashboards.Component.Options>();
 
-  for (const datasetSettings of datasetSettingsList) {
+  for (const datasetIdx in datasetSettingsList) {
+    const datasetSettings = datasetSettingsList[datasetIdx];
+    const titlePrefix = toEmojiPrefix(datasetIdx);
+
     const allCells = componentGenerator(datasetSettings);
     for (const i in allCells) {
       const cellOptions = allCells[i];
       rows[i] = rows[i] || { cells: new Array<any>() };
       rows[i].cells.push({ id: cellOptions.renderTo });
+      cellOptions.chartOptions.title.text =
+        cellOptions.chartOptions.title.text.replace(
+          "<h3>",
+          `<h3> ${titlePrefix} `,
+        );
       components.push(cellOptions);
     }
   }
@@ -59,6 +69,9 @@ export function makeMultipleDatasetFacetedDashboard(
   const gui: Dashboards.Board.GUIOptions = {
     layouts: [
       {
+        rowClassName: "faceted-row",
+        cellClassName: "faceted-cell",
+
         rows,
       },
     ],

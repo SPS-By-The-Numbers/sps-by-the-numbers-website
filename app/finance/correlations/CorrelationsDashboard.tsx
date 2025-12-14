@@ -17,7 +17,9 @@ import type { MetricSettings } from "app/finance/_widgets/MetricSettingsContents
 
 const CONNECTOR_ID = "cashflow-connector";
 
-export interface CorrelationsSettings extends MetricSettings {}
+export interface CorrelationsSettings extends MetricSettings {
+  // TODO: Change x-axis.
+}
 
 function makeFundedEnrollmentCashflowConfig(
   idPrefix,
@@ -166,71 +168,6 @@ function makeCorrelationChartOptions(
       "actuals",
       currencyNormalization,
       1,
-    ),
-
-    makeCompCashflowConfig(
-      idPrefix,
-      ccddd,
-      "Teaching Comp",
-      `${currencyNormalization}_teachingComp`,
-      "actuals",
-      1,
-    ),
-    makeCompCashflowConfig(
-      idPrefix,
-      ccddd,
-      "Teaching Comp",
-      `${currencyNormalization}_teachingComp`,
-      "budget",
-      2,
-    ),
-    makeCompCashflowConfig(
-      idPrefix,
-      ccddd,
-      "Student Support Comp",
-      `${currencyNormalization}_studentSupportComp`,
-      "actuals",
-      1,
-    ),
-    makeCompCashflowConfig(
-      idPrefix,
-      ccddd,
-      "Student Support Comp",
-      `${currencyNormalization}_studentSupportComp`,
-      "budget",
-      2,
-    ),
-    makeCompCashflowConfig(
-      idPrefix,
-      ccddd,
-      "Building Support Comp",
-      `${currencyNormalization}_buildingSupportComp`,
-      "actuals",
-      1,
-    ),
-    makeCompCashflowConfig(
-      idPrefix,
-      ccddd,
-      "Building Support Comp",
-      `${currencyNormalization}_buildingSupportComp`,
-      "budget",
-      2,
-    ),
-    makeCompCashflowConfig(
-      idPrefix,
-      ccddd,
-      "Other Comp",
-      `${currencyNormalization}_otherComp`,
-      "actuals",
-      1,
-    ),
-    makeCompCashflowConfig(
-      idPrefix,
-      ccddd,
-      "Other Comp",
-      `${currencyNormalization}_otherComp`,
-      "budget",
-      2,
     ),
   ];
 

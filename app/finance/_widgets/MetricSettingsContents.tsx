@@ -1,6 +1,7 @@
 import ALL_DISTRICTS from "app/finance/_domain/ccddd";
 import CurrencyNormalizationSelector from "app/finance/_widgets/CurrencyNormalizationSelector";
 import DistrictSelector from "app/finance/_widgets/DistrictSelector";
+import FilterGroupingSelector from "app/finance/_widgets/FilterGroupingSelector";
 import StaffingNormalizationSelector from "app/finance/_widgets/StaffingNormalizationSelector";
 
 import type {
@@ -9,8 +10,11 @@ import type {
 } from "utilities/ChartableMetrics";
 import type { BaseSettings } from "app/finance/_widgets/SettingsContents";
 
+export type FilterGrouping = "spsbtn" | "sps";
+
 export interface MetricSettings extends BaseSettings {
   ccddd: number;
+  filterGrouping: FilterGrouping;
   currencyNormalization: CurrencyNormalization;
   staffingNormalization: StaffingNormalization;
 }
@@ -19,6 +23,7 @@ export const DEFAULT_METRIC_SETTINGS: Array<MetricSettings> = [
   {
     id: "primary",
     ccddd: 17001,
+    filterGrouping: "spsbtn" as const,
     currencyNormalization: "amount" as const,
     staffingNormalization: "fte" as const,
   },
@@ -37,6 +42,13 @@ export default function MetricSettingsContents({
         ccddd={settings.ccddd}
         onChange={(ccddd) =>
           setSettings(Object.assign({}, settings, { ccddd }))
+        }
+      />
+      <FilterGroupingSelector
+        label={`Filter Grouping`}
+        filterGrouping={settings.filterGrouping}
+        onChange={(filterGrouping) =>
+          setSettings(Object.assign({}, settings, { filterGrouping }))
         }
       />
       <CurrencyNormalizationSelector

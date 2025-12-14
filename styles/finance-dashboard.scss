@@ -57,7 +57,7 @@ $context-chart-row-height: 230px;
 
 .hcdashboard .highcharts-dashboards-cell.context-cell {
   min-width: 25%;
-  max-width: 25%;
+  max-width: 100%;
   min-height: $context-chart-row-height;
   max-height: $context-chart-row-height;
 }

@@ -27,6 +27,7 @@ export type BaseChartConfigOptions = {
   yValueFormat: ValueFormat;
   yValueShowNegative?: boolean;
   yLabel?: string;
+  yTickAmount?: number;
 
   xValueFormat: ValueFormat;
   xValueShowNegative?: boolean;
@@ -341,7 +342,7 @@ export function makeBaseChartConfig(options: BaseChartConfigOptions) {
         minorTickInterval: "auto",
         min: options.yMin,
         max: options.yMax,
-        tickAmount: 5,
+        tickAmount: options.yTickAmount ?? 5,
         type:
           options.yAxisType ??
           inferAxisType(options.yValueFormat, options.yValueShowNegative),
@@ -627,4 +628,33 @@ export function formatForNormalization(normalization): ValueFormat {
   }
 
   return "decimal" as const;
+}
+
+// TODO: Dedupe with vitals.
+export function makeContextCell(
+  renderTo,
+  connectorId,
+  metricColumn,
+  title,
+  yValueFormat,
+  yBounds,
+) {
+  const cell = makeBudgetActualsContextChartConfig({
+    renderTo,
+    title,
+    metricColumn,
+    connectorId,
+    xDataColumn: "class_of",
+    xValueFormat: "year" as const,
+
+    yValueFormat,
+
+    // Ensure 0 min unless negative.
+    yMin: Math.min(0, yBounds?.min),
+    yMax: yBounds?.max,
+  });
+
+  cell.sync.extremes = false;
+
+  return cell;
 }

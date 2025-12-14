@@ -57,6 +57,63 @@ const ACT_29 = makeLeafNode("act", 29, "Payments to School Districts");
 const ACT_49 = makeLeafNode("act", 49, "Transfers - Food Service");
 
 const ActivityFilterTree = makeInternalNode("activity", "All Activities", [
+  makeInternalNode("teaching", "Teaching", [ACT_9990, ACT_28]),
+  makeInternalNode("student-support", "Student Support", [
+    ACT_9991,
+    ACT_24,
+    ACT_25,
+    ACT_26,
+    ACT_35,
+  ]),
+  makeInternalNode("building-support", "Building Support", [
+    ACT_62,
+    ACT_63,
+    ACT_64,
+    ACT_65,
+    ACT_67,
+    ACT_68,
+  ]),
+  makeInternalNode("other", "Other", [
+    makeInternalNode("central-admin", "Central Administration", [
+      ACT_11,
+      ACT_12,
+      ACT_13,
+      ACT_14,
+      ACT_15,
+      ACT_21,
+      ACT_61,
+    ]),
+    makeInternalNode("technology", "Technology", [ACT_32, ACT_72]),
+    makeInternalNode("classroom-resources", "Classroom Resources", [
+      ACT_22,
+      ACT_33,
+    ]),
+    makeInternalNode("teaching-support", "Teacher Training", [ACT_31, ACT_34]),
+    makeInternalNode("food", "Food Services", [ACT_41, ACT_42, ACT_44]),
+    makeInternalNode("transportation", "Transportation", [
+      ACT_51,
+      ACT_52,
+      ACT_59,
+    ]),
+    makeInternalNode("other-support", "Other Support Activities", [
+      ACT_58,
+      ACT_73,
+      ACT_74,
+      ACT_75,
+      ACT_91,
+    ]),
+    makeInternalNode("uncat", "[uncat] - Debt Service", [
+      ACT_85,
+      ACT_56,
+      ACT_83,
+      ACT_53,
+      ACT_29,
+      ACT_49,
+    ]),
+  ]),
+]);
+
+const SpsActivityFilterTree = makeInternalNode("activity", "All Activities", [
   makeInternalNode("central-admin", "Central Administration", [
     ACT_11,
     ACT_12,
@@ -110,5 +167,6 @@ const ActivityFilterTree = makeInternalNode("activity", "All Activities", [
 ]);
 
 const ActivityFilter = new Filter(ActivityFilterTree);
+const SpsActivityFilter = new Filter(SpsActivityFilterTree);
 
 export default ActivityFilter;

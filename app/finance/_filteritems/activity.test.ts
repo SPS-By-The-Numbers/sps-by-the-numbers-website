@@ -3,9 +3,9 @@ import ActivityFilter from "app/finance/_filteritems/activity";
 
 describe("activity filter", () => {
   it("smoke test", () => {
-    expect(ActivityFilter.toFilterString(new Set([11, 9991]))).toBe("11_9991");
+    expect(ActivityFilter.toFilterString(new Set([11, 9991]))).toBe("9991_11");
     expect(ActivityFilter.toSummaryText(new Set([11, 9991]))).toBe(
-      "Only: Board of Directors, Principal's Office / Principal",
+      "Only: Principal's Office / Principal, Board of Directors",
     );
   });
 });

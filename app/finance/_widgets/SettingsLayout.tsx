@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { toEmojiPrefix } from "utilities/emoji";
 import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import AccordionSummary from "@mui/material/AccordionSummary";
@@ -60,6 +61,7 @@ function DatasetAccordion({
   setSettings,
   settingsContentsComponents,
   removeSelf,
+  titlePrefix,
 }) {
   return (
     <Accordion defaultExpanded>
@@ -69,8 +71,14 @@ function DatasetAccordion({
           expandIcon={<ArrowDropDownIcon />}
           aria-controls={`${settings.id}`}
           id={`panel-${settings.id}-header`}
+          sx={{
+            paddingLeft: 0,
+            paddingRight: 0,
+          }}
         >
-          <Typography component="span">{settings.name}</Typography>
+          <Typography component="span">
+            {titlePrefix} {settings.name}
+          </Typography>
         </AccordionSummary>
       </Stack>
       <AccordionDetails>
@@ -101,15 +109,18 @@ function DrawerContents({
       <DatasetAccordion
         sharedSettings={sharedSettings}
         settings={sharedSettings}
+        titlePrefix=""
         removeSelf={undefined}
         setSettings={setSharedSettings}
         settingsContentsComponents={sharedSettingsComponents}
       />
     );
   }
+  const useEmoji = allSettings.length > 1;
   const panels = allSettings.map((settings, index) => (
     <DatasetAccordion
       key={settings.id}
+      titlePrefix={useEmoji ? toEmojiPrefix(index) : ""}
       sharedSettings={sharedSettings}
       settings={settings}
       removeSelf={() => removeSetting(index)}

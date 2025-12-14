@@ -41,11 +41,18 @@
   font-size: x-small;
 }
 
-// TODO: Make the width/height more settable and responsive.
 .highcharts-dashboards-cell {
-  min-width: 50%;
-  max-width: 50%;
+  min-width: 300px;
+  max-width: 100%;
   min-height: 500px;
+}
+
+@media screen and (min-width: 1500px) {
+  .highcharts-dashboards-cell {
+    min-width: 490px;
+    max-width: 50%;
+    min-height: 450px;
+  }
 }
 
 // The data tables are waaay larger than the chart area.
