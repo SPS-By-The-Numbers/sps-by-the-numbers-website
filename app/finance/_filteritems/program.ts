@@ -44,7 +44,7 @@ const PROG_26 = makeLeafNode(
 );
 const PROG_29 = makeLeafNode("prog", 29, "Special Education - Other - Federal");
 const PROG_51 = makeLeafNode("prog", 51, "ESEA Disadvantaged - Federal");
-const PROG_52 = makeLeafNode("prog", 52, "Other Title Grants Under ESEA");
+const PROG_52 = makeLeafNode("prog", 52, "Other Title Grants Under ESEA (School Improvement)");
 const PROG_53 = makeLeafNode("prog", 53, "ESEA Migrant - Federal");
 const PROG_56 = makeLeafNode(
   "prog",
@@ -172,54 +172,71 @@ const PROG_66 = makeLeafNode(
   "Student Achievement-State - added FY 01-02 - Deleted 13-14",
 );
 
+// Groupings match the OSPI Accounting Manual.
 const ProgramFilterTree = makeInternalNode("program", "All Programs", [
   makeInternalNode("regular-instruction", "Regular Instruction", [
     PROG_1,
     PROG_2,
     PROG_3,
+    PROG_9,
     PROG_75,
   ]),
-  makeInternalNode("special-education", "Special Education Instruction", [
-    makeInternalNode("special-education-sps", "Special Education SPS", [
-      PROG_21,
-      PROG_23,
-      PROG_24,
-    ]),
-    makeInternalNode(
-      "special-education-non-sps",
-      "Special Education Non-SPS)",
-      [PROG_22, PROG_25, PROG_26, PROG_29],
-    ),
+  makeInternalNode("special-education-sps", "Special Education", [
+    PROG_21,
+    PROG_22,
+    PROG_23,
+    PROG_24,
+    PROG_25,
+    PROG_26,
+    PROG_29,
+  ]),
+  makeInternalNode("vocational-sps", "Vocational", [
+    PROG_31,
+    PROG_34,
+    PROG_38,
+    PROG_39,
+  ]),
+  makeInternalNode("skills-center-sps", "Skills Center", [
+    PROG_45,
+    PROG_46,
+    PROG_47,
   ]),
   makeInternalNode("compensatory", "Compensatory Education Instruction", [
-    makeInternalNode("compensatory-sps", "Compensatory Education SPS", [
-      PROG_51,
-      PROG_52,
-      PROG_53,
-      PROG_56,
-      PROG_57,
-      PROG_58,
-      PROG_61,
-      PROG_64,
-      PROG_68,
-      PROG_69,
-    ]),
-    makeInternalNode(
-      "compensatory-non-sps",
-      "Compensatory Education Instruction (non-sps)",
-      [PROG_54, PROG_59, PROG_62, PROG_67],
-    ),
+    PROG_51,
+    PROG_52,
+    PROG_53,
+    PROG_54,
+    PROG_55,
+    PROG_56,
+    PROG_57,
+    PROG_58,
+    PROG_59,
+    PROG_61,
+    PROG_62,
+    PROG_64,
+    PROG_65,
+    PROG_68,
+    PROG_67,
+    PROG_69,
   ]),
-  makeInternalNode("support", "Transportation, Food, Support", [
+  makeInternalNode("other-instructional", "Other Instructional Program", [
+    PROG_71,
+    PROG_73,
+    PROG_74,
+    PROG_76,
+    PROG_78,
+    PROG_79,
+  ]),
+  makeInternalNode("community_services", "Community Services", [
+    PROG_81,
+    PROG_86,
+    PROG_88,
+    PROG_89,
+  ]),
+  makeInternalNode("support", "Support Services", [
     PROG_97,
     PROG_99,
     PROG_98,
-  ]),
-  makeInternalNode("assistance-transition", "Transition and Assistance", [
-    PROG_55,
-    PROG_76,
-    PROG_9,
-    PROG_65,
   ]),
   makeInternalNode("misc", "Unrestricted, Reserved, Covid", [
     PROG_0,
@@ -230,47 +247,6 @@ const ProgramFilterTree = makeInternalNode("program", "All Programs", [
       PROG_13,
       PROG_14,
       PROG_19,
-    ]),
-  ]),
-  makeInternalNode("community_services", "Community Services", [
-    makeInternalNode("community_services-sps", "Community Services SPS", [
-      PROG_81,
-      PROG_89,
-    ]),
-    makeInternalNode(
-      "community_services-non-sps",
-      "Community Services Non-SPS",
-      [PROG_88, PROG_86],
-    ),
-  ]),
-  makeInternalNode("other-instructional", "Other Instructional Program", [
-    makeInternalNode("other-instructional-sps", "Other Instructional SPS", [
-      PROG_73,
-      PROG_74,
-      PROG_79,
-    ]),
-    makeInternalNode("instructional-non-sps", "Other Instructional Non-sps", [
-      PROG_71,
-    ]),
-  ]),
-  makeInternalNode("skills-center", "Skills Center and Vocational", [
-    makeInternalNode("skills-center-sps", "Skills Center SPS", [
-      PROG_45,
-      PROG_46,
-    ]),
-    makeInternalNode(
-      "skills-center-non-sps",
-      "Skills Center Instruction (non-sps)",
-      [PROG_47],
-    ),
-    makeInternalNode("vocational-sps", "Vocational SPS", [
-      PROG_31,
-      PROG_34,
-      PROG_39,
-    ]),
-    makeInternalNode("vocational-non-sps", "Vocational Non-SPS", [
-      PROG_38,
-      PROG_78,
     ]),
   ]),
   makeInternalNode("obsolete", "Obsolete", [
