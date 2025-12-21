@@ -40,12 +40,17 @@ import Typography from "@mui/material/Typography";
 
 import type { ColumnTable } from "arquero";
 import type {
-  PAOFilterSettings,
   ExpendituresDashboardSettings,
 } from "./ExpendituresDashboardSettings";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
 import type { MetricSettings } from "app/finance/_widgets/MetricSettingsContents";
 import type { FilterSelection } from "utilities/DistrictData";
+
+interface PAOFilterSettings {
+  selectedObjects: string[];
+  selectedActivities: string[];
+  selectedPrograms: string[];
+}
 
 export interface ExpendituresSettings
   extends MetricSettings, PAOFilterSettings {
@@ -341,10 +346,11 @@ function makeHighchartConfig(
   fullFacetOrder,
   data,
 ) {
+  const facetLimit = parseInt(sharedSettings.facetLimit);
   // Trim the list for rendering speed.
   const facetOrder = fullFacetOrder.slice(
     0,
-    parseInt(sharedSettings.facetLimit),
+    facetLimit === 0 ? undefined : facetLimit
   );
 
   const facetYBounds =

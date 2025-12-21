@@ -4,13 +4,8 @@ import { op } from "arquero";
 import { DUTY_ROOTS, makeDutyRootItems } from "app/finance/_domain/DutyRoots";
 
 import type { ColumnTable } from "arquero";
+import type { SortOrder } from "utilities/ChartOptions";
 import type DistrictData from "utilities/DistrictData";
-
-export const ALL_SORT_TYPE = ["variance", "latest"];
-export type SortType = (typeof ALL_SORT_TYPE)[number];
-
-export const ALL_SORT_ORDER = ["ascending", "descending"];
-export type SortOrder = (typeof ALL_SORT_ORDER)[number];
 
 export type FacetInfo = {
   code: number;

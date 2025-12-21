@@ -8,10 +8,15 @@ import { DEFAULT_METRIC_SETTINGS } from "app/finance/_widgets/MetricSettingsCont
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
 import { Metadata } from "next";
 import { Suspense } from "react";
+import { deserializeExpenditureDashboardSettings } from "./ExpendituresDashboardSettings";
 import ExpendituresDashboard from "./ExpendituresDashboard";
 
 import type { ExpendituresDashboardSettings } from "./ExpendituresDashboardSettings";
 import type { ExpendituresSettings } from "./ExpendituresDashboard";
+
+type Params = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
 
 const DEFAULT_EXPENDITURE_SETTINGS = DEFAULT_METRIC_SETTINGS.map((v) => ({
   ...v,
@@ -22,28 +27,45 @@ const DEFAULT_EXPENDITURE_SETTINGS = DEFAULT_METRIC_SETTINGS.map((v) => ({
   selectedPrograms: ALL_PROGRAM_ITEMS,
 }));
 
-const DEFAULT_DASHBOARD_SETTINGS = {
-  ...DEFAULT_COMMON_SHARED_SETTINGS,
-  facet: "activity" as const,
-  facetLimit: "99999",
-  sortOrder: "descending" as const,
-  sortType: "variance" as const,
-  yScale: "fixed" as const,
-} as ExpendituresDashboardSettings;
-
 export const metadata: Metadata = {
   title: "Expenditures Dashboard for Washingtion State Schools",
   description:
     "Allows for anlaysis and comparison of historical finances on all school districts.",
 };
 
-export default async function Page() {
+function extractAllSettings(searchParams) {
+  if (!searchParams.query) {
+    return DEFAULT_EXPENDITURE_SETTINGS;
+  }
+  return DEFAULT_EXPENDITURE_SETTINGS;
+}
+
+function getSerialized(value) {
+  if (Array.isArray(value)) {
+    for (const v in value) {
+      if (typeof(v) !== "string") {
+        return [""];
+      }
+    }
+    return value;
+  } else if (typeof(value) === "string") {
+    return [value];
+
+  }
+  return [""];
+}
+
+export default async function Page(params : Params) {
+  const searchParams = await params.searchParams;
+  const sharedSettings = deserializeExpenditureDashboardSettings(getSerialized(searchParams.s)[0]);
+  const allSettings = extractAllSettings(searchParams);
+  
   return (
     <Suspense>
       <EnsureDistrictData
-        initialValue={DEFAULT_EXPENDITURE_SETTINGS}
+        initialValue={allSettings}
         ContentComponent={ExpendituresDashboard}
-        initialSharedSettings={DEFAULT_DASHBOARD_SETTINGS}
+        initialSharedSettings={sharedSettings}
       />
     </Suspense>
   );

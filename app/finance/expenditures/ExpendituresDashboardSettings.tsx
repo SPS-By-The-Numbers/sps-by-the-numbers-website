@@ -1,14 +1,14 @@
-"use client";
-
+import { DEFAULT_COMMON_SHARED_SETTINGS } from "app/finance/_widgets/CommonSharedSettingsContents";
 import { useId } from "react";
 import * as ChartOptions from "utilities/ChartOptions";
 import InputLabel from "@mui/material/InputLabel";
 import SettingsSelect from "app/finance/_widgets/SettingsSelect";
 import Stack from "@mui/material/Stack";
+import { serializeSettingsDict, deserializeSettingsDict } from 'utilities/settings';
 
 import type { CommonSharedSettings } from "app/finance/_widgets/CommonSharedSettingsContents";
 import type { SettingsContentsProps } from "app/finance/_widgets/SettingsContents";
-import type { SortOrder, SortType } from "utilities/ChartableMetrics";
+import type { SortOrder, SortType } from "utilities/ChartOptions";
 
 const ALL_FACETS = ["activity", "program", "object", "nces", "school"];
 type Facet = (typeof ALL_FACETS)[number];
@@ -25,19 +25,88 @@ const YSCALE_OPTIONS: Record<ChartOptions.YScale, string> = {
   descending: "Descending",
 };
 
-export interface PAOFilterSettings {
-  selectedObjects: string[];
-  selectedActivities: string[];
-  selectedPrograms: string[];
-}
-
-export interface ExpendituresDashboardSettings
-  extends CommonSharedSettings, PAOFilterSettings {
+export interface ExpendituresDashboardSettings extends CommonSharedSettings {
   facet: Facet;
   facetLimit: ChartOptions.FacetLimit;
   sortOrder: SortOrder;
   sortType: SortType;
   yScale: ChartOptions.YScale;
+}
+
+const DEFAULT_DASHBOARD_SETTINGS : ExpendituresDashboardSettings = {
+  ...DEFAULT_COMMON_SHARED_SETTINGS,
+  facet: "activity",
+  facetLimit: "0",
+  sortOrder: "descending",
+  sortType: "variance",
+  yScale: "fixed",
+};
+
+function serliaizeFacet(facet: Facet) {
+  return facet as string;
+}
+
+function deserliaizeFacet(s: string) : Facet {
+  switch (s) {
+    case 'activity':
+      return 'activity';
+
+    case 'program':
+      return 'program';
+
+    case 'object':
+      return 'object';
+
+    case 'nces':
+      return 'nces';
+
+    case 'school':
+      return 'school';
+
+  }
+
+  return 'activity';
+}
+
+export function serializeExpenditureDashboardSettings(s : ExpendituresDashboardSettings) {
+  const settingsDict = {
+    f: serliaizeFacet(s.facet),
+    l: ChartOptions.serliaizeFacetLimit(s.facetLimit),
+    so: ChartOptions.serliaizeSortOrder(s.sortOrder),
+    st: ChartOptions.serliaizeSortType(s.sortType),
+    ys: ChartOptions.serliaizeYScales(s.yScale),
+  };
+
+  return serializeSettingsDict(settingsDict);
+}
+
+export function deserializeExpenditureDashboardSettings(serialized : string) {
+  const settingsDict = deserializeSettingsDict(serialized);
+  const settings = DEFAULT_DASHBOARD_SETTINGS;
+  for (const [key, value] of Object.entries(settingsDict)) {
+    switch (key) {
+      case 'f':
+        settings.facet = deserliaizeFacet(value);
+        break;
+
+      case 'l':
+        settings.facetLimit = ChartOptions.deserliaizeFacetLimit(value);
+        break;
+
+      case 'so':
+        settings.sortOrder = ChartOptions.deserliaizeSortOrder(value);
+        break;
+
+      case 'st':
+        settings.sortType = ChartOptions.deserliaizeSortType(value);
+        break;
+
+      case 'ys':
+        settings.yScale = ChartOptions.deserliaizeYScales(value);
+        break;
+    }
+  }
+  return settings;
 }
 
 export default function ExpendituresDashboardSettingsContents(
