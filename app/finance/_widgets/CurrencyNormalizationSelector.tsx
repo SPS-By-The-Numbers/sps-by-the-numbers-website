@@ -36,7 +36,6 @@ export default function CurrencyNormalizationSelector({
         <MenuItem value="amount">Amount</MenuItem>
         <MenuItem value="pctexp">% of Expenditures</MenuItem>
         <MenuItem value="pctcomp">% of All Compensation</MenuItem>
-        <MenuItem value="pctsalary">% of All Salaries</MenuItem>
       </Select>
     </FormControl>
   );

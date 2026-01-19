@@ -7,13 +7,12 @@ export function serializeSettingsDict(dict: Record<string, string>) {
     if (k.indexOf(':') !== -1) {
       throw `Unable to serialize ${k}`;
     }
-    if (k.indexOf(';') !== -1) {
-      throw `Unable to serialize ${k}`;
-    }
     if (v.indexOf(';') !== -1) {
       throw `Unable to serialize ${v}`;
     }
-    values.push(`${k}:${v}`);
+    if (v) {
+      values.push(`${k}:${v}`);
+    }
   }
 
   return values.join(';');

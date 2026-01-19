@@ -10,14 +10,12 @@ import type { CommonSharedSettings } from "app/finance/_widgets/CommonSharedSett
 import type { SettingsContentsProps } from "app/finance/_widgets/SettingsContents";
 import type { SortOrder, SortType } from "utilities/ChartOptions";
 
-const ALL_FACETS = ["activity", "program", "object", "nces", "school"];
+const ALL_FACETS = ["activity", "program", "object"];
 type Facet = (typeof ALL_FACETS)[number];
 const FACET_OPTIONS: Record<Facet, string> = {
   activity: "Activity",
   program: "Program",
   object: "Object",
-  nces: "NCES (actuals only)",
-  school: "School (actuals only)",
 };
 
 const YSCALE_OPTIONS: Record<ChartOptions.YScale, string> = {
@@ -42,11 +40,11 @@ const DEFAULT_DASHBOARD_SETTINGS : ExpendituresDashboardSettings = {
   yScale: "fixed",
 };
 
-function serliaizeFacet(facet: Facet) {
+function serializeFacet(facet: Facet) {
   return facet as string;
 }
 
-function deserliaizeFacet(s: string) : Facet {
+function deserializeFacet(s: string) : Facet {
   switch (s) {
     case 'activity':
       return 'activity';
@@ -56,13 +54,6 @@ function deserliaizeFacet(s: string) : Facet {
 
     case 'object':
       return 'object';
-
-    case 'nces':
-      return 'nces';
-
-    case 'school':
-      return 'school';
-
   }
 
   return 'activity';
@@ -70,11 +61,11 @@ function deserliaizeFacet(s: string) : Facet {
 
 export function serializeExpenditureDashboardSettings(s : ExpendituresDashboardSettings) {
   const settingsDict = {
-    f: serliaizeFacet(s.facet),
-    l: ChartOptions.serliaizeFacetLimit(s.facetLimit),
-    so: ChartOptions.serliaizeSortOrder(s.sortOrder),
-    st: ChartOptions.serliaizeSortType(s.sortType),
-    ys: ChartOptions.serliaizeYScales(s.yScale),
+    f: serializeFacet(s.facet),
+    l: ChartOptions.serializeFacetLimit(s.facetLimit),
+    so: ChartOptions.serializeSortOrder(s.sortOrder),
+    st: ChartOptions.serializeSortType(s.sortType),
+    ys: ChartOptions.serializeYScales(s.yScale),
   };
 
   return serializeSettingsDict(settingsDict);
@@ -86,23 +77,23 @@ export function deserializeExpenditureDashboardSettings(serialized : string) {
   for (const [key, value] of Object.entries(settingsDict)) {
     switch (key) {
       case 'f':
-        settings.facet = deserliaizeFacet(value);
+        settings.facet = deserializeFacet(value);
         break;
 
       case 'l':
-        settings.facetLimit = ChartOptions.deserliaizeFacetLimit(value);
+        settings.facetLimit = ChartOptions.deserializeFacetLimit(value);
         break;
 
       case 'so':
-        settings.sortOrder = ChartOptions.deserliaizeSortOrder(value);
+        settings.sortOrder = ChartOptions.deserializeSortOrder(value);
         break;
 
       case 'st':
-        settings.sortType = ChartOptions.deserliaizeSortType(value);
+        settings.sortType = ChartOptions.deserializeSortType(value);
         break;
 
       case 'ys':
-        settings.yScale = ChartOptions.deserliaizeYScales(value);
+        settings.yScale = ChartOptions.deserializeYScales(value);
         break;
     }
   }

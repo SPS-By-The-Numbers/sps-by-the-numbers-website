@@ -26,12 +26,13 @@ import {
   ObjectFilterContents,
   ActivityFilterContents,
   ProgramFilterContents,
-  extractCodes,
 } from "app/finance/_widgets/ExpenditureFilterContents";
 import { useMemo } from "react";
+import { useRouter, usePathname } from 'next/navigation';
 import ObjectFilter from "app/finance/_filteritems/object";
 import ProgramFilter from "app/finance/_filteritems/program";
-import ExpendituresDashboardSettingsContents from "./ExpendituresDashboardSettings";
+import ExpendituresDashboardSettingsContents, { serializeExpenditureDashboardSettings } from "app/finance/expenditures/ExpendituresDashboardSettings";
+import { settingsToDistrictDataFilters, serializeExpenditureFilterSettings } from "app/finance/expenditures/ExpenditureFilterSettings";
 import HcDashboard from "components/HcDashboard";
 import MetricSettingsContents from "app/finance/_widgets/MetricSettingsContents";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
@@ -43,40 +44,9 @@ import type {
   ExpendituresDashboardSettings,
 } from "./ExpendituresDashboardSettings";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
-import type { MetricSettings } from "app/finance/_widgets/MetricSettingsContents";
-import type { FilterSelection } from "utilities/DistrictData";
-
-interface PAOFilterSettings {
-  selectedObjects: string[];
-  selectedActivities: string[];
-  selectedPrograms: string[];
-}
-
-export interface ExpendituresSettings
-  extends MetricSettings, PAOFilterSettings {
-  overridePrimaryFilter: boolean;
-}
+import type { ExpendituresSettings } from "./ExpenditureFilterSettings";
 
 const CONNECTOR_ID = "expenditures-connector";
-
-function settingsToFilter(
-  expenditureSettings: ExpendituresSettings,
-): FilterSelection {
-  return {
-    selectedObjectCodes: extractCodes(
-      "obj",
-      expenditureSettings.selectedObjects,
-    ),
-    selectedActivityCodes: extractCodes(
-      "act",
-      expenditureSettings.selectedActivities,
-    ),
-    selectedProgramCodes: extractCodes(
-      "prog",
-      expenditureSettings.selectedPrograms,
-    ),
-  };
-}
 
 function componentsGenerator(
   facetOrder,
@@ -84,10 +54,10 @@ function componentsGenerator(
   expenditureSettings: ExpendituresSettings,
   bounds,
 ) {
-  const filterSelection = settingsToFilter(expenditureSettings);
+  const districtDataFilters = settingsToDistrictDataFilters(expenditureSettings);
   const subtitle = `
-  Prog: ${ProgramFilter.toSummaryText(new Set(filterSelection.selectedProgramCodes))} /
-  Obj: ${ObjectFilter.toSummaryText(new Set(filterSelection.selectedObjectCodes))} 
+  Prog: ${ProgramFilter.toSummaryText(new Set(districtDataFilters.selectedProgramCodes))} /
+  Obj: ${ObjectFilter.toSummaryText(new Set(districtDataFilters.selectedObjectCodes))} 
   `;
 
   const components = makeFacetComponents(
@@ -156,7 +126,7 @@ function compileData(districtDataMap, expandedAllSettings, facet, sortOrder) {
   for (const expenditureSettings of expandedAllSettings) {
     const districtData = districtDataMap[expenditureSettings.ccddd];
     const filteredExpenditures = districtData.filteredExpenditures(
-      settingsToFilter(expenditureSettings),
+      settingsToDistrictDataFilters(expenditureSettings),
     );
 
     const data = makeFacetedExpendituresForDistrict(
@@ -399,6 +369,8 @@ export default function ExpendituresDashboard({
   ExpendituresSettings,
   ExpendituresDashboardSettings
 >) {
+  const router = useRouter();
+  const pathname = usePathname();
   const config = useMemo(() => {
     // Expand out the filter per sub-setting.
     const expandedAllSettings: Array<ExpendituresSettings> =
@@ -418,10 +390,21 @@ export default function ExpendituresDashboard({
     );
   }, [sharedSettings, districtDataMap, allSettings]);
 
+  const setSettings = (newSharedSettings, newAllSettings) => {
+    const dashboardQuery = serializeExpenditureDashboardSettings(newSharedSettings);
+    const filterQuery = serializeExpenditureFilterSettings(newAllSettings);
+    const query = [`s=${dashboardQuery}`];
+    if (filterQuery) {
+      query.push(`f=${filterQuery}`);
+    }
+
+    router.push(`${pathname}?${query.join('&')}`);
+  };
+
   return (
     <SettingsLayout
       sharedSettings={sharedSettings}
-      setSharedSettings={setSharedSettings}
+      setSharedSettings={(newSharedSettings) => setSettings(newSharedSettings, allSettings)}
       sharedSettingsComponents={[ExpendituresDashboardSettingsContents]}
       allSettings={allSettings}
       setAllSettings={setAllSettings}

@@ -59,4 +59,9 @@ describe("filter", () => {
     expect(filter.toSummaryText(new Set([1]))).toEqual("Excl: grpA");
     expect(filter.toSummaryText(new Set([1, 3, 4]))).toEqual("Excl: opt 2");
   });
+
+  it("encodes to short form for values under 100", () => {
+   expect(filter.toShortFilterString(filter.allCodes())).toEqual("QAA");
+   expect(filter.toShortFilterString(new Set([1, 2]))).toEqual("AB");
+  });
 });

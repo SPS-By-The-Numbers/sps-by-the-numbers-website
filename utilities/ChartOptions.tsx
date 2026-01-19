@@ -4,7 +4,7 @@ export const SORT_ORDER_OPTIONS: Record<SortOrder, string> = {
   ascending: "Ascending",
   descending: "Descending",
 };
-export function serliaizeSortOrder(sortOrder: SortOrder) : string {
+export function serializeSortOrder(sortOrder: SortOrder) : string {
   switch (sortOrder) {
     case 'ascending':
       return 'a';
@@ -13,7 +13,7 @@ export function serliaizeSortOrder(sortOrder: SortOrder) : string {
   }
   return 'a';
 }
-export function deserliaizeSortOrder(s: string) : SortOrder {
+export function deserializeSortOrder(s: string) : SortOrder {
   if (s === 'a') {
     return 'ascending';
   } else if (s === 'd') {
@@ -29,7 +29,7 @@ export const SORT_TYPE_OPTIONS: Record<SortType, string> = {
   variance: "Median Abs(Variance)",
   latest: "Latest Year",
 };
-export function serliaizeSortType(sortType: SortType) {
+export function serializeSortType(sortType: SortType) {
   switch (sortType) {
     case 'variance':
       return '0';
@@ -38,7 +38,7 @@ export function serliaizeSortType(sortType: SortType) {
   }
   return '0';
 }
-export function deserliaizeSortType(s: string) : SortType {
+export function deserializeSortType(s: string) : SortType {
   if (s === '0') {
     return 'variance';
   } else if (s === '1') {
@@ -54,7 +54,7 @@ export const YSCALES_OPTIONS: Record<YScale, string> = {
   fixed: "Locked across Facets",
   free: "Facets differ",
 };
-export function serliaizeYScales(yscales: YScale) {
+export function serializeYScales(yscales: YScale) {
   switch (yscales) {
     case 'fixed':
       return '0';
@@ -63,7 +63,7 @@ export function serliaizeYScales(yscales: YScale) {
   }
   return '0';
 }
-export function deserliaizeYScales(s: string) : YScale {
+export function deserializeYScales(s: string) : YScale {
   if (s === '0') {
     return 'fixed';
   } else if (s === '1') {
@@ -82,14 +82,13 @@ export const FACET_LIMIT_OPTIONS: Record<FacetLimit, string> = {
   "50": "50",
   "100": "100",
 };
-export function serliaizeFacetLimit(facetLimit: FacetLimit) {
+export function serializeFacetLimit(facetLimit: FacetLimit) {
   return facetLimit as string;
 }
-export function deserliaizeFacetLimit(s: string) : FacetLimit {
+export function deserializeFacetLimit(s: string) : FacetLimit {
   if (s in FACET_LIMIT_OPTIONS) {
     return s as FacetLimit;
   }
 
   return "0" as const;
 }
-

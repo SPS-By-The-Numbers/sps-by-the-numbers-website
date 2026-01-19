@@ -12,16 +12,39 @@ export type FacetInfo = {
   title: string;
 };
 
-export type CurrencyNormalization =
-  | "amount" // Raw amount. No normalization
-  | "pctexp" // Percent of total expenditures.
-  | "pctrev" // Percent of total revenues.
-  | "pctcomp" // Percent total expenditures on compensation.
-  | "pctsalary"; // Percent total expenditures on salary.
+export const ALL_CURRENCY_NORMALIZATION = [
+  "amount",  // Raw amount. No normalization
+  "pctexp",  // Percent of total expenditures.
+  "pctcomp",  // Percent total expenditures on compensation.
+];
+export type CurrencyNormalization = (typeof ALL_CURRENCY_NORMALIZATION)[number];
+export function serializeCurrencyNormalization(normalization: CurrencyNormalization) {
+  return normalization as string;
+}
+export function deserializeCurrencyNormalization(s: string) : CurrencyNormalization {
+  if (s in ALL_CURRENCY_NORMALIZATION) {
+    return s as CurrencyNormalization;
+  }
 
-export type StaffingNormalization =
-  | "fte" // Raw amount. No normalization.
-  | "pctfte"; // Percent of total staffing.
+  return "amount" as const;
+}
+
+export const ALL_STAFFING_NORMALIZATION = [
+  "fte",  // Raw amount. No normalization.
+  "pctfte",  // Percent of total staffing.
+];
+export function serializeStaffingNormalization(normalization: StaffingNormalization) {
+  return normalization as string;
+}
+export function deserializeStaffingNormalization(s: string) : StaffingNormalization {
+  if (s in ALL_STAFFING_NORMALIZATION) {
+    return s as StaffingNormalization;
+  }
+
+  return "fte" as const;
+}
+
+export type StaffingNormalization = (typeof ALL_STAFFING_NORMALIZATION)[number];
 
 function sortOrderOp(sortOrder: SortOrder, expr) {
   if (sortOrder === "ascending") {

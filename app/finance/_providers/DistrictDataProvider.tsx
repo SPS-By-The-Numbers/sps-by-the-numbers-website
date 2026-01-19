@@ -93,7 +93,7 @@ export function EnsureDistrictData<
       districtDataMap={districtDataMap}
       allSettings={allSettings}
       setAllSettings={setAllSettings}
-      sharedSettings={sharedSettings}
+      sharedSettings={initialSharedSettings}
       setSharedSettings={setSharedSettings}
     />
   );

@@ -11,7 +11,7 @@ const SYNTH_ACT_TEACHING = "Teaching / Professional Learning";
 const SYNTH_ACT_CODE_PRINCIPAL_OFFICE = 9991;
 const SYNTH_ACT_PRINCPAL_OFFICE = "Principal's Office / Principal";
 
-export type FilterSelection = {
+export type DistrictDataFilters = {
   selectedObjectCodes: Array<number>;
   selectedActivityCodes: Array<number>;
   selectedProgramCodes: Array<number>;
@@ -19,7 +19,7 @@ export type FilterSelection = {
   selectedNcesCodes?: Array<number>;
 };
 
-export type StaffingFilterSelection = {
+export type StaffingDistrictDataFilters = {
   selectedDutyRootCodes: Array<number>;
   selectedSchoolCodes: Array<number>;
   selectedActivityCodes: Array<number>;
@@ -505,7 +505,7 @@ export default class DistrictData {
     return fundedEnrollment;
   }
 
-  filteredExpenditures(filterSelection: FilterSelection) {
+  filteredExpenditures(filterSelection: DistrictDataFilters) {
     let results = this.gf_expenditure_df;
 
     if (filterSelection.selectedObjectCodes !== undefined) {
