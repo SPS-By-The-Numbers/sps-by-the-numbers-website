@@ -114,6 +114,8 @@ export class Filter {
   }
 
   public toShortFilterString(selected: FilterSelection): string {
+    // TODO: Handle codes > 100.
+
     const result = this.filterDomainLeafs(this.domainTree, selected);
     // Header format
     //  b[0] = Long or short format. 1 for Long.
@@ -130,17 +132,51 @@ export class Filter {
     // item is set. In the worst case, there will be 100 bits of filter item
     // data. In the best case, no filter items are set and there is no data.
 
-    // TODO: Handle codes > 100.
-
     // The most frequent setting with be a negative filter with nothing set
     // indicating all options are set. Special case it.
     const b64Stream = new Base64Stream();
+    b64Stream.pushBits(0);  // Short coding for 0-100.
+
     if (result.skipped.length === 0) {
-      b64Stream.pushBits(0, 1,
+      b64Stream.pushBits(1,  // Negative Filter
+                         // Nothing removed.
                          0, 0, 0, 0, 0,
                          0, 0, 0, 0, 0);
-    } {
-      b64Stream.pushBits(0);  // Short form
+    } else {
+      b64Stream.pushBits(0);  // Positive filter.
+
+      // Put all the codes into an array of integers.
+      const buckets = new Array<number>(10);
+      buckets.fill(0, 0, 10);
+      for (const r of result.matched) {
+        if (r.code > 99) {
+          throw `Unable to handle ${r}`;
+        }
+        const bucket = Math.trunc(r.code / 10);
+        const bit = r.code % 10;
+        buckets[bucket] = buckets[bucket] | (1 << bit);
+      }
+
+      // Write out the header index of fields. End of this should be 2
+      // types of output text.
+      for (const value of buckets) {
+        b64Stream.pushBits(value !== 0);
+      }
+
+      if (b64Stream.encodedLength() != 2) {
+        throw "Major runtime error in encoding.";
+      }
+
+      // Now to push the data into the stream.
+      for (const value of buckets) {
+        if (value !== 0) {
+          let mask = 0b1000000000;
+          for (let i = 0; i < 10; i++) {
+            b64Stream.pushBits((value & mask) !== 0);
+            mask = mask >>> 1;
+          }
+        }
+      }
     }
 
     return b64Stream.urlsafeEncode();

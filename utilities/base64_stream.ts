@@ -39,6 +39,10 @@ export class Base64Stream {
     return retval;
   }
 
+  encodedLength() : number {
+    return this.encoded.length + (this.bitsFilled > 0 ? 1 : 0);
+  }
+
   // Returns last byte as an array if it exists with bits padded for output.
   // Empty array returned otherwise.
   private getLastByte() {
