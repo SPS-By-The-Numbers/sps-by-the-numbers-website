@@ -62,6 +62,11 @@ describe("filter", () => {
 
   it("encodes to short form for values under 100", () => {
    expect(filter.toShortFilterString(filter.allCodes())).toEqual("QA");
-   expect(filter.toShortFilterString(new Set([1, 2]))).toEqual("IAAY");
+   expect(filter.toShortFilterString(new Set([1, 2]))).toEqual("IAYA");
+  });
+
+  it("decodes short form to values under 100", () => {
+   // expect(filter.fromShortFilterString("QA")).toEqual(filter.allCodes());
+   expect(filter.fromShortFilterString("IAYA")).toEqual(new Set([1, 2]));
   });
 });

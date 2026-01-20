@@ -1,5 +1,9 @@
 import type { TreeViewBaseItem } from "@mui/x-tree-view";
-import { Base64Stream } from "utilities/base64_stream";
+import { Base64Stream, Base64Reader } from "utilities/base64_stream";
+
+// The number of values for each data item int he short code. Best if it is a mutiple
+// of 6 to best patch a base64 digit.
+const SHORTCODE_VALUES : number = 12;
 
 // Using TreeViewBaseItem is a slightly layering violation since this section shouldn't understand
 // UI but tying the two types together just makes everything simpler for now.
@@ -71,7 +75,7 @@ export class Filter {
     return [this.domainTree];
   }
 
-  public allCodes() {
+  public allCodes() : Set<number> {
     if (this.savedAllCodes === undefined) {
       const result = new Set<number>();
       this.savedAllCodes = result;
@@ -121,15 +125,20 @@ export class Filter {
     //  b[0] = Long or short format. 1 for Long.
     //  b[1] = Positive of Negative filter. 1 for Negative.
     //
-    // In Short format, the header is 12 bits (2 Base64 characters).
-    // The last 10 bits represent, in order, the number ranges
-    // 0-9, 10-19, ..., 90-99.  The bit is set to 1 if there is a filter
-    // item within that range. This implicitly encodes the sizes of the
-    // filter data.
+    // In Short format, the header is 12 bits (2 Base64 characters) and can
+    // represent values from [0, 119].
+    //
+    // The last 10 bits are a bitfield representing data ranges that are
+    // multiples of 12 (2 base64 digits).  Ranges are
+    //  0: [0,11]
+    //  1: [12,23]
+    //  2: [24,35]
+    //  ...
+    //  10: [108,119]
     //
     // After the header, comes the filter data. For every range that was set
-    // to 1 above there is a 10 bit sequence that represents if the filter
-    // item is set. In the worst case, there will be 100 bits of filter item
+    // to 1 above there is a 12 bit sequence that represents if the filter
+    // item is set. In the worst case, there will be 120 bits of filter item
     // data. In the best case, no filter items are set and there is no data.
 
     // The most frequent setting with be a negative filter with nothing set
@@ -152,8 +161,11 @@ export class Filter {
         if (r.code > 99) {
           throw `Unable to handle ${r}`;
         }
-        const bucket = Math.trunc(r.code / 10);
-        const bit = r.code % 10;
+        const bucket = Math.trunc(r.code / SHORTCODE_VALUES);
+
+        // MSB first so subtract from SHORTCODE_VALUES.
+        const bit = SHORTCODE_VALUES - (r.code % SHORTCODE_VALUES) - 1;
+
         buckets[bucket] = buckets[bucket] | (1 << bit);
       }
 
@@ -170,9 +182,10 @@ export class Filter {
       // Now to push the data into the stream.
       for (const value of buckets) {
         if (value !== 0) {
-          let mask = 0b1000000000;
-          for (let i = 0; i < 10; i++) {
-            b64Stream.pushBits((value & mask) !== 0);
+          let mask = 1 << (SHORTCODE_VALUES - 1);
+          while (mask !== 0) {
+            const bit = (value & mask) !== 0;
+            b64Stream.pushBits(bit);
             mask = mask >>> 1;
           }
         }
@@ -180,6 +193,34 @@ export class Filter {
     }
 
     return b64Stream.urlsafeEncode();
+  }
+
+  public fromShortFilterString(filterString: string): Set<number> {
+    const reader = new Base64Reader(filterString);
+    if (reader.nextBit()) {
+      throw "Long form not implemented";
+    }
+    const is_positive = reader.nextBit() === 0;
+
+    // Parse the header.
+    const dataBlocks = new Array<number>;
+    for (let i = 0; i < 10; i ++) {
+      if (reader.nextBit()) {
+        dataBlocks.push(i * SHORTCODE_VALUES);
+      }
+    }
+
+    // Parse the data blocks.
+    const result = new Set<number>;
+    for (const block of dataBlocks) {
+      for (let i = 0; i < SHORTCODE_VALUES; i++) {
+        if (reader.nextBit()) {
+          result.add(block + i);
+        }
+      }
+    }
+
+    return result;
   }
 
   public toFilterString(selected: FilterSelection): string {

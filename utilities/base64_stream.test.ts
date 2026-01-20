@@ -35,6 +35,7 @@ describe("base64_stream", () => {
     for (let i = 0; i < 6; i++) {
       b64Stream.pushBits(true);
     }
+
     expect(b64Stream.urlsafeEncode()).toEqual("Af_");
   });
 });
