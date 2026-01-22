@@ -1,5 +1,6 @@
 import type { TreeViewBaseItem } from "@mui/x-tree-view";
 import { Base64Stream, Base64Reader } from "utilities/base64_stream";
+import { decodeNumberSet, encodeNumberSet} from "utilities/number_set";
 
 // The number of values for each data item int he short code. Best if it is a mutiple
 // of 6 to best patch a base64 digit.
@@ -117,139 +118,24 @@ export class Filter {
     return this.shorterString(matchedString, skippedString);
   }
 
-  public toShortFilterString(selected: FilterSelection): string {
-    // TODO: Handle codes > 100.
-
-    const result = this.filterDomainLeafs(this.domainTree, selected);
-    // Header format
-    //  b[0] = Long or short format. 1 for Long.
-    //  b[1] = Positive of Negative filter. 1 for Negative.
-    //
-    // In Short format, the header is 12 bits (2 Base64 characters) and can
-    // represent values from [0, 119].
-    //
-    // The last 10 bits are a bitfield representing data ranges that are
-    // multiples of 12 (2 base64 digits).  Ranges are
-    //  0: [0,11]
-    //  1: [12,23]
-    //  2: [24,35]
-    //  ...
-    //  10: [108,119]
-    //
-    // After the header, comes the filter data. For every range that was set
-    // to 1 above there is a 12 bit sequence that represents if the filter
-    // item is set. In the worst case, there will be 120 bits of filter item
-    // data. In the best case, no filter items are set and there is no data.
-
-    // The most frequent setting with be a negative filter with nothing set
-    // indicating all options are set. Special case it.
-    const b64Stream = new Base64Stream();
-    b64Stream.pushBits(0);  // Short coding for 0-100.
-
-    if (result.skipped.length === 0) {
-      b64Stream.pushBits(1,  // Negative Filter
-                         // Nothing removed.
-                         0, 0, 0, 0, 0,
-                         0, 0, 0, 0, 0);
-    } else {
-      b64Stream.pushBits(0);  // Positive filter.
-
-      // Put all the codes into an array of integers.
-      const buckets = new Array<number>(10);
-      buckets.fill(0, 0, 10);
-      for (const r of result.matched) {
-        if (r.code > 99) {
-          throw `Unable to handle ${r}`;
-        }
-        const bucket = Math.trunc(r.code / SHORTCODE_VALUES);
-
-        // MSB first so subtract from SHORTCODE_VALUES.
-        const bit = SHORTCODE_VALUES - (r.code % SHORTCODE_VALUES) - 1;
-
-        buckets[bucket] = buckets[bucket] | (1 << bit);
-      }
-
-      // Write out the header index of fields. End of this should be 2
-      // types of output text.
-      for (const value of buckets) {
-        b64Stream.pushBits(value !== 0);
-      }
-
-      if (b64Stream.encodedLength() != 2) {
-        throw "Major runtime error in encoding.";
-      }
-
-      // Now to push the data into the stream.
-      for (const value of buckets) {
-        if (value !== 0) {
-          let mask = 1 << (SHORTCODE_VALUES - 1);
-          while (mask !== 0) {
-            const bit = (value & mask) !== 0;
-            b64Stream.pushBits(bit);
-            mask = mask >>> 1;
-          }
-        }
-      }
-    }
-
-    return b64Stream.urlsafeEncode();
-  }
-
-  public fromShortFilterString(filterString: string): Set<number> {
-    const reader = new Base64Reader(filterString);
-    if (reader.nextBit()) {
-      throw "Long form not implemented";
-    }
-    const is_positive = reader.nextBit() === 0;
-
-    // Parse the header.
-    const dataBlocks = new Array<number>;
-    for (let i = 0; i < 10; i ++) {
-      if (reader.nextBit()) {
-        dataBlocks.push(i * SHORTCODE_VALUES);
-      }
-    }
-
-    // Parse the data blocks.
-    const result = new Set<number>;
-    for (const block of dataBlocks) {
-      for (let i = 0; i < SHORTCODE_VALUES; i++) {
-        if (reader.nextBit()) {
-          result.add(block + i);
-        }
-      }
-    }
-
-    return result;
-  }
-
   public toFilterString(selected: FilterSelection): string {
     const result = this.filterDomainLeafs(this.domainTree, selected);
-
-    if (result.skipped.length === 0) {
-      return "";
-    }
-
-    const matchedString = result.matched.map((n) => n.code).join("_");
-    const skippedString = "-" + result.skipped.map((n) => n.code).join("_");
-
-    return this.shorterString(matchedString, skippedString);
+    const excludeString = encodeNumberSet("exclude", new Set(result.skipped.map(n => n.code)));
+    const includeString =  encodeNumberSet("include", new Set(result.matched.map(n => n.code)));
+    return this.shorterString(excludeString, includeString);
   }
 
-  public fromFilterString(filterString: string) {
-    const isSkipped = filterString[0] === "-";
-    const filterExpression = isSkipped ? filterString.slice(1) : filterString;
-
-    const codes = new Set(filterExpression.split("_").map((s) => parseInt(s)));
-
-    // If this is skipped codes, then we have to search through the domain and
-    // invert the selection.
-    if (isSkipped) {
-      const result = this.filterDomainLeafs(this.domainTree, codes);
-      return new Set(result.skipped.map((n) => n.code));
+  public fromFilterString(filterString: string): Set<number> {
+    const decoded = decodeNumberSet(filterString);
+    let result = this.allCodes();
+    if (decoded.include) {
+      result = result.intersection(decoded.include);
     }
 
-    return codes;
+    if (decoded.exclude) {
+      result = result.difference(decoded.exclude);
+    }
+    return result;
   }
 
   private filterDomainInternal(

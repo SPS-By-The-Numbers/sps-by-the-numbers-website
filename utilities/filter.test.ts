@@ -32,11 +32,6 @@ describe("filter", () => {
     expect(filter.toFilterString(new Set([1, 2, 3, 4]))).toBe("");
   });
 
-  it("toFilterString() uses skipped items if it is shorter than matched", () => {
-    const filterString = filter.toFilterString(new Set([2, 3, 4]));
-    expect(filterString[0]).toBe("-");
-  });
-
   it("toFilterString() uses matched items if it is shorter or equal to skipped", () => {
     const filterString = filter.toFilterString(new Set([1, 2]));
     expect(filterString).not.toBe("-");
@@ -58,15 +53,5 @@ describe("filter", () => {
     expect(filter.toSummaryText(new Set([2, 3, 4]))).toEqual("Only: grpA");
     expect(filter.toSummaryText(new Set([1]))).toEqual("Excl: grpA");
     expect(filter.toSummaryText(new Set([1, 3, 4]))).toEqual("Excl: opt 2");
-  });
-
-  it("encodes to short form for values under 100", () => {
-   expect(filter.toShortFilterString(filter.allCodes())).toEqual("QA");
-   expect(filter.toShortFilterString(new Set([1, 2]))).toEqual("IAYA");
-  });
-
-  it("decodes short form to values under 100", () => {
-   // expect(filter.fromShortFilterString("QA")).toEqual(filter.allCodes());
-   expect(filter.fromShortFilterString("IAYA")).toEqual(new Set([1, 2]));
   });
 });
