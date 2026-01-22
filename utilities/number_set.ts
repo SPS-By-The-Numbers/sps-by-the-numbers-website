@@ -82,9 +82,13 @@
 
 import { Base64Stream, Base64Reader } from "utilities/base64_stream";
 
-type NumberSetType = "inclusive" | "exclusive";
+type FilterType = "include" | "exclude";
+type DecodedNumberSets = {include?: Set<number>, exclude?: Set<number>};
+type DecodedNumberArray = [FilterType, Array<number>];
 
 const BLOCK_SIZE : number = 12;
+const CODEPAGE_SIZE : number = 5 * 12;
+
 export const COMPACT_MAX = 10*12;  // 120
 export const EXTENDED_COMPACT_MAX = COMPACT_MAX + 2**4 * (5*12);  // 1,080
 export const DIRECT19_MAX = EXTENDED_COMPACT_MAX + 2**19;  // 525,368
@@ -99,75 +103,119 @@ function pushValue(b64Stream, value, numBits) {
   }
 }
 
-function encodeCompact(b64Stream, type, values) {
-  if (values.length === 0) {
-    return;
+function readValue(b64Reader: Base64Reader, numBits) {
+  let result = 0;
+  for (let i = 0; i < numBits; i++) {
+    result = result << 1 | b64Reader.nextBit();
+  }
+  return result;
+}
+
+function directFormatConfig(is31) {
+  if (is31) {
+    return { bits: 31, offset: DIRECT19_MAX};
   }
 
-  b64Stream.pushBits(0, type === "exclusive");
+  return { bits: 19, offset: EXTENDED_COMPACT_MAX};
+}
 
+function encodeBlocks(b64Stream, numBlocks, blockStart, values) {
   // Construct all data blocks.
-  const blocks = new Array<number>(10);
-  blocks.fill(0, 0, 10);
+  const blocks = new Array<number>(numBlocks);
+  blocks.fill(0, 0, numBlocks);
   for (const v of values) {
-    const blockNumber = Math.trunc(v / BLOCK_SIZE);
-    const bit = v % BLOCK_SIZE;
-    blocks[blockNumber] = blocks[blockNumber] | (1 << bit);
+    const offsetValue = (v - blockStart);
+    const blockNumber = Math.trunc(offsetValue / BLOCK_SIZE);
+    const bit = offsetValue % BLOCK_SIZE;
+    blocks[blockNumber] = blocks[blockNumber] | (1 << ((BLOCK_SIZE - 1) - bit));
   }
 
-  // Iterate over all blocks to generate the BlockMask.
+  // Ouptut the BlockMask by iterating over all blocks.
   for (const blockValue of blocks) {
     b64Stream.pushBits(blockValue !== 0);
-  }
-
-  // Runtime sanity check cause this code is so finicky.
-  if (b64Stream.encodedLength() != 2) {
-    throw "Major runtime error in encoding.";
   }
 
   // Now to push the data into the stream.
   for (const blockValue of blocks) {
     if (blockValue !== 0) {
-      // Start at the MSB and push each bit.
-      let mask = 1 << (BLOCK_SIZE - 1);
-      while (mask !== 0) {
-        const bit = (blockValue & mask) !== 0;
-        b64Stream.pushBits(bit);
-        mask = mask >>> 1;
-      }
+      pushValue(b64Stream, blockValue, BLOCK_SIZE);
     }
   }
 }
 
-function encodeExtendedCompact(b64Stream, type, values) {
+function encodeCompact(b64Stream, filterType, values) {
   if (values.length === 0) {
     return;
   }
+
+  // Write header.
+  b64Stream.pushBits(0, filterType === "exclude");
+
+  // Write block mask + data.
+  encodeBlocks(b64Stream, 10, 0, values);
 }
 
-function encodeOneDirect(b64Stream, type, value) {
-  const is19 = value < DIRECT19_MAX;
+function encodeOneCodepage(b64Stream, filterType, page, values) {
+  if (values.length === 0) {
+    return;
+  }
 
-  b64Stream.pushBits(1, 1, 0, is19, type === "exclusive");
-  pushValue(b64Stream, value, is19? 19 : 31);
+  // Write header.
+  b64Stream.pushBits(1, 0, filterType === "exclude");
+
+  // Write codepage number.
+  pushValue(b64Stream, page, 4);
+
+  // Write block mask + data.
+  encodeBlocks(b64Stream, 5, 120 + (page * CODEPAGE_SIZE), values);
 }
 
-function encodeDirect(b64Stream, type, values) {
+function encodeExtendedCompact(b64Stream, filterType, values) {
+  if (values.length === 0) {
+    return;
+  }
+
+  const codepages = new Array<Array<number>>;
+  for (let i = 0; i < 16; i++) {
+    codepages.push(new Array<number>());
+  }
+
+  for (const v of values) {
+    // Each codepage is 60 bytes starting at 120.
+    const cp = Math.trunc((v - COMPACT_MAX)/CODEPAGE_SIZE);
+    codepages[cp].push(v);
+  }
+
+  for (let i = 0; i < 16; i++) {
+    encodeOneCodepage(b64Stream, filterType, i, codepages[i]);
+  }
+}
+
+function encodeOneDirect(b64Stream, filterType, value) {
+  const is31 = value >= DIRECT19_MAX;
+  const {bits, offset} = directFormatConfig(is31);
+
+  b64Stream.pushBits(1, 1, 0, is31, filterType === "exclude");
+  pushValue(b64Stream, (value - offset), bits);
+}
+
+function encodeDirect(b64Stream, filterType, values) {
   if (values.length === 0) {
     return;
   }
 
   for (const v of values) {
-    encodeOneDirect(b64Stream, type, v);
+    encodeOneDirect(b64Stream, filterType, v);
   }
 }
 
-export function encodeNumberSet(type : NumberSetType, numbers: Set<number>) {
+export function encodeNumberSet(filterType : FilterType, numbers: Set<number>) {
   const compact = new Array<number>;
   const extendedCompact = new Array<number>;
   const direct = new Array<number>;
+  const sortedNumbers = [...numbers].sort((a,b) => a-b);
 
-  for (const n of numbers) {
+  for (const n of sortedNumbers) {
     if (n < 0) {
       throw `Negative values not supported: ${n}`;
     }
@@ -184,9 +232,114 @@ export function encodeNumberSet(type : NumberSetType, numbers: Set<number>) {
   }
 
   const b64Stream = new Base64Stream();
-  encodeCompact(b64Stream, type, compact);
-  encodeExtendedCompact(b64Stream, type, extendedCompact);
-  encodeDirect(b64Stream, type, direct);
+  encodeCompact(b64Stream, filterType, compact);
+  encodeExtendedCompact(b64Stream, filterType, extendedCompact);
+  encodeDirect(b64Stream, filterType, direct);
 
   return b64Stream.urlsafeEncode();
+}
+
+function decodeFilterType(b64Reader: Base64Reader) : FilterType {
+  return b64Reader.nextBit() ? 'exclude' as const : 'include' as const;
+}
+
+function decodeBlock(block, start, numbers) {
+  const startMask = 1 << (BLOCK_SIZE - 1);
+  for (let i = 0; i < BLOCK_SIZE; i++) {
+    const mask = startMask >>> i; 
+    if ((block & mask) !== 0) {
+      numbers.push(start + i);
+    }
+  }
+}
+
+function decodeBlockMaskAndData(b64Reader: Base64Reader, numBlocks, offset, result) {
+  const blockStarts = new Array<number>;
+  for (let i = 0; i < numBlocks; i++) {
+    if (b64Reader.nextBit()) {
+      // The start of each block is the map mask is a multiple of BLOCK_SIZE.
+      blockStarts.push(offset + (i * BLOCK_SIZE));
+    }
+  }
+
+  const blocks = new Array<number>;
+  for (let i = 0; i < blockStarts.length; i++) {
+    blocks.push(readValue(b64Reader, BLOCK_SIZE));
+  }
+
+  for (let i = 0; i < blockStarts.length; i++) {
+    decodeBlock(blocks[i], blockStarts[i], result);
+  }
+}
+
+function decodeCompact(b64Reader: Base64Reader) : DecodedNumberArray {
+  const result = new Array<number>();
+
+  const filterType = decodeFilterType(b64Reader);
+
+  // Decode 10 blocks at offset 0.
+  decodeBlockMaskAndData(b64Reader, 10, 0, result);
+  return [filterType, result];
+}
+
+function decodeExtendedCompact(b64Reader: Base64Reader) : DecodedNumberArray {
+  const result = new Array<number>();
+
+  const filterType = decodeFilterType(b64Reader);
+  const codepage = readValue(b64Reader, 4);
+  const offset = codepage * CODEPAGE_SIZE + COMPACT_MAX;
+  decodeBlockMaskAndData(b64Reader, 5, offset, result);
+
+  return [filterType, result];
+}
+
+function decodeDirect(b64Reader: Base64Reader) : DecodedNumberArray {
+  const {bits, offset} = directFormatConfig(b64Reader.nextBit());
+
+  const filterType = decodeFilterType(b64Reader);
+  const value = offset + readValue(b64Reader, bits);
+  return [filterType, [value]];
+}
+
+export function decodeNumberSet(encoded: string) : DecodedNumberSets {
+  const allDecoded = new Array<DecodedNumberArray>;
+
+  const b64Reader = new Base64Reader(encoded);
+  while (!b64Reader.done()) {
+    if (!b64Reader.nextBit()) {
+      // Compact form starts with 0
+      allDecoded.push(decodeCompact(b64Reader));
+    } else {
+      if (!b64Reader.nextBit()) {
+        // ExtendedCompact form starts with 1 0
+        allDecoded.push(decodeExtendedCompact(b64Reader));
+      } else {
+        if (!b64Reader.nextBit()) {
+          // Direct Starts form starts with 1 1 0
+          allDecoded.push(decodeDirect(b64Reader));
+        } else {
+          // Reserved header 1 1 1 found.
+          throw "Reserved header cannot be used";
+        }
+      }
+    }
+  }
+
+  // Combine and sort the results.
+  const includedNums = (allDecoded.filter(e => e[0] === 'include')
+                        .flatMap(([_,v]) => v)
+                        .sort((a,b) => a-b));
+  const excludedNums = (allDecoded.filter(e => e[0] === 'exclude')
+                        .flatMap(([_,v]) => v)
+                        .sort((a,b) => a-b));
+
+  const result : DecodedNumberSets = {};
+  if (includedNums.length > 0) {
+    result.include = new Set(includedNums);
+  }
+  if (excludedNums.length > 0) {
+    result.exclude = new Set(excludedNums);
+  }
+
+  return result;
 }
