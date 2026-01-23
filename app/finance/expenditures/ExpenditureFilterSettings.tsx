@@ -67,7 +67,7 @@ export function serializeExpenditureFilterSettings(allSettings : ExpendituresSet
 
   const str = serializeSettingsDict(settingsDict);
 
-  return [mStr, str].filter(x => !!x).join(';')
+  return [mStr, str].filter(x => !!x).join('~')
 }
 
 export function deserializeExpenditureFilterSettings(serialized : string) {
@@ -91,17 +91,17 @@ export function deserializeExpenditureFilterSettings(serialized : string) {
     switch (key) {
       case 'p':
         settings.overridePrimaryFilter = true;
-        settings.selectedPrograms = ProgramFilter.fromFilterString(value);
+        settings.selectedPrograms = ProgramFilter.toTreeViewItems(value);
         break;
       
       case 'a':
         settings.overridePrimaryFilter = true;
-        settings.selectedActivities = ActivityFilter.fromFilterString(value);
+        settings.selectedActivities = ActivityFilter.toTreeViewItems(value);
         break;
 
       case 'o':
         settings.overridePrimaryFilter = true;
-        settings.selectedObjects = ObjectFilter.fromFilterString(value);
+        settings.selectedObjects = ObjectFilter.toTreeViewItems(value);
         break;
     }
   }

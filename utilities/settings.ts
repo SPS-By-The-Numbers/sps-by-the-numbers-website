@@ -4,25 +4,25 @@
 export function serializeSettingsDict(dict: Record<string, string>) {
   const values = new Array<string>;
   for (const [k, v] of Object.entries(dict)) {
-    if (k.indexOf(':') !== -1) {
+    if (k.indexOf('~') !== -1) {
       throw `Unable to serialize ${k}`;
     }
-    if (v.indexOf(';') !== -1) {
+    if (v.indexOf('.') !== -1) {
       throw `Unable to serialize ${v}`;
     }
     if (v) {
-      values.push(`${k}:${v}`);
+      values.push(`${k}.${v}`);
     }
   }
 
-  return values.join(';');
+  return values.join('~');
 }
 
 export function deserializeSettingsDict(serialized: string) {
-  const parts = serialized.split(';');
+  const parts = serialized.split('~');
   const dict = new Map<string, string>;
   for (const p of parts) {
-    const firstColonIndex = p.indexOf(':');
+    const firstColonIndex = p.indexOf('.');
     const key = p.substr(0, firstColonIndex);
     const value = p.substr(firstColonIndex + 1);
     dict[key] = value;

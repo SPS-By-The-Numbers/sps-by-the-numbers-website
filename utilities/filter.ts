@@ -90,15 +90,19 @@ export class Filter {
     return this.savedAllCodes;
   }
 
-  public toTreeViewItems() {
-    const selectItems = new Array<TreeViewBaseItem>();
-    const result = new Set<number>();
+  public toTreeViewItems(filterString: string) : Array<string> {
+    const included = this.fromFilterString(filterString);
+    const selectItems = new Array<string>();
     this.visitDomain(
       this.domainTree,
       () => {},
-      (n) => result.add(n.code),
+      (n) => {
+        if (included.has(n.code)) {
+          selectItems.push(n.id);
+        }
+      },
     );
-    return result;
+    return selectItems;
   }
 
   public toSummaryText(selected: FilterSelection): string {

@@ -40,9 +40,9 @@ export default async function Page(params : Params) {
   return (
     <Suspense>
       <EnsureDistrictData
-        initialValue={allSettings}
+        allSettings={allSettings}
+        sharedSettings={sharedSettings}
         ContentComponent={ExpendituresDashboard}
-        initialSharedSettings={sharedSettings}
       />
     </Suspense>
   );

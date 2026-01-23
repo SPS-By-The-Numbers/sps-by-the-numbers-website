@@ -40,20 +40,16 @@ export interface DistrictDataContentProps<
 > {
   districtDataMap: DistrictDataMap;
   allSettings: Array<T>;
-  setAllSettings: (x: Array<T>) => void;
-
   sharedSettings: U;
-  setSharedSettings: (x: U) => void;
 }
 
 interface EnsureDistrictDataProps<
   T extends MetricSettings,
   U extends BaseSettings,
 > {
-  initialValue: Array<T>;
+  allSettings: Array<T>;
+  sharedSettings?: U;
   ContentComponent: ComponentType<DistrictDataContentProps<T, U>>;
-
-  initialSharedSettings?: U;
 }
 
 // Utility component that pairs with DistrictDataProvider to ensure all districts are loaded.
@@ -61,19 +57,15 @@ export function EnsureDistrictData<
   T extends MetricSettings,
   U extends BaseSettings,
 >({
-  initialValue,
-  initialSharedSettings,
+  allSettings,
+  sharedSettings,
   ContentComponent,
 }: EnsureDistrictDataProps<T, U>) {
   // Make one up for places that don't use it.
-  if (initialSharedSettings === undefined) {
-    initialSharedSettings = { name: "Undefined", id: "undefined" } as U;
+  if (sharedSettings === undefined) {
+    sharedSettings = { name: "Undefined", id: "undefined" } as U;
   }
 
-  const [sharedSettings, setSharedSettings] = useState<U>(
-    initialSharedSettings,
-  );
-  const [allSettings, setAllSettings] = useState<Array<T>>(initialValue);
   const { districtDataMap, loadCcddd } = useDistrictData();
 
   useEffect(() => {
@@ -92,9 +84,7 @@ export function EnsureDistrictData<
     <ContentComponent
       districtDataMap={districtDataMap}
       allSettings={allSettings}
-      setAllSettings={setAllSettings}
-      sharedSettings={initialSharedSettings}
-      setSharedSettings={setSharedSettings}
+      sharedSettings={sharedSettings}
     />
   );
 }

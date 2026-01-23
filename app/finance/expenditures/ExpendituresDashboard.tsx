@@ -362,9 +362,7 @@ function makeHighchartConfig(
 export default function ExpendituresDashboard({
   districtDataMap,
   sharedSettings,
-  setSharedSettings,
   allSettings,
-  setAllSettings,
 }: DistrictDataContentProps<
   ExpendituresSettings,
   ExpendituresDashboardSettings
@@ -404,10 +402,10 @@ export default function ExpendituresDashboard({
   return (
     <SettingsLayout
       sharedSettings={sharedSettings}
-      setSharedSettings={(newSharedSettings) => setSettings(newSharedSettings, allSettings)}
+      setSharedSettings={newSharedSettings => setSettings(newSharedSettings, allSettings)}
       sharedSettingsComponents={[ExpendituresDashboardSettingsContents]}
       allSettings={allSettings}
-      setAllSettings={setAllSettings}
+      setAllSettings={newAllSettings => setSettings(sharedSettings, newAllSettings)}
       settingsContentsComponents={[
         MetricSettingsContents,
 
