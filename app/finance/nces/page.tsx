@@ -30,7 +30,7 @@ export default async function Page() {
   return (
     <Suspense>
       <EnsureDistrictData
-        initialValue={DEFAULT_NCES_SETTINGS}
+        allSettings={DEFAULT_NCES_SETTINGS}
         ContentComponent={NcesDashboard}
       />
     </Suspense>

@@ -188,7 +188,6 @@ function componentsGenerator(correlationsSettings: CorrelationsSettings) {
 export default function CorrelationsDashboard({
   districtDataMap,
   allSettings,
-  setAllSettings,
 }: DistrictDataContentProps<CorrelationsSettings, BaseSettings>) {
   const searchParams = useSearchParams();
 
@@ -217,7 +216,6 @@ export default function CorrelationsDashboard({
   return (
     <SettingsLayout
       allSettings={allSettings}
-      setAllSettings={setAllSettings}
       settingsContentsComponents={[MetricSettingsContents]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">

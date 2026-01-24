@@ -14,7 +14,7 @@ export default async function Page() {
   return (
     <Suspense>
       <EnsureDistrictData
-        initialValue={DEFAULT_METRIC_SETTINGS}
+        allSettings={DEFAULT_METRIC_SETTINGS}
         ContentComponent={VitalsDashboard}
       />
     </Suspense>

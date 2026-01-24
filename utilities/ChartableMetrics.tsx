@@ -22,7 +22,7 @@ export function serializeCurrencyNormalization(normalization: CurrencyNormalizat
   return normalization as string;
 }
 export function deserializeCurrencyNormalization(s: string) : CurrencyNormalization {
-  if (s in ALL_CURRENCY_NORMALIZATION) {
+  if (ALL_CURRENCY_NORMALIZATION.includes(s)) {
     return s as CurrencyNormalization;
   }
 
@@ -37,7 +37,7 @@ export function serializeStaffingNormalization(normalization: StaffingNormalizat
   return normalization as string;
 }
 export function deserializeStaffingNormalization(s: string) : StaffingNormalization {
-  if (s in ALL_STAFFING_NORMALIZATION) {
+  if (ALL_STAFFING_NORMALIZATION.includes(s)) {
     return s as StaffingNormalization;
   }
 

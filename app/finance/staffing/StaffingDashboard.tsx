@@ -134,7 +134,6 @@ function compileData(districtDataMap, allSettings, facet) {
 export default function StaffingDashboard({
   districtDataMap,
   allSettings,
-  setAllSettings,
 }: DistrictDataContentProps<StaffingSettings>) {
   const [data, facetOrder] = compileData(
     districtDataMap,
@@ -167,7 +166,7 @@ export default function StaffingDashboard({
   return (
     <SettingsLayout
       allSettings={allSettings}
-      setAllSettings={setAllSettings}
+      setAllSettings={newAllSettings => {}}
       settingsContentsComponents={[
         MetricSettingsContents,
         ActivityFilterContents,

@@ -142,8 +142,7 @@ function componentsGenerator(vitalsSettings: VitalsSettings) {
 
 export default function VitalsDashboard({
   districtDataMap,
-  allSettings,
-  setAllSettings,
+  allSettings
 }: DistrictDataContentProps<VitalsSettings>) {
   const searchParams = useSearchParams();
 
@@ -172,7 +171,6 @@ export default function VitalsDashboard({
   return (
     <SettingsLayout
       allSettings={allSettings}
-      setAllSettings={setAllSettings}
       settingsContentsComponents={[MetricSettingsContents]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">

@@ -54,7 +54,6 @@ export const DEFAULT_EXPENDITURE_SETTINGS = DEFAULT_METRIC_SETTINGS.map((v) => (
 }));
 
 export function serializeExpenditureFilterSettings(allSettings : ExpendituresSettings) {
-  console.log(allSettings);
   // Only handles first setting.
   const settings = allSettings[0];
   const mStr = serializeMetricSettings(settings);

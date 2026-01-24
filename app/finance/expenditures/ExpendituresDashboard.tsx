@@ -388,24 +388,15 @@ export default function ExpendituresDashboard({
     );
   }, [sharedSettings, districtDataMap, allSettings]);
 
-  const setSettings = (newSharedSettings, newAllSettings) => {
-    const dashboardQuery = serializeExpenditureDashboardSettings(newSharedSettings);
-    const filterQuery = serializeExpenditureFilterSettings(newAllSettings);
-    const query = [`s=${dashboardQuery}`];
-    if (filterQuery) {
-      query.push(`f=${filterQuery}`);
-    }
-
-    router.replace(`${pathname}?${query.join('&')}`);
-  };
-
   return (
     <SettingsLayout
+      settingsSerializer={{
+        serialize: serializeExpenditureFilterSettings,
+        serializeShared: serializeExpenditureDashboardSettings,
+      }}
       sharedSettings={sharedSettings}
-      setSharedSettings={newSharedSettings => setSettings(newSharedSettings, allSettings)}
       sharedSettingsComponents={[ExpendituresDashboardSettingsContents]}
       allSettings={allSettings}
-      setAllSettings={newAllSettings => setSettings(sharedSettings, newAllSettings)}
       settingsContentsComponents={[
         MetricSettingsContents,
 

@@ -225,8 +225,8 @@ export class Filter {
   // should have all of their subtree included in the filter.
   private visitDomain(
     root: FilterDomainTree,
-    onInternal: (n: FilterDomainInternalNode, path: Array<FilterDomainTree>) => void,
-    onLeaf: (n: FilterDomainLeafNode, path: Array<FilterDomainTree>) => void
+    onInternal: (n: FilterDomainInternalNode) => void,
+    onLeaf: (n: FilterDomainLeafNode) => void
   ) {
     if (!root) {
       return;

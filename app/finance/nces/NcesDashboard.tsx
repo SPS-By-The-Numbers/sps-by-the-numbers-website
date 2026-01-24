@@ -123,7 +123,6 @@ function compileData(districtDataMap, allSettings, facet) {
 export default function NcesDashboard({
   districtDataMap,
   allSettings,
-  setAllSettings,
 }: DistrictDataContentProps<NcesSettings>) {
   const [data, facetOrder] = compileData(
     districtDataMap,
@@ -156,7 +155,6 @@ export default function NcesDashboard({
   return (
     <SettingsLayout
       allSettings={allSettings}
-      setAllSettings={setAllSettings}
       settingsContentsComponents={[
         MetricSettingsContents,
         ObjectFilterContents,

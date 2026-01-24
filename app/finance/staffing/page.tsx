@@ -30,7 +30,7 @@ export default async function Page() {
   return (
     <Suspense>
       <EnsureDistrictData
-        initialValue={DEFAULT_STAFF_SETTINGS}
+        allSettings={DEFAULT_STAFF_SETTINGS}
         ContentComponent={StaffingDashboard}
       />
     </Suspense>

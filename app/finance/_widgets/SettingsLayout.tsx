@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { toEmojiPrefix } from "utilities/emoji";
+import { useRouter, usePathname } from 'next/navigation';
 import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import AccordionSummary from "@mui/material/AccordionSummary";
@@ -26,17 +27,24 @@ import type {
 
 const drawerWidth = 240;
 
+export type SettingsSerializer<
+    SettingsType extends BaseSettings,
+    SharedSettingsType extends BaseSettings> = {
+  serialize(allSettings : SettingsType) : string;
+  serializeShared(sharedSettings : SharedSettingsType) : string;
+};
+
 interface SettingsLayoutProps<
   SettingsType extends BaseSettings,
   SharedSettingsType extends BaseSettings,
 > {
+  settingsSerializer : SettingsSerializer<SettingsType, SharedSettingsType>,
+
   // TODO: Remove ? maybe?
   sharedSettings?: SharedSettingsType;
-  setSharedSettings?: (x: SharedSettingsType) => void;
   sharedSettingsComponents?: Array<SettingsRenderComponentType<any>>;
 
   allSettings: Array<SettingsType>;
-  setAllSettings: (v: Array<SettingsType>) => void;
   settingsContentsComponents: Array<SettingsRenderComponentType<any>>;
 
   children: ReactNode;
@@ -138,25 +146,33 @@ function DrawerContents({
 
 export default function SettingsLayout<
   SettingsType extends BaseSettings,
-  SharedSettingsType extends BaseSettings,
+  SharedSettingsType extends BaseSettings
 >(props: SettingsLayoutProps<SettingsType, SharedSettingsType>) {
   const {
+    settingsSerializer,
     sharedSettings,
-    setSharedSettings,
     sharedSettingsComponents,
     allSettings,
-    setAllSettings,
     settingsContentsComponents,
     children,
   } = props;
+  const router = useRouter();
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [isClosing, setIsClosing] = React.useState(false);
   const [nextSettingId, setNextSettingId] = React.useState(1);
 
+  const navigateToNewSettings = (newSharedSettings, newAllSettings) => {
+    const sharedQuery = settingsSerializer.serializeShared(newSharedSettings);
+    const allQuery = settingsSerializer.serialize(newAllSettings);
+
+    router.replace(`${pathname}?c=${allQuery}&s=${sharedQuery}`);
+  };
+
   const updateAllSettings = (i, v) => {
-    const newSettings = [...allSettings];
-    newSettings[i] = v;
-    setAllSettings(newSettings);
+    const newAllSettings = [...allSettings];
+    newAllSettings[i] = v;
+    navigateToNewSettings(sharedSettings, newAllSettings);
   };
 
   const handleDrawerClose = () => {
@@ -176,9 +192,9 @@ export default function SettingsLayout<
 
   const removeSetting = (index) => {
     // Clone the array to avoid messing up state.
-    const newSettings = [...allSettings];
-    newSettings.splice(index, 1);
-    setAllSettings(newSettings);
+    const newAllSettings = [...allSettings];
+    newAllSettings.splice(index, 1);
+    navigateToNewSettings(sharedSettings, newAllSettings);
   };
 
   const addComparison = () => {
@@ -193,7 +209,7 @@ export default function SettingsLayout<
       <Toolbar />
       <DrawerContents
         sharedSettings={sharedSettings}
-        setSharedSettings={setSharedSettings}
+        setSharedSettings={newSharedSettings => navigateToNewSettings(newSharedSettings, allSettings)}
         sharedSettingsComponents={sharedSettingsComponents}
         allSettings={allSettings}
         updateAllSettings={updateAllSettings}

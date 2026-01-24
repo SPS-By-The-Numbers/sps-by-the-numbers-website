@@ -46,7 +46,7 @@ export default function HcDashboard({
         board?.destroy();
         board = undefined;
       } catch (e) {
-        console.error("Error destroying dashboard:", board, e);
+        console.warn("Error destroying dashboard:", board, e);
       }
     };
   }, [highchartsObjs, disableUpdate, dashboardDiv, config, onBoardRendered]);

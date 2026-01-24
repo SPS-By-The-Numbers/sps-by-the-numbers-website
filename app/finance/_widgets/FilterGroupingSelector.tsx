@@ -32,7 +32,7 @@ export default function FilterGroupingSelector({
         sx={[{}, ...(Array.isArray(sx) ? sx : [sx])]}
       >
         <MenuItem value="spsbtn">Default</MenuItem>
-        <MenuItem value="sps">SPS Budget Book</MenuItem>
+        <MenuItem value="ospi">OSPI Accounting Manual</MenuItem>
       </Select>
     </FormControl>
   );

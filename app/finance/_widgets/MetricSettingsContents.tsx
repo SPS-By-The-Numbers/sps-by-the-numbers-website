@@ -25,7 +25,7 @@ export function serializeFilterGrouping(grouping: FilterGrouping) {
   return grouping as string;
 }
 export function deserializeFilterGrouping(s: string) : FilterGrouping {
-  if (s in ALL_FILTER_GROUPING) {
+  if (ALL_FILTER_GROUPING.includes(s)) {
     return s as FilterGrouping;
   }
 
