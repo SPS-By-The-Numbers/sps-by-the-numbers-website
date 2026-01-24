@@ -90,19 +90,34 @@ export class Filter {
     return this.savedAllCodes;
   }
 
+  // Returns the correct set of Tree View Items.
   public toTreeViewItems(filterString: string) : Array<string> {
     const included = this.fromFilterString(filterString);
-    const selectItems = new Array<string>();
+    const selectItems = new Set<string>();
     this.visitDomain(
       this.domainTree,
-      () => {},
+      (n) => {
+       if (n.children.reduce((acc, c) => acc && selectItems.has(c.id), true)) {
+         selectItems.add(n.id);
+       }
+      },
       (n) => {
         if (included.has(n.code)) {
-          selectItems.push(n.id);
+          selectItems.add(n.id);
         }
       },
     );
-    return selectItems;
+
+    this.visitDomain(
+      this.domainTree,
+      (n) => {},
+      (n) => {
+        if (included.has(n.code)) {
+          selectItems.add(n.id);
+        }
+      },
+    );
+    return [...selectItems];
   }
 
   public toSummaryText(selected: FilterSelection): string {
@@ -126,6 +141,9 @@ export class Filter {
     const result = this.filterDomainLeafs(this.domainTree, selected);
     const excludeString = encodeNumberSet("exclude", new Set(result.skipped.map(n => n.code)));
     const includeString =  encodeNumberSet("include", new Set(result.matched.map(n => n.code)));
+    if (excludeString.length === 0) {
+      console.log("Mu ha ha");
+    }
     return this.shorterString(excludeString, includeString);
   }
 
@@ -202,20 +220,24 @@ export class Filter {
     return skippedString;
   }
 
+  // Does a post-order traversal of the tree. This allows aggregation of the
+  // lower levels first which is necessary when calculating if internal nodes
+  // should have all of their subtree included in the filter.
   private visitDomain(
     root: FilterDomainTree,
-    onInternal: (n: FilterDomainInternalNode) => void,
-    onLeaf: (n: FilterDomainLeafNode) => void,
+    onInternal: (n: FilterDomainInternalNode, path: Array<FilterDomainTree>) => void,
+    onLeaf: (n: FilterDomainLeafNode, path: Array<FilterDomainTree>) => void
   ) {
     if (!root) {
       return;
     }
 
     if (root.nodeType === "internal") {
-      onInternal(root);
       for (const c of root.children) {
         this.visitDomain(c, onInternal, onLeaf);
       }
+
+      onInternal(root);
     } else {
       onLeaf(root);
     }

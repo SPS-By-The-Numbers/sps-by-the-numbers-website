@@ -396,7 +396,7 @@ export default function ExpendituresDashboard({
       query.push(`f=${filterQuery}`);
     }
 
-    router.push(`${pathname}?${query.join('&')}`);
+    router.replace(`${pathname}?${query.join('&')}`);
   };
 
   return (

@@ -54,6 +54,7 @@ export const DEFAULT_EXPENDITURE_SETTINGS = DEFAULT_METRIC_SETTINGS.map((v) => (
 }));
 
 export function serializeExpenditureFilterSettings(allSettings : ExpendituresSettings) {
+  console.log(allSettings);
   // Only handles first setting.
   const settings = allSettings[0];
   const mStr = serializeMetricSettings(settings);
@@ -67,6 +68,7 @@ export function serializeExpenditureFilterSettings(allSettings : ExpendituresSet
 
   const str = serializeSettingsDict(settingsDict);
 
+  // Drop missing settings. Then join with ~.
   return [mStr, str].filter(x => !!x).join('~')
 }
 

@@ -214,6 +214,14 @@ export function encodeNumberSet(filterType : FilterType, numbers: Set<number>) {
   const extendedCompact = new Array<number>;
   const direct = new Array<number>;
   const sortedNumbers = [...numbers].sort((a,b) => a-b);
+  if (numbers.size === 0) {
+    // Include nothing or Exclude nothing is easy.
+    if (filterType === 'include') {
+      return 'AA';
+    } else {
+      return 'QA';
+    }
+  }
 
   for (const n of sortedNumbers) {
     if (n < 0) {
@@ -302,8 +310,19 @@ function decodeDirect(b64Reader: Base64Reader) : DecodedNumberArray {
 }
 
 export function decodeNumberSet(encoded: string) : DecodedNumberSets {
-  const allDecoded = new Array<DecodedNumberArray>;
+  if (encoded === 'AA') {
+    // Include nothing.
+    return ({
+      include: new Set<number>(),
+    });
+  } else if (encoded === 'QA') {
+    // Exclude nothing.
+    return ({
+      exclude: new Set<number>(),
+    });
+  }
 
+  const allDecoded = new Array<DecodedNumberArray>;
   const b64Reader = new Base64Reader(encoded);
   while (!b64Reader.done()) {
     if (!b64Reader.nextBit()) {
