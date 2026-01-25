@@ -6,10 +6,10 @@ import type { ColumnTable } from "arquero";
 
 // Combining activities that have been split over the years so they can
 // be compared with history.
-const SYNTH_ACT_CODE_TEACHING = 9990;
-const SYNTH_ACT_TEACHING = "Teaching / Professional Learning";
-const SYNTH_ACT_CODE_PRINCIPAL_OFFICE = 9991;
-const SYNTH_ACT_PRINCPAL_OFFICE = "Principal's Office / Principal";
+export const SYNTH_ACT_CODE_TEACHING = 9990;
+export const SYNTH_ACT_TEACHING = "Teaching (27) / Professional Learning (34)";
+export const SYNTH_ACT_CODE_PRINCIPAL_OFFICE = 98423;
+export const SYNTH_ACT_PRINCPAL_OFFICE = "Principal's Office (23) / Principal (84)";
 
 export type DistrictDataFilters = {
   selectedObjectCodes: Array<number>;
@@ -184,7 +184,7 @@ export default class DistrictData {
     // Create synthetic activities for categories that have split over the
     // years such as Teaching + Professional Learning. In this case, it
     // replaces the activity code 27 and 34 with their summation labeled
-    // with a synthetic activity code such as 9990.
+    // with a synthetic activity code.
     this.gf_expenditure_df = combineCommonActivities(
       this.gf_expenditure_df,
       combineActivitiesF19x,

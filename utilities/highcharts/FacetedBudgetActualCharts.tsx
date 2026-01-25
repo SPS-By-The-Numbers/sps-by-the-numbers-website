@@ -42,6 +42,15 @@ export function makeFacetColumnRoot(
   return [idPrefix, normalization, metricName, facet].join("_");
 }
 
+function makeFacetCodeText(facetInfo) {
+  // Synthetic codes do not get a value.
+  if (facetInfo.code > 9000) {
+    return "";
+  }
+
+  return ` (${facetInfo.code})`;
+}
+
 // Produces all "component" which is basically a chart in the cell. This of
 // this as the constructor for all the charts. The total number of elements will be
 // number of facets times metricList.
@@ -68,7 +77,7 @@ export function makeFacetComponents(
   const r = normalizations.flatMap((normalization, normalizationOrdinal) =>
     facets.map((facetInfo) =>
       makeBudgetActualsChartConfig({
-        title: makeTitle(facetInfo.title, subtitle),
+        title: makeTitle(`${facetInfo.title}${makeFacetCodeText(facetInfo)}`, subtitle),
         renderTo: makeCellId(idPrefix, normalizationOrdinal, facetInfo),
         facet: facetInfo.code,
         metricColumn: [idPrefix, normalization, yColumnRoot].join("_"),

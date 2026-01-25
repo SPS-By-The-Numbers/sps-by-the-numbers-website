@@ -48,19 +48,19 @@ export function makeMultipleDatasetFacetedDashboard(
   let rows = new Array<any>();
   const components = new Array<Dashboards.Component.Options>();
 
-  for (const datasetIdx in datasetSettingsList) {
+  for (let datasetIdx = 0; datasetIdx < datasetSettingsList.length; datasetIdx++) {
     const datasetSettings = datasetSettingsList[datasetIdx];
     const titlePrefix = toEmojiPrefix(datasetIdx);
 
     const allCells = componentGenerator(datasetSettings);
-    for (const i in allCells) {
+    for (let i = 0; i < allCells.length; i++) {
       const cellOptions = allCells[i];
       rows[i] = rows[i] || { cells: new Array<any>() };
       rows[i].cells.push({ id: cellOptions.renderTo });
       cellOptions.chartOptions.title.text =
         cellOptions.chartOptions.title.text.replace(
           "<h3>",
-          `<h3> ${titlePrefix} `,
+          `<h3>${titlePrefix} `,
         );
       components.push(cellOptions);
     }

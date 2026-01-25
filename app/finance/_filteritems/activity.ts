@@ -1,4 +1,5 @@
 import { Filter, makeInternalNode, makeLeafNode } from "utilities/filter";
+import * as DistrictData from "utilities/DistrictData";
 
 const ACT_11 = makeLeafNode("act", 11, "Board of Directors");
 const ACT_12 = makeLeafNode("act", 12, "Superintendent's Office");
@@ -33,8 +34,8 @@ const ACT_73 = makeLeafNode("act", 73, "Printing");
 const ACT_74 = makeLeafNode("act", 74, "Warehousing and Distribution");
 const ACT_75 = makeLeafNode("act", 75, "Motor pool");
 const ACT_91 = makeLeafNode("act", 91, "Public Activities");
-const ACT_9991 = makeLeafNode("act", 9991, "Principal's Office / Principal");
-const ACT_9990 = makeLeafNode("act", 9990, "Teaching / Professional Learning");
+const ACT_9991 = makeLeafNode("act", DistrictData.SYNTH_ACT_CODE_PRINCIPAL_OFFICE, DistrictData.SYNTH_ACT_PRINCPAL_OFFICE);
+const ACT_9990 = makeLeafNode("act", DistrictData.SYNTH_ACT_CODE_TEACHING, DistrictData.SYNTH_ACT_TEACHING);
 const ACT_28 = makeLeafNode("act", 28, "Extracurricular");
 const ACT_22 = makeLeafNode("act", 22, "Learning Resources");
 const ACT_24 = makeLeafNode("act", 24, "Guidance and Counseling");
