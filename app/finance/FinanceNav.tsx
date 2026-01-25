@@ -35,18 +35,10 @@ export default function FinanceNav({ sx = [] }: Params) {
       >
         <Stack direction="row" spacing={4} sx={{ alignItems: "center" }}>
           <NavLink href={"/finance/vitals"}>Vitals</NavLink>
-          <NavLink href={"/finance/correlations"}>Correlations</NavLink>
+          <NavLink href={"/finance/expenditures"}>Expenditures</NavLink>
+          <NavLink href={"/finance/detailedactuals"}>Detailed Actuals</NavLink>
           <NavLink href={"/finance/staffing"}>Staffing</NavLink>
-          <NavLink href={"/finance/expenditures"}>
-            <Stack>
-              <div>Expenditures</div>
-            </Stack>
-          </NavLink>
-          <NavLink href={"/finance/nces"}>
-            <Stack>
-              <div>Detailed Actuals</div>
-            </Stack>
-          </NavLink>
+          <NavLink href={"/finance/correlations"}>Correlations</NavLink>
         </Stack>
       </Toolbar>
     </AppBar>

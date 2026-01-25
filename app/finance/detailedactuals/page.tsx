@@ -8,9 +8,9 @@ import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider"
 import { makeSchoolItems } from "app/finance/_widgets/ExpenditureFilterContents";
 import { Metadata } from "next";
 import { Suspense } from "react";
-import NcesDashboard from "./NcesDashboard";
+import DetailedActualsDashboard from "./DetailedActualsDashboard";
 
-import type { NcesSettings } from "./NcesDashboard";
+import type { DetailedActualsSettings } from "./DetailedActualsDashboard";
 
 const DEFAULT_NCES_SETTINGS = DEFAULT_METRIC_SETTINGS.map((v) => ({
   ...v,
@@ -31,7 +31,7 @@ export default async function Page() {
     <Suspense>
       <EnsureDistrictData
         allSettings={DEFAULT_NCES_SETTINGS}
-        ContentComponent={NcesDashboard}
+        ContentComponent={DetailedActualsDashboard}
       />
     </Suspense>
   );

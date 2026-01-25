@@ -29,14 +29,14 @@ import type { MetricSettings } from "app/finance/_widgets/MetricSettingsContents
 
 const CONNECTOR_ID = "nces-connector";
 
-export interface NcesSettings extends MetricSettings {
+export interface DetailedActualsSettings extends MetricSettings {
   selectedObjects: string[];
   selectedActivities: string[];
   selectedPrograms: string[];
   selectedSchools: string[];
 }
 
-function componentsGenerator(ncesSettings: NcesSettings, facetOrder) {
+function componentsGenerator(ncesSettings: DetailedActualsSettings, facetOrder) {
   const components = makeFacetComponents(
     ncesSettings.id,
     "class_of",
@@ -50,7 +50,7 @@ function componentsGenerator(ncesSettings: NcesSettings, facetOrder) {
   return components;
 }
 
-function makeFacetedNcesForDistrict(
+function makeFacetedDetailedActualsForDistrict(
   districtData,
   filteredExpenditures,
   facet,
@@ -95,7 +95,7 @@ function compileData(districtDataMap, allSettings, facet) {
       selectedSchoolCodes: extractCodes("school", ncesSettings.selectedSchools),
     });
 
-    const data = makeFacetedNcesForDistrict(
+    const data = makeFacetedDetailedActualsForDistrict(
       districtData,
       filteredExpenditures,
       facet,
@@ -120,10 +120,10 @@ function compileData(districtDataMap, allSettings, facet) {
 }
 
 // Charts expenditures for
-export default function NcesDashboard({
+export default function DetailedActualsDashboard({
   districtDataMap,
   allSettings,
-}: DistrictDataContentProps<NcesSettings>) {
+}: DistrictDataContentProps<DetailedActualsSettings>) {
   const [data, facetOrder] = compileData(
     districtDataMap,
     allSettings,
@@ -164,7 +164,7 @@ export default function NcesDashboard({
       ]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">
-        Nces Dashboard
+        DetailedActuals Dashboard
       </Typography>
       <HcDashboard config={config} />
     </SettingsLayout>
