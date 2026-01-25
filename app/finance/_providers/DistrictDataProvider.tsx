@@ -48,7 +48,7 @@ interface EnsureDistrictDataProps<
   U extends BaseSettings,
 > {
   allSettings: Array<T>;
-  sharedSettings?: U;
+  sharedSettings: U;
   ContentComponent: ComponentType<DistrictDataContentProps<T, U>>;
 }
 
@@ -62,10 +62,6 @@ export function EnsureDistrictData<
   ContentComponent,
 }: EnsureDistrictDataProps<T, U>) {
   // Make one up for places that don't use it.
-  if (sharedSettings === undefined) {
-    sharedSettings = { name: "Undefined", id: "undefined" } as U;
-  }
-
   const { districtDataMap, loadCcddd } = useDistrictData();
 
   useEffect(() => {

@@ -1,5 +1,12 @@
 "use client";
 
+import { makeSchoolItems } from "app/finance/_widgets/ExpenditureFilterContents";
+import {
+  ALL_OBJECT_ITEMS,
+  ALL_ACTIVITY_ITEMS,
+  ALL_PROGRAM_ITEMS,
+} from "app/finance/_widgets/ExpenditureFilterContents";
+import { DEFAULT_METRIC_SETTINGS } from "app/finance/_widgets/MetricSettingsContents";
 import * as aq from "arquero";
 import { op } from "arquero";
 import { dfToJSONConnectorOptions } from "utilities/highcharts/utils";
@@ -34,6 +41,22 @@ export interface DetailedActualsSettings extends MetricSettings {
   selectedActivities: string[];
   selectedPrograms: string[];
   selectedSchools: string[];
+}
+
+const DEFAULT_NCES_SETTINGS = DEFAULT_METRIC_SETTINGS.map((v) => ({
+  ...v,
+  selectedObjects: ALL_OBJECT_ITEMS,
+  selectedActivities: ALL_ACTIVITY_ITEMS,
+  selectedPrograms: ALL_PROGRAM_ITEMS,
+  selectedSchools: makeSchoolItems(v.ccddd),
+}));
+
+export function deserializeDetailedActualsDatasetSettings(queries : Array<string>) {
+  return DEFAULT_NCES_SETTINGS;
+}
+
+export function serializeDetailedActualsDatasetSettings(allSettings : DetailedActualsSettings) : string {
+  return "";
 }
 
 function componentsGenerator(ncesSettings: DetailedActualsSettings, facetOrder) {
@@ -154,6 +177,10 @@ export default function DetailedActualsDashboard({
 
   return (
     <SettingsLayout
+      settingsSerializer={{
+        serialize: x => [],
+        serializeShared: x => "",
+      }}
       allSettings={allSettings}
       settingsContentsComponents={[
         MetricSettingsContents,

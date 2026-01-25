@@ -24,7 +24,7 @@ export default async function Page(params: Params) {
     getParamAsStringArray(searchParams.s),
   );
   const allSettings = deserializeExpenditureFilterSettings(
-    getParamAsStringArray(searchParams.c),
+    getParamAsStringArray(searchParams.d),
   );
 
   return (

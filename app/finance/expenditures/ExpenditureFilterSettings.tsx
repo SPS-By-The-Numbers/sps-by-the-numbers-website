@@ -65,9 +65,7 @@ export function serializeOneExpenditureFilterSettings(
   settings: ExpendituresSettings,
 ): string {
   const mStr = serializeMetricSettings(settings);
-  const settingsDict = {
-    f: settings.overridePrimaryFilter ? 1 : 0,
-  };
+  const settingsDict = {} as Record<string, string>;
 
   // Only output filters if they are overridden.
   if (settings.overridePrimaryFilter || settings.id === 0) {
@@ -91,7 +89,7 @@ export function serializeOneExpenditureFilterSettings(
 
 export function serializeExpenditureFilterSettings(
   allSettings: Array<ExpendituresSettings>,
-): Array<String> {
+): Array<string> {
   const result = new Array<string>();
   for (const setting of allSettings) {
     result.push(serializeOneExpenditureFilterSettings(setting));

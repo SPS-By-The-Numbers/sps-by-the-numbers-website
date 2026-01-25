@@ -215,6 +215,10 @@ export default function CorrelationsDashboard({
 
   return (
     <SettingsLayout
+      settingsSerializer={{
+        serialize: x => [],
+        serializeShared: x => "",
+      }}
       allSettings={allSettings}
       settingsContentsComponents={[MetricSettingsContents]}
     >

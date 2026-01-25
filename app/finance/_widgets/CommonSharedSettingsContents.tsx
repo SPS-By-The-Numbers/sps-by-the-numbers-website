@@ -4,7 +4,7 @@ export interface CommonSharedSettings extends BaseSettings {}
 
 export const DEFAULT_COMMON_SHARED_SETTINGS: CommonSharedSettings = {
   name: "Dashboard Settings",
-  id: "dashboard-settings",
+  id: -1,
 };
 
 // URL-safe seralization of the settings.

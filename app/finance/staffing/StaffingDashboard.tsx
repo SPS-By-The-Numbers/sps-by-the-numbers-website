@@ -165,8 +165,11 @@ export default function StaffingDashboard({
 
   return (
     <SettingsLayout
+      settingsSerializer={{
+        serialize: x => [],
+        serializeShared: x => "",
+      }}
       allSettings={allSettings}
-      setAllSettings={(newAllSettings) => {}}
       settingsContentsComponents={[
         MetricSettingsContents,
         ActivityFilterContents,

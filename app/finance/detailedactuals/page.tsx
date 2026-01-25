@@ -1,24 +1,14 @@
-import {
-  ALL_OBJECT_ITEMS,
-  ALL_ACTIVITY_ITEMS,
-  ALL_PROGRAM_ITEMS,
-} from "app/finance/_widgets/ExpenditureFilterContents";
-import { DEFAULT_METRIC_SETTINGS } from "app/finance/_widgets/MetricSettingsContents";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
-import { makeSchoolItems } from "app/finance/_widgets/ExpenditureFilterContents";
 import { Metadata } from "next";
 import { Suspense } from "react";
-import DetailedActualsDashboard from "./DetailedActualsDashboard";
+import DetailedActualsDashboard, { deserializeDetailedActualsDatasetSettings } from "./DetailedActualsDashboard";
+import { getParamAsStringArray } from "utilities/settings";
 
 import type { DetailedActualsSettings } from "./DetailedActualsDashboard";
 
-const DEFAULT_NCES_SETTINGS = DEFAULT_METRIC_SETTINGS.map((v) => ({
-  ...v,
-  selectedObjects: ALL_OBJECT_ITEMS,
-  selectedActivities: ALL_ACTIVITY_ITEMS,
-  selectedPrograms: ALL_PROGRAM_ITEMS,
-  selectedSchools: makeSchoolItems(v.ccddd),
-}));
+type Params = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
 
 export const metadata: Metadata = {
   title: "Actual Spending Dashboard for Washingtion State Schools",
@@ -26,11 +16,21 @@ export const metadata: Metadata = {
     "Gives detailed breakdown of actual spending using the NCES classification codes.",
 };
 
-export default async function Page() {
+export default async function Page(params: Params) {
+  const searchParams = await params.searchParams;
+  /*
+  const sharedSettings = deserializeDetailedActualsDashboardSettings(
+    getParamAsStringArray(searchParams.s),
+  );
+  */
+  const allSettings = deserializeDetailedActualsDatasetSettings(
+    getParamAsStringArray(searchParams.d),
+  );
   return (
     <Suspense>
       <EnsureDistrictData
-        allSettings={DEFAULT_NCES_SETTINGS}
+        allSettings={allSettings}
+//        sharedSettings={sharedSettings}
         ContentComponent={DetailedActualsDashboard}
       />
     </Suspense>

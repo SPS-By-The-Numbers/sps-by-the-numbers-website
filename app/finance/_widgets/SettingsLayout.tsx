@@ -31,7 +31,7 @@ export type SettingsSerializer<
   SettingsType extends BaseSettings,
   SharedSettingsType extends BaseSettings,
 > = {
-  serialize(allSettings: SettingsType): string;
+  serialize(allSettings: Array<SettingsType>): Array<string>;
   serializeShared(sharedSettings: SharedSettingsType): string;
 };
 
@@ -41,9 +41,8 @@ interface SettingsLayoutProps<
 > {
   settingsSerializer: SettingsSerializer<SettingsType, SharedSettingsType>;
 
-  // TODO: Remove ? maybe?
-  sharedSettings?: SharedSettingsType;
-  sharedSettingsComponents?: Array<SettingsRenderComponentType<any>>;
+  sharedSettings: SharedSettingsType;
+  sharedSettingsComponents: Array<SettingsRenderComponentType<any>>;
 
   allSettings: Array<SettingsType>;
   settingsContentsComponents: Array<SettingsRenderComponentType<any>>;
@@ -163,10 +162,10 @@ export default function SettingsLayout<
   const [isClosing, setIsClosing] = React.useState(false);
   const [nextSettingId, setNextSettingId] = React.useState(1);
 
-  const navigateToNewSettings = (newSharedSettings, newAllSettings) => {
+  const navigateToNewSettings = (newSharedSettings : SharedSettingsType, newAllSettings : Array<SettingsType>) => {
     const queries = new Array<string>();
     for (const settingsQuery of settingsSerializer.serialize(newAllSettings)) {
-      queries.push(`c=${settingsQuery}`);
+      queries.push(`d=${settingsQuery}`);
     }
     queries.push(`s=${settingsSerializer.serializeShared(newSharedSettings)}`);
 

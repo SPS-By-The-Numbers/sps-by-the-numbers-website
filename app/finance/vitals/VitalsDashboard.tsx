@@ -170,6 +170,10 @@ export default function VitalsDashboard({
 
   return (
     <SettingsLayout
+      settingsSerializer={{
+        serialize: x => [],
+        serializeShared: x => "",
+      }}
       allSettings={allSettings}
       settingsContentsComponents={[MetricSettingsContents]}
     >
