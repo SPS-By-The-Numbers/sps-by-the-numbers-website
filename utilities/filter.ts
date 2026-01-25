@@ -1,10 +1,10 @@
 import type { TreeViewBaseItem } from "@mui/x-tree-view";
 import { Base64Stream, Base64Reader } from "utilities/base64_stream";
-import { decodeNumberSet, encodeNumberSet} from "utilities/number_set";
+import { decodeNumberSet, encodeNumberSet } from "utilities/number_set";
 
 // The number of values for each data item int he short code. Best if it is a mutiple
 // of 6 to best patch a base64 digit.
-const SHORTCODE_VALUES : number = 12;
+const SHORTCODE_VALUES: number = 12;
 
 // Using TreeViewBaseItem is a slightly layering violation since this section shouldn't understand
 // UI but tying the two types together just makes everything simpler for now.
@@ -76,7 +76,7 @@ export class Filter {
     return [this.domainTree];
   }
 
-  public allCodes() : Set<number> {
+  public allCodes(): Set<number> {
     if (this.savedAllCodes === undefined) {
       const result = new Set<number>();
       this.savedAllCodes = result;
@@ -91,15 +91,15 @@ export class Filter {
   }
 
   // Returns the correct set of Tree View Items.
-  public toTreeViewItems(filterString: string) : Array<string> {
+  public toTreeViewItems(filterString: string): Array<string> {
     const included = this.fromFilterString(filterString);
     const selectItems = new Set<string>();
     this.visitDomain(
       this.domainTree,
       (n) => {
-       if (n.children.reduce((acc, c) => acc && selectItems.has(c.id), true)) {
-         selectItems.add(n.id);
-       }
+        if (n.children.reduce((acc, c) => acc && selectItems.has(c.id), true)) {
+          selectItems.add(n.id);
+        }
       },
       (n) => {
         if (included.has(n.code)) {
@@ -139,8 +139,14 @@ export class Filter {
 
   public toFilterString(selected: FilterSelection): string {
     const result = this.filterDomainLeafs(this.domainTree, selected);
-    const excludeString = encodeNumberSet("exclude", new Set(result.skipped.map(n => n.code)));
-    const includeString =  encodeNumberSet("include", new Set(result.matched.map(n => n.code)));
+    const excludeString = encodeNumberSet(
+      "exclude",
+      new Set(result.skipped.map((n) => n.code)),
+    );
+    const includeString = encodeNumberSet(
+      "include",
+      new Set(result.matched.map((n) => n.code)),
+    );
     if (excludeString.length === 0) {
       console.log("Mu ha ha");
     }
@@ -226,7 +232,7 @@ export class Filter {
   private visitDomain(
     root: FilterDomainTree,
     onInternal: (n: FilterDomainInternalNode) => void,
-    onLeaf: (n: FilterDomainLeafNode) => void
+    onLeaf: (n: FilterDomainLeafNode) => void,
   ) {
     if (!root) {
       return;

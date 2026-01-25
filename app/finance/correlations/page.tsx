@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     "Shows enrollment details and correlations for Washingtion State Schools.",
 };
 
-export default async function Page(params : Params) {
+export default async function Page(params: Params) {
   const searchParams = await params.searchParams;
   const allSettings = DEFAULT_METRIC_SETTINGS; //deserializeCorrelationFilterSettings(getSerialized(searchParams.c)[0]);
 

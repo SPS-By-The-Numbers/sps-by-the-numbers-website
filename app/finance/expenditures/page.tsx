@@ -18,13 +18,15 @@ export const metadata: Metadata = {
     "Allows for anlaysis and comparison of historical finances on all school districts.",
 };
 
-export default async function Page(params : Params) {
+export default async function Page(params: Params) {
   const searchParams = await params.searchParams;
   const sharedSettings = deserializeExpenditureDashboardSettings(
-    getParamAsStringArray(searchParams.s)[0]);
+    getParamAsStringArray(searchParams.s),
+  );
   const allSettings = deserializeExpenditureFilterSettings(
-    getParamAsStringArray(searchParams.c)[0]);
-  
+    getParamAsStringArray(searchParams.c),
+  );
+
   return (
     <Suspense>
       <EnsureDistrictData

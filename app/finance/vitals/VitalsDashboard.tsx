@@ -142,7 +142,7 @@ function componentsGenerator(vitalsSettings: VitalsSettings) {
 
 export default function VitalsDashboard({
   districtDataMap,
-  allSettings
+  allSettings,
 }: DistrictDataContentProps<VitalsSettings>) {
   const searchParams = useSearchParams();
 

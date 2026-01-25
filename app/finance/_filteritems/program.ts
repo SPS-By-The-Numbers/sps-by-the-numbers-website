@@ -44,7 +44,11 @@ const PROG_26 = makeLeafNode(
 );
 const PROG_29 = makeLeafNode("prog", 29, "Special Education - Other - Federal");
 const PROG_51 = makeLeafNode("prog", 51, "ESEA Disadvantaged - Federal");
-const PROG_52 = makeLeafNode("prog", 52, "Other Title Grants Under ESEA (School Improvement)");
+const PROG_52 = makeLeafNode(
+  "prog",
+  52,
+  "Other Title Grants Under ESEA (School Improvement)",
+);
 const PROG_53 = makeLeafNode("prog", 53, "ESEA Migrant - Federal");
 const PROG_56 = makeLeafNode(
   "prog",
@@ -233,11 +237,7 @@ const ProgramFilterTree = makeInternalNode("program", "All Programs", [
     PROG_88,
     PROG_89,
   ]),
-  makeInternalNode("support", "Support Services", [
-    PROG_97,
-    PROG_99,
-    PROG_98,
-  ]),
+  makeInternalNode("support", "Support Services", [PROG_97, PROG_99, PROG_98]),
   makeInternalNode("misc", "Unrestricted, Reserved, Covid", [
     PROG_0,
     PROG_18,

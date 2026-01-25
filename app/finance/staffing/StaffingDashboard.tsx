@@ -166,7 +166,7 @@ export default function StaffingDashboard({
   return (
     <SettingsLayout
       allSettings={allSettings}
-      setAllSettings={newAllSettings => {}}
+      setAllSettings={(newAllSettings) => {}}
       settingsContentsComponents={[
         MetricSettingsContents,
         ActivityFilterContents,

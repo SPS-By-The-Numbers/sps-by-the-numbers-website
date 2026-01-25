@@ -8,7 +8,7 @@ export const DEFAULT_COMMON_SHARED_SETTINGS: CommonSharedSettings = {
 };
 
 // URL-safe seralization of the settings.
-export function serializeCommonSharedSettings(settings : CommonSharedSettings) {
+export function serializeCommonSharedSettings(settings: CommonSharedSettings) {
   // No common shared settings so default to nothing
   return "";
 }

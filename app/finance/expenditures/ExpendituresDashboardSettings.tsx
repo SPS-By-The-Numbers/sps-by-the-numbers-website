@@ -4,7 +4,10 @@ import * as ChartOptions from "utilities/ChartOptions";
 import InputLabel from "@mui/material/InputLabel";
 import SettingsSelect from "app/finance/_widgets/SettingsSelect";
 import Stack from "@mui/material/Stack";
-import { serializeSettingsDict, deserializeSettingsDict } from 'utilities/settings';
+import {
+  serializeSettingsDict,
+  deserializeSettingsDict,
+} from "utilities/settings";
 
 import type { CommonSharedSettings } from "app/finance/_widgets/CommonSharedSettingsContents";
 import type { SettingsContentsProps } from "app/finance/_widgets/SettingsContents";
@@ -31,7 +34,7 @@ export interface ExpendituresDashboardSettings extends CommonSharedSettings {
   yScale: ChartOptions.YScale;
 }
 
-const DEFAULT_DASHBOARD_SETTINGS : ExpendituresDashboardSettings = {
+const DEFAULT_DASHBOARD_SETTINGS: ExpendituresDashboardSettings = {
   ...DEFAULT_COMMON_SHARED_SETTINGS,
   facet: "activity",
   facetLimit: "0",
@@ -44,22 +47,24 @@ function serializeFacet(facet: Facet) {
   return facet as string;
 }
 
-function deserializeFacet(s: string) : Facet {
+function deserializeFacet(s: string): Facet {
   switch (s) {
-    case 'activity':
-      return 'activity';
+    case "activity":
+      return "activity";
 
-    case 'program':
-      return 'program';
+    case "program":
+      return "program";
 
-    case 'object':
-      return 'object';
+    case "object":
+      return "object";
   }
 
-  return 'activity';
+  return "activity";
 }
 
-export function serializeExpenditureDashboardSettings(s : ExpendituresDashboardSettings) {
+export function serializeExpenditureDashboardSettings(
+  s: ExpendituresDashboardSettings,
+) {
   const settingsDict = {
     f: serializeFacet(s.facet),
     l: ChartOptions.serializeFacetLimit(s.facetLimit),
@@ -71,28 +76,35 @@ export function serializeExpenditureDashboardSettings(s : ExpendituresDashboardS
   return serializeSettingsDict(settingsDict);
 }
 
-export function deserializeExpenditureDashboardSettings(serialized : string) {
-  const settingsDict = deserializeSettingsDict(serialized);
+export function deserializeExpenditureDashboardSettings(
+  queries: Array<string>,
+) {
+  if (queries.length === 0) {
+    return DEFAULT_DASHBOARD_SETTINGS;
+  }
+
+  // Go with the first parameter of shared settings if they are repeeated.
+  const settingsDict = deserializeSettingsDict(queries[0]);
   const settings = DEFAULT_DASHBOARD_SETTINGS;
   for (const [key, value] of Object.entries(settingsDict)) {
     switch (key) {
-      case 'f':
+      case "f":
         settings.facet = deserializeFacet(value);
         break;
 
-      case 'l':
+      case "l":
         settings.facetLimit = ChartOptions.deserializeFacetLimit(value);
         break;
 
-      case 'so':
+      case "so":
         settings.sortOrder = ChartOptions.deserializeSortOrder(value);
         break;
 
-      case 'st':
+      case "st":
         settings.sortType = ChartOptions.deserializeSortType(value);
         break;
 
-      case 'ys':
+      case "ys":
         settings.yScale = ChartOptions.deserializeYScales(value);
         break;
     }

@@ -5,26 +5,24 @@
 export function getParamAsStringArray(value) {
   if (Array.isArray(value)) {
     for (const v in value) {
-      if (typeof(v) !== "string") {
-        return [""];
+      if (typeof v !== "string") {
+        return [];
       }
     }
     return value;
-  } else if (typeof(value) === "string") {
+  } else if (typeof value === "string") {
     return [value];
-
   }
-  return [""];
+  return [];
 }
 
-
 export function serializeSettingsDict(dict: Record<string, string>) {
-  const values = new Array<string>;
+  const values = new Array<string>();
   for (const [k, v] of Object.entries(dict)) {
-    if (k.indexOf('~') !== -1) {
+    if (k.indexOf("~") !== -1) {
       throw `Unable to serialize ${k}`;
     }
-    if (v.indexOf('.') !== -1) {
+    if (typeof v === "string" && v.indexOf(".") !== -1) {
       throw `Unable to serialize ${v}`;
     }
     if (v) {
@@ -32,14 +30,14 @@ export function serializeSettingsDict(dict: Record<string, string>) {
     }
   }
 
-  return values.join('~');
+  return values.join("~");
 }
 
 export function deserializeSettingsDict(serialized: string) {
-  const parts = serialized.split('~');
-  const dict = new Map<string, string>;
+  const parts = serialized.split("~");
+  const dict = new Map<string, string>();
   for (const p of parts) {
-    const firstColonIndex = p.indexOf('.');
+    const firstColonIndex = p.indexOf(".");
     const key = p.substr(0, firstColonIndex);
     const value = p.substr(firstColonIndex + 1);
     dict[key] = value;

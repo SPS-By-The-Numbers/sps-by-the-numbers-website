@@ -28,11 +28,16 @@ import {
   ProgramFilterContents,
 } from "app/finance/_widgets/ExpenditureFilterContents";
 import { useMemo } from "react";
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname } from "next/navigation";
 import ObjectFilter from "app/finance/_filteritems/object";
 import ProgramFilter from "app/finance/_filteritems/program";
-import ExpendituresDashboardSettingsContents, { serializeExpenditureDashboardSettings } from "app/finance/expenditures/ExpendituresDashboardSettings";
-import { settingsToDistrictDataFilters, serializeExpenditureFilterSettings } from "app/finance/expenditures/ExpenditureFilterSettings";
+import ExpendituresDashboardSettingsContents, {
+  serializeExpenditureDashboardSettings,
+} from "app/finance/expenditures/ExpendituresDashboardSettings";
+import {
+  settingsToDistrictDataFilters,
+  serializeExpenditureFilterSettings,
+} from "app/finance/expenditures/ExpenditureFilterSettings";
 import HcDashboard from "components/HcDashboard";
 import MetricSettingsContents from "app/finance/_widgets/MetricSettingsContents";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
@@ -40,9 +45,7 @@ import { makeMaybeContents } from "app/finance/_widgets/SettingsContents";
 import Typography from "@mui/material/Typography";
 
 import type { ColumnTable } from "arquero";
-import type {
-  ExpendituresDashboardSettings,
-} from "./ExpendituresDashboardSettings";
+import type { ExpendituresDashboardSettings } from "./ExpendituresDashboardSettings";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
 import type { ExpendituresSettings } from "./ExpenditureFilterSettings";
 
@@ -54,7 +57,8 @@ function componentsGenerator(
   expenditureSettings: ExpendituresSettings,
   bounds,
 ) {
-  const districtDataFilters = settingsToDistrictDataFilters(expenditureSettings);
+  const districtDataFilters =
+    settingsToDistrictDataFilters(expenditureSettings);
   const subtitle = `
   Prog: ${ProgramFilter.toSummaryText(new Set(districtDataFilters.selectedProgramCodes))} /
   Obj: ${ObjectFilter.toSummaryText(new Set(districtDataFilters.selectedObjectCodes))} 
@@ -164,16 +168,14 @@ function compileData(districtDataMap, expandedAllSettings, facet, sortOrder) {
 
 function expandFilters(allSettings): Array<ExpendituresSettings> {
   const results = new Array<ExpendituresSettings>();
-  const primaryIndex = allSettings.findIndex((v) => v.id === "primary");
-  const primarySettings = allSettings[primaryIndex];
+
+  // The first entry is the primary entry.
+  const primarySettings = allSettings[0];
+  const dependentSettings = allSettings.slice(1);
   results.push(primarySettings);
 
-  for (let i = 0; i < allSettings.length; i++) {
-    if (i === primaryIndex) {
-      continue;
-    }
-
-    const newSetting = { ...allSettings[i] };
+  for (const s of dependentSettings) {
+    const newSetting = { ...s };
 
     // Use the primary settings if this one isn't overriding.
     if (!newSetting.overridePrimaryFilter) {
@@ -320,7 +322,7 @@ function makeHighchartConfig(
   // Trim the list for rendering speed.
   const facetOrder = fullFacetOrder.slice(
     0,
-    facetLimit === 0 ? undefined : facetLimit
+    facetLimit === 0 ? undefined : facetLimit,
   );
 
   const facetYBounds =

@@ -77,22 +77,22 @@
 //   b[3] = 0 for 19-bit number. 1 for 31-bit number
 //   b[4] = Inclusive or Exclusive filter. 1 for Exclusive
 //
-// For Direct19, b[5:24] is a 19-bit number starting after the ExtendedCompact range. 
+// For Direct19, b[5:24] is a 19-bit number starting after the ExtendedCompact range.
 // For Direct31, b[5:36] is the 31-bit number starting after the Direct19 range.
 
 import { Base64Stream, Base64Reader } from "utilities/base64_stream";
 
 type FilterType = "include" | "exclude";
-type DecodedNumberSets = {include?: Set<number>, exclude?: Set<number>};
+type DecodedNumberSets = { include?: Set<number>; exclude?: Set<number> };
 type DecodedNumberArray = [FilterType, Array<number>];
 
-const BLOCK_SIZE : number = 12;
-const CODEPAGE_SIZE : number = 5 * 12;
+const BLOCK_SIZE: number = 12;
+const CODEPAGE_SIZE: number = 5 * 12;
 
-export const COMPACT_MAX = 10*12;  // 120
-export const EXTENDED_COMPACT_MAX = COMPACT_MAX + 2**4 * (5*12);  // 1,080
-export const DIRECT19_MAX = EXTENDED_COMPACT_MAX + 2**19;  // 525,368
-export const DIRECT31_MAX = DIRECT19_MAX + 2**31;  // 2,148,009,016
+export const COMPACT_MAX = 10 * 12; // 120
+export const EXTENDED_COMPACT_MAX = COMPACT_MAX + 2 ** 4 * (5 * 12); // 1,080
+export const DIRECT19_MAX = EXTENDED_COMPACT_MAX + 2 ** 19; // 525,368
+export const DIRECT31_MAX = DIRECT19_MAX + 2 ** 31; // 2,148,009,016
 
 function pushValue(b64Stream, value, numBits) {
   let mask = 1 << (numBits - 1);
@@ -106,17 +106,17 @@ function pushValue(b64Stream, value, numBits) {
 function readValue(b64Reader: Base64Reader, numBits) {
   let result = 0;
   for (let i = 0; i < numBits; i++) {
-    result = result << 1 | b64Reader.nextBit();
+    result = (result << 1) | b64Reader.nextBit();
   }
   return result;
 }
 
 function directFormatConfig(is31) {
   if (is31) {
-    return { bits: 31, offset: DIRECT19_MAX};
+    return { bits: 31, offset: DIRECT19_MAX };
   }
 
-  return { bits: 19, offset: EXTENDED_COMPACT_MAX};
+  return { bits: 19, offset: EXTENDED_COMPACT_MAX };
 }
 
 function encodeBlocks(b64Stream, numBlocks, blockStart, values) {
@@ -124,10 +124,10 @@ function encodeBlocks(b64Stream, numBlocks, blockStart, values) {
   const blocks = new Array<number>(numBlocks);
   blocks.fill(0, 0, numBlocks);
   for (const v of values) {
-    const offsetValue = (v - blockStart);
+    const offsetValue = v - blockStart;
     const blockNumber = Math.trunc(offsetValue / BLOCK_SIZE);
     const bit = offsetValue % BLOCK_SIZE;
-    blocks[blockNumber] = blocks[blockNumber] | (1 << ((BLOCK_SIZE - 1) - bit));
+    blocks[blockNumber] = blocks[blockNumber] | (1 << (BLOCK_SIZE - 1 - bit));
   }
 
   // Ouptut the BlockMask by iterating over all blocks.
@@ -167,7 +167,7 @@ function encodeOneCodepage(b64Stream, filterType, page, values) {
   pushValue(b64Stream, page, 4);
 
   // Write block mask + data.
-  encodeBlocks(b64Stream, 5, 120 + (page * CODEPAGE_SIZE), values);
+  encodeBlocks(b64Stream, 5, 120 + page * CODEPAGE_SIZE, values);
 }
 
 function encodeExtendedCompact(b64Stream, filterType, values) {
@@ -175,14 +175,14 @@ function encodeExtendedCompact(b64Stream, filterType, values) {
     return;
   }
 
-  const codepages = new Array<Array<number>>;
+  const codepages = new Array<Array<number>>();
   for (let i = 0; i < 16; i++) {
     codepages.push(new Array<number>());
   }
 
   for (const v of values) {
     // Each codepage is 60 bytes starting at 120.
-    const cp = Math.trunc((v - COMPACT_MAX)/CODEPAGE_SIZE);
+    const cp = Math.trunc((v - COMPACT_MAX) / CODEPAGE_SIZE);
     codepages[cp].push(v);
   }
 
@@ -193,10 +193,10 @@ function encodeExtendedCompact(b64Stream, filterType, values) {
 
 function encodeOneDirect(b64Stream, filterType, value) {
   const is31 = value >= DIRECT19_MAX;
-  const {bits, offset} = directFormatConfig(is31);
+  const { bits, offset } = directFormatConfig(is31);
 
   b64Stream.pushBits(1, 1, 0, is31, filterType === "exclude");
-  pushValue(b64Stream, (value - offset), bits);
+  pushValue(b64Stream, value - offset, bits);
 }
 
 function encodeDirect(b64Stream, filterType, values) {
@@ -209,17 +209,17 @@ function encodeDirect(b64Stream, filterType, values) {
   }
 }
 
-export function encodeNumberSet(filterType : FilterType, numbers: Set<number>) {
-  const compact = new Array<number>;
-  const extendedCompact = new Array<number>;
-  const direct = new Array<number>;
-  const sortedNumbers = [...numbers].sort((a,b) => a-b);
+export function encodeNumberSet(filterType: FilterType, numbers: Set<number>) {
+  const compact = new Array<number>();
+  const extendedCompact = new Array<number>();
+  const direct = new Array<number>();
+  const sortedNumbers = [...numbers].sort((a, b) => a - b);
   if (numbers.size === 0) {
     // Include nothing or Exclude nothing is easy.
-    if (filterType === 'include') {
-      return 'AA';
+    if (filterType === "include") {
+      return "AA";
     } else {
-      return 'QA';
+      return "QA";
     }
   }
 
@@ -247,30 +247,35 @@ export function encodeNumberSet(filterType : FilterType, numbers: Set<number>) {
   return b64Stream.urlsafeEncode();
 }
 
-function decodeFilterType(b64Reader: Base64Reader) : FilterType {
-  return b64Reader.nextBit() ? 'exclude' as const : 'include' as const;
+function decodeFilterType(b64Reader: Base64Reader): FilterType {
+  return b64Reader.nextBit() ? ("exclude" as const) : ("include" as const);
 }
 
 function decodeBlock(block, start, numbers) {
   const startMask = 1 << (BLOCK_SIZE - 1);
   for (let i = 0; i < BLOCK_SIZE; i++) {
-    const mask = startMask >>> i; 
+    const mask = startMask >>> i;
     if ((block & mask) !== 0) {
       numbers.push(start + i);
     }
   }
 }
 
-function decodeBlockMaskAndData(b64Reader: Base64Reader, numBlocks, offset, result) {
-  const blockStarts = new Array<number>;
+function decodeBlockMaskAndData(
+  b64Reader: Base64Reader,
+  numBlocks,
+  offset,
+  result,
+) {
+  const blockStarts = new Array<number>();
   for (let i = 0; i < numBlocks; i++) {
     if (b64Reader.nextBit()) {
       // The start of each block is the map mask is a multiple of BLOCK_SIZE.
-      blockStarts.push(offset + (i * BLOCK_SIZE));
+      blockStarts.push(offset + i * BLOCK_SIZE);
     }
   }
 
-  const blocks = new Array<number>;
+  const blocks = new Array<number>();
   for (let i = 0; i < blockStarts.length; i++) {
     blocks.push(readValue(b64Reader, BLOCK_SIZE));
   }
@@ -280,7 +285,7 @@ function decodeBlockMaskAndData(b64Reader: Base64Reader, numBlocks, offset, resu
   }
 }
 
-function decodeCompact(b64Reader: Base64Reader) : DecodedNumberArray {
+function decodeCompact(b64Reader: Base64Reader): DecodedNumberArray {
   const result = new Array<number>();
 
   const filterType = decodeFilterType(b64Reader);
@@ -290,7 +295,7 @@ function decodeCompact(b64Reader: Base64Reader) : DecodedNumberArray {
   return [filterType, result];
 }
 
-function decodeExtendedCompact(b64Reader: Base64Reader) : DecodedNumberArray {
+function decodeExtendedCompact(b64Reader: Base64Reader): DecodedNumberArray {
   const result = new Array<number>();
 
   const filterType = decodeFilterType(b64Reader);
@@ -301,28 +306,28 @@ function decodeExtendedCompact(b64Reader: Base64Reader) : DecodedNumberArray {
   return [filterType, result];
 }
 
-function decodeDirect(b64Reader: Base64Reader) : DecodedNumberArray {
-  const {bits, offset} = directFormatConfig(b64Reader.nextBit());
+function decodeDirect(b64Reader: Base64Reader): DecodedNumberArray {
+  const { bits, offset } = directFormatConfig(b64Reader.nextBit());
 
   const filterType = decodeFilterType(b64Reader);
   const value = offset + readValue(b64Reader, bits);
   return [filterType, [value]];
 }
 
-export function decodeNumberSet(encoded: string) : DecodedNumberSets {
-  if (encoded === 'AA') {
+export function decodeNumberSet(encoded: string): DecodedNumberSets {
+  if (encoded === "AA") {
     // Include nothing.
-    return ({
+    return {
       include: new Set<number>(),
-    });
-  } else if (encoded === 'QA') {
+    };
+  } else if (encoded === "QA") {
     // Exclude nothing.
-    return ({
+    return {
       exclude: new Set<number>(),
-    });
+    };
   }
 
-  const allDecoded = new Array<DecodedNumberArray>;
+  const allDecoded = new Array<DecodedNumberArray>();
   const b64Reader = new Base64Reader(encoded);
   while (!b64Reader.done()) {
     if (!b64Reader.nextBit()) {
@@ -345,14 +350,16 @@ export function decodeNumberSet(encoded: string) : DecodedNumberSets {
   }
 
   // Combine and sort the results.
-  const includedNums = (allDecoded.filter(e => e[0] === 'include')
-                        .flatMap(([_,v]) => v)
-                        .sort((a,b) => a-b));
-  const excludedNums = (allDecoded.filter(e => e[0] === 'exclude')
-                        .flatMap(([_,v]) => v)
-                        .sort((a,b) => a-b));
+  const includedNums = allDecoded
+    .filter((e) => e[0] === "include")
+    .flatMap(([_, v]) => v)
+    .sort((a, b) => a - b);
+  const excludedNums = allDecoded
+    .filter((e) => e[0] === "exclude")
+    .flatMap(([_, v]) => v)
+    .sort((a, b) => a - b);
 
-  const result : DecodedNumberSets = {};
+  const result: DecodedNumberSets = {};
   if (includedNums.length > 0) {
     result.include = new Set(includedNums);
   }

@@ -1,7 +1,10 @@
-const WEBSAFE_BASE64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-const WEBSAFE_BASE64_DICT = Object.fromEntries([...WEBSAFE_BASE64].map((v,i) => [v, i]));
+const WEBSAFE_BASE64 =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+const WEBSAFE_BASE64_DICT = Object.fromEntries(
+  [...WEBSAFE_BASE64].map((v, i) => [v, i]),
+);
 
-const MAX_BITS_IN_BYTE = 6;  // One base64 digit represents 6 bits.
+const MAX_BITS_IN_BYTE = 6; // One base64 digit represents 6 bits.
 
 type Bit = 0 | 1;
 
@@ -13,17 +16,17 @@ type Bit = 0 | 1;
 // just lets us stream out bits in 6-bit letters from the WEBSAFE_BASE64
 // alphabet.
 export class Base64Stream {
-  private encoded : Array<number> = new Array<number>();
-  private bitsFilled : number = 0;
-  private currentByte : number = 0;
+  private encoded: Array<number> = new Array<number>();
+  private bitsFilled: number = 0;
+  private currentByte: number = 0;
 
-  pushBits(...bits : Array<boolean | number>) {
+  pushBits(...bits: Array<boolean | number>) {
     for (const b of bits) {
       this.pushOneBit(b);
     }
   }
 
-  private pushOneBit(bit : boolean | number) {
+  private pushOneBit(bit: boolean | number) {
     if (this.bitsFilled >= MAX_BITS_IN_BYTE) {
       this.encoded.push(this.currentByte);
       this.currentByte = 0;
@@ -45,7 +48,7 @@ export class Base64Stream {
     return retval;
   }
 
-  encodedLength() : number {
+  encodedLength(): number {
     return this.encoded.length + (this.bitsFilled > 0 ? 1 : 0);
   }
 
@@ -56,7 +59,8 @@ export class Base64Stream {
       return [];
     }
 
-    const shiftedBytes = this.currentByte << (MAX_BITS_IN_BYTE - this.bitsFilled);
+    const shiftedBytes =
+      this.currentByte << (MAX_BITS_IN_BYTE - this.bitsFilled);
     return [shiftedBytes];
   }
 }
@@ -69,11 +73,11 @@ export class Base64Reader {
     this.inString = s;
   }
 
-  done() : boolean {
-    return this.cursor >= (this.inString.length * 6);
+  done(): boolean {
+    return this.cursor >= this.inString.length * 6;
   }
 
-  nextBit() : Bit {
+  nextBit(): Bit {
     if (this.done()) {
       throw "Iterator overrun";
     }
@@ -83,9 +87,8 @@ export class Base64Reader {
     const base64Letter = this.inString[bucket];
     const val = WEBSAFE_BASE64_DICT[base64Letter];
     const mask = 1 << (6 - position - 1);
-    const result = (val & mask) ? 1: 0;
+    const result = val & mask ? 1 : 0;
     this.cursor++;
     return result;
   }
 }
-

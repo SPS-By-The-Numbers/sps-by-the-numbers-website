@@ -4,7 +4,10 @@ import DistrictSelector from "app/finance/_widgets/DistrictSelector";
 import FilterGroupingSelector from "app/finance/_widgets/FilterGroupingSelector";
 import StaffingNormalizationSelector from "app/finance/_widgets/StaffingNormalizationSelector";
 import * as ChartableMetrics from "utilities/ChartableMetrics";
-import { serializeSettingsDict, deserializeSettingsDict } from 'utilities/settings';
+import {
+  serializeSettingsDict,
+  deserializeSettingsDict,
+} from "utilities/settings";
 
 import type {
   CurrencyNormalization,
@@ -20,11 +23,11 @@ const ALL_FILTER_GROUPING = [
   // semantic sense.
   "ospi",
 ];
-export type FilterGrouping = (typeof ALL_FILTER_GROUPING[number]);
+export type FilterGrouping = (typeof ALL_FILTER_GROUPING)[number];
 export function serializeFilterGrouping(grouping: FilterGrouping) {
   return grouping as string;
 }
-export function deserializeFilterGrouping(s: string) : FilterGrouping {
+export function deserializeFilterGrouping(s: string): FilterGrouping {
   if (ALL_FILTER_GROUPING.includes(s)) {
     return s as FilterGrouping;
   }
@@ -41,7 +44,7 @@ export interface MetricSettings extends BaseSettings {
 
 export const DEFAULT_METRIC_SETTINGS: Array<MetricSettings> = [
   {
-    id: "primary",
+    id: 0,
     ccddd: 17001,
     filterGrouping: "spsbtn" as const,
     currencyNormalization: "amount" as const,
@@ -49,47 +52,52 @@ export const DEFAULT_METRIC_SETTINGS: Array<MetricSettings> = [
   },
 ].map((e) => ({ ...e, name: ALL_DISTRICTS[e.ccddd].district }));
 
-export function serializeMetricSettings(s : MetricSettings) {
+export function serializeMetricSettings(s: MetricSettings) {
   const settingsDict = {
-    i: s.id,
     c: s.ccddd.toString(),
     g: serializeFilterGrouping(s.filterGrouping),
-    cn: ChartableMetrics.serializeCurrencyNormalization(s.currencyNormalization),
-    sn: ChartableMetrics.serializeStaffingNormalization(s.staffingNormalization),
+    cn: ChartableMetrics.serializeCurrencyNormalization(
+      s.currencyNormalization,
+    ),
+    sn: ChartableMetrics.serializeStaffingNormalization(
+      s.staffingNormalization,
+    ),
   };
 
   return serializeSettingsDict(settingsDict);
 }
 
-export function deserializeMetricSettings(serialized : string) {
+export function deserializeOneMetricSettings(
+  defaultSettings,
+  serialized: string,
+) {
   const settingsDict = deserializeSettingsDict(serialized);
-  const allSettings = Object.assign({}, DEFAULT_METRIC_SETTINGS);
-  const settings = allSettings[0];
+  const settings = Object.assign({}, defaultSettings);
   for (const [key, value] of Object.entries(settingsDict)) {
     switch (key) {
-      case 'i':
-        settings.id = value || settings.id;
-        break;
-
-      case 'c':
+      case "c":
         settings.ccddd = parseInt(value) || settings.ccddd;
         break;
 
-      case 'g':
+      case "g":
         settings.filterGrouping = deserializeFilterGrouping(value);
         break;
 
-      case 'cn':
-        settings.currencyNormalization = ChartableMetrics.deserializeCurrencyNormalization(value);
+      case "cn":
+        settings.currencyNormalization =
+          ChartableMetrics.deserializeCurrencyNormalization(value);
         break;
 
-      case 'sn':
-        settings.staffingNormalization = ChartableMetrics.deserializeStaffingNormalization(value);
+      case "sn":
+        settings.staffingNormalization =
+          ChartableMetrics.deserializeStaffingNormalization(value);
         break;
     }
   }
 
-  return allSettings;
+  settings.name = ALL_DISTRICTS[settings.ccddd].district;
+
+  return settings;
 }
 
 export default function MetricSettingsContents({

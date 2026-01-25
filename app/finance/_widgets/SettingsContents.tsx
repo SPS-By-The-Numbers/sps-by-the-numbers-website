@@ -5,7 +5,7 @@ import type { ReactNode, ComponentType } from "react";
 
 export interface BaseSettings {
   name: string;
-  id: string;
+  id: number;
 }
 
 export interface SettingsContentsProps<
@@ -45,7 +45,7 @@ function MaybeContents({
   Component,
   mode,
 }) {
-  const isPrimary = settings.id === "primary";
+  const isPrimary = settings.id === 0;
 
   // Say you want to explicitly enable filters in a comparison. This is the mode for you.
   if (mode === "notPrimary") {
