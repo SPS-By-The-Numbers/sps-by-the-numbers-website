@@ -2,7 +2,7 @@ import {
   DEFAULT_METRIC_SETTINGS,
   serializeMetricSettings,
   deserializeOneMetricSettings,
-} from "app/finance/_widgets/MetricSettingsContents";
+} from "app/finance/_settings/metric_settings";
 import {
   ALL_OBJECT_ITEMS,
   ALL_ACTIVITY_ITEMS,
@@ -17,7 +17,7 @@ import {
   serializeSettingsDict,
   deserializeSettingsDict,
 } from "utilities/settings";
-import type { MetricSettings } from "app/finance/_widgets/MetricSettingsContents";
+import type { MetricSettings } from "app/finance/_settings/metric_settings";
 import type { DistrictDataFilters } from "utilities/DistrictData";
 
 interface PAOFilterSettings {

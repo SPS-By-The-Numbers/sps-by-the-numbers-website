@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
-import { DEFAULT_METRIC_SETTINGS } from "app/finance/_widgets/MetricSettingsContents";
+import { DEFAULT_METRIC_SETTINGS } from "app/finance/_settings/metric_settings";
 import { DUMMY_BASE_SETTINGS } from "app/finance/_settings/base_settings";
 import CorrelationsDashboard from "./CorrelationsDashboard";
 import { getParamAsStringArray } from "utilities/settings";

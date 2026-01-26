@@ -24,7 +24,7 @@ import Typography from "@mui/material/Typography";
 
 import type { ColumnTable } from "arquero";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
-import type { MetricSettings } from "app/finance/_widgets/MetricSettingsContents";
+import type { MetricSettings } from "app/finance/_settings/metric_settings";
 
 const CONNECTOR_ID = "settings-connector";
 

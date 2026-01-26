@@ -5,7 +5,7 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 
 import type { SxProps, Theme } from "@mui/material";
-import type { FilterGrouping } from "app/finance/_widgets/MetricSettingsContents";
+import type { FilterGrouping } from "app/finance/_settings/metric_settings";
 
 type Params = {
   filterGrouping: FilterGrouping;

@@ -1,4 +1,4 @@
-import { DEFAULT_METRIC_SETTINGS } from "app/finance/_widgets/MetricSettingsContents";
+import { DEFAULT_METRIC_SETTINGS } from "app/finance/_settings/metric_settings";
 import { DUMMY_BASE_SETTINGS } from "app/finance/_settings/base_settings";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
 import { Metadata } from "next";

@@ -17,7 +17,7 @@ import {
 
 import type { ColumnTable } from "arquero";
 import type { FacetInfo } from "utilities/ChartableMetrics";
-import type { MetricSettings } from "app/finance/_widgets/MetricSettingsContents";
+import type { MetricSettings } from "app/finance/_settings/metric_settings";
 
 type Params = {
   idPrefix: string;

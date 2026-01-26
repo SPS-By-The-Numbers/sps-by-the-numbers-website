@@ -13,7 +13,7 @@ import MetricSettingsContents from "app/finance/_widgets/MetricSettingsContents"
 import type { BaseSettings } from "app/finance/_settings/base_settings";
 import type { CorrelationChartOptions } from "utilities/highcharts/ChartConfigGenerators";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
-import type { MetricSettings } from "app/finance/_widgets/MetricSettingsContents";
+import type { MetricSettings } from "app/finance/_settings/metric_settings";
 
 const CONNECTOR_ID = "cashflow-connector";
 

@@ -16,7 +16,7 @@ import type {
   ValueFormat,
 } from "utilities/highcharts/ChartConfigGenerators";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
-import type { MetricSettings } from "app/finance/_widgets/MetricSettingsContents";
+import type { MetricSettings } from "app/finance/_settings/metric_settings";
 
 export interface VitalsSettings extends MetricSettings {}
 

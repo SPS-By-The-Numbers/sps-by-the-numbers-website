@@ -9,7 +9,7 @@ import ActivityFilter from "app/finance/_filteritems/activity";
 import ObjectFilter from "app/finance/_filteritems/object";
 
 import type { BaseSettings } from "app/finance/_settings/base_settings";
-import type { MetricSettings } from "app/finance/_widgets/MetricSettingsContents";
+import type { MetricSettings } from "app/finance/_settings/metric_settings";
 import type { TreeViewBaseItem } from "@mui/x-tree-view";
 
 interface Props<T extends BaseSettings> {

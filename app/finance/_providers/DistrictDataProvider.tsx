@@ -5,7 +5,7 @@ import DistrictData from "utilities/DistrictData";
 import Loading from "components/Loading";
 
 import type { BaseSettings } from "app/finance/_settings/base_settings";
-import type { MetricSettings } from "app/finance/_widgets/MetricSettingsContents";
+import type { MetricSettings } from "app/finance/_settings/metric_settings";
 import type { ReactNode, ComponentType } from "react";
 
 export type Ccddd = number;

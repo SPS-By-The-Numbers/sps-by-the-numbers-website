@@ -3,7 +3,7 @@ import {
   ALL_PROGRAM_ITEMS,
   ALL_DUTY_ROOT_ITEMS,
 } from "app/finance/_widgets/ExpenditureFilterContents";
-import { DEFAULT_METRIC_SETTINGS } from "app/finance/_widgets/MetricSettingsContents";
+import { DEFAULT_METRIC_SETTINGS } from "app/finance/_settings/metric_settings";
 import { DUMMY_BASE_SETTINGS } from "app/finance/_settings/base_settings";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
 import { makeSchoolItems } from "app/finance/_widgets/ExpenditureFilterContents";
