@@ -3,13 +3,13 @@ import {
   serializeSettingsDict,
   deserializeSettingsDict,
 } from "utilities/settings";
-import * as ChartableMetrics from "utilities/ChartableMetrics";
+import * as Normalizations from "utilities/normalizations";
 
 import type { BaseSettings } from "app/finance/_settings/base_settings";
 import type {
   CurrencyNormalization,
   StaffingNormalization,
-} from "utilities/ChartableMetrics";
+} from "utilities/normalizations";
 
 const ALL_FILTER_GROUPING = [
   // Organize filters into categories that makes sense to the SPS By The Numbers maintainers.
@@ -52,10 +52,10 @@ export function serializeMetricSettings(s: MetricSettings) {
   const settingsDict = {
     c: s.ccddd.toString(),
     g: serializeFilterGrouping(s.filterGrouping),
-    cn: ChartableMetrics.serializeCurrencyNormalization(
+    cn: Normalizations.serializeCurrencyNormalization(
       s.currencyNormalization,
     ),
-    sn: ChartableMetrics.serializeStaffingNormalization(
+    sn: Normalizations.serializeStaffingNormalization(
       s.staffingNormalization,
     ),
   };
@@ -81,12 +81,12 @@ export function deserializeOneMetricSettings(
 
       case "cn":
         settings.currencyNormalization =
-          ChartableMetrics.deserializeCurrencyNormalization(value);
+          Normalizations.deserializeCurrencyNormalization(value);
         break;
 
       case "sn":
         settings.staffingNormalization =
-          ChartableMetrics.deserializeStaffingNormalization(value);
+          Normalizations.deserializeStaffingNormalization(value);
         break;
     }
   }
@@ -95,4 +95,3 @@ export function deserializeOneMetricSettings(
 
   return settings;
 }
-

@@ -7,7 +7,7 @@ import type Highcharts from "highcharts";
 import type {
   CurrencyNormalization,
   StaffingNormalization,
-} from "utilities/ChartableMetrics";
+} from "utilities/normalizations";
 
 export type ValueFormat =
   | "currency"

@@ -6,7 +6,7 @@ import { toChartableDataset } from "utilities/ChartableMetrics";
 import type { ColumnTable } from "arquero";
 import type { DistrictDataMap } from "app/finance/_providers/DistrictDataProvider";
 import type { VitalsSettings } from "app/finance/vitals/VitalsDashboard";
-import type { CurrencyNormalization } from "utilities/ChartableMetrics";
+import type { CurrencyNormalization } from "utilities/normalizations";
 
 function extractRawVitals(districtData, ccddd) {
   return districtData

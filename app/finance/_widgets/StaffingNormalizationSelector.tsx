@@ -5,7 +5,7 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 
 import type { SxProps, Theme } from "@mui/material";
-import type { StaffingNormalization } from "utilities/ChartableMetrics";
+import type { StaffingNormalization } from "utilities/normalizations";
 
 type Params = {
   normalization: StaffingNormalization;
