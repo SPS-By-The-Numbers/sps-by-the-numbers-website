@@ -157,9 +157,14 @@ export default function SettingsLayout<
     for (const settingsQuery of settingsSerializer.serialize(newAllSettings)) {
       queries.push(`d=${settingsQuery}`);
     }
-    queries.push(`s=${settingsSerializer.serializeShared(newSharedSettings)}`);
+    const sharedQuery = settingsSerializer.serializeShared(newSharedSettings);
+    if (sharedQuery) {
+      queries.push(`s=${sharedQuery}`);
+    }
 
-    router.replace(`${pathname}?${queries.join("&")}`);
+    if (queries.length !== 0) {
+      router.replace(`${pathname}?${queries.join("&")}`);
+    }
   };
 
   const updateAllSettings = (i, v) => {

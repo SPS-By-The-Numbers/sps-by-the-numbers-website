@@ -48,7 +48,7 @@ export const DEFAULT_METRIC_SETTINGS: Array<MetricSettings> = [
   },
 ].map((e) => ({ ...e, name: ALL_DISTRICTS[e.ccddd].district }));
 
-export function serializeMetricSettings(s: MetricSettings) {
+export function serializeOneMetricSettings(s: MetricSettings) {
   const settingsDict = {
     c: s.ccddd.toString(),
     g: serializeFilterGrouping(s.filterGrouping),

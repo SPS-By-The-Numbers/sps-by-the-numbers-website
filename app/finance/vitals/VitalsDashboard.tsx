@@ -1,10 +1,11 @@
 "use client";
 
 import { dfToJSONConnectorOptions } from "utilities/highcharts/utils";
-import { DUMMY_BASE_SETTINGS } from "app/finance/_settings/base_settings";
+import { DUMMY_BASE_SETTINGS, serializeSettings } from "app/finance/_settings/base_settings";
 import { makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGenerators";
 import { makeChartableVitals } from "utilities/ChartableVitals";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
+import { serializeOneMetricSettings } from "app/finance/_settings/metric_settings";
 import { useSearchParams } from "next/navigation";
 import HcDashboard from "components/HcDashboard";
 import MetricSettingsContents from "app/finance/_widgets/MetricSettingsContents";
@@ -172,7 +173,7 @@ export default function VitalsDashboard({
   return (
     <SettingsLayout
       settingsSerializer={{
-        serialize: x => [],
+        serialize: x => serializeSettings(x, serializeOneMetricSettings),
         serializeShared: x => "",
       }}
       allSettings={allSettings}

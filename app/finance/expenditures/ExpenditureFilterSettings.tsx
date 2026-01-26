@@ -1,6 +1,6 @@
 import {
   DEFAULT_METRIC_SETTINGS,
-  serializeMetricSettings,
+  serializeOneMetricSettings,
   deserializeOneMetricSettings,
 } from "app/finance/_settings/metric_settings";
 import {
@@ -12,6 +12,7 @@ import {
 import ProgramFilter from "app/finance/_filteritems/program";
 import ActivityFilter from "app/finance/_filteritems/activity";
 import ObjectFilter from "app/finance/_filteritems/object";
+import { deserializeSettings } from "app/finance/_settings/base_settings";
 
 import {
   serializeSettingsDict,
@@ -64,7 +65,7 @@ export const DEFAULT_EXPENDITURE_SETTINGS = DEFAULT_METRIC_SETTINGS.map(
 export function serializeOneExpenditureFilterSettings(
   settings: ExpendituresSettings,
 ): string {
-  const mStr = serializeMetricSettings(settings);
+  const mStr = serializeOneMetricSettings(settings);
   const settingsDict = {} as Record<string, string>;
 
   // Only output filters if they are overridden.
@@ -127,18 +128,7 @@ export function deserializeOneExpenditureFilterSettings(
 }
 
 export function deserializeExpenditureFilterSettings(queries: Array<string>) {
-  if (queries.length === 0) {
-    return DEFAULT_EXPENDITURE_SETTINGS;
-  }
-
-  const allSettings = new Array<ExpendituresSettings>();
-  for (let i = 0; i < queries.length; i++) {
-    const newSettings = deserializeOneExpenditureFilterSettings(
-      DEFAULT_EXPENDITURE_SETTINGS,
-      queries[i],
-    );
-    newSettings.id = i;
-    allSettings.push(newSettings);
-  }
-  return allSettings;
+  return deserializeSettings(queries,
+                             DEFAULT_EXPENDITURE_SETTINGS,
+                             deserializeOneExpenditureFilterSettings);
 }

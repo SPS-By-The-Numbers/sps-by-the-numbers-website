@@ -23,3 +23,32 @@ export type SettingsDeserializer<
   deserialize(params: Array<string>) :  Array<SettingsType>;
   deserializeShared(params: Array<string>) : SharedSettingsType;
 };
+
+export function serializeSettings<SettingsType extends BaseSettings>(
+  allSettings: Array<SettingsType>,
+  serialize: (setting: SettingsType) => string
+): Array<string> {
+  const result = new Array<string>();
+  for (const setting of allSettings) {
+    result.push(serialize(setting));
+  }
+  return result;
+}
+
+export function deserializeSettings<SettingsType extends BaseSettings>(
+  queries: Array<string>,
+  defaultSetting: SettingsType,
+  deserialize: (defaultSetting: SettingsType, serialized: string) => SettingsType
+) {
+  if (queries.length === 0) {
+    return defaultSetting;
+  }
+
+  const allSettings = new Array<SettingsType>();
+  for (let i = 0; i < queries.length; i++) {
+    const newSettings = deserialize(defaultSetting, queries[i]);
+    newSettings.id = i;
+    allSettings.push(newSettings);
+  }
+  return allSettings;
+}

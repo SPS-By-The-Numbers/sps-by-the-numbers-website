@@ -2,7 +2,7 @@ import { expect, jest, test } from "@jest/globals";
 
 import {
   DEFAULT_METRIC_SETTINGS,
-  serializeMetricSettings,
+  serializeOneMetricSettings,
   deserializeOneMetricSettings,
 } from "app/finance/_settings/metric_settings";
 
@@ -16,7 +16,7 @@ describe("metric_settings", () => {
       staffingNormalization: 'pctfte' as const,
       name: "incorrect",
     };
-    const serlialized = serializeMetricSettings(setting);
+    const serlialized = serializeOneMetricSettings(setting);
     const restored = deserializeOneMetricSettings(DEFAULT_METRIC_SETTINGS[0], serlialized);
     expect(restored.ccddd).toEqual(setting.ccddd);
     expect(restored.filterGrouping).toEqual(setting.filterGrouping);

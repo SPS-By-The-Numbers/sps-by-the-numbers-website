@@ -36,12 +36,13 @@ import ExpendituresDashboardSettingsContents, {
 } from "app/finance/expenditures/ExpendituresDashboardSettings";
 import {
   settingsToDistrictDataFilters,
-  serializeExpenditureFilterSettings,
+  serializeOneExpenditureFilterSettings,
 } from "app/finance/expenditures/ExpenditureFilterSettings";
+import { makeMaybeContents } from "app/finance/_widgets/SettingsContents";
+import { serializeSettings } from "app/finance/_settings/base_settings";
 import HcDashboard from "components/HcDashboard";
 import MetricSettingsContents from "app/finance/_widgets/MetricSettingsContents";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
-import { makeMaybeContents } from "app/finance/_widgets/SettingsContents";
 import Typography from "@mui/material/Typography";
 
 import type { ColumnTable } from "arquero";
@@ -393,7 +394,7 @@ export default function ExpendituresDashboard({
   return (
     <SettingsLayout
       settingsSerializer={{
-        serialize: serializeExpenditureFilterSettings,
+        serialize: x => serializeSettings(x, serializeOneExpenditureFilterSettings),
         serializeShared: serializeExpenditureDashboardSettings,
       }}
       sharedSettings={sharedSettings}
