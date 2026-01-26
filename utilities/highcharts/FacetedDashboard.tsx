@@ -1,6 +1,6 @@
 import { toEmojiPrefix } from "utilities/emoji";
 
-import type { BaseSettings } from "app/finance/_widgets/SettingsContents";
+import type { BaseSettings } from "app/finance/_settings/base_settings";
 import type Dashboards from "@highcharts/dashboards";
 
 type HighchartsComponentConfig = {

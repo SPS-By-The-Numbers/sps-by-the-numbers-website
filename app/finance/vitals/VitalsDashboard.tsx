@@ -1,6 +1,7 @@
 "use client";
 
 import { dfToJSONConnectorOptions } from "utilities/highcharts/utils";
+import { DUMMY_BASE_SETTINGS } from "app/finance/_settings/base_settings";
 import { makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGenerators";
 import { makeChartableVitals } from "utilities/ChartableVitals";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
@@ -29,7 +30,7 @@ function makeCell(
   yLabel?: string,
 ) {
   return {
-    renderTo,
+    renderTo: `c-${renderTo}`,
     title,
     metricColumn,
     connectorId: CONNECTOR_ID,
@@ -175,7 +176,9 @@ export default function VitalsDashboard({
         serializeShared: x => "",
       }}
       allSettings={allSettings}
+      sharedSettings={DUMMY_BASE_SETTINGS}
       settingsContentsComponents={[MetricSettingsContents]}
+      sharedSettingsComponents={[]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">
         Vitals Dashboard

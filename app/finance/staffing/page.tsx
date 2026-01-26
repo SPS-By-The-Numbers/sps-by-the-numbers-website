@@ -4,6 +4,7 @@ import {
   ALL_DUTY_ROOT_ITEMS,
 } from "app/finance/_widgets/ExpenditureFilterContents";
 import { DEFAULT_METRIC_SETTINGS } from "app/finance/_widgets/MetricSettingsContents";
+import { DUMMY_BASE_SETTINGS } from "app/finance/_settings/base_settings";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
 import { makeSchoolItems } from "app/finance/_widgets/ExpenditureFilterContents";
 import { Metadata } from "next";
@@ -31,6 +32,7 @@ export default async function Page() {
     <Suspense>
       <EnsureDistrictData
         allSettings={DEFAULT_STAFF_SETTINGS}
+        sharedSettings={DUMMY_BASE_SETTINGS}
         ContentComponent={StaffingDashboard}
       />
     </Suspense>

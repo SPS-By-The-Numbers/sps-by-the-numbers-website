@@ -13,7 +13,7 @@ import type {
   CurrencyNormalization,
   StaffingNormalization,
 } from "utilities/ChartableMetrics";
-import type { BaseSettings } from "app/finance/_widgets/SettingsContents";
+import type { BaseSettings } from "app/finance/_settings/base_settings";
 
 const ALL_FILTER_GROUPING = [
   // Organize filters into categories that makes sense to the SPS By The Numbers maintainers.

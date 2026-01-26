@@ -1,4 +1,4 @@
-import type { BaseSettings } from "app/finance/_widgets/SettingsContents";
+import type { BaseSettings } from "app/finance/_settings/base_settings";
 
 export interface CommonSharedSettings extends BaseSettings {}
 

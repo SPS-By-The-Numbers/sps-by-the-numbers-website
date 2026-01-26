@@ -10,7 +10,7 @@ import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
 import MetricSettingsContents from "app/finance/_widgets/MetricSettingsContents";
 
-import type { BaseSettings } from "app/finance/_widgets/SettingsContents";
+import type { BaseSettings } from "app/finance/_settings/base_settings";
 import type { CorrelationChartOptions } from "utilities/highcharts/ChartConfigGenerators";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
 import type { MetricSettings } from "app/finance/_widgets/MetricSettingsContents";
@@ -30,7 +30,7 @@ function makeFundedEnrollmentCashflowConfig(
   colorIndex,
 ) {
   return {
-    renderTo: `${idPrefix}-fundedEnrollment-cashflow-${columnSuffix}`,
+    renderTo: `c-${idPrefix}-fundedEnrollment-cashflow-${columnSuffix}`,
     title: `Funded Enrollment-Cashflow Correlation (${name})`,
     connectorId: CONNECTOR_ID,
     yMetricColumn: `${idPrefix}_amount_fundedEnrollment`,
@@ -61,7 +61,7 @@ function makeCompCashflowConfig(
   colorIndex,
 ) {
   return {
-    renderTo: `${idPrefix}-${metricColumn}-cashflow-${columnSuffix}`,
+    renderTo: `c-${idPrefix}-${metricColumn}-cashflow-${columnSuffix}`,
     title: `${name}-Cashflow Correlation (${columnSuffix})`,
     connectorId: CONNECTOR_ID,
     yMetricColumn: `${idPrefix}_${metricColumn}`,
@@ -91,7 +91,7 @@ function makeFteEnrollmentConfig(
   colorIndex,
 ) {
   return {
-    renderTo: `${idPrefix}-${metricColumn}-cashflow-${columnSuffix}`,
+    renderTo: `c-${idPrefix}-${metricColumn}-cashflow-${columnSuffix}`,
     title: `${name}-Enrollment Correlation (${columnSuffix})`,
     connectorId: CONNECTOR_ID,
     yMetricColumn: `${idPrefix}_${metricColumn}`,
@@ -188,6 +188,7 @@ function componentsGenerator(correlationsSettings: CorrelationsSettings) {
 export default function CorrelationsDashboard({
   districtDataMap,
   allSettings,
+  sharedSettings,
 }: DistrictDataContentProps<CorrelationsSettings, BaseSettings>) {
   const searchParams = useSearchParams();
 
@@ -220,7 +221,9 @@ export default function CorrelationsDashboard({
         serializeShared: x => "",
       }}
       allSettings={allSettings}
+      sharedSettings={sharedSettings}
       settingsContentsComponents={[MetricSettingsContents]}
+      sharedSettingsComponents={[]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">
         Cashflow Dashboard

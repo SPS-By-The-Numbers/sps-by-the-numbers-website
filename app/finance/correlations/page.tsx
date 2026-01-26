@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { Suspense } from "react";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
 import { DEFAULT_METRIC_SETTINGS } from "app/finance/_widgets/MetricSettingsContents";
-import { DEFAULT_COMMON_SHARED_SETTINGS } from "app/finance/_widgets/CommonSharedSettingsContents";
+import { DUMMY_BASE_SETTINGS } from "app/finance/_settings/base_settings";
 import CorrelationsDashboard from "./CorrelationsDashboard";
 import { getParamAsStringArray } from "utilities/settings";
 
@@ -26,6 +26,7 @@ export default async function Page(params: Params) {
     <Suspense>
       <EnsureDistrictData
         allSettings={allSettings}
+        sharedSettings={DUMMY_BASE_SETTINGS}
         ContentComponent={CorrelationsDashboard}
       />
     </Suspense>

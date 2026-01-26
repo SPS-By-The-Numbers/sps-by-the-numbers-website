@@ -20,20 +20,10 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 
 import type { ReactNode, ComponentType } from "react";
-import type {
-  SettingsRenderComponentType,
-  BaseSettings,
-} from "app/finance/_widgets/SettingsContents";
+import type { SettingsRenderComponentType } from "app/finance/_widgets/SettingsContents";
+import type { BaseSettings, SettingsSerializer } from "app/finance/_settings/base_settings";
 
 const drawerWidth = 240;
-
-export type SettingsSerializer<
-  SettingsType extends BaseSettings,
-  SharedSettingsType extends BaseSettings,
-> = {
-  serialize(allSettings: Array<SettingsType>): Array<string>;
-  serializeShared(sharedSettings: SharedSettingsType): string;
-};
 
 interface SettingsLayoutProps<
   SettingsType extends BaseSettings,
@@ -112,7 +102,7 @@ function DrawerContents({
   sx,
 }) {
   let sharedSettingsPanel: ReactNode;
-  if (sharedSettingsComponents) {
+  if (sharedSettingsComponents.length > 0) {
     sharedSettingsPanel = (
       <DatasetAccordion
         sharedSettings={sharedSettings}

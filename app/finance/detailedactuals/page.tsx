@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { Suspense } from "react";
 import DetailedActualsDashboard, { deserializeDetailedActualsDatasetSettings } from "./DetailedActualsDashboard";
 import { getParamAsStringArray } from "utilities/settings";
+import { DUMMY_BASE_SETTINGS } from "app/finance/_settings/base_settings";
 
 import type { DetailedActualsSettings } from "./DetailedActualsDashboard";
 
@@ -30,7 +31,7 @@ export default async function Page(params: Params) {
     <Suspense>
       <EnsureDistrictData
         allSettings={allSettings}
-//        sharedSettings={sharedSettings}
+        sharedSettings={DUMMY_BASE_SETTINGS}
         ContentComponent={DetailedActualsDashboard}
       />
     </Suspense>

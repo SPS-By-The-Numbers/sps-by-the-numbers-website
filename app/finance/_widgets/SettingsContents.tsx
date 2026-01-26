@@ -1,12 +1,8 @@
 import Stack from "@mui/material/Stack";
 import Paper from "@mui/material/Paper";
+import type { BaseSettings } from "app/finance/_settings/base_settings";
 
 import type { ReactNode, ComponentType } from "react";
-
-export interface BaseSettings {
-  name: string;
-  id: number;
-}
 
 export interface SettingsContentsProps<
   SettingsType extends BaseSettings,

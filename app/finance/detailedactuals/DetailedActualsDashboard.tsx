@@ -26,8 +26,8 @@ import {
 } from "app/finance/_widgets/ExpenditureFilterContents";
 import { extractCodes } from "app/finance/_widgets/ExpenditureFilterContents";
 import HcDashboard from "components/HcDashboard";
-import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import MetricSettingsContents from "app/finance/_widgets/MetricSettingsContents";
+import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
 
 import type { ColumnTable } from "arquero";
@@ -146,6 +146,7 @@ function compileData(districtDataMap, allSettings, facet) {
 export default function DetailedActualsDashboard({
   districtDataMap,
   allSettings,
+  sharedSettings,
 }: DistrictDataContentProps<DetailedActualsSettings>) {
   const [data, facetOrder] = compileData(
     districtDataMap,
@@ -182,6 +183,8 @@ export default function DetailedActualsDashboard({
         serializeShared: x => "",
       }}
       allSettings={allSettings}
+      sharedSettings={sharedSettings}
+      sharedSettingsComponents={[]}
       settingsContentsComponents={[
         MetricSettingsContents,
         ObjectFilterContents,

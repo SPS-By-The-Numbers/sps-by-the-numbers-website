@@ -1,4 +1,5 @@
 import { DEFAULT_METRIC_SETTINGS } from "app/finance/_widgets/MetricSettingsContents";
+import { DUMMY_BASE_SETTINGS } from "app/finance/_settings/base_settings";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
 import { Metadata } from "next";
 import { Suspense } from "react";
@@ -15,6 +16,7 @@ export default async function Page() {
     <Suspense>
       <EnsureDistrictData
         allSettings={DEFAULT_METRIC_SETTINGS}
+        sharedSettings={DUMMY_BASE_SETTINGS}
         ContentComponent={VitalsDashboard}
       />
     </Suspense>
