@@ -23,6 +23,7 @@
     "@mui/material-nextjs": "^7.3.6",
     "@mui/x-data-grid": "^8.10.0",
     "@mui/x-date-pickers": "^8.10.0",
+    "@types/jest": "^30.0.0",
     "@types/react": "19.1.9",
     "@types/react-dom": "19.1.7",
     "accessibility": "^6.0.3",
@@ -54,7 +55,7 @@
     "react-youtube": "^10.1.0",
     "sass": "^1.51.0",
     "tailwindcss": "^3.0.24",
-    "ts-jest": "^29.4.1",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2"
   },
   "dependencies": {
@@ -65,7 +66,6 @@
     "@mui/material": "^7.3.2",
     "@mui/styled-engine-sc": "^7.3.1",
     "@mui/x-tree-view": "^8.11.1",
-    "@types/jest": "^29.5.8",
     "@types/node": "^24.3.0",
     "arquero": "^8.0.3",
     "avsc": "^5.7.9",

@@ -7,7 +7,7 @@ import {
 } from "app/finance/_settings/metric_settings";
 
 describe("metric_settings", () => {
-  it("smoke test: default roundtrips.", () => {
+  it("smoke test: values roundtrip.", () => {
     const setting = {
       id: 100,
       ccddd: 14005, // Aberdeen
@@ -16,8 +16,8 @@ describe("metric_settings", () => {
       staffingNormalization: 'pctfte' as const,
       name: "incorrect",
     };
-    const serlialized = serializeOneMetricSettings(setting);
-    const restored = deserializeOneMetricSettings(DEFAULT_METRIC_SETTINGS[0], serlialized);
+    const serialized = serializeOneMetricSettings(setting);
+    const restored = deserializeOneMetricSettings(DEFAULT_METRIC_SETTINGS[0], serialized);
     expect(restored.ccddd).toEqual(setting.ccddd);
     expect(restored.filterGrouping).toEqual(setting.filterGrouping);
     expect(restored.currencyNormalization).toEqual(setting.currencyNormalization);

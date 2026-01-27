@@ -105,6 +105,7 @@ const config = {
       prefix: "<rootDir>/",
     }),
     "^@/components/(.*)$": "<rootDir>/components/$1",
+    "^arquero$": "<rootDir>/__mocks__/arquero.ts",
   },
 
   extensionsToTreatAsEsm: [".ts"],

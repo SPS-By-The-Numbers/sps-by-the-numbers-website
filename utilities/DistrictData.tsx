@@ -8,7 +8,7 @@ import type { ColumnTable } from "arquero";
 // be compared with history.
 export const SYNTH_ACT_CODE_TEACHING = 9990;
 export const SYNTH_ACT_TEACHING = "Teaching (27) / Professional Learning (34)";
-export const SYNTH_ACT_CODE_PRINCIPAL_OFFICE = 98423;
+export const SYNTH_ACT_CODE_PRINCIPAL_OFFICE = 9991;
 export const SYNTH_ACT_PRINCPAL_OFFICE = "Principal's Office (23) / Principal (84)";
 
 export type DistrictDataFilters = {
