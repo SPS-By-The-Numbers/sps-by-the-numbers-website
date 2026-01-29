@@ -40,7 +40,6 @@ export function deserializeSettings<SettingsType extends BaseSettings>(
   defaultSetting: SettingsType,
   deserialize: (defaultSetting: SettingsType, serialized: string) => SettingsType
 ) {
-  console.log("defaultSetting", defaultSetting);
   if (queries.length === 0) {
     return [defaultSetting];
   }

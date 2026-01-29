@@ -129,16 +129,13 @@ export class Filter {
 
   // Parses a set of options and returns a set of codes for data filtering.
   public treeViewItemsToCodes(selectedItems: Array<string>) : Set<number> {
-    console.log(selectedItems);
     const selectedCodes = new Set<number>();
     for (const id of selectedItems) {
       const parts = id.split("-");
-      console.log(parts);
       if (parts.length === 2 && parts[0] === this.itemPrefix) {
         selectedCodes.add(parseInt(parts[1]));
       }
     }
-    console.log("s", selectedCodes);
     return selectedCodes.intersection(this.allCodes());
   }
 
@@ -170,9 +167,6 @@ export class Filter {
       "include",
       new Set(result.matched.map((n) => n.code)),
     );
-    if (excludeString.length === 0) {
-      console.log("Mu ha ha");
-    }
     return this.shorterString(excludeString, includeString);
   }
 

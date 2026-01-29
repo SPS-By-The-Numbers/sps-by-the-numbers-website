@@ -14,7 +14,6 @@ import {
 } from "utilities/ChartableMetrics";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { makeFacetComponents } from "utilities/highcharts/FacetedBudgetActualCharts";
-import { extractCodes } from "app/finance/_widgets/ExpenditureFilterContents";
 import { op } from "arquero";
 import * as aq from "arquero";
 import HcDashboard from "components/HcDashboard";

@@ -1,21 +1,20 @@
-import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
-import { makeSchools } from "app/finance/_domain/schools";
 import { makeDutyRootItems } from "app/finance/_domain/DutyRoots";
-import FormGroup from "@mui/material/FormGroup";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Switch from "@mui/material/Switch";
-import ProgramFilter from "app/finance/_filteritems/program";
+import { makeSchoolFilter } from "app/finance/_filteritems/school";
+import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
 import ActivityFilter from "app/finance/_filteritems/activity";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import FormGroup from "@mui/material/FormGroup";
 import ObjectFilter from "app/finance/_filteritems/object";
-import {allItems, extractCodes} from "app/finance/_filteritems/utils";
-export {extractCodes} from "app/finance/_filteritems/utils";
+import ProgramFilter from "app/finance/_filteritems/program";
+import Switch from "@mui/material/Switch";
 
-import type { PAFilters, PAOFilters } from "utilities/DistrictData";
+import type { PFilters, AFilters, OFilters, SchoolFilters } from "utilities/DistrictData";
 import type { BaseSettings } from "app/finance/_settings/base_settings";
 import type { MetricSettings } from "app/finance/_settings/metric_settings";
 import type { TreeViewBaseItem } from "@mui/x-tree-view";
 
-interface Props<T extends BaseSettings> {
+interface Props<T extends BaseSettings, U extends BaseSettings = T> {
+  sharedSettings?: U,
   settings: T;
   setSettings: (x: T) => void;
 }
@@ -23,29 +22,6 @@ interface Props<T extends BaseSettings> {
 interface OverridePrimaryFilterSettings extends BaseSettings {
   overridePrimaryFilter: boolean;
 }
-
-type ObjectFilterSettings = BaseSettings & PAOFilters;
-
-interface ActivityFilterSettings extends BaseSettings {
-  selectedActivities: string[];
-}
-
-interface ProgramFilterSettings extends BaseSettings {
-  selectedPrograms: string[];
-}
-
-interface SchoolFilterSettings extends MetricSettings {
-  selectedSchools: string[];
-}
-
-export function makeSchoolItems(ccddd) {
-  return allItems(makeSchools(ccddd));
-}
-
-export const ALL_DUTY_ROOT_ITEMS = allItems(makeDutyRootItems());
-export const ALL_OBJECT_ITEMS = allItems(ObjectFilter.treeViewItems());
-export const ALL_ACTIVITY_ITEMS = allItems(ActivityFilter.treeViewItems());
-export const ALL_PROGRAM_ITEMS = allItems(ProgramFilter.treeViewItems());
 
 // Component for showing one filter.
 function FilterTree({ title, items, selectedItems, setSelectedItems }) {
@@ -95,22 +71,17 @@ export function OverridePrimaryFilterContents({
 export function ObjectFilterContents({
   settings,
   setSettings,
-}: Props<ObjectFilterSettings>) {
+}: Props<BaseSettings & OFilters>) {
   return (
     <FilterTree
       title="Object"
       items={ObjectFilter.treeViewItems()}
       selectedItems={ObjectFilter.codesToTreeViewItems(settings.objectCodes)}
-      setSelectedItems={(selectedObjects) =>
-        {
-          const newSettings = Object.assign(
-            settings,
-            {
-              objectCodes: ObjectFilter.treeViewItemsToCodes(selectedObjects)
-            }
-          );
-          setSettings(newSettings);
-        }
+      setSelectedItems={selected =>
+        setSettings({
+          ...settings,
+          objectCodes: ObjectFilter.treeViewItemsToCodes(selected)
+        })
       }
     />
   );
@@ -120,14 +91,17 @@ export function ObjectFilterContents({
 export function ActivityFilterContents({
   settings,
   setSettings,
-}: Props<ActivityFilterSettings>) {
+}: Props<BaseSettings & AFilters>) {
   return (
     <FilterTree
       title="Activity"
       items={ActivityFilter.treeViewItems()}
-      selectedItems={settings.selectedActivities}
-      setSelectedItems={(selectedActivities) =>
-        setSettings({ ...settings, selectedActivities })
+      selectedItems={ActivityFilter.codesToTreeViewItems(settings.activityCodes)}
+      setSelectedItems={selected =>
+        setSettings({
+          ...settings,
+          activityCodes: ActivityFilter.treeViewItemsToCodes(selected)
+        })
       }
     />
   );
@@ -137,14 +111,17 @@ export function ActivityFilterContents({
 export function ProgramFilterContents({
   settings,
   setSettings,
-}: Props<ProgramFilterSettings>) {
+}: Props<BaseSettings & PFilters>) {
   return (
     <FilterTree
       title="Program"
       items={ProgramFilter.treeViewItems()}
-      selectedItems={settings.selectedPrograms}
-      setSelectedItems={(selectedPrograms) =>
-        setSettings({ ...settings, selectedPrograms })
+      selectedItems={ProgramFilter.codesToTreeViewItems(settings.programCodes)}
+      setSelectedItems={selected =>
+        setSettings({
+          ...settings,
+          programCodes: ProgramFilter.treeViewItemsToCodes(selected)
+        })
       }
     />
   );
@@ -154,16 +131,19 @@ export function ProgramFilterContents({
 export function SchoolFilterContents({
   settings,
   setSettings,
-}: Props<SchoolFilterSettings>) {
-  const items = makeSchools(settings.ccddd);
+}: Props<MetricSettings & SchoolFilters>) {
+  const schoolFilter = makeSchoolFilter(settings.ccddd);
 
   return (
     <FilterTree
       title="School"
-      items={items}
-      selectedItems={settings.selectedSchools}
-      setSelectedItems={(selectedSchools) =>
-        setSettings({ ...settings, selectedSchools })
+      items={schoolFilter.treeViewItems()}
+      selectedItems={schoolFilter.codesToTreeViewItems(settings.schoolCodes)}
+      setSelectedItems={selected =>
+        setSettings({
+          ...settings,
+          schoolCodes: schoolFilter.treeViewItemsToCodes(selected)
+        })
       }
     />
   );

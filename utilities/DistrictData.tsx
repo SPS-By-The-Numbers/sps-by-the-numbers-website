@@ -11,10 +11,21 @@ export const SYNTH_ACT_TEACHING = "Teaching (27) / Professional Learning (34)";
 export const SYNTH_ACT_CODE_PRINCIPAL_OFFICE = 9991;
 export const SYNTH_ACT_PRINCPAL_OFFICE = "Principal's Office (23) / Principal (84)";
 
-export type PAFilters = {
+export type AFilters = {
   activityCodes: Set<number>;
-  programCodes: Set<number>;
 };
+
+export type PFilters = PAFilters & {
+  programCodes: Set<number>;
+}
+
+export type OFilters = {
+  objectCodes: Set<number>;
+};
+
+export type PAFilters = PFilters & AFilters;
+
+export type PAOFilters = PAFilters & AFilters & OFilters;
 
 export type NcesFilters = {
   ncesCodes: Set<number>;
@@ -23,10 +34,6 @@ export type NcesFilters = {
 export type SchoolFilters = {
   schoolCodes: Set<number>;
 };
-
-export type PAOFilters = PAFilters & {
-  objectCodes: Set<number>;
-}
 
 type ExpendituresFilters = Partial<PAOFilters & NcesFilters & SchoolFilters>;
 
@@ -530,31 +537,31 @@ export default class DistrictData {
     if (expendituresFilter.objectCodes?.size) {
       results = results
         .params(expendituresFilter)
-        .filter((d, $) => d.includes($.objectCodes, d.object_code));
+        .filter((d, $) => d.includes([...$.objectCodes], d.object_code));
     }
 
     if (expendituresFilter.activityCodes?.size) {
       results = results
         .params(expendituresFilter)
-        .filter((d, $) => d.includes($.activityCodes, d.activity_code));
+        .filter((d, $) => d.includes([...$.activityCodes], d.activity_code));
     }
 
     if (expendituresFilter.programCodes?.size) {
       results = results
         .params(expendituresFilter)
-        .filter((d, $) => d.includes($.programCodes, d.program_code));
+        .filter((d, $) => d.includes([...$.programCodes], d.program_code));
     }
 
     if (expendituresFilter.schoolCodes?.size) {
       results = results
         .params(expendituresFilter)
-        .filter((d, $) => d.includes($.schoolCodes, d.school_code));
+        .filter((d, $) => d.includes([...$.schoolCodes], d.school_code));
     }
 
     if (expendituresFilter.ncesCodes?.size) {
       results = results
         .params(expendituresFilter)
-        .filter((d, $) => d.includes($.ncesCodes, d.nces_code));
+        .filter((d, $) => d.includes([...$.ncesCodes], d.nces_code));
     }
 
     return results;

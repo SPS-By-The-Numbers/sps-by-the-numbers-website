@@ -1,26 +1,24 @@
 "use client";
 
-import { ALL_OBJECT_ITEMS, ALL_ACTIVITY_ITEMS, ALL_PROGRAM_ITEMS, } from "app/finance/_widgets/ExpenditureFilterContents";
 import { DEFAULT_METRIC_SETTINGS, serializeOneMetricSettings, deserializeOneMetricSettings, } from "app/finance/_settings/metric_settings";
 import { DEFAULT_PAO_FILTERS, serializePAOFilters, deserializePAOFilters, } from "app/finance/_settings/pao_settings";
 import { DUMMY_BASE_SETTINGS, deserializeSettings } from "app/finance/_settings/base_settings";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
-import { makeSchoolItems } from "app/finance/_widgets/ExpenditureFilterContents";
+import { makeSchoolFilter } from "app/finance/_filteritems/school";
+import { serializeSchoolFilters, deserializeSchoolFilters, } from "app/finance/_settings/school_settings";
 import { Suspense } from "react";
 import { useSearchParams } from 'next/navigation';
 import DetailedActualsDashboard from "./DetailedActualsDashboard";
 
 import type { MetricSettings } from "app/finance/_settings/metric_settings";
-import type { PAOFilters } from "utilities/DistrictData";
+import type { PAOFilters, SchoolFilters } from "utilities/DistrictData";
 
-export type DetailedActualsSettings = MetricSettings & PAOFilters & {
-  selectedSchools: string[];
-}
+export type DetailedActualsSettings = MetricSettings & PAOFilters & SchoolFilters;
 
 const DEFAULT_DETAILED_ACTUALS_SETTINGS = DEFAULT_METRIC_SETTINGS.map((v) => ({
   ...v,
   ...DEFAULT_PAO_FILTERS,
-  selectedSchools: makeSchoolItems(v.ccddd),
+  schoolCodes: makeSchoolFilter(v.ccddd).allCodes(),
 }));
 
 export function deserializeDetailedActualsSettings(
@@ -29,15 +27,21 @@ export function deserializeDetailedActualsSettings(
 ) {
   const metricSettings = deserializeOneMetricSettings(defaultSettings, serialized);
   const paoSettings = deserializePAOFilters(defaultSettings, serialized);
+  const schoolSettings = deserializeSchoolFilters(metricSettings.ccddd, serialized);
 
   return {
     ...metricSettings,
-    ...paoSettings
+    ...paoSettings,
+    ...schoolSettings
   };
 }
 
 export function serializeDetailedActualsSettings(settings : DetailedActualsSettings) : string {
-  return [serializeOneMetricSettings(settings), serializePAOFilters(settings)].join('~');
+  return [
+    serializeOneMetricSettings(settings),
+    serializePAOFilters(settings),
+    serializeSchoolFilters(settings.ccddd, settings),
+  ].join('~');
 }
 
 export default function DetailedActualsPage() {

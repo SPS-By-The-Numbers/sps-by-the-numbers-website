@@ -19,7 +19,6 @@ import {
   ProgramFilterContents,
   SchoolFilterContents,
 } from "app/finance/_widgets/ExpenditureFilterContents";
-import { extractCodes } from "app/finance/_widgets/ExpenditureFilterContents";
 import HcDashboard from "components/HcDashboard";
 import MetricSettingsContents from "app/finance/_widgets/MetricSettingsContents";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
