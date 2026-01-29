@@ -52,9 +52,9 @@ export function deserializePAFilters(defaultSettings,
 }
 
 export function serializePAOFilters(s: PAOFilters) : string {
-  const fragments = [serializePAOFilters(s)];
+  const fragments = [serializePAFilters(s)];
   const settingsDict = {
-    "o": ProgramFilter.toFilterString(s.objectCodes),
+    "o": ObjectFilter.toFilterString(s.objectCodes),
   };
   fragments.push(serializeSettingsDict(settingsDict));
 

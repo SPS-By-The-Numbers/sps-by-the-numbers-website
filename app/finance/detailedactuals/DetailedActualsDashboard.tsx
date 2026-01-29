@@ -3,6 +3,7 @@
 import { DEFAULT_METRIC_SETTINGS } from "app/finance/_settings/metric_settings";
 import * as aq from "arquero";
 import { op } from "arquero";
+import { serializeSettings } from "app/finance/_settings/base_settings";
 import { dfToJSONConnectorOptions } from "utilities/highcharts/utils";
 import {
   extractRawExpenditures,
@@ -23,6 +24,7 @@ import HcDashboard from "components/HcDashboard";
 import MetricSettingsContents from "app/finance/_widgets/MetricSettingsContents";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
+import { serializeDetailedActualsSettings } from "app/finance/detailedactuals/DetailedActualsPage";
 
 import type { ColumnTable } from "arquero";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
@@ -76,15 +78,7 @@ function compileData(districtDataMap, allSettings : Array<DetailedActualsSetting
   let facetInfo;
   for (const settings of allSettings) {
     const districtData = districtDataMap[settings.ccddd];
-
-    // IF it has a school code, it has an nces code.
-    // TODO: Filter by NCES codes too.
-    const filteredExpenditures = districtData.filteredExpenditures({
-      selectedObjectCodes: settings.objectCodes,
-      selectedActivityCodes: settings.activityCodes,
-      selectedProgramCodes: settings.programCodes,
-//      selectedSchoolCodes: extractCodes("school", settings.selectedSchools),
-    });
+    const filteredExpenditures = districtData.filteredExpenditures(settings);
 
     const data = makeFacetedDetailedActualsForDistrict(
       districtData,
@@ -147,7 +141,7 @@ export default function DetailedActualsDashboard({
   return (
     <SettingsLayout
       settingsSerializer={{
-        serialize: x => [],
+        serialize: x => serializeSettings(x, serializeDetailedActualsSettings),
         serializeShared: x => "",
       }}
       allSettings={allSettings}

@@ -22,14 +22,14 @@ const TestFilterDomain: FilterDomainTree = makeInternalNode(
 );
 
 describe("filter", () => {
-  const filter = new Filter(TestFilterDomain);
+  const filter = new Filter(TestFilterDomain, "test");
 
   it("allCodes() finds all codes in tree leaf", () => {
     expect(filter.allCodes()).toEqual(new Set([1, 2, 3, 4]));
   });
 
-  it("toFilterString() returns empty string if nothing", () => {
-    expect(filter.toFilterString(new Set([1, 2, 3, 4]))).toBe("");
+  it("toFilterString() returns exclude nothing if all selected", () => {
+    expect(filter.toFilterString(new Set([1, 2, 3, 4]))).toBe("QA");
   });
 
   it("toFilterString() uses matched items if it is shorter or equal to skipped", () => {

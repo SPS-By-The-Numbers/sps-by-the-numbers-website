@@ -1,61 +1,62 @@
 import { Filter, makeInternalNode, makeLeafNode } from "utilities/filter";
 import * as DistrictData from "utilities/DistrictData";
+const ITEM_PREFIX = "act";
 
-const ACT_11 = makeLeafNode("act", 11, "Board of Directors");
-const ACT_12 = makeLeafNode("act", 12, "Superintendent's Office");
-const ACT_13 = makeLeafNode("act", 13, "Business Office");
-const ACT_14 = makeLeafNode("act", 14, "Human Resources");
-const ACT_15 = makeLeafNode("act", 15, "Public Relations");
-const ACT_21 = makeLeafNode("act", 21, "Supervision - Instruction");
-const ACT_41 = makeLeafNode("act", 41, "Supervision - Food Service");
-const ACT_51 = makeLeafNode("act", 51, "Supervision - Transportation");
+const ACT_11 = makeLeafNode(ITEM_PREFIX, 11, "Board of Directors");
+const ACT_12 = makeLeafNode(ITEM_PREFIX, 12, "Superintendent's Office");
+const ACT_13 = makeLeafNode(ITEM_PREFIX, 13, "Business Office");
+const ACT_14 = makeLeafNode(ITEM_PREFIX, 14, "Human Resources");
+const ACT_15 = makeLeafNode(ITEM_PREFIX, 15, "Public Relations");
+const ACT_21 = makeLeafNode(ITEM_PREFIX, 21, "Supervision - Instruction");
+const ACT_41 = makeLeafNode(ITEM_PREFIX, 41, "Supervision - Food Service");
+const ACT_51 = makeLeafNode(ITEM_PREFIX, 51, "Supervision - Transportation");
 const ACT_61 = makeLeafNode(
-  "act",
+  ITEM_PREFIX,
   61,
   "Supervision - Maintenance and Operations",
 );
-const ACT_42 = makeLeafNode("act", 42, "Food");
-const ACT_44 = makeLeafNode("act", 44, "Operations - Food Service");
-const ACT_52 = makeLeafNode("act", 52, "Operations - Transportation");
-const ACT_58 = makeLeafNode("act", 58, "Remote Learning Operations");
-const ACT_59 = makeLeafNode("act", 59, "Transfers - Transportation");
-const ACT_62 = makeLeafNode("act", 62, "Grounds Maintenance");
-const ACT_63 = makeLeafNode("act", 63, "Operations of Buildings");
-const ACT_64 = makeLeafNode("act", 64, "Maintenance");
-const ACT_65 = makeLeafNode("act", 65, "Utilities");
-const ACT_67 = makeLeafNode("act", 67, "Building and Property Security");
+const ACT_42 = makeLeafNode(ITEM_PREFIX, 42, "Food");
+const ACT_44 = makeLeafNode(ITEM_PREFIX, 44, "Operations - Food Service");
+const ACT_52 = makeLeafNode(ITEM_PREFIX, 52, "Operations - Transportation");
+const ACT_58 = makeLeafNode(ITEM_PREFIX, 58, "Remote Learning Operations");
+const ACT_59 = makeLeafNode(ITEM_PREFIX, 59, "Transfers - Transportation");
+const ACT_62 = makeLeafNode(ITEM_PREFIX, 62, "Grounds Maintenance");
+const ACT_63 = makeLeafNode(ITEM_PREFIX, 63, "Operations of Buildings");
+const ACT_64 = makeLeafNode(ITEM_PREFIX, 64, "Maintenance");
+const ACT_65 = makeLeafNode(ITEM_PREFIX, 65, "Utilities");
+const ACT_67 = makeLeafNode(ITEM_PREFIX, 67, "Building and Property Security");
 const ACT_68 = makeLeafNode(
-  "act",
+  ITEM_PREFIX,
   68,
   "Insurance - Maintenance and Operations",
 );
-const ACT_72 = makeLeafNode("act", 72, "Informational Systems");
-const ACT_73 = makeLeafNode("act", 73, "Printing");
-const ACT_74 = makeLeafNode("act", 74, "Warehousing and Distribution");
-const ACT_75 = makeLeafNode("act", 75, "Motor pool");
-const ACT_91 = makeLeafNode("act", 91, "Public Activities");
-const ACT_9991 = makeLeafNode("act", DistrictData.SYNTH_ACT_CODE_PRINCIPAL_OFFICE, DistrictData.SYNTH_ACT_PRINCPAL_OFFICE);
-const ACT_9990 = makeLeafNode("act", DistrictData.SYNTH_ACT_CODE_TEACHING, DistrictData.SYNTH_ACT_TEACHING);
-const ACT_28 = makeLeafNode("act", 28, "Extracurricular");
-const ACT_22 = makeLeafNode("act", 22, "Learning Resources");
-const ACT_24 = makeLeafNode("act", 24, "Guidance and Counseling");
-const ACT_25 = makeLeafNode("act", 25, "Pupil Management and Safety");
-const ACT_26 = makeLeafNode("act", 26, "Health and Related Services");
+const ACT_72 = makeLeafNode(ITEM_PREFIX, 72, "Informational Systems");
+const ACT_73 = makeLeafNode(ITEM_PREFIX, 73, "Printing");
+const ACT_74 = makeLeafNode(ITEM_PREFIX, 74, "Warehousing and Distribution");
+const ACT_75 = makeLeafNode(ITEM_PREFIX, 75, "Motor pool");
+const ACT_91 = makeLeafNode(ITEM_PREFIX, 91, "Public Activities");
+const ACT_9991 = makeLeafNode(ITEM_PREFIX, DistrictData.SYNTH_ACT_CODE_PRINCIPAL_OFFICE, DistrictData.SYNTH_ACT_PRINCPAL_OFFICE);
+const ACT_9990 = makeLeafNode(ITEM_PREFIX, DistrictData.SYNTH_ACT_CODE_TEACHING, DistrictData.SYNTH_ACT_TEACHING);
+const ACT_28 = makeLeafNode(ITEM_PREFIX, 28, "Extracurricular");
+const ACT_22 = makeLeafNode(ITEM_PREFIX, 22, "Learning Resources");
+const ACT_24 = makeLeafNode(ITEM_PREFIX, 24, "Guidance and Counseling");
+const ACT_25 = makeLeafNode(ITEM_PREFIX, 25, "Pupil Management and Safety");
+const ACT_26 = makeLeafNode(ITEM_PREFIX, 26, "Health and Related Services");
 const ACT_31 = makeLeafNode(
-  "act",
+  ITEM_PREFIX,
   31,
   "Instructional Professional Development",
 );
-const ACT_32 = makeLeafNode("act", 32, "Instructional Technology");
-const ACT_33 = makeLeafNode("act", 33, "Curriculum");
-const ACT_34 = makeLeafNode("act", 34, "Professional Learning - State");
-const ACT_35 = makeLeafNode("act", 35, "Pupil Safety");
-const ACT_85 = makeLeafNode("act", 85, "Debt Service");
-const ACT_56 = makeLeafNode("act", 56, "Insurance - Transportation");
-const ACT_83 = makeLeafNode("act", 83, "Interest");
-const ACT_53 = makeLeafNode("act", 53, "Maintenance - Transportation");
-const ACT_29 = makeLeafNode("act", 29, "Payments to School Districts");
-const ACT_49 = makeLeafNode("act", 49, "Transfers - Food Service");
+const ACT_32 = makeLeafNode(ITEM_PREFIX, 32, "Instructional Technology");
+const ACT_33 = makeLeafNode(ITEM_PREFIX, 33, "Curriculum");
+const ACT_34 = makeLeafNode(ITEM_PREFIX, 34, "Professional Learning - State");
+const ACT_35 = makeLeafNode(ITEM_PREFIX, 35, "Pupil Safety");
+const ACT_85 = makeLeafNode(ITEM_PREFIX, 85, "Debt Service");
+const ACT_56 = makeLeafNode(ITEM_PREFIX, 56, "Insurance - Transportation");
+const ACT_83 = makeLeafNode(ITEM_PREFIX, 83, "Interest");
+const ACT_53 = makeLeafNode(ITEM_PREFIX, 53, "Maintenance - Transportation");
+const ACT_29 = makeLeafNode(ITEM_PREFIX, 29, "Payments to School Districts");
+const ACT_49 = makeLeafNode(ITEM_PREFIX, 49, "Transfers - Food Service");
 
 const ActivityFilterTree = makeInternalNode("activity", "All Activities", [
   makeInternalNode("teaching", "Teaching", [ACT_9990, ACT_28]),
@@ -167,7 +168,7 @@ const SpsActivityFilterTree = makeInternalNode("activity", "All Activities", [
   ]),
 ]);
 
-const ActivityFilter = new Filter(ActivityFilterTree);
-const SpsActivityFilter = new Filter(SpsActivityFilterTree);
+const ActivityFilter = new Filter(ActivityFilterTree, ITEM_PREFIX);
+const SpsActivityFilter = new Filter(SpsActivityFilterTree, ITEM_PREFIX);
 
 export default ActivityFilter;

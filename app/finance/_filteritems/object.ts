@@ -1,14 +1,15 @@
 import { Filter, makeInternalNode, makeLeafNode } from "utilities/filter";
+const ITEM_PREFIX = "obj";
 
-const OBJ_2 = makeLeafNode("obj", 2, "Certificated");
-const OBJ_3 = makeLeafNode("obj", 3, "Classified");
-const OBJ_4 = makeLeafNode("obj", 4, "Benefits + Payroll Taxes");
-const OBJ_5 = makeLeafNode("obj", 5, "Supplies");
-const OBJ_7 = makeLeafNode("obj", 7, "Purchased Services");
-const OBJ_8 = makeLeafNode("obj", 8, "Travel");
-const OBJ_9 = makeLeafNode("obj", 9, "Capital Outlay");
-const OBJ_0 = makeLeafNode("obj", 0, "Debit Transfer");
-const OBJ_1 = makeLeafNode("obj", 1, "Credit Transfer");
+const OBJ_2 = makeLeafNode(ITEM_PREFIX, 2, "Certificated");
+const OBJ_3 = makeLeafNode(ITEM_PREFIX, 3, "Classified");
+const OBJ_4 = makeLeafNode(ITEM_PREFIX, 4, "Benefits + Payroll Taxes");
+const OBJ_5 = makeLeafNode(ITEM_PREFIX, 5, "Supplies");
+const OBJ_7 = makeLeafNode(ITEM_PREFIX, 7, "Purchased Services");
+const OBJ_8 = makeLeafNode(ITEM_PREFIX, 8, "Travel");
+const OBJ_9 = makeLeafNode(ITEM_PREFIX, 9, "Capital Outlay");
+const OBJ_0 = makeLeafNode(ITEM_PREFIX, 0, "Debit Transfer");
+const OBJ_1 = makeLeafNode(ITEM_PREFIX, 1, "Credit Transfer");
 
 const ObjectFilterTree = makeInternalNode("object", "All Objects", [
   makeInternalNode("compensation", "Compensation", [
@@ -24,6 +25,6 @@ const ObjectFilterTree = makeInternalNode("object", "All Objects", [
   makeInternalNode("transfers", "Transfers*", [OBJ_0, OBJ_1]),
 ]);
 
-const ObjectFilter = new Filter(ObjectFilterTree);
+const ObjectFilter = new Filter(ObjectFilterTree, ITEM_PREFIX);
 
 export default ObjectFilter;

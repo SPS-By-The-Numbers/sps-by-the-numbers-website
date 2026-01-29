@@ -10,6 +10,7 @@ import ObjectFilter from "app/finance/_filteritems/object";
 import {allItems, extractCodes} from "app/finance/_filteritems/utils";
 export {extractCodes} from "app/finance/_filteritems/utils";
 
+import type { PAFilters, PAOFilters } from "utilities/DistrictData";
 import type { BaseSettings } from "app/finance/_settings/base_settings";
 import type { MetricSettings } from "app/finance/_settings/metric_settings";
 import type { TreeViewBaseItem } from "@mui/x-tree-view";
@@ -23,9 +24,7 @@ interface OverridePrimaryFilterSettings extends BaseSettings {
   overridePrimaryFilter: boolean;
 }
 
-interface ObjectFilterSettings extends BaseSettings {
-  selectedObjects: string[];
-}
+type ObjectFilterSettings = BaseSettings & PAOFilters;
 
 interface ActivityFilterSettings extends BaseSettings {
   selectedActivities: string[];
@@ -101,9 +100,17 @@ export function ObjectFilterContents({
     <FilterTree
       title="Object"
       items={ObjectFilter.treeViewItems()}
-      selectedItems={settings.selectedObjects}
+      selectedItems={ObjectFilter.codesToTreeViewItems(settings.objectCodes)}
       setSelectedItems={(selectedObjects) =>
-        setSettings({ ...settings, selectedObjects })
+        {
+          const newSettings = Object.assign(
+            settings,
+            {
+              objectCodes: ObjectFilter.treeViewItemsToCodes(selectedObjects)
+            }
+          );
+          setSettings(newSettings);
+        }
       }
     />
   );

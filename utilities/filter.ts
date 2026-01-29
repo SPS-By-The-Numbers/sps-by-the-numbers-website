@@ -66,10 +66,12 @@ export function makeLeafNode(
 
 export class Filter {
   private domainTree: FilterDomainTree;
+  private itemPrefix: string;
   private savedAllCodes: Set<number> | undefined;
 
-  constructor(domainTree) {
+  constructor(domainTree, prefix) {
     this.domainTree = domainTree;
+    this.itemPrefix = prefix;
   }
 
   public treeViewItems(): Array<TreeViewBaseItem> {
@@ -93,6 +95,11 @@ export class Filter {
   // Returns the correct set of Tree View Items.
   public toTreeViewItems(filterString: string): Array<string> {
     const included = this.fromFilterString(filterString);
+    return this.codesToTreeViewItems(included);
+  }
+
+  // Takes a set of codes and returns it as a TreeViewItem.
+  public codesToTreeViewItems(included: Set<number>): Array<string> {
     const selectItems = new Set<string>();
     this.visitDomain(
       this.domainTree,
@@ -119,6 +126,22 @@ export class Filter {
     );
     return [...selectItems];
   }
+
+  // Parses a set of options and returns a set of codes for data filtering.
+  public treeViewItemsToCodes(selectedItems: Array<string>) : Set<number> {
+    console.log(selectedItems);
+    const selectedCodes = new Set<number>();
+    for (const id of selectedItems) {
+      const parts = id.split("-");
+      console.log(parts);
+      if (parts.length === 2 && parts[0] === this.itemPrefix) {
+        selectedCodes.add(parseInt(parts[1]));
+      }
+    }
+    console.log("s", selectedCodes);
+    return selectedCodes.intersection(this.allCodes());
+  }
+
 
   public toSummaryText(selected: FilterSelection): string {
     const result = this.filterDomainCondensed(this.domainTree, selected);
