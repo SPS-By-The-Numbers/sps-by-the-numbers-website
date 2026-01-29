@@ -1,11 +1,5 @@
 "use client";
 
-import { makeSchoolItems } from "app/finance/_widgets/ExpenditureFilterContents";
-import {
-  ALL_OBJECT_ITEMS,
-  ALL_ACTIVITY_ITEMS,
-  ALL_PROGRAM_ITEMS,
-} from "app/finance/_widgets/ExpenditureFilterContents";
 import { DEFAULT_METRIC_SETTINGS } from "app/finance/_settings/metric_settings";
 import * as aq from "arquero";
 import { op } from "arquero";
@@ -32,42 +26,19 @@ import Typography from "@mui/material/Typography";
 
 import type { ColumnTable } from "arquero";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
-import type { MetricSettings } from "app/finance/_settings/metric_settings";
+import type { DetailedActualsSettings } from "app/finance/detailedactuals/DetailedActualsPage";
 
 const CONNECTOR_ID = "nces-connector";
 
-export interface DetailedActualsSettings extends MetricSettings {
-  selectedObjects: string[];
-  selectedActivities: string[];
-  selectedPrograms: string[];
-  selectedSchools: string[];
-}
-
-const DEFAULT_NCES_SETTINGS = DEFAULT_METRIC_SETTINGS.map((v) => ({
-  ...v,
-  selectedObjects: ALL_OBJECT_ITEMS,
-  selectedActivities: ALL_ACTIVITY_ITEMS,
-  selectedPrograms: ALL_PROGRAM_ITEMS,
-  selectedSchools: makeSchoolItems(v.ccddd),
-}));
-
-export function deserializeDetailedActualsDatasetSettings(queries : Array<string>) {
-  return DEFAULT_NCES_SETTINGS;
-}
-
-export function serializeDetailedActualsDatasetSettings(allSettings : DetailedActualsSettings) : string {
-  return "";
-}
-
-function componentsGenerator(ncesSettings: DetailedActualsSettings, facetOrder) {
+function componentsGenerator(settings: DetailedActualsSettings, facetOrder) {
   const components = makeFacetComponents(
-    ncesSettings.id,
+    settings.id,
     "class_of",
     "Class of",
     "amount",
     facetOrder,
     CONNECTOR_ID,
-    [ncesSettings.currencyNormalization],
+    [settings.currencyNormalization],
   );
 
   return components;
@@ -100,29 +71,26 @@ function makeFacetedDetailedActualsForDistrict(
   );
 }
 
-function compileData(districtDataMap, allSettings, facet) {
+function compileData(districtDataMap, allSettings : Array<DetailedActualsSettings>, facet) {
   const allDatasets = new Array<ColumnTable>();
   let facetInfo;
-  for (const ncesSettings of allSettings) {
-    const districtData = districtDataMap[ncesSettings.ccddd];
+  for (const settings of allSettings) {
+    const districtData = districtDataMap[settings.ccddd];
 
     // IF it has a school code, it has an nces code.
     // TODO: Filter by NCES codes too.
     const filteredExpenditures = districtData.filteredExpenditures({
-      selectedObjectCodes: extractCodes("obj", ncesSettings.selectedObjects),
-      selectedActivityCodes: extractCodes(
-        "act",
-        ncesSettings.selectedActivities,
-      ),
-      selectedProgramCodes: extractCodes("prog", ncesSettings.selectedPrograms),
-      selectedSchoolCodes: extractCodes("school", ncesSettings.selectedSchools),
+      selectedObjectCodes: settings.objectCodes,
+      selectedActivityCodes: settings.activityCodes,
+      selectedProgramCodes: settings.programCodes,
+//      selectedSchoolCodes: extractCodes("school", settings.selectedSchools),
     });
 
     const data = makeFacetedDetailedActualsForDistrict(
       districtData,
       filteredExpenditures,
       facet,
-      ncesSettings,
+      settings,
     );
     allDatasets.push(data);
     if (facetInfo === undefined) {

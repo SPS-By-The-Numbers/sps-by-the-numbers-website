@@ -130,7 +130,7 @@ function compileData(districtDataMap, expandedAllSettings, facet, sortOrder) {
   let fullFacetOrder;
   for (const expenditureSettings of expandedAllSettings) {
     const districtData = districtDataMap[expenditureSettings.ccddd];
-    const filteredExpenditures = districtData.filteredExpenditures(
+    const filteredExpenditures = districtData.filteredExpendituresOld(
       settingsToDistrictDataFilters(expenditureSettings),
     );
 

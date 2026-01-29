@@ -11,6 +11,25 @@ export const SYNTH_ACT_TEACHING = "Teaching (27) / Professional Learning (34)";
 export const SYNTH_ACT_CODE_PRINCIPAL_OFFICE = 9991;
 export const SYNTH_ACT_PRINCPAL_OFFICE = "Principal's Office (23) / Principal (84)";
 
+export type PAFilters = {
+  activityCodes: Set<number>;
+  programCodes: Set<number>;
+};
+
+export type NcesFilters = {
+  ncesCodes: Set<number>;
+};
+
+export type SchoolFilters = {
+  schoolCodes: Set<number>;
+};
+
+export type PAOFilters = PAFilters & {
+  objectCodes: Set<number>;
+}
+
+type ExpendituresFilters = Partial<PAOFilters & NcesFilters & SchoolFilters>;
+
 export type DistrictDataFilters = {
   selectedObjectCodes: Array<number>;
   selectedActivityCodes: Array<number>;
@@ -505,7 +524,43 @@ export default class DistrictData {
     return fundedEnrollment;
   }
 
-  filteredExpenditures(filterSelection: DistrictDataFilters) {
+  filteredExpenditures(expendituresFilter: ExpendituresFilters) {
+    let results = this.gf_expenditure_df;
+
+    if (expendituresFilter.objectCodes?.size) {
+      results = results
+        .params(expendituresFilter)
+        .filter((d, $) => d.includes($.objectCodes, d.object_code));
+    }
+
+    if (expendituresFilter.activityCodes?.size) {
+      results = results
+        .params(expendituresFilter)
+        .filter((d, $) => d.includes($.activityCodes, d.activity_code));
+    }
+
+    if (expendituresFilter.programCodes?.size) {
+      results = results
+        .params(expendituresFilter)
+        .filter((d, $) => d.includes($.programCodes, d.program_code));
+    }
+
+    if (expendituresFilter.schoolCodes?.size) {
+      results = results
+        .params(expendituresFilter)
+        .filter((d, $) => d.includes($.schoolCodes, d.school_code));
+    }
+
+    if (expendituresFilter.ncesCodes?.size) {
+      results = results
+        .params(expendituresFilter)
+        .filter((d, $) => d.includes($.ncesCodes, d.nces_code));
+    }
+
+    return results;
+  }
+
+  filteredExpendituresOld(filterSelection: DistrictDataFilters) {
     let results = this.gf_expenditure_df;
 
     if (filterSelection.selectedObjectCodes !== undefined) {

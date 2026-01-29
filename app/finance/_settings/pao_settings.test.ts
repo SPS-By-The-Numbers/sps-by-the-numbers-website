@@ -1,19 +1,23 @@
 import { expect, jest, test } from "@jest/globals";
 
 import {
-  DEFAULT_PA_FILTER_SETTINGS,
-  DEFAULT_PAO_FILTER_SETTINGS,
-  serializePAFilterSettings,
-  deserializePAFilterSettings,
-  serializePAOFilterSettings,
-  deserializePAOFilterSettings,
+  DEFAULT_PA_FILTERS,
+  DEFAULT_PAO_FILTERS,
+  serializePAFilters,
+  deserializePAFilters,
+  serializePAOFilters,
+  deserializePAOFilters,
 } from "app/finance/_settings/pao_settings";
 
-describe("PAFilterSettings", () => {
+describe("PAFilters", () => {
   it("smoke test: values roundtrip.", () => {
-    const serialized = serializePAFilterSettings(DEFAULT_PA_FILTER_SETTINGS);
+    // Do a better test here.
+    const serialized = serializePAFilters(DEFAULT_PA_FILTERS);
     expect(serialized.length).not.toEqual(0);
-    const restored = deserializePAFilterSettings(DEFAULT_PA_FILTER_SETTINGS, serialized);
-    expect(restored.programs).toEqual(DEFAULT_PA_FILTER_SETTINGS.programs);
+    const restored = deserializePAFilters(DEFAULT_PA_FILTERS, serialized);
+    expect(restored.programCodes).toEqual(DEFAULT_PA_FILTERS.programCodes);
+    expect(restored.activityCodes).toEqual(DEFAULT_PA_FILTERS.activityCodes);
   });
 });
+
+// TODO: Test PAOFilters.
