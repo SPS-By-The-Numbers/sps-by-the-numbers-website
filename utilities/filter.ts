@@ -2,10 +2,6 @@ import type { TreeViewBaseItem } from "@mui/x-tree-view";
 import { Base64Stream, Base64Reader } from "utilities/base64_stream";
 import { decodeNumberSet, encodeNumberSet } from "utilities/number_set";
 
-// The number of values for each data item int he short code. Best if it is a mutiple
-// of 6 to best patch a base64 digit.
-const SHORTCODE_VALUES: number = 12;
-
 // Using TreeViewBaseItem is a slightly layering violation since this section shouldn't understand
 // UI but tying the two types together just makes everything simpler for now.
 type FilterDomainBaseNode = TreeViewBaseItem & {
@@ -15,6 +11,15 @@ type FilterDomainBaseNode = TreeViewBaseItem & {
 export type FilterDomainLeafNode = FilterDomainBaseNode & {
   nodeType: "leaf";
   code: number;
+
+  // Optional override of `code` to use when serializing/deserializing.
+  // This allows mapping the range of values down to usually < 100 for sparse
+  // identifier domains such as school building or NCES codes. With a smaller
+  // range the serialization is much more efficient using the number_set's
+  // compact formats.
+  //
+  // If undefined, code is the default value used for serialization.
+  serializationCode?: number;
 };
 
 export type FilterDomainInternalNode = FilterDomainBaseNode & {
@@ -49,9 +54,10 @@ export function makeInternalNode(
 }
 
 // Helper for creating a FilterDomainTree leaf node.
-export function makeLeafNode(
+export function makeLeafNodeWithSerialization(
   prefix,
   code,
+  serializationCode,
   label,
   shortLabel?,
 ): FilterDomainTree {
@@ -61,13 +67,31 @@ export function makeLeafNode(
     label,
     shortLabel: shortLabel === undefined ? label : shortLabel,
     code,
+    serializationCode,
   };
+}
+
+// More common variant without the serializationCode.
+export function makeLeafNode(
+  prefix,
+  code,
+  label,
+  shortLabel?,
+): FilterDomainTree {
+  return makeLeafNodeWithSerialization(
+    prefix,
+    code,
+    undefined,
+    label,
+    shortLabel,
+  );
 }
 
 export class Filter {
   private domainTree: FilterDomainTree;
   private itemPrefix: string;
   private savedAllCodes: Set<number> | undefined;
+  private savedFromSerializationCode: Returns<number, number> | undefined;
 
   constructor(domainTree, prefix) {
     this.domainTree = domainTree;
@@ -161,24 +185,39 @@ export class Filter {
     const result = this.filterDomainLeafs(this.domainTree, selected);
     const excludeString = encodeNumberSet(
       "exclude",
-      new Set(result.skipped.map((n) => n.code)),
+      new Set(result.skipped.map((n) => n.serializationCode ?? n.code)),
     );
     const includeString = encodeNumberSet(
       "include",
-      new Set(result.matched.map((n) => n.code)),
+      new Set(result.matched.map((n) => n.serializationCode ?? n.code)),
     );
     return this.shorterString(excludeString, includeString);
+  }
+
+  public fromSerializationCode(serializationCode: number) {
+    if (this.savedFromSerializationCodes === undefined) {
+      const mapping : Record<number, number> = {};
+      this.savedFromSerializationCodes = mapping;
+      this.visitDomain(
+        this.domainTree,
+        () => {},
+        (n) => mapping[n.serializationCode ?? n.code] = n.code,
+      );
+    }
+    return this.savedFromSerializationCodes[serializationCode];
   }
 
   public fromFilterString(filterString: string): Set<number> {
     const decoded = decodeNumberSet(filterString);
     let result = this.allCodes();
     if (decoded.include) {
-      result = result.intersection(decoded.include);
+      const includeCodes = new Set(decoded.include.values().map(x => this.fromSerializationCode(x)));
+      result = result.intersection(includeCodes);
     }
 
     if (decoded.exclude) {
-      result = result.difference(decoded.exclude);
+      const excludeCodes = new Set(decoded.exclude.values().map(x => this.fromSerializationCode(x)));
+      result = result.difference(excludeCodes);
     }
     return result;
   }

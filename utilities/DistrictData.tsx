@@ -15,7 +15,7 @@ export type AFilters = {
   activityCodes: Set<number>;
 };
 
-export type PFilters = PAFilters & {
+export type PFilters = {
   programCodes: Set<number>;
 }
 

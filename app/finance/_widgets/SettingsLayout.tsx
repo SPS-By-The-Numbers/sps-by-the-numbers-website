@@ -32,10 +32,10 @@ interface SettingsLayoutProps<
   settingsSerializer: SettingsSerializer<SettingsType, SharedSettingsType>;
 
   sharedSettings: SharedSettingsType;
-  sharedSettingsComponents: Array<SettingsRenderComponentType<any>>;
+  sharedSettingsComponents: Array<SettingsRenderComponentType<any, any>>;
 
   allSettings: Array<SettingsType>;
-  settingsContentsComponents: Array<SettingsRenderComponentType<any>>;
+  settingsContentsComponents: Array<SettingsRenderComponentType<any, any>>;
 
   children: ReactNode;
 }

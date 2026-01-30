@@ -78,7 +78,7 @@
 //   b[4] = Inclusive or Exclusive filter. 1 for Exclusive
 //
 // For Direct19, b[5:24] is a 19-bit number starting after the ExtendedCompact range.
-// For Direct31, b[5:36] is the 31-bit number starting after the Direct19 range.
+// For Direct31, b[5:36] is a 31-bit number starting after the Direct19 range.
 
 import { Base64Stream, Base64Reader } from "utilities/base64_stream";
 

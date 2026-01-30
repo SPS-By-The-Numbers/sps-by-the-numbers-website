@@ -19,7 +19,7 @@ interface Props<T extends BaseSettings, U extends BaseSettings = T> {
   setSettings: (x: T) => void;
 }
 
-interface OverridePrimaryFilterSettings extends BaseSettings {
+type OverridePrimaryFilterSettings = BaseSettings & {
   overridePrimaryFilter: boolean;
 }
 
