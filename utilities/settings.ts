@@ -1,6 +1,8 @@
 // Helper functions to serialize and deserialize a dictionary to short short string suitable
 // for use in a query parameter. The key and value are assumed to be URL safe.
 
+export type SettingsDict = Record<string, string>;
+
 // Ensure query parameters come back as an array of strings.
 export function getParamAsStringArray(value) {
   if (Array.isArray(value)) {
@@ -16,7 +18,7 @@ export function getParamAsStringArray(value) {
   return [];
 }
 
-export function serializeSettingsDict(dict: Record<string, string>) {
+export function serializeSettingsDict(dict: SettingsDict) {
   const values = new Array<string>();
   for (const [k, v] of Object.entries(dict)) {
     if (k.indexOf("~") !== -1) {

@@ -21,13 +21,12 @@ export function serializeSchoolFilters(ccddd: number, s: SchoolFilters) : string
 
 export function deserializeSchoolFilters(ccddd: number,
                                          serialized: string) : SchoolFilters {
-  const defaultSettings = defaultSchooFilters(ccddd);
+  const settings = defaultSchooFilters(ccddd);
   const schoolFilter = makeSchoolFilter(ccddd);
   if (!serialized) {
     return schoolFilter.allCodes();
   }
   const settingsDict = deserializeSettingsDict(serialized);
-  const settings = Object.assign({}, defaultSettings);
   for (const [key, value] of Object.entries(settingsDict)) {
     switch (key) {
       case "s":

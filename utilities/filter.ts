@@ -1,6 +1,17 @@
-import type { TreeViewBaseItem } from "@mui/x-tree-view";
 import { Base64Stream, Base64Reader } from "utilities/base64_stream";
 import { decodeNumberSet, encodeNumberSet } from "utilities/number_set";
+
+import type { SettingsDict } from "utilities/settings";
+import type { TreeViewBaseItem } from "@mui/x-tree-view";
+
+type FilterSerializerInfo = {
+  urlVar: string;
+  filter: Filter;
+};
+
+// Mapping of the key in a settings struct to a SerializerInfo that describes
+// how it should be encoded into the URL.
+export type FilterSerializationConfig = Record<string, FilterSerializerInfo>;
 
 // Using TreeViewBaseItem is a slightly layering violation since this section shouldn't understand
 // UI but tying the two types together just makes everything simpler for now.

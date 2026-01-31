@@ -152,16 +152,16 @@ export function SchoolFilterContents({
 export function DutyRootFilterContents({
   settings,
   setSettings,
-}: Props<DutyRootFilters>) {
+}: Props<BaseSettings & DutyRootFilters>) {
   return (
     <FilterTree
       title="Duty Root"
       items={DutyRootFilter.treeViewItems()}
-      selectedItems={DutyRootFilter.codesToTreeViewItems(settings.dutyCodes)}
+      selectedItems={DutyRootFilter.codesToTreeViewItems(settings.dutyRootCodes)}
       setSelectedItems={selected =>
         setSettings({
           ...settings,
-          dutyCodes: DutyRootFilter.treeViewItemsToCodes(selected)
+          dutyRootCodes: DutyRootFilter.treeViewItemsToCodes(selected)
         })
       }
     />

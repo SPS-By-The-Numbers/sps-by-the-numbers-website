@@ -13,10 +13,11 @@ import {
   toChartableDataset,
   getDataColumnNames,
 } from "utilities/ChartableMetrics";
+import { serializeDatasetSettings } from "app/finance/_settings/common_settings";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { makeFacetComponents } from "utilities/highcharts/FacetedBudgetActualCharts";
 import { op } from "arquero";
-import { serializeStaffingSettings } from "./StaffingPage";
+import { SERIALIZE_STAFFING_SETTINGS_GENERATORS } from "./StaffingPage";
 import { serializeSettings } from "app/finance/_settings/base_settings";
 import * as aq from "arquero";
 import HcDashboard from "components/HcDashboard";
@@ -145,7 +146,7 @@ export default function StaffingDashboard({
   return (
     <SettingsLayout
       settingsSerializer={{
-        serialize: x => serializeSettings(x, serializeStaffingSettings),
+        serialize: newAllSettings => serializeDatasetSettings(newAllSettings, SERIALIZE_STAFFING_SETTINGS_GENERATORS),
         serializeShared: x => "",
       }}
       allSettings={allSettings}

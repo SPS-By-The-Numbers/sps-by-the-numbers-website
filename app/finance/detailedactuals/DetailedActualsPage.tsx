@@ -1,6 +1,6 @@
 "use client";
 
-import { DEFAULT_METRIC_SETTINGS, serializeOneMetricSettings, deserializeOneMetricSettings, } from "app/finance/_settings/metric_settings";
+import { DEFAULT_METRIC_SETTINGS, serializeMetricSettings, deserializeMetricSettings, } from "app/finance/_settings/metric_settings";
 import { DEFAULT_PAO_FILTERS, serializePAOFilters, deserializePAOFilters, } from "app/finance/_settings/pao_settings";
 import { DUMMY_BASE_SETTINGS, deserializeSettings } from "app/finance/_settings/base_settings";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
@@ -24,7 +24,7 @@ export function deserializeDetailedActualsSettings(
   defaultSettings,
   serialized: string,
 ) : DetailedActualsSettings {
-  const metricSettings = deserializeOneMetricSettings(defaultSettings, serialized);
+  const metricSettings = deserializeMetricSettings(defaultSettings, serialized);
   const paoSettings = deserializePAOFilters(defaultSettings, serialized);
   const schoolSettings = deserializeSchoolFilters(metricSettings.ccddd, serialized);
 
@@ -37,7 +37,7 @@ export function deserializeDetailedActualsSettings(
 
 export function serializeDetailedActualsSettings(settings : DetailedActualsSettings) : string {
   return [
-    serializeOneMetricSettings(settings),
+    serializeMetricSettings(settings),
     serializePAOFilters(settings),
     serializeSchoolFilters(settings.ccddd, settings),
   ].join('~');
@@ -47,7 +47,7 @@ export default function DetailedActualsPage() {
   const searchParams = useSearchParams();
   const allSettings = deserializeSettings(
     searchParams.getAll('d'),
-    DEFAULT_DETAILED_ACTUALS_SETTINGS[0],
+    DEFAULT_DETAILED_ACTUALS_SETTINGS,
     deserializeDetailedActualsSettings);
   return (
     <EnsureDistrictData

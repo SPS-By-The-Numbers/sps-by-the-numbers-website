@@ -1,6 +1,6 @@
 "use client";
 
-import { DEFAULT_METRIC_SETTINGS, serializeOneMetricSettings, deserializeOneMetricSettings, } from "app/finance/_settings/metric_settings";
+import { DEFAULT_METRIC_SETTINGS, serializeMetricSettings, deserializeMetricSettings, } from "app/finance/_settings/metric_settings";
 import { DEFAULT_PAO_FILTERS, serializePAOFilters, deserializePAOFilters } from "app/finance/_settings/pao_settings";
 import { deserializeExpenditureSharedSettings } from "./ExpendituresSharedSettings";
 import { deserializeSettings } from "app/finance/_settings/base_settings";
@@ -24,7 +24,7 @@ export const DEFAULT_EXPENDITURES_SETTINGS = DEFAULT_METRIC_SETTINGS.map(
 );
 
 export function serializeExpendituresSettings(settings: ExpendituresSettings): string {
-  const fragments =  [serializeOneMetricSettings(settings)];
+  const fragments =  [serializeMetricSettings(settings)];
 
   // Only output filters if they are overridden or this is the primary setting.
   if (settings.overridePrimaryFilter || settings.id === 0) {
@@ -49,7 +49,7 @@ export function deserializeExpendituresSettings(
   defaultSettings,
   serialized: string,
 ) : ExpendituresSettings {
-  const settings = deserializeOneMetricSettings(defaultSettings, serialized);
+  const settings = deserializeMetricSettings(defaultSettings, serialized);
   const paoSettings = deserializePAOFilters({}, serialized);
   const overridePrimaryFilter = Object.keys(paoSettings).length !== 0;
 
@@ -70,7 +70,7 @@ export default function ExpendituresPage() {
   const searchParams = useSearchParams();
   const allSettings = deserializeSettings(
     searchParams.getAll('d'),
-    DEFAULT_EXPENDITURES_SETTINGS[0],
+    DEFAULT_EXPENDITURES_SETTINGS,
     deserializeExpendituresSettings);
   const sharedSettings = deserializeExpenditureSharedSettings(searchParams.getAll('s'));
 

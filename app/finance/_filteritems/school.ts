@@ -3,7 +3,7 @@ import ALL_SCHOOLS from 'app/finance/_domain/schools';
 import { Filter, makeInternalNode, makeLeafNodeWithSerialization } from "utilities/filter";
 import memoize from "lodash/memoize";
 
-import type { FilterDomainTree } from "utilities/filter";
+import type { FilterDomainTree, FilterSerializationConfig } from "utilities/filter";
 
 const ITEM_PREFIX = "school";
 
@@ -27,7 +27,7 @@ export function sortBySchoolName(a, b) {
   return 0;
 }
 
-function makeSchoolFilterInternal(ccddd: number) {
+function makeSchoolFilterInternal(ccddd: number) : Filter {
   const schools = ALL_SCHOOLS[ccddd];
   const children = new Array<FilterDomainTree>;
   for (const s of schools.sort(sortBySchoolName)) {
@@ -40,4 +40,14 @@ function makeSchoolFilterInternal(ccddd: number) {
   return new Filter(schoolFilterTree, ITEM_PREFIX);
 }
 
+function makeSchoolFilterConfigInternal(ccddd: number) : FilterSerializationConfig {
+  return {
+    "schoolCodes": {
+      urlVar: "s",
+      filter: makeSchoolFilter(ccddd)
+    }
+  };
+}
+
+export const makeSchoolFilterConfig = memoize(makeSchoolFilterConfigInternal);
 export const makeSchoolFilter = memoize(makeSchoolFilterInternal);

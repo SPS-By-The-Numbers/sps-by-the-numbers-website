@@ -35,12 +35,12 @@ export type SchoolFilters = {
   schoolCodes: Set<number>;
 };
 
-export type DutyFilters = {
-  dutyCodes: Set<number>;
+export type DutyRootFilters = {
+  dutyRootCodes: Set<number>;
 };
 
 type ExpendituresFilters = Partial<PAOFilters & NcesFilters & SchoolFilters>;
-type StaffingFilters = Partial<PAFilters & DutyFilters & SchoolFilters>;
+type StaffingFilters = Partial<PAFilters & DutyRootFilters & SchoolFilters>;
 
 const YEAR_GROUP_BY = ["class_of"];
 const FINANCE_GROUP_BY = ["data_type", ...YEAR_GROUP_BY];
@@ -422,28 +422,28 @@ export default class DistrictData {
   filteredS275Summary(staffingFilter : StaffingFilters) {
     let results = this.s275_summary_df;
 
-    if (staffingFilter.programCodes?.size) {
+    if (staffingFilter.programCodes !== undefined) {
       results = results
         .params(staffingFilter)
         .filter((d, $) => d.includes([...$.programCodes], d.program_code));
     }
 
-    if (staffingFilter.activityCodes?.size) {
+    if (staffingFilter.activityCodes !== undefined) {
       results = results
         .params(staffingFilter)
         .filter((d, $) => d.includes([...$.activityCodes], d.activity_code));
     }
 
-    if (staffingFilter.schoolCodes?.size) {
+    if (staffingFilter.schoolCodes !== undefined) {
       results = results
         .params(staffingFilter)
         .filter((d, $) => d.includes([...$.schoolCodes], d.school_code));
     }
 
-    if (staffingFilter.dutyCodes?.size) {
+    if (staffingFilter.dutyRootCodes !== undefined) {
       results = results
         .params(staffingFilter)
-        .filter((d, $) => d.includes([...$.dutyCodes], d.duty_root_code));
+        .filter((d, $) => d.includes([...$.dutyRootCodes], d.duty_root_code));
     }
 
     return results;
@@ -542,31 +542,31 @@ export default class DistrictData {
   filteredExpenditures(expendituresFilter: ExpendituresFilters) {
     let results = this.gf_expenditure_df;
 
-    if (expendituresFilter.objectCodes?.size) {
+    if (expendituresFilter.objectCodes !== undefined) {
       results = results
         .params(expendituresFilter)
         .filter((d, $) => d.includes([...$.objectCodes], d.object_code));
     }
 
-    if (expendituresFilter.activityCodes?.size) {
+    if (expendituresFilter.activityCodes !== undefined) {
       results = results
         .params(expendituresFilter)
         .filter((d, $) => d.includes([...$.activityCodes], d.activity_code));
     }
 
-    if (expendituresFilter.programCodes?.size) {
+    if (expendituresFilter.programCodes !== undefined) {
       results = results
         .params(expendituresFilter)
         .filter((d, $) => d.includes([...$.programCodes], d.program_code));
     }
 
-    if (expendituresFilter.schoolCodes?.size) {
+    if (expendituresFilter.schoolCodes !== undefined) {
       results = results
         .params(expendituresFilter)
         .filter((d, $) => d.includes([...$.schoolCodes], d.school_code));
     }
 
-    if (expendituresFilter.ncesCodes?.size) {
+    if (expendituresFilter.ncesCodes !== undefined) {
       results = results
         .params(expendituresFilter)
         .filter((d, $) => d.includes([...$.ncesCodes], d.nces_code));

@@ -1,4 +1,4 @@
-export interface BaseSettings {
+export type BaseSettings = {
   name: string;
   id: number;
 }
@@ -38,7 +38,7 @@ export function serializeSettings<SettingsType extends BaseSettings>(
 export function deserializeSettings<SettingsType extends BaseSettings>(
   queries: Array<string>,
   defaultSettings: Array<SettingsType>,
-  deserialize: (defaultSetting: SettingsType, serialized: string) => Array<SettingsType>
+  deserialize: (defaultSetting: SettingsType, serialized: string) => SettingsType
 ) {
   if (queries.length === 0) {
     return defaultSettings;
@@ -46,9 +46,10 @@ export function deserializeSettings<SettingsType extends BaseSettings>(
 
   const allSettings = new Array<SettingsType>();
   for (let i = 0; i < queries.length; i++) {
-    const newSettings = deserialize({}, queries[i]);
+    const newSettings = deserialize(defaultSettings[0], queries[i]);
     newSettings.id = i;
     allSettings.push(newSettings);
   }
   return allSettings;
 }
+

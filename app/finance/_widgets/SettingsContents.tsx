@@ -1,3 +1,7 @@
+// SettingsContents render one set of values into the left panel
+// defined by a SettingsLayout.  It is the glue between a Setting
+// data store and the UI.
+
 import Stack from "@mui/material/Stack";
 import Paper from "@mui/material/Paper";
 import type { BaseSettings } from "app/finance/_settings/base_settings";

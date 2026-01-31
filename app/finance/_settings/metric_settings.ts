@@ -31,7 +31,7 @@ export function deserializeFilterGrouping(s: string): FilterGrouping {
   return "spsbtn" as const;
 }
 
-export interface MetricSettings extends BaseSettings {
+export type MetricSettings = BaseSettings & {
   ccddd: number;
   filterGrouping: FilterGrouping;
   currencyNormalization: CurrencyNormalization;
@@ -48,7 +48,7 @@ export const DEFAULT_METRIC_SETTINGS: Array<MetricSettings> = [
   },
 ].map((e) => ({ ...e, name: ALL_DISTRICTS[e.ccddd].district }));
 
-export function serializeOneMetricSettings(s: MetricSettings) {
+export function serializeMetricSettings(s: MetricSettings) {
   const settingsDict = {
     c: s.ccddd.toString(),
     g: serializeFilterGrouping(s.filterGrouping),
@@ -63,7 +63,7 @@ export function serializeOneMetricSettings(s: MetricSettings) {
   return serializeSettingsDict(settingsDict);
 }
 
-export function deserializeOneMetricSettings(
+export function deserializeMetricSettings(
   defaultSettings,
   serialized: string,
 ) {

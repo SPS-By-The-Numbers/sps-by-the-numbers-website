@@ -1,5 +1,18 @@
 "use client";
 
+// SettingsLayout defines the basic layout of a page where there is a left
+// settings drawer with one "shared" setting box at the top and a series
+// of "dataset" settings under. The render of each setting type is controlled
+// by an array of SettingsContents.
+//
+// The SettingsLayout keeps state in the URL parameters allowing for semantic
+// URLs that encode the current page configuration. Please keep URL length in
+// mind when adding settings. In particular, skew towards smaller numeric codes
+// for values as the filter encoding format is especially efficient at
+// representing a selection of binary filters with identifiers from [0, 119].
+//
+// See utilties/number_set.ts for more info.
+
 import * as React from "react";
 import { toEmojiPrefix } from "utilities/emoji";
 import { useRouter, usePathname } from "next/navigation";
@@ -23,7 +36,7 @@ import type { ReactNode, ComponentType } from "react";
 import type { SettingsRenderComponentType } from "app/finance/_widgets/SettingsContents";
 import type { BaseSettings, SettingsSerializer } from "app/finance/_settings/base_settings";
 
-const drawerWidth = 240;
+const drawerWidthPx = 240;
 
 interface SettingsLayoutProps<
   SettingsType extends BaseSettings,
@@ -234,7 +247,7 @@ export default function SettingsLayout<
     <Box sx={{ display: "flex", height: "100vh" }}>
       <Box
         component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+        sx={{ width: { sm: drawerWidthPx }, flexShrink: { sm: 0 } }}
         aria-label="graph settings"
       >
         {/* The implementation can be swapped with js to avoid SEO duplication of links. */}
@@ -247,7 +260,7 @@ export default function SettingsLayout<
             display: { xs: "block", sm: "none" },
             "& .MuiDrawer-paper": {
               boxSizing: "border-box",
-              width: drawerWidth,
+              width: drawerWidthPx,
             },
           }}
           slotProps={{
@@ -264,7 +277,7 @@ export default function SettingsLayout<
             display: { xs: "none", sm: "block" },
             "& .MuiDrawer-paper": {
               boxSizing: "border-box",
-              width: drawerWidth,
+              width: drawerWidthPx,
             },
           }}
           open
@@ -277,7 +290,7 @@ export default function SettingsLayout<
           height: "100%",
           flexGrow: 1,
           p: 0,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          width: { sm: `calc(100% - ${drawerWidthPx}px)` },
         }}
       >
         {children}

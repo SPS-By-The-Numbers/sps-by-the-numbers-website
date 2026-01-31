@@ -29,4 +29,3 @@ function makeDutyRootTree() {
 const DutyRootFilter = new Filter(makeDutyRootTree(), ITEM_PREFIX);
 
 export default DutyRootFilter;
-
