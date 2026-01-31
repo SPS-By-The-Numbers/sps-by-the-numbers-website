@@ -4,6 +4,7 @@ import {
   ActivityFilterContents,
   ProgramFilterContents,
   SchoolFilterContents,
+  DutyRootFilterContents,
 } from "app/finance/_widgets/ExpenditureFilterContents";
 import { dfToJSONConnectorOptions } from "utilities/highcharts/utils";
 import {
@@ -15,6 +16,8 @@ import {
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { makeFacetComponents } from "utilities/highcharts/FacetedBudgetActualCharts";
 import { op } from "arquero";
+import { serializeStaffingSettings } from "./StaffingPage";
+import { serializeSettings } from "app/finance/_settings/base_settings";
 import * as aq from "arquero";
 import HcDashboard from "components/HcDashboard";
 import MetricSettingsContents from "app/finance/_widgets/MetricSettingsContents";
@@ -23,16 +26,9 @@ import Typography from "@mui/material/Typography";
 
 import type { ColumnTable } from "arquero";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
-import type { MetricSettings } from "app/finance/_settings/metric_settings";
+import type { StaffingSettings } from "./StaffingPage";
 
 const CONNECTOR_ID = "settings-connector";
-
-export interface StaffingSettings extends MetricSettings {
-  selectedActivities: string[];
-  selectedPrograms: string[];
-  selectedSchools: string[];
-  selectedDutyRoots: string[];
-}
 
 function componentsGenerator(staffingSettings: StaffingSettings, facetOrder) {
   const components = makeFacetComponents(
@@ -86,24 +82,7 @@ function compileData(districtDataMap, allSettings, facet) {
     const districtData = districtDataMap[staffingSettings.ccddd];
 
     // IF it has a school code, it has an staffing code.
-    const filteredS275Summary = districtData.filteredS275Summary({
-      selectedActivityCodes: extractCodes(
-        "act",
-        staffingSettings.selectedActivities,
-      ),
-      selectedProgramCodes: extractCodes(
-        "prog",
-        staffingSettings.selectedPrograms,
-      ),
-      selectedSchoolCodes: extractCodes(
-        "school",
-        staffingSettings.selectedSchools,
-      ),
-      selectedDutyRootCodes: extractCodes(
-        "duty",
-        staffingSettings.selectedDutyRoots,
-      ),
-    });
+    const filteredS275Summary = districtData.filteredS275Summary(staffingSettings);
 
     const data = makeFacetedStaffingForDistrict(
       districtData,
@@ -166,7 +145,7 @@ export default function StaffingDashboard({
   return (
     <SettingsLayout
       settingsSerializer={{
-        serialize: x => [],
+        serialize: x => serializeSettings(x, serializeStaffingSettings),
         serializeShared: x => "",
       }}
       allSettings={allSettings}
@@ -177,6 +156,7 @@ export default function StaffingDashboard({
         ActivityFilterContents,
         ProgramFilterContents,
         SchoolFilterContents,
+        DutyRootFilterContents,
       ]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">

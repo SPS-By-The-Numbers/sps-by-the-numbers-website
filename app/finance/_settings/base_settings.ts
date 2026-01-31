@@ -37,16 +37,16 @@ export function serializeSettings<SettingsType extends BaseSettings>(
 
 export function deserializeSettings<SettingsType extends BaseSettings>(
   queries: Array<string>,
-  defaultSetting: SettingsType,
-  deserialize: (defaultSetting: SettingsType, serialized: string) => SettingsType
+  defaultSettings: Array<SettingsType>,
+  deserialize: (defaultSetting: SettingsType, serialized: string) => Array<SettingsType>
 ) {
   if (queries.length === 0) {
-    return [defaultSetting];
+    return defaultSettings;
   }
 
   const allSettings = new Array<SettingsType>();
   for (let i = 0; i < queries.length; i++) {
-    const newSettings = deserialize(defaultSetting, queries[i]);
+    const newSettings = deserialize({}, queries[i]);
     newSettings.id = i;
     allSettings.push(newSettings);
   }

@@ -1,4 +1,3 @@
-import { makeDutyRootItems } from "app/finance/_domain/DutyRoots";
 import { makeSchoolFilter } from "app/finance/_filteritems/school";
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
 import ActivityFilter from "app/finance/_filteritems/activity";
@@ -6,14 +5,14 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import FormGroup from "@mui/material/FormGroup";
 import ObjectFilter from "app/finance/_filteritems/object";
 import ProgramFilter from "app/finance/_filteritems/program";
+import DutyRootFilter from "app/finance/_filteritems/duty_root";
 import Switch from "@mui/material/Switch";
 
-import type { PFilters, AFilters, OFilters, SchoolFilters } from "utilities/DistrictData";
+import type { PFilters, AFilters, OFilters, SchoolFilters, DutyRootFilters } from "utilities/DistrictData";
 import type { BaseSettings } from "app/finance/_settings/base_settings";
 import type { MetricSettings } from "app/finance/_settings/metric_settings";
-import type { TreeViewBaseItem } from "@mui/x-tree-view";
 
-interface Props<T extends BaseSettings, U extends BaseSettings = T> {
+interface Props<T extends BaseSettings, U extends BaseSettings = BaseSettings> {
   sharedSettings?: U,
   settings: T;
   setSettings: (x: T) => void;
@@ -143,6 +142,26 @@ export function SchoolFilterContents({
         setSettings({
           ...settings,
           schoolCodes: schoolFilter.treeViewItemsToCodes(selected)
+        })
+      }
+    />
+  );
+}
+
+// Settings component to render selection of schools.
+export function DutyRootFilterContents({
+  settings,
+  setSettings,
+}: Props<DutyRootFilters>) {
+  return (
+    <FilterTree
+      title="Duty Root"
+      items={DutyRootFilter.treeViewItems()}
+      selectedItems={DutyRootFilter.codesToTreeViewItems(settings.dutyCodes)}
+      setSelectedItems={selected =>
+        setSettings({
+          ...settings,
+          dutyCodes: DutyRootFilter.treeViewItemsToCodes(selected)
         })
       }
     />

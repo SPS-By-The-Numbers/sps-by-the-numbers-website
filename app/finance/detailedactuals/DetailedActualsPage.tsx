@@ -6,7 +6,6 @@ import { DUMMY_BASE_SETTINGS, deserializeSettings } from "app/finance/_settings/
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
 import { makeSchoolFilter } from "app/finance/_filteritems/school";
 import { serializeSchoolFilters, deserializeSchoolFilters, } from "app/finance/_settings/school_settings";
-import { Suspense } from "react";
 import { useSearchParams } from 'next/navigation';
 import DetailedActualsDashboard from "./DetailedActualsDashboard";
 
@@ -24,7 +23,7 @@ const DEFAULT_DETAILED_ACTUALS_SETTINGS = DEFAULT_METRIC_SETTINGS.map((v) => ({
 export function deserializeDetailedActualsSettings(
   defaultSettings,
   serialized: string,
-) {
+) : DetailedActualsSettings {
   const metricSettings = deserializeOneMetricSettings(defaultSettings, serialized);
   const paoSettings = deserializePAOFilters(defaultSettings, serialized);
   const schoolSettings = deserializeSchoolFilters(metricSettings.ccddd, serialized);
@@ -51,11 +50,11 @@ export default function DetailedActualsPage() {
     DEFAULT_DETAILED_ACTUALS_SETTINGS[0],
     deserializeDetailedActualsSettings);
   return (
-      <EnsureDistrictData
-        allSettings={allSettings}
-        sharedSettings={DUMMY_BASE_SETTINGS}
-        ContentComponent={DetailedActualsDashboard}
-      />
+    <EnsureDistrictData
+      allSettings={allSettings}
+      sharedSettings={DUMMY_BASE_SETTINGS}
+      ContentComponent={DetailedActualsDashboard}
+    />
   );
 }
 

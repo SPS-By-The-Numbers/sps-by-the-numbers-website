@@ -91,9 +91,9 @@ export class Filter {
   private domainTree: FilterDomainTree;
   private itemPrefix: string;
   private savedAllCodes: Set<number> | undefined;
-  private savedFromSerializationCode: Returns<number, number> | undefined;
+  private savedFromSerializationCodes: Record<number, number> | undefined;
 
-  constructor(domainTree, prefix) {
+  constructor(domainTree : FilterDomainTree, prefix : string) {
     this.domainTree = domainTree;
     this.itemPrefix = prefix;
   }
@@ -204,7 +204,7 @@ export class Filter {
         (n) => mapping[n.serializationCode ?? n.code] = n.code,
       );
     }
-    return this.savedFromSerializationCodes[serializationCode];
+    return this.savedFromSerializationCodes[serializationCode] ?? serializationCode;
   }
 
   public fromFilterString(filterString: string): Set<number> {

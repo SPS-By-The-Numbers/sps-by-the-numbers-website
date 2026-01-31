@@ -26,7 +26,7 @@ const YSCALE_OPTIONS: Record<ChartOptions.YScale, string> = {
   descending: "Descending",
 };
 
-export interface ExpendituresDashboardSettings extends CommonSharedSettings {
+export interface ExpendituresSharedSettings extends CommonSharedSettings {
   facet: Facet;
   facetLimit: ChartOptions.FacetLimit;
   sortOrder: SortOrder;
@@ -34,7 +34,7 @@ export interface ExpendituresDashboardSettings extends CommonSharedSettings {
   yScale: ChartOptions.YScale;
 }
 
-const DEFAULT_DASHBOARD_SETTINGS: ExpendituresDashboardSettings = {
+const DEFAULT_DASHBOARD_SETTINGS: ExpendituresSharedSettings = {
   ...DEFAULT_COMMON_SHARED_SETTINGS,
   facet: "activity",
   facetLimit: "0",
@@ -62,8 +62,8 @@ function deserializeFacet(s: string): Facet {
   return "activity";
 }
 
-export function serializeExpenditureDashboardSettings(
-  s: ExpendituresDashboardSettings,
+export function serializeExpenditureSharedSettings(
+  s: ExpendituresSharedSettings,
 ) {
   const settingsDict = {
     f: serializeFacet(s.facet),
@@ -76,7 +76,7 @@ export function serializeExpenditureDashboardSettings(
   return serializeSettingsDict(settingsDict);
 }
 
-export function deserializeExpenditureDashboardSettings(
+export function deserializeExpenditureSharedSettings(
   queries: Array<string>,
 ) {
   if (queries.length === 0) {
@@ -112,8 +112,8 @@ export function deserializeExpenditureDashboardSettings(
   return settings;
 }
 
-export default function ExpendituresDashboardSettingsContents(
-  props: SettingsContentsProps<ExpendituresDashboardSettings>,
+export default function ExpendituresSharedSettingsContents(
+  props: SettingsContentsProps<ExpendituresSharedSettings>,
 ) {
   return (
     <>

@@ -28,16 +28,14 @@ import {
   ProgramFilterContents,
 } from "app/finance/_widgets/ExpenditureFilterContents";
 import { useMemo } from "react";
-import { useRouter, usePathname } from "next/navigation";
 import ObjectFilter from "app/finance/_filteritems/object";
 import ProgramFilter from "app/finance/_filteritems/program";
-import ExpendituresDashboardSettingsContents, {
-  serializeExpenditureDashboardSettings,
-} from "app/finance/expenditures/ExpendituresDashboardSettings";
+import ExpendituresSharedSettingsContents, {
+  serializeExpenditureSharedSettings,
+} from "app/finance/expenditures/ExpendituresSharedSettings";
 import {
-  settingsToDistrictDataFilters,
-  serializeOneExpenditureFilterSettings,
-} from "app/finance/expenditures/ExpenditureFilterSettings";
+  serializeExpendituresSettings,
+} from "app/finance/expenditures/ExpendituresPage";
 import { makeMaybeContents } from "app/finance/_widgets/SettingsContents";
 import { serializeSettings } from "app/finance/_settings/base_settings";
 import HcDashboard from "components/HcDashboard";
@@ -46,23 +44,21 @@ import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
 
 import type { ColumnTable } from "arquero";
-import type { ExpendituresDashboardSettings } from "./ExpendituresDashboardSettings";
+import type { ExpendituresSharedSettings } from "./ExpendituresSharedSettings";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
-import type { ExpendituresSettings } from "./ExpenditureFilterSettings";
+import type { ExpendituresSettings } from "./ExpendituresPage";
 
 const CONNECTOR_ID = "expenditures-connector";
 
 function componentsGenerator(
   facetOrder,
-  sharedSettings: ExpendituresDashboardSettings,
+  sharedSettings: ExpendituresSharedSettings,
   expenditureSettings: ExpendituresSettings,
   bounds,
 ) {
-  const districtDataFilters =
-    settingsToDistrictDataFilters(expenditureSettings);
   const subtitle = `
-  Prog: ${ProgramFilter.toSummaryText(new Set(districtDataFilters.selectedProgramCodes))} /
-  Obj: ${ObjectFilter.toSummaryText(new Set(districtDataFilters.selectedObjectCodes))} 
+  Prog: ${ProgramFilter.toSummaryText(expenditureSettings.programCodes)} /
+  Obj: ${ObjectFilter.toSummaryText(expenditureSettings.objectCodes)} 
   `;
 
   const components = makeFacetComponents(
@@ -130,9 +126,7 @@ function compileData(districtDataMap, expandedAllSettings, facet, sortOrder) {
   let fullFacetOrder;
   for (const expenditureSettings of expandedAllSettings) {
     const districtData = districtDataMap[expenditureSettings.ccddd];
-    const filteredExpenditures = districtData.filteredExpendituresOld(
-      settingsToDistrictDataFilters(expenditureSettings),
-    );
+    const filteredExpenditures = districtData.filteredExpenditures(expenditureSettings);
 
     const data = makeFacetedExpendituresForDistrict(
       districtData,
@@ -368,10 +362,8 @@ export default function ExpendituresDashboard({
   allSettings,
 }: DistrictDataContentProps<
   ExpendituresSettings,
-  ExpendituresDashboardSettings
+  ExpendituresSharedSettings
 >) {
-  const router = useRouter();
-  const pathname = usePathname();
   const config = useMemo(() => {
     // Expand out the filter per sub-setting.
     const expandedAllSettings: Array<ExpendituresSettings> =
@@ -394,17 +386,17 @@ export default function ExpendituresDashboard({
   return (
     <SettingsLayout
       settingsSerializer={{
-        serialize: x => serializeSettings(x, serializeOneExpenditureFilterSettings),
-        serializeShared: serializeExpenditureDashboardSettings,
+        serialize: x => serializeSettings(x, serializeExpendituresSettings),
+        serializeShared: serializeExpenditureSharedSettings,
       }}
       sharedSettings={sharedSettings}
-      sharedSettingsComponents={[ExpendituresDashboardSettingsContents]}
+      sharedSettingsComponents={[ExpendituresSharedSettingsContents]}
       allSettings={allSettings}
       settingsContentsComponents={[
         MetricSettingsContents,
 
         // TODO: We need to have the override copy over the current state of primary.
-        //  Maybe intercept at setAllSettings? Seems like wrong separate of concerns.
+        //  Maybe intercept at setAllSettings? Seems like wrong separation of concerns.
         makeMaybeContents(
           "overridePrimaryFilter",
           OverridePrimaryFilterContents,

@@ -35,22 +35,12 @@ export type SchoolFilters = {
   schoolCodes: Set<number>;
 };
 
+export type DutyFilters = {
+  dutyCodes: Set<number>;
+};
+
 type ExpendituresFilters = Partial<PAOFilters & NcesFilters & SchoolFilters>;
-
-export type DistrictDataFilters = {
-  selectedObjectCodes: Array<number>;
-  selectedActivityCodes: Array<number>;
-  selectedProgramCodes: Array<number>;
-  selectedSchoolCodes?: Array<number>;
-  selectedNcesCodes?: Array<number>;
-};
-
-export type StaffingDistrictDataFilters = {
-  selectedDutyRootCodes: Array<number>;
-  selectedSchoolCodes: Array<number>;
-  selectedActivityCodes: Array<number>;
-  selectedProgramCodes: Array<number>;
-};
+type StaffingFilters = Partial<PAFilters & DutyFilters & SchoolFilters>;
 
 const YEAR_GROUP_BY = ["class_of"];
 const FINANCE_GROUP_BY = ["data_type", ...YEAR_GROUP_BY];
@@ -429,16 +419,34 @@ export default class DistrictData {
     return this.s275_summary_df;
   }
 
-  filteredS275Summary(filterSelection) {
-    return this.s275_summary_df
-      .params(filterSelection)
-      .filter(
-        (d, $) =>
-          d.includes($.selectedSchoolCodes, d.school_code) &&
-          d.includes($.selectedActivityCodes, d.activity_code) &&
-          d.includes($.selectedProgramCodes, d.program_code) &&
-          d.includes($.selectedDutyRootCodes, d.duty_root_code),
-      );
+  filteredS275Summary(staffingFilter : StaffingFilters) {
+    let results = this.s275_summary_df;
+
+    if (staffingFilter.programCodes?.size) {
+      results = results
+        .params(staffingFilter)
+        .filter((d, $) => d.includes([...$.programCodes], d.program_code));
+    }
+
+    if (staffingFilter.activityCodes?.size) {
+      results = results
+        .params(staffingFilter)
+        .filter((d, $) => d.includes([...$.activityCodes], d.activity_code));
+    }
+
+    if (staffingFilter.schoolCodes?.size) {
+      results = results
+        .params(staffingFilter)
+        .filter((d, $) => d.includes([...$.schoolCodes], d.school_code));
+    }
+
+    if (staffingFilter.dutyCodes?.size) {
+      results = results
+        .params(staffingFilter)
+        .filter((d, $) => d.includes([...$.dutyCodes], d.duty_root_code));
+    }
+
+    return results;
   }
 
   balances() {
@@ -562,42 +570,6 @@ export default class DistrictData {
       results = results
         .params(expendituresFilter)
         .filter((d, $) => d.includes([...$.ncesCodes], d.nces_code));
-    }
-
-    return results;
-  }
-
-  filteredExpendituresOld(filterSelection: DistrictDataFilters) {
-    let results = this.gf_expenditure_df;
-
-    if (filterSelection.selectedObjectCodes !== undefined) {
-      results = results
-        .params(filterSelection)
-        .filter((d, $) => d.includes($.selectedObjectCodes, d.object_code));
-    }
-
-    if (filterSelection.selectedActivityCodes !== undefined) {
-      results = results
-        .params(filterSelection)
-        .filter((d, $) => d.includes($.selectedActivityCodes, d.activity_code));
-    }
-
-    if (filterSelection.selectedProgramCodes !== undefined) {
-      results = results
-        .params(filterSelection)
-        .filter((d, $) => d.includes($.selectedProgramCodes, d.program_code));
-    }
-
-    if (filterSelection.selectedSchoolCodes !== undefined) {
-      results = results
-        .params(filterSelection)
-        .filter((d, $) => d.includes($.selectedSchoolCodes, d.school_code));
-    }
-
-    if (filterSelection.selectedNcesCodes !== undefined) {
-      results = results
-        .params(filterSelection)
-        .filter((d, $) => d.includes($.selectedNcesCodes, d.nces_code));
     }
 
     return results;

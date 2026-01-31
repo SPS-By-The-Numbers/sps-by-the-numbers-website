@@ -27,24 +27,6 @@ export function sortBySchoolName(a, b) {
   return 0;
 }
 
-function makeToShortCodeInternal(ccddd: number) {
-  const schools = ALL_SCHOOLS[ccddd];
-  const mapping : Record<number, number> = {};
-  for (const s of schools.sort(sortBySchoolName)) {
-    mapping[s.school_code] = s.short_code;
-  }
-  return x => mapping[x];
-}
-
-function makeFromShortCodeInternal(ccddd: number) {
-  const schools = ALL_SCHOOLS[ccddd];
-  const mapping : Record<number, number> = {};
-  for (const s of schools.sort(sortBySchoolName)) {
-    mapping[s.short_code] = s.school_code;
-  }
-  return x => mapping[x];
-}
-
 function makeSchoolFilterInternal(ccddd: number) {
   const schools = ALL_SCHOOLS[ccddd];
   const children = new Array<FilterDomainTree>;
@@ -59,5 +41,3 @@ function makeSchoolFilterInternal(ccddd: number) {
 }
 
 export const makeSchoolFilter = memoize(makeSchoolFilterInternal);
-export const makeToShortCode = memoize(makeToShortCodeInternal);
-export const makeFromShortCode = memoize(makeFromShortCodeInternal);

@@ -1,8 +1,6 @@
 import * as aq from "arquero";
 import { op } from "arquero";
 
-import { DUTY_ROOTS, makeDutyRootItems } from "app/finance/_domain/DutyRoots";
-
 import type { ColumnTable } from "arquero";
 import type { SortOrder } from "utilities/ChartOptions";
 import type DistrictData from "utilities/DistrictData";
