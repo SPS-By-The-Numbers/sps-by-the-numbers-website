@@ -1,9 +1,9 @@
 "use client";
 
-import { DEFAULT_METRIC_SETTINGS } from "app/finance/_settings/metric_settings";
+import { DEFAULT_DATASET_SETTINGS } from "app/finance/_settings/dataset_settings";
 import * as aq from "arquero";
 import { op } from "arquero";
-import { serializeSettings } from "app/finance/_settings/base_settings";
+import { serializeDatasetSettings } from "app/finance/_settings/common_settings";
 import { dfToJSONConnectorOptions } from "utilities/highcharts/utils";
 import {
   extractRawExpenditures,
@@ -20,10 +20,10 @@ import {
   SchoolFilterContents,
 } from "app/finance/_widgets/ExpenditureFilterContents";
 import HcDashboard from "components/HcDashboard";
-import MetricSettingsContents from "app/finance/_widgets/MetricSettingsContents";
+import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
-import { serializeDetailedActualsSettings } from "app/finance/detailedactuals/DetailedActualsPage";
+import { SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS } from "app/finance/detailedactuals/DetailedActualsPage";
 
 import type { ColumnTable } from "arquero";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
@@ -140,14 +140,14 @@ export default function DetailedActualsDashboard({
   return (
     <SettingsLayout
       settingsSerializer={{
-        serialize: x => serializeSettings(x, serializeDetailedActualsSettings),
+        serialize: newAllSettings => serializeDatasetSettings(newAllSettings, SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS),
         serializeShared: x => "",
       }}
       allSettings={allSettings}
       sharedSettings={sharedSettings}
       sharedSettingsComponents={[]}
       settingsContentsComponents={[
-        MetricSettingsContents,
+        DatasetSettingsContents,
         ObjectFilterContents,
         ActivityFilterContents,
         ProgramFilterContents,

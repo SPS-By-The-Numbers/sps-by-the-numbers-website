@@ -17,7 +17,7 @@ import {
 
 import type { ColumnTable } from "arquero";
 import type { FacetInfo } from "utilities/ChartableMetrics";
-import type { MetricSettings } from "app/finance/_settings/metric_settings";
+import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 
 type Params = {
   idPrefix: string;
@@ -26,7 +26,7 @@ type Params = {
   xLabel: string;
   yColumnRoot: string;
   facetOrder: Array<FacetInfo>;
-  metricList: Array<MetricSettings>;
+  metricList: Array<DatasetSettings>;
 };
 
 function makeCellId(idPrefix, metricOrdinal, facetInfo) {
@@ -104,7 +104,7 @@ export function makeFacetComponents(
 export function makeComparisonGui(
   idPrefix,
   facetOrder: Array<FacetInfo>,
-  metricList: Array<MetricSettings>,
+  metricList: Array<DatasetSettings>,
 ) {
   const r = {
     layouts: [

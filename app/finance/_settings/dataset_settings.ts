@@ -31,14 +31,14 @@ export function deserializeFilterGrouping(s: string): FilterGrouping {
   return "spsbtn" as const;
 }
 
-export type MetricSettings = BaseSettings & {
+export type DatasetSettings = BaseSettings & {
   ccddd: number;
   filterGrouping: FilterGrouping;
   currencyNormalization: CurrencyNormalization;
   staffingNormalization: StaffingNormalization;
 }
 
-export const DEFAULT_METRIC_SETTINGS: Array<MetricSettings> = [
+export const DEFAULT_DATASET_SETTINGS: Array<DatasetSettings> = [
   {
     id: 0,
     ccddd: 17001,
@@ -48,7 +48,7 @@ export const DEFAULT_METRIC_SETTINGS: Array<MetricSettings> = [
   },
 ].map((e) => ({ ...e, name: ALL_DISTRICTS[e.ccddd].district }));
 
-export function serializeMetricSettings(s: MetricSettings) {
+export function serializeDatasetSettings(s: DatasetSettings) {
   const settingsDict = {
     c: s.ccddd.toString(),
     g: serializeFilterGrouping(s.filterGrouping),
@@ -63,7 +63,7 @@ export function serializeMetricSettings(s: MetricSettings) {
   return serializeSettingsDict(settingsDict);
 }
 
-export function deserializeMetricSettings(
+export function deserializeDatasetSettings(
   defaultSettings,
   serialized: string,
 ) {

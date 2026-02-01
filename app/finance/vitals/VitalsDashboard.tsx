@@ -5,10 +5,10 @@ import { DUMMY_BASE_SETTINGS, serializeSettings } from "app/finance/_settings/ba
 import { makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGenerators";
 import { makeChartableVitals } from "utilities/ChartableVitals";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
-import { serializeOneMetricSettings } from "app/finance/_settings/metric_settings";
+import { serializeOneDatasetSettings } from "app/finance/_settings/dataset_settings";
 import { useSearchParams } from "next/navigation";
 import HcDashboard from "components/HcDashboard";
-import MetricSettingsContents from "app/finance/_widgets/MetricSettingsContents";
+import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
 
@@ -17,9 +17,9 @@ import type {
   ValueFormat,
 } from "utilities/highcharts/ChartConfigGenerators";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
-import type { MetricSettings } from "app/finance/_settings/metric_settings";
+import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 
-export interface VitalsSettings extends MetricSettings {}
+export interface VitalsSettings extends DatasetSettings {}
 
 const CONNECTOR_ID = "vitals-connector";
 
@@ -173,12 +173,12 @@ export default function VitalsDashboard({
   return (
     <SettingsLayout
       settingsSerializer={{
-        serialize: x => serializeSettings(x, serializeOneMetricSettings),
+        serialize: x => serializeSettings(x, serializeOneDatasetSettings),
         serializeShared: x => "",
       }}
       allSettings={allSettings}
       sharedSettings={DUMMY_BASE_SETTINGS}
-      settingsContentsComponents={[MetricSettingsContents]}
+      settingsContentsComponents={[DatasetSettingsContents]}
       sharedSettingsComponents={[]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">

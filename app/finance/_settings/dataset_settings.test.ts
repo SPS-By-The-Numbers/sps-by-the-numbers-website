@@ -1,10 +1,10 @@
 import { expect, jest, test } from "@jest/globals";
 
 import {
-  DEFAULT_METRIC_SETTINGS,
-  serializeMetricSettings,
-  deserializeMetricSettings,
-} from "app/finance/_settings/metric_settings";
+  DEFAULT_DATASET_SETTINGS,
+  serializeDatasetSettings,
+  deserializeDatasetSettings,
+} from "app/finance/_settings/dataset_settings";
 
 describe("metric_settings", () => {
   it("smoke test: values roundtrip.", () => {
@@ -16,8 +16,8 @@ describe("metric_settings", () => {
       staffingNormalization: 'pctfte' as const,
       name: "incorrect",
     };
-    const serialized = serializeMetricSettings(setting);
-    const restored = deserializeMetricSettings(DEFAULT_METRIC_SETTINGS[0], serialized);
+    const serialized = serializeDatasetSettings(setting);
+    const restored = deserializeDatasetSettings(DEFAULT_DATASET_SETTINGS[0], serialized);
     expect(restored.ccddd).toEqual(setting.ccddd);
     expect(restored.filterGrouping).toEqual(setting.filterGrouping);
     expect(restored.currencyNormalization).toEqual(setting.currencyNormalization);

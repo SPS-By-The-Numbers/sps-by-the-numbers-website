@@ -1,6 +1,6 @@
 "use client";
 
-import { DEFAULT_METRIC_SETTINGS, serializeMetricSettings, deserializeMetricSettings, } from "app/finance/_settings/metric_settings";
+import { DEFAULT_DATASET_SETTINGS, serializeDatasetSettings, deserializeDatasetSettings, } from "app/finance/_settings/dataset_settings";
 import { DEFAULT_PAO_FILTERS, serializePAOFilters, deserializePAOFilters } from "app/finance/_settings/pao_settings";
 import { deserializeExpenditureSharedSettings } from "./ExpendituresSharedSettings";
 import { deserializeSettings } from "app/finance/_settings/base_settings";
@@ -8,14 +8,14 @@ import { useSearchParams } from "next/navigation";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
 import ExpendituresDashboard from "./ExpendituresDashboard";
 
-import type { MetricSettings } from "app/finance/_settings/metric_settings";
+import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 import type { PAOFilters } from "utilities/DistrictData";
 
-export type ExpendituresSettings = MetricSettings & PAOFilters & {
+export type ExpendituresSettings = DatasetSettings & PAOFilters & {
   overridePrimaryFilter: boolean;
 };
 
-export const DEFAULT_EXPENDITURES_SETTINGS = DEFAULT_METRIC_SETTINGS.map(
+export const DEFAULT_EXPENDITURES_SETTINGS = DEFAULT_DATASET_SETTINGS.map(
   (v) => ({
     ...v,
     overridePrimaryFilter: false,
@@ -24,7 +24,7 @@ export const DEFAULT_EXPENDITURES_SETTINGS = DEFAULT_METRIC_SETTINGS.map(
 );
 
 export function serializeExpendituresSettings(settings: ExpendituresSettings): string {
-  const fragments =  [serializeMetricSettings(settings)];
+  const fragments =  [serializeDatasetSettings(settings)];
 
   // Only output filters if they are overridden or this is the primary setting.
   if (settings.overridePrimaryFilter || settings.id === 0) {
@@ -49,7 +49,7 @@ export function deserializeExpendituresSettings(
   defaultSettings,
   serialized: string,
 ) : ExpendituresSettings {
-  const settings = deserializeMetricSettings(defaultSettings, serialized);
+  const settings = deserializeDatasetSettings(defaultSettings, serialized);
   const paoSettings = deserializePAOFilters({}, serialized);
   const overridePrimaryFilter = Object.keys(paoSettings).length !== 0;
 

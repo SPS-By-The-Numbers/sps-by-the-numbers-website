@@ -10,7 +10,7 @@ import Switch from "@mui/material/Switch";
 
 import type { PFilters, AFilters, OFilters, SchoolFilters, DutyRootFilters } from "utilities/DistrictData";
 import type { BaseSettings } from "app/finance/_settings/base_settings";
-import type { MetricSettings } from "app/finance/_settings/metric_settings";
+import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 
 interface Props<T extends BaseSettings, U extends BaseSettings = BaseSettings> {
   sharedSettings?: U,
@@ -130,7 +130,7 @@ export function ProgramFilterContents({
 export function SchoolFilterContents({
   settings,
   setSettings,
-}: Props<MetricSettings & SchoolFilters>) {
+}: Props<DatasetSettings & SchoolFilters>) {
   const schoolFilter = makeSchoolFilter(settings.ccddd);
 
   return (

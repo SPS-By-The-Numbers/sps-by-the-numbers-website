@@ -39,7 +39,7 @@ import {
 import { makeMaybeContents } from "app/finance/_widgets/SettingsContents";
 import { serializeSettings } from "app/finance/_settings/base_settings";
 import HcDashboard from "components/HcDashboard";
-import MetricSettingsContents from "app/finance/_widgets/MetricSettingsContents";
+import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
 
@@ -393,7 +393,7 @@ export default function ExpendituresDashboard({
       sharedSettingsComponents={[ExpendituresSharedSettingsContents]}
       allSettings={allSettings}
       settingsContentsComponents={[
-        MetricSettingsContents,
+        DatasetSettingsContents,
 
         // TODO: We need to have the override copy over the current state of primary.
         //  Maybe intercept at setAllSettings? Seems like wrong separation of concerns.

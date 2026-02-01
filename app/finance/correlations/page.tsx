@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
-import { DEFAULT_METRIC_SETTINGS } from "app/finance/_settings/metric_settings";
+import { DEFAULT_DATASET_SETTINGS } from "app/finance/_settings/dataset_settings";
 import { DUMMY_BASE_SETTINGS } from "app/finance/_settings/base_settings";
 import CorrelationsDashboard from "./CorrelationsDashboard";
 import { getParamAsStringArray } from "utilities/settings";
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 
 export default async function Page(params: Params) {
   const searchParams = await params.searchParams;
-  const allSettings = DEFAULT_METRIC_SETTINGS; //deserializeCorrelationFilterSettings(getSerialized(searchParams.c)[0]);
+  const allSettings = DEFAULT_DATASET_SETTINGS; //deserializeCorrelationFilterSettings(getSerialized(searchParams.c)[0]);
 
   return (
     <Suspense>

@@ -1,5 +1,6 @@
 import { makeSchoolFilter } from "app/finance/_filteritems/school";
 import { deserializeSettings } from "app/finance/_settings/base_settings";
+import memoize from "lodash/memoize";
 
 import type { BaseSettings } from "app/finance/_settings/base_settings";
 
@@ -63,6 +64,16 @@ export function makeDutyRootSerializeConfig(context?) : FilterSerializationConfi
     },
   };
 };
+
+function makeSchoolFilterConfigInternal(settings) : FilterSerializationConfig {
+  return {
+    "schoolCodes": {
+      urlVar: "s",
+      filter: makeSchoolFilter(settings.ccddd)
+    }
+  };
+}
+export const makeSchoolFilterConfig = memoize(makeSchoolFilterConfigInternal);
 
 export function serializeFilters(serializationConfig: FilterSerializationConfig,
                                  settings) : string {

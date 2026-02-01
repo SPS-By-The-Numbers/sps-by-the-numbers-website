@@ -8,16 +8,16 @@ import { useSearchParams } from "next/navigation";
 import HcDashboard from "components/HcDashboard";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
-import MetricSettingsContents from "app/finance/_widgets/MetricSettingsContents";
+import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
 
 import type { BaseSettings } from "app/finance/_settings/base_settings";
 import type { CorrelationChartOptions } from "utilities/highcharts/ChartConfigGenerators";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
-import type { MetricSettings } from "app/finance/_settings/metric_settings";
+import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 
 const CONNECTOR_ID = "cashflow-connector";
 
-export interface CorrelationsSettings extends MetricSettings {
+export interface CorrelationsSettings extends DatasetSettings {
   // TODO: Change x-axis.
 }
 
@@ -222,7 +222,7 @@ export default function CorrelationsDashboard({
       }}
       allSettings={allSettings}
       sharedSettings={sharedSettings}
-      settingsContentsComponents={[MetricSettingsContents]}
+      settingsContentsComponents={[DatasetSettingsContents]}
       sharedSettingsComponents={[]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">

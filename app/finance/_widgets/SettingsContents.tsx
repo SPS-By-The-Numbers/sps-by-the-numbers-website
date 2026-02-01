@@ -1,3 +1,5 @@
+"use client";
+
 // SettingsContents render one set of values into the left panel
 // defined by a SettingsLayout.  It is the glue between a Setting
 // data store and the UI.

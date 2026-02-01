@@ -5,7 +5,7 @@ import DistrictData from "utilities/DistrictData";
 import Loading from "components/Loading";
 
 import type { BaseSettings } from "app/finance/_settings/base_settings";
-import type { MetricSettings } from "app/finance/_settings/metric_settings";
+import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 import type { ReactNode, ComponentType } from "react";
 
 export type Ccddd = number;
@@ -35,7 +35,7 @@ export function useDistrictData() {
 }
 
 export interface DistrictDataContentProps<
-  T extends MetricSettings,
+  T extends DatasetSettings,
   U extends BaseSettings = BaseSettings,
 > {
   districtDataMap: DistrictDataMap;
@@ -44,7 +44,7 @@ export interface DistrictDataContentProps<
 }
 
 interface EnsureDistrictDataProps<
-  T extends MetricSettings,
+  T extends DatasetSettings,
   U extends BaseSettings,
 > {
   allSettings: Array<T>;
@@ -54,7 +54,7 @@ interface EnsureDistrictDataProps<
 
 // Utility component that pairs with DistrictDataProvider to ensure all districts are loaded.
 export function EnsureDistrictData<
-  T extends MetricSettings,
+  T extends DatasetSettings,
   U extends BaseSettings,
 >({
   allSettings,

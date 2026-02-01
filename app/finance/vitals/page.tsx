@@ -1,4 +1,4 @@
-import { DEFAULT_METRIC_SETTINGS, deserializeOneMetricSettings } from "app/finance/_settings/metric_settings";
+import { DEFAULT_DATASET_SETTINGS, deserializeOneDatasetSettings } from "app/finance/_settings/dataset_settings";
 import { DUMMY_BASE_SETTINGS, deserializeSettings } from "app/finance/_settings/base_settings";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
 import { Metadata } from "next";
@@ -20,8 +20,8 @@ export default async function Page(params: Params) {
   const searchParams = await params.searchParams;
   const allSettings = deserializeSettings(
     getParamAsStringArray(searchParams.d),
-    DEFAULT_METRIC_SETTINGS,
-    deserializeOneMetricSettings
+    DEFAULT_DATASET_SETTINGS,
+    deserializeOneDatasetSettings
   );
 
   return (

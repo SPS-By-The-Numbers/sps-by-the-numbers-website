@@ -40,14 +40,4 @@ function makeSchoolFilterInternal(ccddd: number) : Filter {
   return new Filter(schoolFilterTree, ITEM_PREFIX);
 }
 
-function makeSchoolFilterConfigInternal(ccddd: number) : FilterSerializationConfig {
-  return {
-    "schoolCodes": {
-      urlVar: "s",
-      filter: makeSchoolFilter(ccddd)
-    }
-  };
-}
-
-export const makeSchoolFilterConfig = memoize(makeSchoolFilterConfigInternal);
 export const makeSchoolFilter = memoize(makeSchoolFilterInternal);

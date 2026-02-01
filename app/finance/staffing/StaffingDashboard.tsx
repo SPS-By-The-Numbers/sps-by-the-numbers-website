@@ -21,7 +21,7 @@ import { SERIALIZE_STAFFING_SETTINGS_GENERATORS } from "./StaffingPage";
 import { serializeSettings } from "app/finance/_settings/base_settings";
 import * as aq from "arquero";
 import HcDashboard from "components/HcDashboard";
-import MetricSettingsContents from "app/finance/_widgets/MetricSettingsContents";
+import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
 
@@ -153,7 +153,7 @@ export default function StaffingDashboard({
       sharedSettings={sharedSettings}
       sharedSettingsComponents={[]}
       settingsContentsComponents={[
-        MetricSettingsContents,
+        DatasetSettingsContents,
         ActivityFilterContents,
         ProgramFilterContents,
         SchoolFilterContents,

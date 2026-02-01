@@ -3,14 +3,14 @@ import DistrictSelector from "app/finance/_widgets/DistrictSelector";
 import FilterGroupingSelector from "app/finance/_widgets/FilterGroupingSelector";
 import StaffingNormalizationSelector from "app/finance/_widgets/StaffingNormalizationSelector";
 
-import type { MetricSettings } from "app/finance/_settings/metric_settings";
+import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 
-export default function MetricSettingsContents({
+export default function DatasetSettingsContents({
   settings,
   setSettings,
 }: {
-  settings: MetricSettings;
-  setSettings: (x: MetricSettings) => void;
+  settings: DatasetSettings;
+  setSettings: (x: DatasetSettings) => void;
 }) {
   return (
     <>
