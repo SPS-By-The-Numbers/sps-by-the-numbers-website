@@ -188,7 +188,7 @@ function componentsGenerator(correlationsSettings: CorrelationsSettings) {
 export default function CorrelationsDashboard({
   districtDataMap,
   allSettings,
-  sharedSettings,
+  contextSettings,
 }: DistrictDataContentProps<CorrelationsSettings, BaseSettings>) {
   const searchParams = useSearchParams();
 
@@ -221,9 +221,9 @@ export default function CorrelationsDashboard({
         serializeShared: x => "",
       }}
       allSettings={allSettings}
-      sharedSettings={sharedSettings}
+      contextSettings={contextSettings}
       settingsContentsComponents={[DatasetSettingsContents]}
-      sharedSettingsComponents={[]}
+      contextSettingsComponents={[]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">
         Cashflow Dashboard

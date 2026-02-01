@@ -1,10 +1,3 @@
-import ALL_DISTRICTS from "app/finance/_domain/ccddd";
-import {
-  serializeSettingsDict,
-  deserializeSettingsDict,
-} from "utilities/settings";
-import * as Normalizations from "utilities/normalizations";
-
 import type { BaseSettings } from "app/finance/_settings/base_settings";
 import type {
   CurrencyNormalization,
@@ -46,52 +39,4 @@ export const DEFAULT_DATASET_SETTINGS: Array<DatasetSettings> = [
     currencyNormalization: "amount" as const,
     staffingNormalization: "fte" as const,
   },
-].map((e) => ({ ...e, name: ALL_DISTRICTS[e.ccddd].district }));
-
-export function serializeDatasetSettings(s: DatasetSettings) {
-  const settingsDict = {
-    c: s.ccddd.toString(),
-    g: serializeFilterGrouping(s.filterGrouping),
-    cn: Normalizations.serializeCurrencyNormalization(
-      s.currencyNormalization,
-    ),
-    sn: Normalizations.serializeStaffingNormalization(
-      s.staffingNormalization,
-    ),
-  };
-
-  return serializeSettingsDict(settingsDict);
-}
-
-export function deserializeDatasetSettings(
-  defaultSettings,
-  serialized: string,
-) {
-  const settingsDict = deserializeSettingsDict(serialized);
-  const settings = Object.assign({}, defaultSettings);
-  for (const [key, value] of Object.entries(settingsDict)) {
-    switch (key) {
-      case "c":
-        settings.ccddd = parseInt(value) || settings.ccddd;
-        break;
-
-      case "g":
-        settings.filterGrouping = deserializeFilterGrouping(value);
-        break;
-
-      case "cn":
-        settings.currencyNormalization =
-          Normalizations.deserializeCurrencyNormalization(value);
-        break;
-
-      case "sn":
-        settings.staffingNormalization =
-          Normalizations.deserializeStaffingNormalization(value);
-        break;
-    }
-  }
-
-  settings.name = ALL_DISTRICTS[settings.ccddd].district;
-
-  return settings;
-}
+];

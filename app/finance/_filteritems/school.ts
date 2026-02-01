@@ -3,7 +3,7 @@ import ALL_SCHOOLS from 'app/finance/_domain/schools';
 import { Filter, makeInternalNode, makeLeafNodeWithSerialization } from "utilities/filter";
 import memoize from "lodash/memoize";
 
-import type { FilterDomainTree, FilterSerializationConfig } from "utilities/filter";
+import type { FilterDomainTree } from "utilities/filter";
 
 const ITEM_PREFIX = "school";
 

@@ -113,7 +113,7 @@ function compileData(districtDataMap, allSettings, facet) {
 export default function StaffingDashboard({
   districtDataMap,
   allSettings,
-  sharedSettings,
+  contextSettings,
 }: DistrictDataContentProps<StaffingSettings>) {
   const [data, facetOrder] = compileData(
     districtDataMap,
@@ -150,8 +150,8 @@ export default function StaffingDashboard({
         serializeShared: x => "",
       }}
       allSettings={allSettings}
-      sharedSettings={sharedSettings}
-      sharedSettingsComponents={[]}
+      contextSettings={contextSettings}
+      contextSettingsComponents={[]}
       settingsContentsComponents={[
         DatasetSettingsContents,
         ActivityFilterContents,

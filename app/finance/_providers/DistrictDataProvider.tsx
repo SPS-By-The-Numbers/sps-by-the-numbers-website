@@ -1,10 +1,13 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useMemo } from "react";
+import { deserializeDatasetSettings } from "app/finance/_settings/common_settings";
+import { useSearchParams } from 'next/navigation';
 import DistrictData from "utilities/DistrictData";
 import Loading from "components/Loading";
 
 import type { BaseSettings } from "app/finance/_settings/base_settings";
+import type { SettingsConfigGenerators } from "app/finance/_settings/common_settings";
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 import type { ReactNode, ComponentType } from "react";
 
@@ -18,6 +21,28 @@ type DistrictDataContextType = {
 
 type DistrictDataProviderParams = {
   children: ReactNode;
+};
+
+export type DistrictDataContentProps<
+  SettingsType extends DatasetSettings,
+  ContextSettingsType extends BaseSettings = BaseSettings,
+> = {
+  districtDataMap: DistrictDataMap;
+  allSettings: Array<SettingsType>;
+  contextSettings: ContextSettingsType;
+};
+
+type EnsureDistrictDataProps<
+  SettingsType extends DatasetSettings,
+  ContextSettingsType extends BaseSettings,
+>  = {
+  defaultAllSettings: Array<SettingsType>;
+  allSettingsConfigGenerators: SettingsConfigGenerators;
+
+  defaultContextSettings: ContextSettingsType;
+  contextSettingsConfigGenerators?: SettingsConfigGenerators;
+
+  ContentComponent: ComponentType<DistrictDataContentProps<SettingsType, ContextSettingsType>>;
 };
 
 // Pattern from https://stackoverflow.com/a/74174425
@@ -34,36 +59,31 @@ export function useDistrictData() {
   return context;
 }
 
-export interface DistrictDataContentProps<
-  T extends DatasetSettings,
-  U extends BaseSettings = BaseSettings,
-> {
-  districtDataMap: DistrictDataMap;
-  allSettings: Array<T>;
-  sharedSettings: U;
-}
-
-interface EnsureDistrictDataProps<
-  T extends DatasetSettings,
-  U extends BaseSettings,
-> {
-  allSettings: Array<T>;
-  sharedSettings: U;
-  ContentComponent: ComponentType<DistrictDataContentProps<T, U>>;
-}
-
 // Utility component that pairs with DistrictDataProvider to ensure all districts are loaded.
 export function EnsureDistrictData<
-  T extends DatasetSettings,
-  U extends BaseSettings,
+  SettingsType extends DatasetSettings,
+  ContextSettingsType extends BaseSettings,
 >({
-  allSettings,
-  sharedSettings,
+  defaultAllSettings,
+  allSettingsConfigGenerators,
+
+  defaultContextSettings,
+  contextSettingsConfigGenerators,
+
   ContentComponent,
-}: EnsureDistrictDataProps<T, U>) {
+}: EnsureDistrictDataProps<SettingsType, ContextSettingsType>) {
   // Make one up for places that don't use it.
   const { districtDataMap, loadCcddd } = useDistrictData();
+  const searchParams = useSearchParams();
 
+  const allSettings = deserializeDatasetSettings(
+    searchParams.getAll('d'),
+    defaultAllSettings,
+    allSettingsConfigGenerators
+  );
+
+  // The memoization happens in loadCcddd. The rest of the useEffect dependency
+  // is largely nonsensical.
   useEffect(() => {
     for (const settings of allSettings) {
       loadCcddd(settings.ccddd);
@@ -80,14 +100,12 @@ export function EnsureDistrictData<
     <ContentComponent
       districtDataMap={districtDataMap}
       allSettings={allSettings}
-      sharedSettings={sharedSettings}
+      contextSettings={defaultContextSettings}
     />
   );
 }
 
-export default function DistrictDataProvider({
-  children,
-}: DistrictDataProviderParams) {
+export default function DistrictDataProvider({ children }: DistrictDataProviderParams) {
   // Use previouslyLoadedCcddds to keep track of requests to prevent double-loading the dataset.
   const [previouslyLoadedCcddds, setPreviouslyLoadedCcddds] = useState<
     Set<Ccddd>

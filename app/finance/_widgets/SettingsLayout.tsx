@@ -40,12 +40,12 @@ const drawerWidthPx = 240;
 
 interface SettingsLayoutProps<
   SettingsType extends BaseSettings,
-  SharedSettingsType extends BaseSettings,
+  ContextSettingsType extends BaseSettings,
 > {
-  settingsSerializer: SettingsSerializer<SettingsType, SharedSettingsType>;
+  settingsSerializer: SettingsSerializer<SettingsType, ContextSettingsType>;
 
-  sharedSettings: SharedSettingsType;
-  sharedSettingsComponents: Array<SettingsRenderComponentType<any, any>>;
+  contextSettings: ContextSettingsType;
+  contextSettingsComponents: Array<SettingsRenderComponentType<any, any>>;
 
   allSettings: Array<SettingsType>;
   settingsContentsComponents: Array<SettingsRenderComponentType<any, any>>;
@@ -67,7 +67,7 @@ function MaybeCloseButton({ settings, removeSelf }) {
 }
 
 function DatasetAccordion({
-  sharedSettings,
+  contextSettings,
   settings,
   setSettings,
   settingsContentsComponents,
@@ -94,7 +94,7 @@ function DatasetAccordion({
       </Stack>
       <AccordionDetails>
         <SettingsContents
-          sharedSettings={sharedSettings}
+          contextSettings={contextSettings}
           settings={settings}
           setSettings={setSettings}
           components={settingsContentsComponents}
@@ -105,25 +105,25 @@ function DatasetAccordion({
 }
 
 function DrawerContents({
-  sharedSettings,
-  setSharedSettings,
-  sharedSettingsComponents,
+  contextSettings,
+  setContextSettings,
+  contextSettingsComponents,
   allSettings,
   updateAllSettings,
   settingsContentsComponents,
   removeSetting,
   sx,
 }) {
-  let sharedSettingsPanel: ReactNode;
-  if (sharedSettingsComponents.length > 0) {
-    sharedSettingsPanel = (
+  let contextSettingsPanel: ReactNode;
+  if (contextSettingsComponents.length > 0) {
+    contextSettingsPanel = (
       <DatasetAccordion
-        sharedSettings={sharedSettings}
-        settings={sharedSettings}
+        contextSettings={contextSettings}
+        settings={contextSettings}
         titlePrefix=""
         removeSelf={undefined}
-        setSettings={setSharedSettings}
-        settingsContentsComponents={sharedSettingsComponents}
+        setSettings={setContextSettings}
+        settingsContentsComponents={contextSettingsComponents}
       />
     );
   }
@@ -132,7 +132,7 @@ function DrawerContents({
     <DatasetAccordion
       key={settings.id}
       titlePrefix={useEmoji ? toEmojiPrefix(index) : ""}
-      sharedSettings={sharedSettings}
+      contextSettings={contextSettings}
       settings={settings}
       removeSelf={() => removeSetting(index)}
       setSettings={(v) => updateAllSettings(index, v)}
@@ -141,7 +141,7 @@ function DrawerContents({
   ));
   return (
     <Box sx={sx}>
-      {sharedSettingsPanel}
+      {contextSettingsPanel}
       {panels}
     </Box>
   );
@@ -149,12 +149,12 @@ function DrawerContents({
 
 export default function SettingsLayout<
   SettingsType extends BaseSettings,
-  SharedSettingsType extends BaseSettings,
->(props: SettingsLayoutProps<SettingsType, SharedSettingsType>) {
+  ContextSettingsType extends BaseSettings,
+>(props: SettingsLayoutProps<SettingsType, ContextSettingsType>) {
   const {
     settingsSerializer,
-    sharedSettings,
-    sharedSettingsComponents,
+    contextSettings,
+    contextSettingsComponents,
     allSettings,
     settingsContentsComponents,
     children,
@@ -165,12 +165,14 @@ export default function SettingsLayout<
   const [isClosing, setIsClosing] = React.useState(false);
   const [nextSettingId, setNextSettingId] = React.useState(1);
 
-  const navigateToNewSettings = (newSharedSettings : SharedSettingsType, newAllSettings : Array<SettingsType>) => {
+  const navigateToNewSettings = (newContextSettings : ContextSettingsType, newAllSettings : Array<SettingsType>) => {
     const queries = new Array<string>();
     for (const settingsQuery of settingsSerializer.serialize(newAllSettings)) {
-      queries.push(`d=${settingsQuery}`);
+      if (settingsQuery) {
+        queries.push(`d=${settingsQuery}`);
+      }
     }
-    const sharedQuery = settingsSerializer.serializeShared(newSharedSettings);
+    const sharedQuery = settingsSerializer.serializeShared(newContextSettings);
     if (sharedQuery) {
       queries.push(`s=${sharedQuery}`);
     }
@@ -183,7 +185,7 @@ export default function SettingsLayout<
   const updateAllSettings = (i, v) => {
     const newAllSettings = [...allSettings];
     newAllSettings[i] = v;
-    navigateToNewSettings(sharedSettings, newAllSettings);
+    navigateToNewSettings(contextSettings, newAllSettings);
   };
 
   const handleDrawerClose = () => {
@@ -205,7 +207,7 @@ export default function SettingsLayout<
     // Clone the array to avoid messing up state.
     const newAllSettings = [...allSettings];
     newAllSettings.splice(index, 1);
-    navigateToNewSettings(sharedSettings, newAllSettings);
+    navigateToNewSettings(contextSettings, newAllSettings);
   };
 
   const addComparison = () => {
@@ -219,11 +221,11 @@ export default function SettingsLayout<
     <Stack sx={{ height: "100%" }}>
       <Toolbar />
       <DrawerContents
-        sharedSettings={sharedSettings}
-        setSharedSettings={(newSharedSettings) =>
-          navigateToNewSettings(newSharedSettings, allSettings)
+        contextSettings={contextSettings}
+        setContextSettings={(newContextSettings) =>
+          navigateToNewSettings(newContextSettings, allSettings)
         }
-        sharedSettingsComponents={sharedSettingsComponents}
+        contextSettingsComponents={contextSettingsComponents}
         allSettings={allSettings}
         updateAllSettings={updateAllSettings}
         removeSetting={removeSetting}

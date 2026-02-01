@@ -2,6 +2,8 @@
 
 import * as aq from "arquero";
 import { op } from "arquero";
+import { SERIALIZE_EXPENDITURES_SETTINGS_GENERATORS } from "./ExpendituresPage";
+import { serializeDatasetSettings } from "app/finance/_settings/common_settings";
 import { dfToJSONConnectorOptions } from "utilities/highcharts/utils";
 import {
   extractRawExpenditures,
@@ -30,9 +32,9 @@ import {
 import { useMemo } from "react";
 import ObjectFilter from "app/finance/_filteritems/object";
 import ProgramFilter from "app/finance/_filteritems/program";
-import ExpendituresSharedSettingsContents, {
-  serializeExpenditureSharedSettings,
-} from "app/finance/expenditures/ExpendituresSharedSettings";
+import ExpendituresContextSettingsContents, {
+  serializeExpenditureContextSettings,
+} from "app/finance/expenditures/ExpendituresContextSettings";
 import {
   serializeExpendituresSettings,
 } from "app/finance/expenditures/ExpendituresPage";
@@ -44,7 +46,7 @@ import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
 
 import type { ColumnTable } from "arquero";
-import type { ExpendituresSharedSettings } from "./ExpendituresSharedSettings";
+import type { ExpendituresContextSettings } from "./ExpendituresContextSettings";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
 import type { ExpendituresSettings } from "./ExpendituresPage";
 
@@ -52,7 +54,7 @@ const CONNECTOR_ID = "expenditures-connector";
 
 function componentsGenerator(
   facetOrder,
-  sharedSettings: ExpendituresSharedSettings,
+  contextSettings: ExpendituresContextSettings,
   expenditureSettings: ExpendituresSettings,
   bounds,
 ) {
@@ -308,12 +310,12 @@ function augmentContextComponents(gui, components, data) {
 }
 
 function makeHighchartConfig(
-  sharedSettings,
+  contextSettings,
   expandedAllSettings,
   fullFacetOrder,
   data,
 ) {
-  const facetLimit = parseInt(sharedSettings.facetLimit);
+  const facetLimit = parseInt(contextSettings.facetLimit);
   // Trim the list for rendering speed.
   const facetOrder = fullFacetOrder.slice(
     0,
@@ -321,14 +323,14 @@ function makeHighchartConfig(
   );
 
   const facetYBounds =
-    sharedSettings.yScale === "fixed"
+    contextSettings.yScale === "fixed"
       ? makeFacetYBounds(facetOrder, expandedAllSettings, data)
       : {};
 
   const result = makeDatasetFacetedDashboard(
     expandedAllSettings,
     (s: ExpendituresSettings) =>
-      componentsGenerator(facetOrder, sharedSettings, s, facetYBounds),
+      componentsGenerator(facetOrder, contextSettings, s, facetYBounds),
   );
 
   if (result === undefined) {
@@ -358,11 +360,11 @@ function makeHighchartConfig(
 // Charts expenditures for
 export default function ExpendituresDashboard({
   districtDataMap,
-  sharedSettings,
+  contextSettings,
   allSettings,
 }: DistrictDataContentProps<
   ExpendituresSettings,
-  ExpendituresSharedSettings
+  ExpendituresContextSettings
 >) {
   const config = useMemo(() => {
     // Expand out the filter per sub-setting.
@@ -371,26 +373,26 @@ export default function ExpendituresDashboard({
     const { data, fullFacetOrder } = compileData(
       districtDataMap,
       expandedAllSettings,
-      sharedSettings.facet,
-      sharedSettings.sortOrder,
+      contextSettings.facet,
+      contextSettings.sortOrder,
     );
 
     return makeHighchartConfig(
-      sharedSettings,
+      contextSettings,
       expandedAllSettings,
       fullFacetOrder,
       data,
     );
-  }, [sharedSettings, districtDataMap, allSettings]);
+  }, [contextSettings, districtDataMap, allSettings]);
 
   return (
     <SettingsLayout
       settingsSerializer={{
-        serialize: x => serializeSettings(x, serializeExpendituresSettings),
-        serializeShared: serializeExpenditureSharedSettings,
+        serialize: newAllSettings => serializeDatasetSettings(newAllSettings, SERIALIZE_EXPENDITURES_SETTINGS_GENERATORS),
+        serializeShared: serializeExpenditureContextSettings,
       }}
-      sharedSettings={sharedSettings}
-      sharedSettingsComponents={[ExpendituresSharedSettingsContents]}
+      contextSettings={contextSettings}
+      contextSettingsComponents={[ExpendituresContextSettingsContents]}
       allSettings={allSettings}
       settingsContentsComponents={[
         DatasetSettingsContents,

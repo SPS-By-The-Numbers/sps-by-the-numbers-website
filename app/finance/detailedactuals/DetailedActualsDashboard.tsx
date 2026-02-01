@@ -107,7 +107,7 @@ function compileData(districtDataMap, allSettings : Array<DetailedActualsSetting
 export default function DetailedActualsDashboard({
   districtDataMap,
   allSettings,
-  sharedSettings,
+  contextSettings,
 }: DistrictDataContentProps<DetailedActualsSettings>) {
   const [data, facetOrder] = compileData(
     districtDataMap,
@@ -144,8 +144,8 @@ export default function DetailedActualsDashboard({
         serializeShared: x => "",
       }}
       allSettings={allSettings}
-      sharedSettings={sharedSettings}
-      sharedSettingsComponents={[]}
+      contextSettings={contextSettings}
+      contextSettingsComponents={[]}
       settingsContentsComponents={[
         DatasetSettingsContents,
         ObjectFilterContents,

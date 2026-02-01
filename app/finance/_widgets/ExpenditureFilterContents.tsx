@@ -13,7 +13,7 @@ import type { BaseSettings } from "app/finance/_settings/base_settings";
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 
 interface Props<T extends BaseSettings, U extends BaseSettings = BaseSettings> {
-  sharedSettings?: U,
+  contextSettings?: U,
   settings: T;
   setSettings: (x: T) => void;
 }

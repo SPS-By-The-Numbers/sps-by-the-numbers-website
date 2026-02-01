@@ -177,9 +177,9 @@ export default function VitalsDashboard({
         serializeShared: x => "",
       }}
       allSettings={allSettings}
-      sharedSettings={DUMMY_BASE_SETTINGS}
+      contextSettings={DUMMY_BASE_SETTINGS}
       settingsContentsComponents={[DatasetSettingsContents]}
-      sharedSettingsComponents={[]}
+      contextSettingsComponents={[]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">
         Vitals Dashboard

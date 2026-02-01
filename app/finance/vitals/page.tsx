@@ -28,7 +28,7 @@ export default async function Page(params: Params) {
     <Suspense>
       <EnsureDistrictData
         allSettings={allSettings}
-        sharedSettings={DUMMY_BASE_SETTINGS}
+        contextSettings={DUMMY_BASE_SETTINGS}
         ContentComponent={VitalsDashboard}
       />
     </Suspense>

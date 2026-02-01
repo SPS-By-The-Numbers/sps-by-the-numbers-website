@@ -1,4 +1,4 @@
-import { DEFAULT_COMMON_SHARED_SETTINGS } from "app/finance/_widgets/CommonSharedSettingsContents";
+import { DEFAULT_COMMON_CONTEXT_SETTINGS } from "app/finance/_settings/common_context_settings";
 import { useId } from "react";
 import * as ChartOptions from "utilities/ChartOptions";
 import InputLabel from "@mui/material/InputLabel";
@@ -9,7 +9,7 @@ import {
   deserializeSettingsDict,
 } from "utilities/settings";
 
-import type { CommonSharedSettings } from "app/finance/_widgets/CommonSharedSettingsContents";
+import type { CommonContextSettings } from "app/finance/_widgets/CommonContextSettingsContents";
 import type { SettingsContentsProps } from "app/finance/_widgets/SettingsContents";
 import type { SortOrder, SortType } from "utilities/ChartOptions";
 
@@ -26,7 +26,7 @@ const YSCALE_OPTIONS: Record<ChartOptions.YScale, string> = {
   descending: "Descending",
 };
 
-export interface ExpendituresSharedSettings extends CommonSharedSettings {
+export interface ExpendituresContextSettings extends CommonContextSettings {
   facet: Facet;
   facetLimit: ChartOptions.FacetLimit;
   sortOrder: SortOrder;
@@ -34,8 +34,8 @@ export interface ExpendituresSharedSettings extends CommonSharedSettings {
   yScale: ChartOptions.YScale;
 }
 
-const DEFAULT_DASHBOARD_SETTINGS: ExpendituresSharedSettings = {
-  ...DEFAULT_COMMON_SHARED_SETTINGS,
+const DEFAULT_DASHBOARD_SETTINGS: ExpendituresContextSettings = {
+  ...DEFAULT_COMMON_CONTEXT_SETTINGS,
   facet: "activity",
   facetLimit: "0",
   sortOrder: "descending",
@@ -62,8 +62,8 @@ function deserializeFacet(s: string): Facet {
   return "activity";
 }
 
-export function serializeExpenditureSharedSettings(
-  s: ExpendituresSharedSettings,
+export function serializeExpenditureContextSettings(
+  s: ExpendituresContextSettings,
 ) {
   const settingsDict = {
     f: serializeFacet(s.facet),
@@ -76,7 +76,7 @@ export function serializeExpenditureSharedSettings(
   return serializeSettingsDict(settingsDict);
 }
 
-export function deserializeExpenditureSharedSettings(
+export function deserializeExpenditureContextSettings(
   queries: Array<string>,
 ) {
   if (queries.length === 0) {
@@ -112,8 +112,8 @@ export function deserializeExpenditureSharedSettings(
   return settings;
 }
 
-export default function ExpendituresSharedSettingsContents(
-  props: SettingsContentsProps<ExpendituresSharedSettings>,
+export default function ExpendituresContextSettingsContents(
+  props: SettingsContentsProps<ExpendituresContextSettings>,
 ) {
   return (
     <>

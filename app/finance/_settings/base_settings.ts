@@ -10,18 +10,18 @@ export const DUMMY_BASE_SETTINGS : BaseSettings = {
 
 export type SettingsSerializer<
   SettingsType extends BaseSettings,
-  SharedSettingsType extends BaseSettings,
+  ContextSettingsType extends BaseSettings,
 > = {
   serialize(allSettings: Array<SettingsType>): Array<string>;
-  serializeShared(sharedSettings: SharedSettingsType): string;
+  serializeShared(contextSettings: ContextSettingsType): string;
 };
 
 export type SettingsDeserializer<
   SettingsType extends BaseSettings,
-  SharedSettingsType extends BaseSettings,
+  ContextSettingsType extends BaseSettings,
 > = {
   deserialize(params: Array<string>) :  Array<SettingsType>;
-  deserializeShared(params: Array<string>) : SharedSettingsType;
+  deserializeShared(params: Array<string>) : ContextSettingsType;
 };
 
 export function serializeSettings<SettingsType extends BaseSettings>(

@@ -12,23 +12,23 @@ import type { ReactNode, ComponentType } from "react";
 
 export interface SettingsContentsProps<
   SettingsType extends BaseSettings,
-  SharedSettingsType extends BaseSettings = BaseSettings,
+  ContextSettingsType extends BaseSettings = BaseSettings,
 > {
-  sharedSettings: SharedSettingsType;
+  contextSettings: ContextSettingsType;
   settings: SettingsType;
   setSettings: (x: SettingsType) => void;
 }
 
 export type SettingsRenderComponentType<
   SettingsType extends BaseSettings,
-  SharedSettingsType extends BaseSettings = BaseSettings,
-> = ComponentType<SettingsContentsProps<SettingsType, SharedSettingsType>>;
+  ContextSettingsType extends BaseSettings = BaseSettings,
+> = ComponentType<SettingsContentsProps<SettingsType, ContextSettingsType>>;
 
 interface Props<
   SettingsType extends BaseSettings,
-  SharedSettingsType extends BaseSettings,
+  ContextSettingsType extends BaseSettings,
 > {
-  sharedSettings: SharedSettingsType;
+  contextSettings: ContextSettingsType;
   settings: SettingsType;
   setSettings: (x: SettingsType) => void;
 
@@ -89,17 +89,17 @@ export function makeMaybeContents<
 
 export default function SettingsContents<
   SettingsType extends BaseSettings,
-  SharedSettingsType extends BaseSettings = BaseSettings,
+  ContextSettingsType extends BaseSettings = BaseSettings,
 >({
-  sharedSettings,
+  contextSettings,
   settings,
   setSettings,
   components,
-}: Props<SettingsType, SharedSettingsType>) {
+}: Props<SettingsType, ContextSettingsType>) {
   const allFragments = components.map((ContentFramgent, i) => (
     <ContentFramgent
       key={`comp-${i}`}
-      sharedSettings={sharedSettings}
+      contextSettings={contextSettings}
       settings={settings}
       setSettings={setSettings}
     />
