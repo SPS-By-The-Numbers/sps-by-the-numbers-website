@@ -1,6 +1,8 @@
 "use client";
 
 import { dfToJSONConnectorOptions } from "utilities/highcharts/utils";
+import { SERIALIZE_CORRELATIONS_SETTINGS_GENERATORS } from "./CorrelationsPage";
+import { serializeDatasetSettings } from "app/finance/_settings/common_settings";
 import { makeCorrelationChartConfig } from "utilities/highcharts/ChartConfigGenerators";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { makeChartableVitals } from "utilities/ChartableVitals";
@@ -217,7 +219,7 @@ export default function CorrelationsDashboard({
   return (
     <SettingsLayout
       settingsSerializer={{
-        serialize: x => [],
+        serialize: newAllSettings => serializeDatasetSettings(newAllSettings, SERIALIZE_CORRELATIONS_SETTINGS_GENERATORS),
         serializeShared: x => "",
       }}
       allSettings={allSettings}

@@ -13,6 +13,7 @@ import ProgramFilter from "app/finance/_filteritems/program";
 import memoize from "lodash/memoize";
 
 import type { BaseSettings } from "app/finance/_settings/base_settings";
+import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 import type { Filter } from "utilities/filter";
 import type { SettingsDict } from "utilities/settings";
 

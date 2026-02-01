@@ -1,6 +1,7 @@
 import { deserializeByConfig } from "app/finance/_settings/common_settings";
 
 import type { BaseSettings } from "app/finance/_settings/base_settings";
+import type { SettingsConfigGenerators } from "app/finance/_settings/common_settings";
 
 export interface CommonContextSettings extends BaseSettings {}
 
@@ -29,13 +30,15 @@ export function deserializeContextSettings<ContextSettingsType extends BaseSetti
   if (queries.length === 0) {
     return defaultContextSettings;
   }
+  // Only use the first parameter for the context settings if there are repeats.
+  const firstQuery = queries[0];
 
   // Make settings.
-  let settings = Object.assign({}, defaultAllSettings);
+  let settings = Object.assign({}, defaultContextSettings);
 
   // Run through each config in order.
   for (const geneator of configGenerators) {
-    settings = deserializeByConfig(settings, geneator(settings), queries[i]);
+    settings = deserializeByConfig(settings, geneator(settings), firstQuery);
   }
 
   // Stamp an invalid id for the context.
