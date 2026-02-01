@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useMemo } from "react";
 import { deserializeDatasetSettings } from "app/finance/_settings/common_settings";
+import { deserializeContextSettings } from "app/finance/_settings/common_context_settings";
 import { useSearchParams } from 'next/navigation';
 import DistrictData from "utilities/DistrictData";
 import Loading from "components/Loading";
@@ -82,6 +83,12 @@ export function EnsureDistrictData<
     allSettingsConfigGenerators
   );
 
+  const contextSettings = deserializeContextSettings(
+    searchParams.getAll('c'),
+    defaultContextSettings,
+    contextSettingsConfigGenerators
+  );
+
   // The memoization happens in loadCcddd. The rest of the useEffect dependency
   // is largely nonsensical.
   useEffect(() => {
@@ -100,7 +107,7 @@ export function EnsureDistrictData<
     <ContentComponent
       districtDataMap={districtDataMap}
       allSettings={allSettings}
-      contextSettings={defaultContextSettings}
+      contextSettings={contextSettings}
     />
   );
 }

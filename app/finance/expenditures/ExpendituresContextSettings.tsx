@@ -34,7 +34,7 @@ export interface ExpendituresContextSettings extends CommonContextSettings {
   yScale: ChartOptions.YScale;
 }
 
-const DEFAULT_DASHBOARD_SETTINGS: ExpendituresContextSettings = {
+export const DEFAULT_DASHBOARD_SETTINGS: ExpendituresContextSettings = {
   ...DEFAULT_COMMON_CONTEXT_SETTINGS,
   facet: "activity",
   facetLimit: "0",

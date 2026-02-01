@@ -250,7 +250,7 @@ export function serializeDatasetSettings<SettingsType extends BaseSettings>(
 // Deserializes all of a dataset.  The configs are deserialized in order like a
 // foldLeft using the defaultAllSettings[0] as the first value. That means
 // later configs can depend on results of earlier ones.
-export function deserializeDatasetSettings<SettingsType extends BaseSettings>(
+export function deserializeDatasetSettings<SettingsType extends DatasetSettings>(
   queries: Array<string>,
   defaultAllSettings: Array<SettingsType>,
   configGenerators: SettingsConfigGenerators

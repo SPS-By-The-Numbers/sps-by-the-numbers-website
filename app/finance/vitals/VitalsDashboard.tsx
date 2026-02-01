@@ -1,7 +1,9 @@
 "use client";
 
 import { dfToJSONConnectorOptions } from "utilities/highcharts/utils";
-import { DUMMY_BASE_SETTINGS, serializeSettings } from "app/finance/_settings/base_settings";
+import { DUMMY_BASE_SETTINGS } from "app/finance/_settings/base_settings";
+import { SERIALIZE_VITALS_SETTINGS_GENERATORS } from "./VitalsPage";
+import { serializeDatasetSettings } from "app/finance/_settings/common_settings";
 import { makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGenerators";
 import { makeChartableVitals } from "utilities/ChartableVitals";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
@@ -173,7 +175,7 @@ export default function VitalsDashboard({
   return (
     <SettingsLayout
       settingsSerializer={{
-        serialize: x => serializeSettings(x, serializeOneDatasetSettings),
+        serialize: newAllSettings => serializeDatasetSettings(newAllSettings, SERIALIZE_VITALS_SETTINGS_GENERATORS),
         serializeShared: x => "",
       }}
       allSettings={allSettings}
