@@ -20,7 +20,6 @@ import {
 import { makeChartableVitals } from "utilities/ChartableVitals";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import {
-  makeFacetColumnRoot,
   makeFacetComponents,
 } from "utilities/highcharts/FacetedBudgetActualCharts";
 import {
@@ -35,9 +34,6 @@ import ProgramFilter from "app/finance/_filteritems/program";
 import ExpendituresContextSettingsContents, {
   serializeExpenditureContextSettings,
 } from "app/finance/expenditures/ExpendituresContextSettings";
-import {
-  serializeExpendituresSettings,
-} from "app/finance/expenditures/ExpendituresPage";
 import { makeMaybeContents } from "app/finance/_widgets/SettingsContents";
 import { serializeSettings } from "app/finance/_settings/base_settings";
 import HcDashboard from "components/HcDashboard";
@@ -52,28 +48,39 @@ import type { ExpendituresSettings } from "./ExpendituresPage";
 
 const CONNECTOR_ID = "expenditures-connector";
 
+// Build the column name format for a facet.
+function makeFacetColumnRoot(
+  idPrefix,
+  normalization,
+  metricName,
+  facet,
+) {
+  return [idPrefix, normalization, metricName, facet].join("_");
+}
+
 function componentsGenerator(
   facetOrder,
   contextSettings: ExpendituresContextSettings,
   expenditureSettings: ExpendituresSettings,
-  bounds,
+  yBounds,
 ) {
   const subtitle = `
   Prog: ${ProgramFilter.toSummaryText(expenditureSettings.programCodes)} /
   Obj: ${ObjectFilter.toSummaryText(expenditureSettings.objectCodes)} 
   `;
 
-  const components = makeFacetComponents(
-    expenditureSettings.id,
-    "class_of",
-    "Class of",
-    "amount",
+  const components = makeFacetComponents({
+    idPrefix: expenditureSettings.id.toString(),
+    xColumn: "class_of",
+    xLabel: "Class of",
+    yColumnRoot: "amount",
     facetOrder,
-    CONNECTOR_ID,
-    [expenditureSettings.currencyNormalization],
+    connectorId: CONNECTOR_ID,
+    normalizations: [expenditureSettings.currencyNormalization],
+    captionType: "variance",
     subtitle,
-    bounds,
-  );
+    yBounds,
+  });
 
   return components;
 }

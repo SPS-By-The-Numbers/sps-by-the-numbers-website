@@ -15,33 +15,36 @@ import {
   formatForNormalization,
 } from "utilities/highcharts/ChartConfigGenerators";
 
+import type { CaptionType } from "utilities/highcharts/ChartConfigGenerators";
 import type { ColumnTable } from "arquero";
-import type { FacetInfo } from "utilities/ChartableMetrics";
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
+import type { FacetInfo } from "utilities/ChartableMetrics";
 
-type Params = {
-  idPrefix: string;
-  data: ColumnTable;
-  xColumn: string;
-  xLabel: string;
-  yColumnRoot: string;
-  facetOrder: Array<FacetInfo>;
-  metricList: Array<DatasetSettings>;
+type AxisBounds = {
+  min: number;
+  max: number;
 };
 
+type FacetComponentParams = {
+  idPrefix: string;  // The id of the setting used for generating unique identifiers.
+  xColumn: string;  // Name of data column for x-Axis
+  xLabel: string;  // Label to use on x-axis of graph.
+  yColumnRoot: string;  // Root of y-axis columns. Will be combined with facetOrder to generate column name.
+  facetOrder: Array<FacetInfo>;  // Whcih facets to show.
+  connectorId: string;  // Highcharts connector id.
+  normalizations: Array<Normalizations.CurrencyNormalization | Normalizations.StaffingNormalization>;  // Normalizations to apply.
+  captionType: CaptionType;  // What kind of summary to do over zoomed data.
+  subtitle?: string;  // Optional chart subtitle.
+  yBounds?: AxisBounds;  // Optional chart bounds.
+};
+
+// Makes the cell-id for a specific facet and normalization.
 function makeCellId(idPrefix, metricOrdinal, facetInfo) {
   return `chart-${idPrefix}-${facetInfo.code}-${metricOrdinal}`;
 }
 
-export function makeFacetColumnRoot(
-  idPrefix,
-  normalization,
-  metricName,
-  facet,
-) {
-  return [idPrefix, normalization, metricName, facet].join("_");
-}
-
+// Append the facet code to a title skipping synthetic codes as those
+// should have the facet code already hardcoded into the title.
 function makeFacetCodeText(facetInfo) {
   // Synthetic codes do not get a value.
   if (facetInfo.code > 9000) {
@@ -56,26 +59,21 @@ function makeFacetCodeText(facetInfo) {
 // number of facets times metricList.
 //
 // The metric list may have semantic repeats as they represent columns.
-//
-// idPrefix - prefix to the id. Must match with the GUI.
-// xColumn - what column from the data connector to use for "x".
-// xLabel - Label for the x axis.
-// facets - an array of facets to render.  The ordering does not matter as that is defined by the gui.
-// connectorId - the ID of the data pool to conect to.
-// normalizations - the normalizations to generate for each facet.
-export function makeFacetComponents(
-  idPrefix,
-  xColumn,
-  xLabel,
-  yColumnRoot,
-  facets,
-  connectorId,
-  normalizations,
-  subtitle?,
-  bounds?,
-) {
+export function makeFacetComponents(params : FacetComponentParams) {
+  const {
+    idPrefix,
+    xColumn,
+    xLabel,
+    yColumnRoot,
+    captionType,
+    facetOrder,
+    connectorId,
+    normalizations,
+    subtitle,
+    yBounds,
+  } = params;
   const r = normalizations.flatMap((normalization, normalizationOrdinal) =>
-    facets.map((facetInfo) =>
+    facetOrder.map((facetInfo) =>
       makeBudgetActualsChartConfig({
         title: makeTitle(`${facetInfo.title}${makeFacetCodeText(facetInfo)}`, subtitle),
         renderTo: makeCellId(idPrefix, normalizationOrdinal, facetInfo),
@@ -86,8 +84,9 @@ export function makeFacetComponents(
         yValueFormat: formatForNormalization(normalization),
         xValueFormat: "year",
         xLabel,
-        yMin: bounds?.min,
-        yMax: bounds?.max,
+        captionType,
+        yMin: yBounds?.min,
+        yMax: yBounds?.max,
       }),
     ),
   );

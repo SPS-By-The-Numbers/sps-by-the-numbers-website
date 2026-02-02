@@ -29,7 +29,7 @@ export default function DetailedActualsPage() {
     <EnsureDistrictData
       defaultAllSettings={DEFAULT_DETAILED_ACTUALS_SETTINGS}
       allSettingsConfigGenerators={SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS}
-      contextSettings={DUMMY_BASE_SETTINGS}
+      defaultContextSettings={DUMMY_BASE_SETTINGS}
       ContentComponent={DetailedActualsDashboard}
     />
   );

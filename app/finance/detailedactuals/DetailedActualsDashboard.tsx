@@ -32,15 +32,16 @@ import type { DetailedActualsSettings } from "app/finance/detailedactuals/Detail
 const CONNECTOR_ID = "nces-connector";
 
 function componentsGenerator(settings: DetailedActualsSettings, facetOrder) {
-  const components = makeFacetComponents(
-    settings.id,
-    "class_of",
-    "Class of",
-    "amount",
+  const components = makeFacetComponents({
+    idPrefix: settings.id.toString(),
+    xColumn: "class_of",
+    xLabel: "Class of",
+    yColumnRoot: "amount",
     facetOrder,
-    CONNECTOR_ID,
-    [settings.currencyNormalization],
-  );
+    connectorId: CONNECTOR_ID,
+    normalizations: [settings.currencyNormalization],
+    captionType: "stats",
+  });
 
   return components;
 }
@@ -75,6 +76,8 @@ function makeFacetedDetailedActualsForDistrict(
 function compileData(districtDataMap, allSettings : Array<DetailedActualsSettings>, facet) {
   const allDatasets = new Array<ColumnTable>();
   let facetInfo;
+
+  // Geneate one set of columns per dataset.
   for (const settings of allSettings) {
     const districtData = districtDataMap[settings.ccddd];
     const filteredExpenditures = districtData.filteredExpenditures(settings);
@@ -96,6 +99,7 @@ function compileData(districtDataMap, allSettings : Array<DetailedActualsSetting
     }
   }
 
+  // Join each dataset into one big dataframe.
   let data = allDatasets[0];
   for (const d of allDatasets.slice(1)) {
     data = data.join(d);

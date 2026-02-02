@@ -4,6 +4,7 @@ import * as aq from "arquero";
 import merge from "lodash.merge";
 
 import type Highcharts from "highcharts";
+import type { ColumnTable } from "arquero";
 import type {
   CurrencyNormalization,
   StaffingNormalization,
@@ -46,9 +47,12 @@ export type BaseChartConfigOptions = {
   xMax?: number;
 };
 
+export type CaptionType = "variance" | "stats" | "none";
+
 export type BudgetActualsChartOptions = BaseChartConfigOptions & {
   metricColumn: string;
   facet?: string;
+  captionType: CaptionType;
 
   xDataColumn: string;
 };
@@ -68,12 +72,17 @@ export type CorrelationChartOptions = BaseChartConfigOptions & {
   seriesDefs: Array<SeriesDef>;
 };
 
-function getSeriesAsDf(series, name, xMin, xMax) {
+// Takes the data from highcharts matching the zoom window and turns
+// it back into an arquero dataframe.
+function getSeriesAsDf(series, name, xMin, xMax, noThrow = false) {
   for (const s of series) {
     if (s.userOptions.id === name) {
-      let df = aq.fromJSON(s.userOptions.data);
+      let df = s.userOptions.data.length > 0 ? aq.fromJSON(s.userOptions.data) : aq.table({});
 
       if (df.numCols() < 2) {
+        if (noThrow) {
+          return aq.table({});
+        }
         throw `missing ${name}`;
       }
       const columnNames = df.columnNames();
@@ -99,6 +108,9 @@ function getSeriesAsDf(series, name, xMin, xMax) {
     }
   }
 
+  if (noThrow) {
+    return aq.table({});
+  }
   console.error(`No series named ${name} in `, series);
   throw `Missing series ${name}`;
 }
@@ -128,10 +140,7 @@ function generateVarianceCaption(name, series, valueFormatter, minX, maxX) {
 
   const xVal = variances_df.array("class_of").at(-1);
   const latest = variances_df.array("variance").at(-1);
-  const stats = variances_df.rollup({
-    median: (d) => op.median(d.variance),
-    mean: (d) => op.mean(d.variance),
-  });
+  const stats = getStats(variances_df, 'variance');
   const median = stats.get("median", 0);
   const mean = stats.get("mean", 0);
 
@@ -155,6 +164,93 @@ function generateVarianceCaption(name, series, valueFormatter, minX, maxX) {
     </tr>
   </table>
   `;
+}
+
+// Rolls up the df into basic stats.
+function getStats(df, columnName) {
+  return (
+    df
+    .params({columnName})
+    .rollup({
+      min: (d, $) => op.min(d[$.columnName]),
+      median: (d, $) => op.median(d[$.columnName]),
+      mean: (d, $) => op.mean(d[$.columnName]),
+      stdev: (d, $) => op.stdev(d[$.columnName]),
+      max: (d, $) => op.max(d[$.columnName]),
+    }
+  ));
+}
+
+function generateStatsCaption(name, series, valueFormatter, minX, maxX) {
+  const budget_df = getSeriesAsDf(series, "budget", minX, maxX, true);
+  const actuals_df = getSeriesAsDf(series, "actuals", minX, maxX, true);
+
+  const rows = new Array<[string, ColumnTable]>;
+  if (budget_df.size > 0) {
+    rows.push(["budget", budget_df]);
+  }
+  if (actuals_df.size > 0) {
+    rows.push(["actuals", actuals_df]);
+  }
+  const tableRowsHtml = new Array<string>;
+  for (const [rowName, df] of rows) {
+    const stats = getStats(df, rowName);
+    tableRowsHtml.push(
+      `<tr>
+        <td>${rowName}</td>
+        ${generateColoredTd(stats.get("min", 0), valueFormatter)}
+        ${generateColoredTd(stats.get("mean", 0), valueFormatter)}
+        ${generateColoredTd(stats.get("stdev", 0), valueFormatter)}
+        ${generateColoredTd(stats.get("median", 0), valueFormatter)}
+        ${generateColoredTd(stats.get("max", 0), valueFormatter)}
+      </tr>`);
+  }
+
+  return `
+  <table class="ba-chartstats-table">
+    ${tableRowsHtml.join('\n')}
+    <tr>
+      <th></th>
+      <th>min</th>
+      <th>mean</th>
+      <th>stdev</th>
+      <th>median</th>
+      <th>max</th>
+    </tr>
+  </table>
+  `;
+}
+
+// Sets the caption in response to an afterSetExtremes event.
+function setCaptionFromType(
+  chart: Highcharts.Chart,
+  event: Highcharts.AxisSetExtremesEventObject,
+  captionType: CaptionType,
+  valueFormatter,
+) : void {
+  if (captionType === "variance") {
+    chart.setCaption({
+      text: generateVarianceCaption(
+        "Variance",
+        chart.series,
+        valueFormatter,
+        event.min,
+        event.max,
+      ),
+    });
+  } else if (captionType === "stats") {
+    chart.setCaption({
+      text: generateStatsCaption(
+        "Stats",
+        chart.series,
+        valueFormatter,
+        event.min,
+        event.max,
+      ),
+    });
+  } else if (captionType === "none") {
+    // Do nothing.
+  }
 }
 
 function inferLabel(valueFormat: ValueFormat) {
@@ -237,7 +333,8 @@ function percentFormatter(value, precision) {
   return `${value.toFixed(precision)}%`;
 }
 
-function getRawFormatter(format: ValueFormat, precision) {
+type ValueFormatter = (x) => string;
+function getRawFormatter(format: ValueFormat, precision) : ValueFormatter {
   switch (format) {
     case "decimal":
     case "fte":
@@ -254,7 +351,7 @@ function getRawFormatter(format: ValueFormat, precision) {
   throw `Unknown format ${format}`;
 }
 
-function getFormatter(format: ValueFormat, precision) {
+function getFormatter(format: ValueFormat, precision) : ValueFormatter {
   const rawFormatter = getRawFormatter(format, precision);
 
   return (v) => {
@@ -286,7 +383,7 @@ function getBAColumns(metricColumn, facet) {
 //   title
 //   zooming
 //
-// that handles defauul format/prescision inferrence, sync, legend, tooltip, fixedAxes.  makeBudgetActualsChartConfig()
+// that handles default format/prescision inference, sync, legend, tooltip, fixedAxes. 
 export function makeBaseChartConfig(options: BaseChartConfigOptions) {
   return {
     type: "Highcharts",
@@ -392,6 +489,7 @@ export function makeBaseChartConfig(options: BaseChartConfigOptions) {
   };
 }
 
+// Generates one ChartConfiguration
 export function makeBudgetActualsChartConfig(
   options: BudgetActualsChartOptions,
 ) {
@@ -438,15 +536,7 @@ export function makeBudgetActualsChartConfig(
         events: {
           afterSetExtremes: function (event) {
             try {
-              this.chart.setCaption({
-                text: generateVarianceCaption(
-                  "variance",
-                  this.chart.series,
-                  valueFormatter,
-                  event.min,
-                  event.max,
-                ),
-              });
+              setCaptionFromType(this.chart, event, options.captionType, valueFormatter);
             } catch (e) {
               console.warn(
                 `Failed calculating stats for ${options.metricColumn}, ${options.facet}:`,
@@ -648,6 +738,9 @@ export function makeContextCell(
     xValueFormat: "year" as const,
 
     yValueFormat,
+
+    // No caption cause it's short.
+    captionType: "none",
 
     // Ensure 0 min unless negative.
     yMin: Math.min(0, yBounds?.min),

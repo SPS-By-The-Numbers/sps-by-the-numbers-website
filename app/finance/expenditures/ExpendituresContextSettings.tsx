@@ -9,7 +9,7 @@ import {
   deserializeSettingsDict,
 } from "utilities/settings";
 
-import type { CommonContextSettings } from "app/finance/_widgets/CommonContextSettingsContents";
+import type { CommonContextSettings } from "app/finance/_settings/common_context_settings";
 import type { SettingsContentsProps } from "app/finance/_widgets/SettingsContents";
 import type { SortOrder, SortType } from "utilities/ChartOptions";
 
@@ -26,7 +26,7 @@ const YSCALE_OPTIONS: Record<ChartOptions.YScale, string> = {
   descending: "Descending",
 };
 
-export interface ExpendituresContextSettings extends CommonContextSettings {
+export type ExpendituresContextSettings = CommonContextSettings & {
   facet: Facet;
   facetLimit: ChartOptions.FacetLimit;
   sortOrder: SortOrder;

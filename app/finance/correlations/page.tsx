@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     "Shows enrollment details and correlations for Washingtion State Schools.",
 };
 
-export default async function Page(params: Params) {
+export default async function Page() {
   return (
     <CorrelationsPage />
   );

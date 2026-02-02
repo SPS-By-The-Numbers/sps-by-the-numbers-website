@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     "Shows key historical trends about enrollment, cashflow, and expenditures.",
 };
 
-export default async function Page(params: Params) {
+export default async function Page() {
   return (
     <VitalsPage />
   );

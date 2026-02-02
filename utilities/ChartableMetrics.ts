@@ -7,7 +7,7 @@ import type DistrictData from "utilities/DistrictData";
 import type { CurrencyNormalization, StaffingNormalization } from "utilities/normalizations";
 
 export type FacetInfo = {
-  code: number;
+  code: string;
   title: string;
 };
 
@@ -161,7 +161,7 @@ export function extractVarianceFacets(
   df: ColumnTable,
   facetColumn: string,
   sortOrder: SortOrder,
-) {
+) : Array<FacetInfo> {
   const facetCodeColumn = `${facetColumn}_code`;
 
   // Calculate variance for sort order.
@@ -196,7 +196,7 @@ export function extractVarianceFacets(
         title: d[facetColumn],
       })),
     })
-    .array("facet_info") as Array<{ code: string; title: string }>;
+    .array("facet_info") as Array<FacetInfo>;
 
   return facetInfo;
 }
@@ -206,7 +206,7 @@ export function extractFacetsByAmount(
   facetColumn: string,
   sortColumn: string,
   sortOrder: SortOrder,
-) {
+) : Array<FacetInfo> {
   const facetCodeColumn = `${facetColumn}_code`;
   const sorted = df
     .groupby(facetColumn, facetCodeColumn)

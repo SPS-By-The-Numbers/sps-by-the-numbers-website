@@ -1,3 +1,5 @@
+import ALL_DISTRICTS from "app/finance/_domain/ccddd";
+
 import type { BaseSettings } from "app/finance/_settings/base_settings";
 import type {
   CurrencyNormalization,
@@ -35,6 +37,7 @@ export const DEFAULT_DATASET_SETTINGS: Array<DatasetSettings> = [
   {
     id: 0,
     ccddd: 17001,
+    name: ALL_DISTRICTS[17001].district,
     filterGrouping: "spsbtn" as const,
     currencyNormalization: "amount" as const,
     staffingNormalization: "fte" as const,

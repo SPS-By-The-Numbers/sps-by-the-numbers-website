@@ -7,7 +7,6 @@ import { serializeDatasetSettings } from "app/finance/_settings/common_settings"
 import { makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGenerators";
 import { makeChartableVitals } from "utilities/ChartableVitals";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
-import { serializeOneDatasetSettings } from "app/finance/_settings/dataset_settings";
 import { useSearchParams } from "next/navigation";
 import HcDashboard from "components/HcDashboard";
 import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
@@ -42,6 +41,7 @@ function makeCell(
 
     yValueFormat,
     yLabel,
+    captionType: "none" as const,
   };
 }
 

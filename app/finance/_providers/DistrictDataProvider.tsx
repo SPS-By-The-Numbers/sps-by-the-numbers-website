@@ -86,7 +86,7 @@ export function EnsureDistrictData<
   const contextSettings = deserializeContextSettings(
     searchParams.getAll('c'),
     defaultContextSettings,
-    contextSettingsConfigGenerators
+    contextSettingsConfigGenerators ?? []
   );
 
   // The memoization happens in loadCcddd. The rest of the useEffect dependency

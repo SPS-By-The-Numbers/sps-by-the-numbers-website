@@ -32,15 +32,16 @@ import type { StaffingSettings } from "./StaffingPage";
 const CONNECTOR_ID = "settings-connector";
 
 function componentsGenerator(staffingSettings: StaffingSettings, facetOrder) {
-  const components = makeFacetComponents(
-    staffingSettings.id,
-    "class_of",
-    "Class of",
-    "fte",
+  const components = makeFacetComponents({
+    idPrefix: staffingSettings.id.toString(),
+    xColumn: "class_of",
+    xLabel: "Class of",
+    yColumnRoot: "fte",
     facetOrder,
-    CONNECTOR_ID,
-    [staffingSettings.staffingNormalization],
-  );
+    connectorId: CONNECTOR_ID,
+    normalizations: [staffingSettings.staffingNormalization],
+    captionType: "stats",
+  });
 
   return components;
 }

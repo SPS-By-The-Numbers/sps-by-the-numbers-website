@@ -1,5 +1,6 @@
 "use client";
 
+import { DUMMY_BASE_SETTINGS } from "app/finance/_settings/base_settings";
 import { DEFAULT_DATASET_SETTINGS } from "app/finance/_settings/dataset_settings";
 import * as CommonSettings from "app/finance/_settings/common_settings";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
@@ -27,7 +28,7 @@ export default function VitalsPage() {
     <EnsureDistrictData
       defaultAllSettings={DEFAULT_VITALS_SETTINGS}
       allSettingsConfigGenerators={SERIALIZE_VITALS_SETTINGS_GENERATORS}
-      defaultContextSettings={DEFAULT_DATASET_SETTINGS}
+      defaultContextSettings={DUMMY_BASE_SETTINGS}
       contextSettingsConfigGenerators={[]}
       ContentComponent={VitalsDashboard}
     />

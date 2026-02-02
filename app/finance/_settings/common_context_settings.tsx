@@ -3,7 +3,7 @@ import { deserializeByConfig } from "app/finance/_settings/common_settings";
 import type { BaseSettings } from "app/finance/_settings/base_settings";
 import type { SettingsConfigGenerators } from "app/finance/_settings/common_settings";
 
-export interface CommonContextSettings extends BaseSettings {}
+export type CommonContextSettings = BaseSettings;
 
 export const DEFAULT_COMMON_CONTEXT_SETTINGS: CommonContextSettings = {
   name: "Dashboard Settings",

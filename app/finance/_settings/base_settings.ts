@@ -1,7 +1,7 @@
 export type BaseSettings = {
   name: string;
   id: number;
-}
+};
 
 export const DUMMY_BASE_SETTINGS : BaseSettings = {
   name: "unused",
