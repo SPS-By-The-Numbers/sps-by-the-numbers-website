@@ -8,6 +8,7 @@ import { makeSchoolFilter } from "app/finance/_filteritems/school";
 import { serializeFilterGrouping, deserializeFilterGrouping } from "app/finance/_settings/dataset_settings";
 import ActivityFilter from "app/finance/_filteritems/activity";
 import DutyRootFilter from "app/finance/_filteritems/duty_root";
+import NcesFilter from "app/finance/_filteritems/nces";
 import ObjectFilter from "app/finance/_filteritems/object";
 import ProgramFilter from "app/finance/_filteritems/program";
 import memoize from "lodash/memoize";
@@ -76,6 +77,7 @@ export function makeDefaultActualsSettings(ccddd: number) {
   return {
     schoolCodes: makeSchoolFilter(ccddd).allCodes(),
     dutyRootCodes: DutyRootFilter.allCodes(),
+    ncesCodes: NcesFilter.allCodes(),
   }
 }
 
@@ -171,6 +173,19 @@ export function makeDutyRootSerializeConfig(context?) : SerializationConfig {
         serializerType: "filter",
         urlVar: "d",
         filter: DutyRootFilter,
+      },
+    ]
+  ];
+};
+
+export function makeNcesSerializeConfig(context?) : SerializationConfig {
+  return [
+    [
+      "ncesCodes",
+      {
+        serializerType: "filter",
+        urlVar: "n",
+        filter: NcesFilter,
       },
     ]
   ];

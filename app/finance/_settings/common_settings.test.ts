@@ -19,6 +19,10 @@ const ALL_TEST_CONFIGS = [
     name: 'SchoolFilter',
     configGenerator: CommonSettings.makeSchoolFilterConfig,
     serializedMinusFirst: 's.QA',
+  }, {
+    name: 'NcesFilter',
+    configGenerator: CommonSettings.makeNcesSerializeConfig,
+    serializedMinusFirst: 'n.QA',
   }
 ];
 

@@ -22,6 +22,7 @@ export const SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS = [
   CommonSettings.makePaoSerializeConfig,
   CommonSettings.makeDutyRootSerializeConfig,
   CommonSettings.makeSchoolFilterConfig,
+  CommonSettings.makeNcesSerializeConfig,
 ];
 
 export default function DetailedActualsPage() {

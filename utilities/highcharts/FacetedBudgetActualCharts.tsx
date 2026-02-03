@@ -17,6 +17,7 @@ import {
 
 import type { CaptionType } from "utilities/highcharts/ChartConfigGenerators";
 import type { ColumnTable } from "arquero";
+import type { CurrencyNormalization, StaffingNormalization } from "utilities/normalizations";
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 import type { FacetInfo } from "utilities/ChartableMetrics";
 
@@ -32,7 +33,7 @@ type FacetComponentParams = {
   yColumnRoot: string;  // Root of y-axis columns. Will be combined with facetOrder to generate column name.
   facetOrder: Array<FacetInfo>;  // Whcih facets to show.
   connectorId: string;  // Highcharts connector id.
-  normalizations: Array<Normalizations.CurrencyNormalization | Normalizations.StaffingNormalization>;  // Normalizations to apply.
+  normalizations: Array<CurrencyNormalization | StaffingNormalization>;  // Normalizations to apply.
   captionType: CaptionType;  // What kind of summary to do over zoomed data.
   subtitle?: string;  // Optional chart subtitle.
   yBounds?: AxisBounds;  // Optional chart bounds.
@@ -47,6 +48,8 @@ function makeCellId(idPrefix, metricOrdinal, facetInfo) {
 // should have the facet code already hardcoded into the title.
 function makeFacetCodeText(facetInfo) {
   // Synthetic codes do not get a value.
+  //
+  // TODO: Move this logic into the data layer.
   if (facetInfo.code > 9000) {
     return "";
   }

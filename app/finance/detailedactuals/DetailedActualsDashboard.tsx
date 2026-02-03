@@ -18,6 +18,7 @@ import {
   ActivityFilterContents,
   ProgramFilterContents,
   SchoolFilterContents,
+  NcesFilterContents,
 } from "app/finance/_widgets/ExpenditureFilterContents";
 import HcDashboard from "components/HcDashboard";
 import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
@@ -156,6 +157,7 @@ export default function DetailedActualsDashboard({
         ActivityFilterContents,
         ProgramFilterContents,
         SchoolFilterContents,
+        NcesFilterContents,
       ]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">

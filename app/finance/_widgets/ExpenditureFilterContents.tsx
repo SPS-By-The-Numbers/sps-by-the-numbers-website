@@ -2,13 +2,14 @@ import { makeSchoolFilter } from "app/finance/_filteritems/school";
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
 import ActivityFilter from "app/finance/_filteritems/activity";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import DutyRootFilter from "app/finance/_filteritems/duty_root";
 import FormGroup from "@mui/material/FormGroup";
+import NcesFilter from "app/finance/_filteritems/nces";
 import ObjectFilter from "app/finance/_filteritems/object";
 import ProgramFilter from "app/finance/_filteritems/program";
-import DutyRootFilter from "app/finance/_filteritems/duty_root";
 import Switch from "@mui/material/Switch";
 
-import type { PFilters, AFilters, OFilters, SchoolFilters, DutyRootFilters } from "utilities/DistrictData";
+import type { PFilters, AFilters, OFilters, SchoolFilters, DutyRootFilters, NcesFilters } from "utilities/DistrictData";
 import type { BaseSettings } from "app/finance/_settings/base_settings";
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 
@@ -148,7 +149,7 @@ export function SchoolFilterContents({
   );
 }
 
-// Settings component to render selection of schools.
+// Settings component to render differnet duty titles from the s275.
 export function DutyRootFilterContents({
   settings,
   setSettings,
@@ -162,6 +163,26 @@ export function DutyRootFilterContents({
         setSettings({
           ...settings,
           dutyRootCodes: DutyRootFilter.treeViewItemsToCodes(selected)
+        })
+      }
+    />
+  );
+}
+
+// Settings component to filter out actuals by NCES spending code.
+export function NcesFilterContents({
+  settings,
+  setSettings,
+}: Props<BaseSettings & NcesFilters>) {
+  return (
+    <FilterTree
+      title="Nces"
+      items={NcesFilter.treeViewItems()}
+      selectedItems={NcesFilter.codesToTreeViewItems(settings.ncesCodes)}
+      setSelectedItems={selected =>
+        setSettings({
+          ...settings,
+          ncesCodes: NcesFilter.treeViewItemsToCodes(selected)
         })
       }
     />
