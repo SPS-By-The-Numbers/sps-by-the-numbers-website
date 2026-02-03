@@ -26,6 +26,12 @@ import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
 import { SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS } from "app/finance/detailedactuals/DetailedActualsPage";
 
+import ActivityFilter from "app/finance/_filteritems/activity";
+import ObjectFilter from "app/finance/_filteritems/object";
+import ProgramFilter from "app/finance/_filteritems/program";
+import { makeSchoolFilter } from "app/finance/_filteritems/school";
+import NcesFilter from "app/finance/_filteritems/nces";
+
 import type { ColumnTable } from "arquero";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
 import type { DetailedActualsSettings } from "app/finance/detailedactuals/DetailedActualsPage";
@@ -33,6 +39,14 @@ import type { DetailedActualsSettings } from "app/finance/detailedactuals/Detail
 const CONNECTOR_ID = "nces-connector";
 
 function componentsGenerator(settings: DetailedActualsSettings, facetOrder) {
+  const schoolFilter = makeSchoolFilter(settings.ccddd);
+  const subtitle = `
+  Act(${ActivityFilter.toSummaryText(settings.activityCodes)}) /
+  Prog(${ProgramFilter.toSummaryText(settings.programCodes)}) /
+  Obj(${ObjectFilter.toSummaryText(settings.objectCodes)}) /
+  School(${schoolFilter.toSummaryText(settings.schoolCodes)}) /
+  Nces(${NcesFilter.toSummaryText(settings.ncesCodes)})
+  `;
   const components = makeFacetComponents({
     idPrefix: settings.id.toString(),
     xColumn: "class_of",
@@ -42,6 +56,7 @@ function componentsGenerator(settings: DetailedActualsSettings, facetOrder) {
     connectorId: CONNECTOR_ID,
     normalizations: [settings.currencyNormalization],
     captionType: "stats",
+    subtitle,
   });
 
   return components;

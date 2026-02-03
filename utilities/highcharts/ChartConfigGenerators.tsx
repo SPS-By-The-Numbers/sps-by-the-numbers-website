@@ -90,21 +90,14 @@ function getSeriesAsDf(series, name, xMin, xMax, noThrow = false) {
 
       if (columnNames.includes("0")) {
         normalized = normalized
-          .rename({ "0": "class_of", "1": name })
-          .derive({ x: op.row_number() });
+          .rename({ "0": "class_of", "1": name });
       } else {
         normalized = normalized.rename({ name: "class_of", y: name });
       }
 
-      // Pull into the right zoom window and drop empty data.
-      const dataDropped = normalized.filter(
-        aq.escape(
-          (d) => d["x"] >= xMin && d["x"] <= xMax && Number.isFinite(d[name]),
-        ),
-      );
-
-      // Only return the interested columns so later joins aren't messy.
-      return dataDropped.select("class_of", name);
+      // Pull into the right zoom window and drop empty data. Length is one
+      // beyond xMax because xMax is inclusive.
+      return normalized.slice(xMin, xMax + 1);
     }
   }
 
