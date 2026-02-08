@@ -35,7 +35,7 @@ function componentsGenerator(staffingSettings: StaffingSettings, facetOrder) {
   const components = makeFacetComponents({
     idPrefix: staffingSettings.id.toString(),
     xColumn: "class_of",
-    xLabel: "Class of",
+    xLabel: "Fiscal Year End",
     yColumnRoot: "fte",
     facetOrder,
     connectorId: CONNECTOR_ID,

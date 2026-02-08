@@ -15,7 +15,6 @@ export default async function FinanceLayout({
 }) {
   return (
     <DistrictDataProvider>
-      <FinanceNav />
       {children}
     </DistrictDataProvider>
   );

@@ -72,7 +72,7 @@ function componentsGenerator(
   const components = makeFacetComponents({
     idPrefix: expenditureSettings.id.toString(),
     xColumn: "class_of",
-    xLabel: "Class of",
+    xLabel: "Fiscal Year End",
     yColumnRoot: "amount",
     facetOrder,
     connectorId: CONNECTOR_ID,

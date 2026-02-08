@@ -258,7 +258,7 @@ function inferLabel(valueFormat: ValueFormat) {
       return "FTE";
 
     case "year":
-      return "Class of";
+      return "Fiscal Year End";
 
     case "pctexp":
       return "% of expenditures";

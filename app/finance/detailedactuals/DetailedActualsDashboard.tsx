@@ -50,7 +50,7 @@ function componentsGenerator(settings: DetailedActualsSettings, facetOrder) {
   const components = makeFacetComponents({
     idPrefix: settings.id.toString(),
     xColumn: "class_of",
-    xLabel: "Class of",
+    xLabel: "Fiscal Year End",
     yColumnRoot: "amount",
     facetOrder,
     connectorId: CONNECTOR_ID,
@@ -176,7 +176,7 @@ export default function DetailedActualsDashboard({
       ]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">
-        DetailedActuals Dashboard
+        Actual School Spend. Data is more granular but only covers FY19-2020 forward.
       </Typography>
       <HcDashboard config={config} />
     </SettingsLayout>

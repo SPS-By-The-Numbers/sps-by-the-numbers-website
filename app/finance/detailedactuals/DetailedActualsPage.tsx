@@ -8,9 +8,9 @@ import { makeDefaultSettings } from "app/finance/_settings/common_settings";
 import DetailedActualsDashboard from "./DetailedActualsDashboard";
 
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
-import type { PAOFilters, SchoolFilters } from "utilities/DistrictData";
+import type { PAOFilters, SchoolFilters, NcesFilters } from "utilities/DistrictData";
 
-export type DetailedActualsSettings = DatasetSettings & PAOFilters & SchoolFilters;
+export type DetailedActualsSettings = DatasetSettings & PAOFilters & SchoolFilters & NcesFilters;
 
 const DEFAULT_DETAILED_ACTUALS_SETTINGS = DEFAULT_DATASET_SETTINGS.map((v) => ({
   ...v,

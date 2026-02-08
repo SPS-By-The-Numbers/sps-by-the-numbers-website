@@ -6,6 +6,7 @@ import HighchartsProvider from "components/providers/HighchartsProvider";
 import InitColorSchemeScript from "@mui/material/InitColorSchemeScript";
 import MuiProviders from "./MuiProviders";
 import Script from "next/script";
+import PrimaryNav from './PrimaryNav';
 import { Metadata } from "next";
 import { Roboto } from "next/font/google";
 
@@ -42,6 +43,7 @@ export default function RootLayout({
           <HighchartsProvider>
             <CssBaseline />
             <InitColorSchemeScript attribute="class" />
+            <PrimaryNav />
             {children}
           </HighchartsProvider>
         </MuiProviders>
