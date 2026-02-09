@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo, createContext, useContext } from "react";
 
 import type Dashboards from "@highcharts/dashboards/es-modules/masters/dashboards.src.js";
 
+import '@highcharts/grid-pro/css/grid-pro.css';
+
 type HighchartsObjects = {
   highcharts: any;
   dashboards: any;
@@ -42,7 +44,7 @@ async function loadHighchartsModules() {
   const Dashboards = (
     await import("@highcharts/dashboards/es-modules/masters/dashboards.src.js")
   ).default;
-  const DataGrid = (await import("@highcharts/dashboards/datagrid")).default;
+  const DataGrid = (await import("@highcharts/grid-pro/es-modules/masters/grid-pro.src.js")).default;
 
   await import("@highcharts/dashboards/es-modules/masters/modules/layout.src.js");
 

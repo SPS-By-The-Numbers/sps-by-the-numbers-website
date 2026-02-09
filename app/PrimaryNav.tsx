@@ -35,7 +35,7 @@ type Props = {
   sx?: SxProps<Theme>;
 };
 
-type NavApp = "none" | "finance" | "data";
+type NavApp = "none" | "finance" | "data" | "panorama" | "analyses";
 
 // Configuration for a nav item to display in the header.
 type NavConfig = {
@@ -47,8 +47,9 @@ type NavConfig = {
 
 const HOME_NAV_CONFIGS : Array<NavConfig> = [
   { name: 'Transcripts',
-    isAppPath: true,
+    isAppPath: false,
     pathPrefix: 'v',
+    href: 'https://transcrips.sps-by-the-numbers.com',
   },
   { name: 'Finances',
     isAppPath: false,
@@ -56,7 +57,15 @@ const HOME_NAV_CONFIGS : Array<NavConfig> = [
   },
   { name: 'Data',
     isAppPath: false,
+    pathPrefix: 'data',
+  },
+  { name: 'Analyses',
+    isAppPath: false,
     pathPrefix: 'analyses',
+  },
+  { name: 'Panorama Slicer',
+    isAppPath: false,
+    pathPrefix: 'panorama',
   },
   { name: 'About',
     isAppPath: false,
@@ -91,6 +100,8 @@ const NAV_CONFIGS_FOR_APP = {
   'none': HOME_NAV_CONFIGS,
   'finance': FINANCE_NAV_CONFIGS,
   'data': [],
+  'analyses': [],
+  'panorama': [],
 };
 
 function HideOnScroll(props) {
@@ -108,7 +119,7 @@ function HideOnScroll(props) {
   );
 }
  
-function NavLink({href, children, sx=[]} : {href: string, children: React.ReactNode, sx?: SxProps<Theme>}) {
+function NavLink({href, noHighlight, children, sx=[]} : {href: string, noHighlight?: boolean, children: React.ReactNode, sx?: SxProps<Theme>}) {
   const pathname = usePathname();
 
   return (
@@ -124,7 +135,7 @@ function NavLink({href, children, sx=[]} : {href: string, children: React.ReactN
         ]}>
       <Button 
         sx={{
-          backgroundColor: pathname.startsWith(href) ? 'primary.light' : 'primary.main',
+          backgroundColor: (!noHighlight && pathname.startsWith(href)) ? 'primary.light' : 'primary.main',
           color: 'primary.contrastText',
           alignSelf: "stretch",
           textTransform: 'none',
@@ -141,29 +152,40 @@ function NavLink({href, children, sx=[]} : {href: string, children: React.ReactN
   );
 }
 
-function makeNavLinks(navApp: NavApp) {
-  const navConfig = NAV_CONFIGS_FOR_APP[navApp];
+function makeHref(navApp: NavApp, navConfig: NavConfig) {
+  if (navConfig.href) {
+    return navConfig.href;
+  }
+  
+  if (navConfig.isAppPath) {
+    return `/${navApp}/${navConfig.pathPrefix}`;
+  }
 
-  return navConfig.map(({name, isAppPath, pathPrefix}, i) => (
+  return `/${navConfig.pathPrefix}`
+}
+
+function makeNavLinks(navApp: NavApp) {
+  const navConfigs = NAV_CONFIGS_FOR_APP[navApp];
+
+  return navConfigs.map((navConfig) => (
     <SingleDesktopLink
-      key={i}
-      href={isAppPath? `/${navApp}/${pathPrefix}`: `/${pathPrefix}`}
-      name={name}
+      key={navConfig.name}
+      href={makeHref(navApp, navConfig)}
+      name={navConfig.name}
     />
   ));
 }
 
 function makeMobileItems(navApp: NavApp, onClick : () => void) {
-  const navConfig = NAV_CONFIGS_FOR_APP[navApp];
-  console.log(navApp, navConfig);
+  const navConfigs = NAV_CONFIGS_FOR_APP[navApp];
 
-  return navConfig.map(({name, isAppPath, pathPrefix}, i) => (
-    <MenuItem key={i} onClick={onClick}>
+  return navConfigs.map((navConfig) => (
+    <MenuItem key={navConfig.name} onClick={onClick}>
       <Link
-          href={isAppPath? `/${navApp}/${pathPrefix}`: `/${pathPrefix}`}
+          href={makeHref(navApp, navConfig)}
           underline="none"
         >
-        {name}
+        {navConfig.name}
       </Link>
     </MenuItem>
   ));
@@ -299,6 +321,7 @@ export default function PrimaryNav(props : Props) {
           {/* Home icon */}
           <NavLink
             href={Constants.HOME_URL}
+            noHighlight={true}
             sx={{
               marginRight: ".5rem",
             }}>

@@ -2,10 +2,14 @@ import { toEmojiPrefix } from "utilities/emoji";
 
 import type { BaseSettings } from "app/finance/_settings/base_settings";
 import type Dashboards from "@highcharts/dashboards";
+import type {Board} from "@highcharts/dashboards";
+
+type GUIOptions = typeof Dashboards.defaultOptions.gui;
+type ComponentOptions = typeof Dashboards.defaultOptions.componentOptions;
 
 type HighchartsComponentConfig = {
-  gui: Dashboards.Board.GUIOptions;
-  components: Array<Dashboards.Component.Options>;
+  gui: GUIOptions;
+  components: Array<ComponentOptions>;
 };
 
 type OptionalHighchartsComponentConfig = HighchartsComponentConfig | undefined;
@@ -15,14 +19,14 @@ export function makeOneDatasetFacetedDashboard(
   componentGenerator,
 ): OptionalHighchartsComponentConfig {
   const cells = new Array<any>(); // TODO: Remove this any
-  const components = new Array<Dashboards.Component.Options>();
+  const components = new Array<ComponentOptions>();
 
   for (const cellOptions of componentGenerator(datasetSettings)) {
     cells.push({ id: cellOptions.renderTo });
     components.push(cellOptions);
   }
 
-  const gui: Dashboards.Board.GUIOptions = {
+  const gui: GUIOptions = {
     layouts: [
       {
         rowClassName: "faceted-row",
@@ -46,7 +50,7 @@ export function makeMultipleDatasetFacetedDashboard(
 ): OptionalHighchartsComponentConfig {
   // TODO: Remove this any
   let rows = new Array<any>();
-  const components = new Array<Dashboards.Component.Options>();
+  const components = new Array<ComponentOptions>();
 
   for (let datasetIdx = 0; datasetIdx < datasetSettingsList.length; datasetIdx++) {
     const datasetSettings = datasetSettingsList[datasetIdx];
@@ -66,7 +70,7 @@ export function makeMultipleDatasetFacetedDashboard(
     }
   }
 
-  const gui: Dashboards.Board.GUIOptions = {
+  const gui: GUIOptions = {
     layouts: [
       {
         rowClassName: "faceted-row",
@@ -90,7 +94,7 @@ export function makeDatasetFacetedDashboard<T extends BaseSettings>(
   datasetSettingsList: Array<T>,
   componentGenerator: (
     datasetSettings: T,
-  ) => Array<Dashboards.Component.Options>,
+  ) => Array<ComponentOptions>,
 ): OptionalHighchartsComponentConfig {
   if (datasetSettingsList.length == 0) {
     // TODO: Render no data. Or maybe consider throwing.
