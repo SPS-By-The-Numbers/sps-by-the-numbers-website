@@ -157,6 +157,7 @@ export default function VitalsDashboard({
   const { components, gui } = result;
 
   const data = makeChartableVitals(districtDataMap, allSettings);
+  const connectorOptions = data ? dfToJSONConnectorOptions(data) : {};
 
   const config = {
     gui,
@@ -166,7 +167,7 @@ export default function VitalsDashboard({
         {
           id: CONNECTOR_ID,
           type: "JSON",
-          options: data ? dfToJSONConnectorOptions(data) : undefined,
+          ...connectorOptions,
         },
       ],
     },

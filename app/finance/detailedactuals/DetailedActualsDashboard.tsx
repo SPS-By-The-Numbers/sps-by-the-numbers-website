@@ -151,7 +151,7 @@ export default function DetailedActualsDashboard({
         {
           id: CONNECTOR_ID,
           type: "JSON",
-          options: dfToJSONConnectorOptions(data),
+          ...dfToJSONConnectorOptions(data),
         },
       ],
     },

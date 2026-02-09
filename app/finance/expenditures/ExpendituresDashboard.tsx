@@ -355,7 +355,7 @@ function makeHighchartConfig(
         {
           id: CONNECTOR_ID,
           type: "JSON",
-          options: dfToJSONConnectorOptions(data),
+          ...dfToJSONConnectorOptions(data),
         },
       ],
     },

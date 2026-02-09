@@ -201,6 +201,7 @@ export default function CorrelationsDashboard({
   const { components, gui } = result;
 
   const data = makeChartableVitals(districtDataMap, allSettings);
+  const connectorOptions = data ? dfToJSONConnectorOptions(data) : {};
 
   const config = {
     gui,
@@ -210,7 +211,7 @@ export default function CorrelationsDashboard({
         {
           id: CONNECTOR_ID,
           type: "JSON",
-          options: dfToJSONConnectorOptions(data),
+          ...connectorOptions,
         },
       ],
     },
