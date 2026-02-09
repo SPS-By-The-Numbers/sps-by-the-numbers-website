@@ -8,18 +8,19 @@ export default function Page() {
     <>
       <Stack direction="row" gap={2} sx={{margin: "5ex", justifyContent: "center", flexWrap: 'wrap' }}>
         <ActionAreaCard
-          imageUrl="/assets/finance-app.png"
+          imageUrl="/assets/data-app.png"
           href="/data"
           altText="Link to the data archives">
           <>
             <Typography gutterBottom variant="h4" component="div">
-              Data Archives
+              Raw Data, Maps, etc
             </Typography>
             <Typography variant="body1" sx={{ color: 'text.secondary' }}>
               A repository of data about SPS or education in the state in
-              general. This includes PRRs, old Budget Books, as well as
-              joined + cleaned data from various sources such as OSPI.
-              If you want to do your own data analysis, start here.
+              general. This includes PRRs, old Budget Books, interactive Maps
+              by Beth Day as well as joined + cleaned data from various
+              sources such as OSPI. If you want to do your own data analysis,
+              start here.
             </Typography>
           </>
         </ActionAreaCard>
