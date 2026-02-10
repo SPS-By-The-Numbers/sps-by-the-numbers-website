@@ -49,7 +49,7 @@ const HOME_NAV_CONFIGS : Array<NavConfig> = [
   { name: 'Transcripts',
     isAppPath: false,
     pathPrefix: 'v',
-    href: 'https://transcrips.sps-by-the-numbers.com',
+    href: 'https://transcripts.sps-by-the-numbers.com',
   },
   { name: 'Finances',
     isAppPath: false,

@@ -74,7 +74,7 @@ export default function Page() {
       component="main"
       sx={{ display: 'flex', flexDirection: 'column', my: 2, gap: 4 }}
     >
-      <Typography component="h1" variant="h1">Data Archive</Typography>
+      <Typography component="h1" variant="h2">Data Archive</Typography>
       <Stack>
       <Typography component="h4" variant="h4">Budget Books since 2019 and lots of Purple Books</Typography>
         <BudgetBookList />
