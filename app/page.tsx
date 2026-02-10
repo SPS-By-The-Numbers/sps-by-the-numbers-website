@@ -3,6 +3,26 @@ import BottomNav from './BottomNav';
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
+function panoramaSlicerCard() {
+  return (
+    <ActionAreaCard
+      imageUrl="/assets/finance-app.png"
+      href="/panorama"
+      altText="Link to Panorama data slicer tool">
+      <>
+        <Typography gutterBottom variant="h4" component="div">
+          Panorama Slicer
+        </Typography>
+        <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+          SPS does yearly surveys of students known as Panorama covering a wide
+          range of data about their perceptions of the school. This tool faciliates
+          comparing different schools. Most useful during school choice.
+        </Typography>
+      </>
+    </ActionAreaCard>
+  );
+}
+
 export default function Page() {
   return (
     <>
@@ -62,7 +82,7 @@ export default function Page() {
         </ActionAreaCard>
 
         <ActionAreaCard
-          imageUrl="/assets/finance-app.png"
+          imageUrl="/assets/analyses-app.png"
           href="/analyses"
           altText="Links to major analyses and insteresting articles">
           <>
@@ -75,21 +95,6 @@ export default function Page() {
           </>
         </ActionAreaCard>
 
-        <ActionAreaCard
-          imageUrl="/assets/finance-app.png"
-          href="/panorama"
-          altText="Link to Panorama data slicer tool">
-          <>
-            <Typography gutterBottom variant="h4" component="div">
-              Panorama Slicer
-            </Typography>
-            <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-              SPS does yearly surveys of students known as Panorama covering a wide
-              range of data about their perceptions of the school. This tool faciliates
-              comparing different schools. Most useful during school choice.
-            </Typography>
-          </>
-        </ActionAreaCard>
       </Stack>
       <BottomNav />
     </>

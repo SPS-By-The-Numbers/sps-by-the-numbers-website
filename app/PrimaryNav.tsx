@@ -63,10 +63,12 @@ const HOME_NAV_CONFIGS : Array<NavConfig> = [
     isAppPath: false,
     pathPrefix: 'analyses',
   },
+  /*
   { name: 'Panorama Slicer',
     isAppPath: false,
     pathPrefix: 'panorama',
   },
+  */
   { name: 'About',
     isAppPath: false,
     pathPrefix: 'about',
