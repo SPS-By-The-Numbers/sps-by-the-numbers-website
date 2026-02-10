@@ -1,5 +1,6 @@
 import Container from '@mui/material/Container';
 import Link from '@mui/material/Link';
+import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
 export default function Page() {
@@ -14,63 +15,65 @@ export default function Page() {
         This is a list of analyses and articles that are data driven and interesting. Some come from folks who participate in this site and others are just interesting. If you find something work listing or what your thing listed here, email us at sps.by.the.number [at] gmail.com.
       </p>
 
-      <Typography component="h4" variant="h4">Finances</Typography>
-      <ul>
-        <li><Link href="https://medium.com/@awongawong/the-31-no-one-talks-about-57bf62c68969">
-          <Typography>The 31% No One Talks About</Typography>
-        </Link></li>
-        <li><Link href="https://medium.com/@awongawong/manufacturing-a-deficit-why-we-always-have-100m-in-the-bank-but-keep-having-to-cut-staff-39020c2bef82">
-          <Typography>Manufacturing a Deficit: Why we always have 100m in the bank but keep having to cut staff</Typography>
-        </Link></li>
-        <li><Link href="https://medium.com/@awongawong/cracking-the-budget-1-chronic-underspend-7d6098cc2fbc">
-          <Typography>Cracking the Budget #1: Chronic Underspend</Typography>
-        </Link></li>
-      </ul>
+      <Stack>
+        <Typography component="h4" variant="h4">Finances</Typography>
+        <ul>
+          <li><Link href="https://medium.com/@awongawong/the-31-no-one-talks-about-57bf62c68969">
+            <Typography>The 31% No One Talks About</Typography>
+          </Link></li>
+          <li><Link href="https://medium.com/@awongawong/manufacturing-a-deficit-why-we-always-have-100m-in-the-bank-but-keep-having-to-cut-staff-39020c2bef82">
+            <Typography>Manufacturing a Deficit: Why we always have 100m in the bank but keep having to cut staff</Typography>
+          </Link></li>
+          <li><Link href="https://medium.com/@awongawong/cracking-the-budget-1-chronic-underspend-7d6098cc2fbc">
+            <Typography>Cracking the Budget #1: Chronic Underspend</Typography>
+          </Link></li>
+        </ul>
 
-      <Typography component="h4" variant="h4">Well-Resource School Fiasco</Typography>
-      <ul>
-        <li><Link href="https://medium.com/@awongawong/recalculated-fab-4-school-closure-savings-its-small-e7d9e8b1d188">
-          <Typography>Recalculated: “Fab-4” School Closure Savings — it’s small</Typography>
-        </Link></li>
-        <li>
-          <Link href="https://medium.com/@rachkubiak/sps-proposed-school-closures-are-inequitable-bd998f73540b">
-          <Typography>SPS proposed school closures are inequitable</Typography>
-          </Link>
-        </li>
-        <li><Link href="https://medium.com/@awongawong/anti-asian-bias-in-seattle-school-leadership-and-advocacy-community-418521f010c2">
-          <Typography>Anti Asian bias in Seattle School leadership and advocacy community</Typography>
-        </Link></li>
-      </ul>
+        <Typography component="h4" variant="h4">Well-Resource School Fiasco</Typography>
+        <ul>
+          <li><Link href="https://medium.com/@awongawong/recalculated-fab-4-school-closure-savings-its-small-e7d9e8b1d188">
+            <Typography>Recalculated: “Fab-4” School Closure Savings — it’s small</Typography>
+          </Link></li>
+          <li>
+            <Link href="https://medium.com/@rachkubiak/sps-proposed-school-closures-are-inequitable-bd998f73540b">
+              <Typography>SPS proposed school closures are inequitable</Typography>
+            </Link>
+          </li>
+          <li><Link href="https://medium.com/@awongawong/anti-asian-bias-in-seattle-school-leadership-and-advocacy-community-418521f010c2">
+            <Typography>Anti Asian bias in Seattle School leadership and advocacy community</Typography>
+          </Link></li>
+        </ul>
 
-      <Typography component="h4" variant="h4">Staffing + Enrollment</Typography>
-      <ul>
-        <li>
-          <Link href="https://medium.com/@jenlavallee/data-on-actual-vs-projected-enrollment-in-seattle-public-schools-69766a9a3f28">
-            <Typography>Data on Actual vs Projected enrollment in Seattle Public Schools</Typography>
-          </Link>
-        </li>
-        <li>
-          <Link href="https://medium.com/@jenlavallee/the-ratio-problem-where-seattles-schools-fall-short-09b27a45b92d">
-          <Typography>The Ratio Problem: Where Seattle’s Schools Fall Short</Typography>
-          </Link>
-        </li>
-        <li>
-          <Link href="https://medium.com/@awongawong/sps-enrollment-is-far-higher-than-much-of-the-last-2-decades-fa782f61f322">
-            <Typography>Facts Matter: SPS Enrollment Much Higher Now Than The 2000s</Typography>
-          </Link>
-        </li>
-        <li>
-          <Link href="https://medium.com/@rebekah.binns/an-analysis-of-policies-that-disproportionately-harm-high-poverty-students-in-se-seattle-a7ae3ab315dd">
-            <Typography>SPS Policies that Harm High-Poverty Students: Structural and Institutional Racism within Seattle Public Schools</Typography>
-          </Link>
-        </li>
-        <li>
-          <Link href="https://medium.com/@rebekah.binns/ill-say-it-louder-for-the-folks-in-the-back-sps-your-enrollment-and-staffing-policies-are-46ea1807ac21">
-            <Typography>I’ll say it louder for the folks in the back: SPS — your enrollment and staffing policies are racist!</Typography>
-          </Link>
-        </li>
+        <Typography component="h4" variant="h4">Staffing + Enrollment</Typography>
+        <ul>
+          <li>
+            <Link href="https://medium.com/@jenlavallee/data-on-actual-vs-projected-enrollment-in-seattle-public-schools-69766a9a3f28">
+              <Typography>Data on Actual vs Projected enrollment in Seattle Public Schools</Typography>
+            </Link>
+          </li>
+          <li>
+            <Link href="https://medium.com/@jenlavallee/the-ratio-problem-where-seattles-schools-fall-short-09b27a45b92d">
+              <Typography>The Ratio Problem: Where Seattle’s Schools Fall Short</Typography>
+            </Link>
+          </li>
+          <li>
+            <Link href="https://medium.com/@awongawong/sps-enrollment-is-far-higher-than-much-of-the-last-2-decades-fa782f61f322">
+              <Typography>Facts Matter: SPS Enrollment Much Higher Now Than The 2000s</Typography>
+            </Link>
+          </li>
+          <li>
+            <Link href="https://medium.com/@rebekah.binns/an-analysis-of-policies-that-disproportionately-harm-high-poverty-students-in-se-seattle-a7ae3ab315dd">
+              <Typography>SPS Policies that Harm High-Poverty Students: Structural and Institutional Racism within Seattle Public Schools</Typography>
+            </Link>
+          </li>
+          <li>
+            <Link href="https://medium.com/@rebekah.binns/ill-say-it-louder-for-the-folks-in-the-back-sps-your-enrollment-and-staffing-policies-are-46ea1807ac21">
+              <Typography>I’ll say it louder for the folks in the back: SPS — your enrollment and staffing policies are racist!</Typography>
+            </Link>
+          </li>
 
-      </ul>
+        </ul>
+      </Stack>
     </Container>
   );
 }
