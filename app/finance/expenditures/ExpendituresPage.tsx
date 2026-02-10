@@ -5,7 +5,7 @@ import * as CommonSettings from "app/finance/_settings/common_settings";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
 import { makeDefaultPaoSettings, makeDefaultDatasetSettings } from "app/finance/_settings/common_settings";
 import ExpendituresDashboard from "./ExpendituresDashboard";
-import { DEFAULT_DASHBOARD_SETTINGS } from "./ExpendituresContextSettings";
+import { DEFAULT_DASHBOARD_SETTINGS, makeExpenditureDashboardSerializeConfig } from "./ExpendituresContextSettings";
 
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 import type { PAOFilters } from "utilities/DistrictData";
@@ -28,13 +28,17 @@ export const SERIALIZE_EXPENDITURES_SETTINGS_GENERATORS = [
   CommonSettings.makePaoSerializeConfig,
 ];
 
+export const SERIALIZE_EXPENDITURES_CONTEXT_SETTINGS_GENERATORS = [
+  makeExpenditureDashboardSerializeConfig,
+];
+
 export default function ExpendituresPage() {
   return (
     <EnsureDistrictData
       defaultAllSettings={DEFAULT_EXPENDITURES_SETTINGS}
       allSettingsConfigGenerators={SERIALIZE_EXPENDITURES_SETTINGS_GENERATORS}
       defaultContextSettings={DEFAULT_DASHBOARD_SETTINGS}
-      contextSettingsConfigGenerators={[]}
+      contextSettingsConfigGenerators={SERIALIZE_EXPENDITURES_CONTEXT_SETTINGS_GENERATORS}
       ContentComponent={ExpendituresDashboard}
     />
   );

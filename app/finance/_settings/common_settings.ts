@@ -245,6 +245,18 @@ export function deserializeByConfig<SettingsType>(defaultSettings: SettingsType,
   return settings;
 }
 
+export function serializeOneSetting<SettingsType extends BaseSettings>(
+  settings: SettingsType,
+  configGenerators: Array<(context?) => SerializationConfig>,
+) : string {
+    const fragments = new Array<string>();
+    // Run through each config in order.
+    for (const geneator of configGenerators) {
+      fragments.push(serializeByConfig(geneator(settings), settings));
+    }
+    return fragments.filter(x => !!x).join('~');
+}
+
 // Serializes an array of settings for a dataset into one url query parameter.
 export function serializeDatasetSettings<SettingsType extends BaseSettings>(
   allSettings: Array<SettingsType>,
@@ -252,12 +264,7 @@ export function serializeDatasetSettings<SettingsType extends BaseSettings>(
 ) : Array<string> {
   const serializedSettings = new Array<string>();
   for (const settings of allSettings) {
-    const fragments = new Array<string>();
-    // Run through each config in order.
-    for (const geneator of configGenerators) {
-      fragments.push(serializeByConfig(geneator(settings), settings));
-    }
-    serializedSettings.push(fragments.filter(x => !!x).join('~'));
+    serializedSettings.push(serializeOneSetting(settings, configGenerators));
   }
 
   return serializedSettings;

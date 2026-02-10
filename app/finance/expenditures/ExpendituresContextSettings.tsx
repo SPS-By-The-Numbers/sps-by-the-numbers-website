@@ -9,6 +9,7 @@ import {
   deserializeSettingsDict,
 } from "utilities/settings";
 
+import type { SerializationConfig } from "app/finance/_settings/common_settings";
 import type { CommonContextSettings } from "app/finance/_settings/common_context_settings";
 import type { SettingsContentsProps } from "app/finance/_widgets/SettingsContents";
 import type { SortOrder, SortType } from "utilities/ChartOptions";
@@ -62,54 +63,47 @@ function deserializeFacet(s: string): Facet {
   return "activity";
 }
 
-export function serializeExpenditureContextSettings(
-  s: ExpendituresContextSettings,
-) {
-  const settingsDict = {
-    f: serializeFacet(s.facet),
-    l: ChartOptions.serializeFacetLimit(s.facetLimit),
-    so: ChartOptions.serializeSortOrder(s.sortOrder),
-    st: ChartOptions.serializeSortType(s.sortType),
-    ys: ChartOptions.serializeYScales(s.yScale),
-  };
-
-  return serializeSettingsDict(settingsDict);
-}
-
-export function deserializeExpenditureContextSettings(
-  queries: Array<string>,
-) {
-  if (queries.length === 0) {
-    return DEFAULT_DASHBOARD_SETTINGS;
-  }
-
-  // Go with the first parameter of shared settings if they are repeeated.
-  const settingsDict = deserializeSettingsDict(queries[0]);
-  const settings = DEFAULT_DASHBOARD_SETTINGS;
-  for (const [key, value] of Object.entries(settingsDict)) {
-    switch (key) {
-      case "f":
-        settings.facet = deserializeFacet(value);
-        break;
-
-      case "l":
-        settings.facetLimit = ChartOptions.deserializeFacetLimit(value);
-        break;
-
-      case "so":
-        settings.sortOrder = ChartOptions.deserializeSortOrder(value);
-        break;
-
-      case "st":
-        settings.sortType = ChartOptions.deserializeSortType(value);
-        break;
-
-      case "ys":
-        settings.yScale = ChartOptions.deserializeYScales(value);
-        break;
-    }
-  }
-  return settings;
+export function makeExpenditureDashboardSerializeConfig(context?) : SerializationConfig {
+  return [
+    [
+      "facet",
+      {
+        serializerType: "custom",
+        urlVar: "f",
+        serialize: (settings, key) => serializeFacet(settings[key]),
+          deserialize: (settings, s) => deserializeFacet(s),
+      },
+    ], [
+      "facetLimit",
+      {
+        serializerType: "custom",
+        urlVar: "l",
+        serialize: (settings, key) => ChartOptions.serializeFacetLimit(settings[key]),
+          deserialize: (settings, s) => ChartOptions.deserializeFacetLimit(s),
+      },
+    ], [
+      "sortOrder", {
+        serializerType: "custom",
+        urlVar: "so",
+        serialize: (settings, key) => ChartOptions.serializeSortOrder(settings[key]),
+          deserialize: (settings, s) => ChartOptions.deserializeSortOrder(s),
+      },
+    ], [
+      "sortType", {
+        serializerType: "custom",
+        urlVar: "st",
+        serialize: (settings, key) => ChartOptions.serializeSortType(settings[key]),
+          deserialize: (settings, s) => ChartOptions.deserializeSortType(s),
+      },
+    ], [
+      "yScale", {
+        serializerType: "custom",
+        urlVar: "ys",
+        serialize: (settings, key) => ChartOptions.serializeYScales(settings[key]),
+          deserialize: (settings, s) => ChartOptions.deserializeYScales(s),
+      },
+    ]
+  ];
 }
 
 export default function ExpendituresContextSettingsContents(

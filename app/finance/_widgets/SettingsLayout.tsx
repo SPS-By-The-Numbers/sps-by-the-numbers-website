@@ -1,7 +1,7 @@
 "use client";
 
 // SettingsLayout defines the basic layout of a page where there is a left
-// settings drawer with one "shared" setting box at the top and a series
+// settings drawer with one "context" setting box at the top and a series
 // of "dataset" settings under. The render of each setting type is controlled
 // by an array of SettingsContents.
 //
@@ -172,9 +172,9 @@ export default function SettingsLayout<
         queries.push(`d=${settingsQuery}`);
       }
     }
-    const sharedQuery = settingsSerializer.serializeShared(newContextSettings);
-    if (sharedQuery) {
-      queries.push(`s=${sharedQuery}`);
+    const contextQuery = settingsSerializer.serializeContext(newContextSettings);
+    if (contextQuery) {
+      queries.push(`c=${contextQuery}`);
     }
 
     if (queries.length !== 0) {

@@ -2,8 +2,8 @@
 
 import * as aq from "arquero";
 import { op } from "arquero";
-import { SERIALIZE_EXPENDITURES_SETTINGS_GENERATORS } from "./ExpendituresPage";
-import { serializeDatasetSettings } from "app/finance/_settings/common_settings";
+import { SERIALIZE_EXPENDITURES_SETTINGS_GENERATORS, SERIALIZE_EXPENDITURES_CONTEXT_SETTINGS_GENERATORS } from "./ExpendituresPage";
+import { serializeDatasetSettings, serializeOneSetting } from "app/finance/_settings/common_settings";
 import { dfToJSONConnectorOptions } from "utilities/highcharts/utils";
 import {
   extractRawExpenditures,
@@ -396,7 +396,7 @@ export default function ExpendituresDashboard({
     <SettingsLayout
       settingsSerializer={{
         serialize: newAllSettings => serializeDatasetSettings(newAllSettings, SERIALIZE_EXPENDITURES_SETTINGS_GENERATORS),
-        serializeShared: serializeExpenditureContextSettings,
+          serializeContext: context => serializeOneSetting(context, SERIALIZE_EXPENDITURES_CONTEXT_SETTINGS_GENERATORS),
       }}
       contextSettings={contextSettings}
       contextSettingsComponents={[ExpendituresContextSettingsContents]}

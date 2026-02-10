@@ -148,7 +148,7 @@ export default function StaffingDashboard({
     <SettingsLayout
       settingsSerializer={{
         serialize: newAllSettings => serializeDatasetSettings(newAllSettings, SERIALIZE_STAFFING_SETTINGS_GENERATORS),
-        serializeShared: x => "",
+        serializeContext: x => "",
       }}
       allSettings={allSettings}
       contextSettings={contextSettings}

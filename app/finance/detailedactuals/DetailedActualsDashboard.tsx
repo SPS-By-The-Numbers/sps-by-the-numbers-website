@@ -161,7 +161,7 @@ export default function DetailedActualsDashboard({
     <SettingsLayout
       settingsSerializer={{
         serialize: newAllSettings => serializeDatasetSettings(newAllSettings, SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS),
-        serializeShared: x => "",
+        serializeContext: x => "",
       }}
       allSettings={allSettings}
       contextSettings={contextSettings}

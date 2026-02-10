@@ -177,7 +177,7 @@ export default function VitalsDashboard({
     <SettingsLayout
       settingsSerializer={{
         serialize: newAllSettings => serializeDatasetSettings(newAllSettings, SERIALIZE_VITALS_SETTINGS_GENERATORS),
-        serializeShared: x => "",
+        serializeContext: x => "",
       }}
       allSettings={allSettings}
       contextSettings={DUMMY_BASE_SETTINGS}

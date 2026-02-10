@@ -221,7 +221,7 @@ export default function CorrelationsDashboard({
     <SettingsLayout
       settingsSerializer={{
         serialize: newAllSettings => serializeDatasetSettings(newAllSettings, SERIALIZE_CORRELATIONS_SETTINGS_GENERATORS),
-        serializeShared: x => "",
+        serializeContext: x => "",
       }}
       allSettings={allSettings}
       contextSettings={contextSettings}

@@ -13,7 +13,7 @@ export type SettingsSerializer<
   ContextSettingsType extends BaseSettings,
 > = {
   serialize(allSettings: Array<SettingsType>): Array<string>;
-  serializeShared(contextSettings: ContextSettingsType): string;
+  serializeContext(contextSettings: ContextSettingsType): string;
 };
 
 export type SettingsDeserializer<
@@ -21,7 +21,7 @@ export type SettingsDeserializer<
   ContextSettingsType extends BaseSettings,
 > = {
   deserialize(params: Array<string>) :  Array<SettingsType>;
-  deserializeShared(params: Array<string>) : ContextSettingsType;
+  deserializeContext(params: Array<string>) : ContextSettingsType;
 };
 
 export function serializeSettings<SettingsType extends BaseSettings>(
