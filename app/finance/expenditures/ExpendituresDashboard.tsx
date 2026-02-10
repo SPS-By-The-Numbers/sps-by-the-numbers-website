@@ -31,9 +31,7 @@ import {
 import { useMemo } from "react";
 import ObjectFilter from "app/finance/_filteritems/object";
 import ProgramFilter from "app/finance/_filteritems/program";
-import ExpendituresContextSettingsContents, {
-  serializeExpenditureContextSettings,
-} from "app/finance/expenditures/ExpendituresContextSettings";
+import ExpendituresContextSettingsContents from "app/finance/expenditures/ExpendituresContextSettings";
 import { makeMaybeContents } from "app/finance/_widgets/SettingsContents";
 import { serializeSettings } from "app/finance/_settings/base_settings";
 import HcDashboard from "components/HcDashboard";
