@@ -9,6 +9,7 @@ import { DEFAULT_DASHBOARD_SETTINGS, makeExpenditureDashboardSerializeConfig } f
 
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 import type { PAOFilters } from "utilities/DistrictData";
+import type { SerializationConfig } from "app/finance/_settings/common_settings";
 
 export type ExpendituresSettings = DatasetSettings & PAOFilters & {
   overridePrimaryFilter: boolean;
@@ -23,20 +24,24 @@ export const DEFAULT_EXPENDITURES_SETTINGS = DEFAULT_DATASET_SETTINGS.map(
   }),
 );
 
-export const SERIALIZE_EXPENDITURES_SETTINGS_GENERATORS = [
-  CommonSettings.makeDatasetSerializeConfig,
-  CommonSettings.makePaoSerializeConfig,
-  (context?) => [
+function makeExpenditreDatasetSerializeConfig(context?) : SerializationConfig {
+  return [
     [
       "overridePrimaryFilter",
       {
         serializerType: "custom",
         urlVar: "of",
-        serialize: (settings, key) => (settings[key] ? 1 : 0),
+        serialize: (settings, key) => (settings[key] ? "1" : "0"),
           deserialize: (settings, s) => (s === "1" ? true : false)
       }
     ],
-  ],
+  ];
+}
+
+export const SERIALIZE_EXPENDITURES_SETTINGS_GENERATORS = [
+  CommonSettings.makeDatasetSerializeConfig,
+  CommonSettings.makePaoSerializeConfig,
+  makeExpenditreDatasetSerializeConfig,
 ];
 
 export const SERIALIZE_EXPENDITURES_CONTEXT_SETTINGS_GENERATORS = [
