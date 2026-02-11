@@ -26,6 +26,17 @@ export const DEFAULT_EXPENDITURES_SETTINGS = DEFAULT_DATASET_SETTINGS.map(
 export const SERIALIZE_EXPENDITURES_SETTINGS_GENERATORS = [
   CommonSettings.makeDatasetSerializeConfig,
   CommonSettings.makePaoSerializeConfig,
+  (context?) => [
+    [
+      "overridePrimaryFilter",
+      {
+        serializerType: "custom",
+        urlVar: "of",
+        serialize: (settings, key) => (settings[key] ? 1 : 0),
+          deserialize: (settings, s) => (s === "1" ? true : false)
+      }
+    ],
+  ],
 ];
 
 export const SERIALIZE_EXPENDITURES_CONTEXT_SETTINGS_GENERATORS = [

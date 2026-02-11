@@ -168,7 +168,7 @@ function compileData(districtDataMap, expandedAllSettings, facet, sortOrder) {
   return { data, fullFacetOrder };
 }
 
-function expandFilters(allSettings): Array<ExpendituresSettings> {
+function expandFilters(allSettings : Array<ExpendituresSettings>): Array<ExpendituresSettings> {
   const results = new Array<ExpendituresSettings>();
 
   // The first entry is the primary entry.
@@ -181,9 +181,9 @@ function expandFilters(allSettings): Array<ExpendituresSettings> {
 
     // Use the primary settings if this one isn't overriding.
     if (!newSetting.overridePrimaryFilter) {
-      newSetting.selectedObjects = [...primarySettings.selectedObjects];
-      newSetting.selectedActivities = [...primarySettings.selectedActivities];
-      newSetting.selectedPrograms = [...primarySettings.selectedPrograms];
+      newSetting.objectCodes = new Set(primarySettings.objectCodes);
+      newSetting.activityCodes = new Set(primarySettings.activityCodes);
+      newSetting.programCodes = new Set(primarySettings.programCodes);
     }
 
     results.push(newSetting);
