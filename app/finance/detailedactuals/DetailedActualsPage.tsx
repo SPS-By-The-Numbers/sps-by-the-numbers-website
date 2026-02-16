@@ -2,6 +2,7 @@
 
 import { DEFAULT_DATASET_SETTINGS } from "app/finance/_settings/dataset_settings";
 import { DUMMY_BASE_SETTINGS } from "app/finance/_settings/base_settings";
+import * as CommonContextSettings from "app/finance/_settings/common_context_settings";
 import * as CommonSettings from "app/finance/_settings/common_settings";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
 import { makeDefaultSettings } from "app/finance/_settings/common_settings";
@@ -25,12 +26,18 @@ export const SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS = [
   CommonSettings.makeNcesSerializeConfig,
 ];
 
+export const SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS = [
+  CommonContextSettings.makeSortOrderSerializeConfig,
+  CommonContextSettings.makeYScaleSerializeConfig,
+];
+
 export default function DetailedActualsPage() {
   return (
     <EnsureDistrictData
       defaultAllSettings={DEFAULT_DETAILED_ACTUALS_SETTINGS}
       allSettingsConfigGenerators={SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS}
       defaultContextSettings={DUMMY_BASE_SETTINGS}
+      contextSettingsConfigGenerators={SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS}
       ContentComponent={DetailedActualsDashboard}
     />
   );

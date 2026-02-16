@@ -1,7 +1,37 @@
+import type { Filter } from "utilities/filter";
+
 export type BaseSettings = {
   name: string;
   id: number;
 };
+
+export type SettingsConfigGenerators = Array<(context?) => SettingsConfig>;
+
+type HasUrlVar = {
+  urlVar: string;
+};
+
+type FilterSerializer = HasUrlVar & {
+  serializerType: "filter";
+  filter: Filter;
+};
+
+type CustomSerializer = HasUrlVar & {
+  serializerType: "custom";
+  serialize: (settings, key: string) => string;
+  deserialize: (settings, value: string) => any;
+};
+
+type NoUrlVarSerializer = {
+  serializerType: "nourlvar";
+  deserialize: (settings) => any;
+};
+
+type SerializerInfo = FilterSerializer | CustomSerializer | NoUrlVarSerializer;
+
+// Mapping of the key in a settings struct to a SerializerInfo that describes
+// how it should be encoded into the URL.
+export type SettingsConfig = Array<[string, SerializerInfo]>;
 
 export const DUMMY_BASE_SETTINGS : BaseSettings = {
   name: "unused",

@@ -31,13 +31,16 @@ import {
 import { useMemo } from "react";
 import ObjectFilter from "app/finance/_filteritems/object";
 import ProgramFilter from "app/finance/_filteritems/program";
-import ExpendituresContextSettingsContents from "app/finance/expenditures/ExpendituresContextSettings";
+import { FACET_OPTIONS } from "app/finance/expenditures/ExpendituresContextSettings";
+import { makeFacetContents } from "app/finance/_widgets/FacetContents";
 import { makeMaybeContents } from "app/finance/_widgets/SettingsContents";
 import { serializeSettings } from "app/finance/_settings/base_settings";
 import HcDashboard from "components/HcDashboard";
 import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
+import SortOrderContents from "app/finance/_widgets/SortOrderContents";
 import Typography from "@mui/material/Typography";
+import YScaleContents from "app/finance/_widgets/YScaleContents";
 
 import type { ColumnTable } from "arquero";
 import type { ExpendituresContextSettings } from "./ExpendituresContextSettings";
@@ -397,7 +400,11 @@ export default function ExpendituresDashboard({
           serializeContext: context => serializeOneSetting(context, SERIALIZE_EXPENDITURES_CONTEXT_SETTINGS_GENERATORS),
       }}
       contextSettings={contextSettings}
-      contextSettingsComponents={[ExpendituresContextSettingsContents]}
+      contextSettingsComponents={[
+        makeFacetContents(FACET_OPTIONS),
+        SortOrderContents,
+        YScaleContents,
+      ]}
       allSettings={allSettings}
       settingsContentsComponents={[
         DatasetSettingsContents,

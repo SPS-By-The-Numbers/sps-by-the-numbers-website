@@ -1,7 +1,7 @@
 import { deserializeByConfig } from "app/finance/_settings/common_settings";
+import * as ChartOptions from "utilities/ChartOptions";
 
-import type { BaseSettings } from "app/finance/_settings/base_settings";
-import type { SettingsConfigGenerators } from "app/finance/_settings/common_settings";
+import type { BaseSettings, SettingsConfig, SettingsConfigGenerators } from "app/finance/_settings/base_settings";
 
 export type CommonContextSettings = BaseSettings;
 
@@ -10,16 +10,67 @@ export const DEFAULT_COMMON_CONTEXT_SETTINGS: CommonContextSettings = {
   id: -1,
 };
 
-// URL-safe seralization of the settings.
-export function serializeCommonContextSettings(settings: CommonContextSettings) {
-  // No common shared settings so default to nothing
-  return "";
+// Type that constraints to just a string literal.
+//
+// https://github.com/microsoft/TypeScript/issues/42644#issuecomment-774315112
+type StringLiteral<T> = T extends string ? string extends T ? never : T : never;
+
+export function makeFacetSerializeConfigHelper<T>(
+  serializeFacet : (v: StringLiteral<T>) => string,
+    deserializeFacet : (s: string) => T) : (context?) => SettingsConfig
+  {
+    return (context?) => [
+      [
+        "facet",
+        {
+          serializerType: "custom",
+          urlVar: "f",
+          serialize: (settings, key) => serializeFacet(settings[key]),
+            deserialize: (settings, s) => deserializeFacet(s),
+        },
+      ], [
+        "facetLimit",
+        {
+          serializerType: "custom",
+          urlVar: "l",
+          serialize: (settings, key) => ChartOptions.serializeFacetLimit(settings[key]),
+            deserialize: (settings, s) => ChartOptions.deserializeFacetLimit(s),
+        },
+      ],
+    ];
 }
 
-// deserize settings from URL string.
-export function queryToCommonContextSettings(seralized: string) {
-  // No common shared settings so return default.
-  return DEFAULT_COMMON_CONTEXT_SETTINGS;
+export function makeSortOrderSerializeConfig(context?) : SettingsConfig {
+  return [
+    [
+      "sortOrder", {
+        serializerType: "custom",
+        urlVar: "so",
+        serialize: (settings, key) => ChartOptions.serializeSortOrder(settings[key]),
+          deserialize: (settings, s) => ChartOptions.deserializeSortOrder(s),
+      },
+    ], [
+      "sortType", {
+        serializerType: "custom",
+        urlVar: "st",
+        serialize: (settings, key) => ChartOptions.serializeSortType(settings[key]),
+          deserialize: (settings, s) => ChartOptions.deserializeSortType(s),
+      },
+    ]
+  ];
+}
+
+export function makeYScaleSerializeConfig(context?) : SettingsConfig {
+  return [
+    [
+      "yScale", {
+        serializerType: "custom",
+        urlVar: "ys",
+        serialize: (settings, key) => ChartOptions.serializeYScales(settings[key]),
+          deserialize: (settings, s) => ChartOptions.deserializeYScales(s),
+      },
+    ]
+  ];
 }
 
 export function deserializeContextSettings<ContextSettingsType extends BaseSettings>(

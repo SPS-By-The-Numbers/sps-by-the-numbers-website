@@ -13,38 +13,9 @@ import ObjectFilter from "app/finance/_filteritems/object";
 import ProgramFilter from "app/finance/_filteritems/program";
 import memoize from "lodash/memoize";
 
-import type { BaseSettings } from "app/finance/_settings/base_settings";
+import type { BaseSettings, SettingsConfig, SettingsConfigGenerators } from "app/finance/_settings/base_settings";
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
-import type { Filter } from "utilities/filter";
 import type { SettingsDict } from "utilities/settings";
-
-export type SettingsConfigGenerators = Array<(context?) => SerializationConfig>;
-
-type HasUrlVar = {
-  urlVar: string;
-};
-
-type FilterSerializer = HasUrlVar & {
-  serializerType: "filter";
-  filter: Filter;
-};
-
-type CustomSerializer = HasUrlVar & {
-  serializerType: "custom";
-  serialize: (settings, key: string) => string;
-  deserialize: (settings, value: string) => any;
-};
-
-type NoUrlVarSerializer = {
-  serializerType: "nourlvar";
-  deserialize: (settings) => any;
-};
-
-type SerializerInfo = FilterSerializer | CustomSerializer | NoUrlVarSerializer;
-
-// Mapping of the key in a settings struct to a SerializerInfo that describes
-// how it should be encoded into the URL.
-export type SerializationConfig = Array<[string, SerializerInfo]>;
 
 ///////
 // Big blob of defaults for one setting.
@@ -92,7 +63,7 @@ export function makeDefaultSettings(ccddd: number) {
 ///////
 // Configurations for serializing to a URL.
 //
-export function makeDatasetSerializeConfig(context?) : SerializationConfig {
+export function makeDatasetSerializeConfig(context?) : SettingsConfig {
   return [
     [
       "ccddd",
@@ -133,7 +104,7 @@ export function makeDatasetSerializeConfig(context?) : SerializationConfig {
   ];
 }
 
-export function makePaSerializeConfig(context?) : SerializationConfig {
+export function makePaSerializeConfig(context?) : SettingsConfig {
   return [
     [
       "programCodes", {
@@ -151,7 +122,7 @@ export function makePaSerializeConfig(context?) : SerializationConfig {
   ];
 }
 
-export function makePaoSerializeConfig(context?) : SerializationConfig {
+export function makePaoSerializeConfig(context?) : SettingsConfig {
   return [
     ...makePaSerializeConfig(context),
     [
@@ -165,7 +136,7 @@ export function makePaoSerializeConfig(context?) : SerializationConfig {
   ];
 }
 
-export function makeDutyRootSerializeConfig(context?) : SerializationConfig {
+export function makeDutyRootSerializeConfig(context?) : SettingsConfig {
   return [
     [
       "dutyRootCodes",
@@ -178,7 +149,7 @@ export function makeDutyRootSerializeConfig(context?) : SerializationConfig {
   ];
 };
 
-export function makeNcesSerializeConfig(context?) : SerializationConfig {
+export function makeNcesSerializeConfig(context?) : SettingsConfig {
   return [
     [
       "ncesCodes",
@@ -191,7 +162,7 @@ export function makeNcesSerializeConfig(context?) : SerializationConfig {
   ];
 };
 
-function makeSchoolFilterConfigInternal(settings) : SerializationConfig {
+function makeSchoolFilterConfigInternal(settings) : SettingsConfig {
   return [
     [ "schoolCodes",
       {
@@ -205,7 +176,7 @@ function makeSchoolFilterConfigInternal(settings) : SerializationConfig {
 export const makeSchoolFilterConfig = memoize(makeSchoolFilterConfigInternal);
 
 // TODO: Don't export this.
-export function serializeByConfig(serializationConfig: SerializationConfig,
+export function serializeByConfig(serializationConfig: SettingsConfig,
                                   settings) : string {
   const settingsDict : SettingsDict = {};
   for (const [key, serializerInfo] of serializationConfig) {
@@ -220,7 +191,7 @@ export function serializeByConfig(serializationConfig: SerializationConfig,
 }
 
 export function deserializeByConfig<SettingsType>(defaultSettings: SettingsType,
-                                                  serializationConfig: SerializationConfig,
+                                                  serializationConfig: SettingsConfig,
                                                   serialized: string) : SettingsType {
   const settings = Object.assign({}, defaultSettings);
   const settingsDict = deserializeSettingsDict(serialized);
@@ -247,7 +218,7 @@ export function deserializeByConfig<SettingsType>(defaultSettings: SettingsType,
 
 export function serializeOneSetting<SettingsType extends BaseSettings>(
   settings: SettingsType,
-  configGenerators: Array<(context?) => SerializationConfig>,
+  configGenerators: Array<(context?) => SettingsConfig>,
 ) : string {
     const fragments = new Array<string>();
     // Run through each config in order.
@@ -260,7 +231,7 @@ export function serializeOneSetting<SettingsType extends BaseSettings>(
 // Serializes an array of settings for a dataset into one url query parameter.
 export function serializeDatasetSettings<SettingsType extends BaseSettings>(
   allSettings: Array<SettingsType>,
-  configGenerators: Array<(context?) => SerializationConfig>,
+  configGenerators: Array<(context?) => SettingsConfig>,
 ) : Array<string> {
   const serializedSettings = new Array<string>();
   for (const settings of allSettings) {

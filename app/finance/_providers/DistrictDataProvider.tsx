@@ -7,8 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import DistrictData from "utilities/DistrictData";
 import Loading from "components/Loading";
 
-import type { BaseSettings } from "app/finance/_settings/base_settings";
-import type { SettingsConfigGenerators } from "app/finance/_settings/common_settings";
+import type { BaseSettings, SettingsConfigGenerators } from "app/finance/_settings/base_settings";
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 import type { ReactNode, ComponentType } from "react";
 

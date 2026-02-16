@@ -1,15 +1,19 @@
 "use client";
 
 import { DEFAULT_DATASET_SETTINGS } from "app/finance/_settings/dataset_settings";
+import * as CommonContextSettings from "app/finance/_settings/common_context_settings";
 import * as CommonSettings from "app/finance/_settings/common_settings";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
 import { makeDefaultPaoSettings, makeDefaultDatasetSettings } from "app/finance/_settings/common_settings";
 import ExpendituresDashboard from "./ExpendituresDashboard";
-import { DEFAULT_DASHBOARD_SETTINGS, makeExpenditureDashboardSerializeConfig } from "./ExpendituresContextSettings";
+import { DEFAULT_DASHBOARD_SETTINGS, serializeExpendituresDashbaordFacet, deserializeExpendituresDashbaordFacet } from "./ExpendituresContextSettings";
+
+
+import type { Facet } from "./ExpendituresContextSettings";
 
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 import type { PAOFilters } from "utilities/DistrictData";
-import type { SerializationConfig } from "app/finance/_settings/common_settings";
+import type { SettingsConfig } from "app/finance/_settings/base_settings";
 
 export type ExpendituresSettings = DatasetSettings & PAOFilters & {
   overridePrimaryFilter: boolean;
@@ -24,7 +28,7 @@ export const DEFAULT_EXPENDITURES_SETTINGS = DEFAULT_DATASET_SETTINGS.map(
   }),
 );
 
-function makeExpenditreDatasetSerializeConfig(context?) : SerializationConfig {
+function makeExpenditreDatasetSerializeConfig(context?) : SettingsConfig {
   return [
     [
       "overridePrimaryFilter",
@@ -45,7 +49,11 @@ export const SERIALIZE_EXPENDITURES_SETTINGS_GENERATORS = [
 ];
 
 export const SERIALIZE_EXPENDITURES_CONTEXT_SETTINGS_GENERATORS = [
-  makeExpenditureDashboardSerializeConfig,
+  CommonContextSettings.makeFacetSerializeConfigHelper<Facet>(
+    serializeExpendituresDashbaordFacet,
+    deserializeExpendituresDashbaordFacet),
+  CommonContextSettings.makeSortOrderSerializeConfig,
+  CommonContextSettings.makeYScaleSerializeConfig,
 ];
 
 export default function ExpendituresPage() {

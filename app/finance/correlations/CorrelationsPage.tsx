@@ -7,6 +7,7 @@ import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider"
 import { makeDefaultDatasetSettings } from "app/finance/_settings/common_settings";
 import CorrelationsDashboard from "./CorrelationsDashboard";
 
+import type { SettingsConfigGenerators } from "app/finance/_settings/base_settings";
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 
 export type CorrelationsSettings = DatasetSettings;
@@ -29,7 +30,7 @@ export default function CorrelationsPage() {
       defaultAllSettings={DEFAULT_CORRELATIONS_SETTINGS}
       allSettingsConfigGenerators={SERIALIZE_CORRELATIONS_SETTINGS_GENERATORS}
       defaultContextSettings={DUMMY_BASE_SETTINGS}
-      contextSettingsConfigGenerators={[]}
+      contextSettingsConfigGenerators={[] as SettingsConfigGenerators}
       ContentComponent={CorrelationsDashboard}
     />
   );
