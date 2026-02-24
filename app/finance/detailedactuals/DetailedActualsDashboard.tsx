@@ -3,7 +3,7 @@
 import { DEFAULT_DATASET_SETTINGS } from "app/finance/_settings/dataset_settings";
 import * as aq from "arquero";
 import { op } from "arquero";
-import { serializeDatasetSettings } from "app/finance/_settings/common_settings";
+import { serializeDatasetSettings, serializeOneSetting } from "app/finance/_settings/common_settings";
 import { dfToJSONConnectorOptions } from "utilities/highcharts/utils";
 import {
   extractRawExpenditures,
@@ -24,7 +24,10 @@ import HcDashboard from "components/HcDashboard";
 import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
-import { SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS } from "app/finance/detailedactuals/DetailedActualsPage";
+import { SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS, SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS } from "app/finance/detailedactuals/DetailedActualsPage";
+import { makeFacetContents } from "app/finance/_widgets/FacetContents";
+import SortOrderContents from "app/finance/_widgets/SortOrderContents";
+import YScaleContents from "app/finance/_widgets/YScaleContents";
 
 import ActivityFilter from "app/finance/_filteritems/activity";
 import ObjectFilter from "app/finance/_filteritems/object";
@@ -34,9 +37,62 @@ import NcesFilter from "app/finance/_filteritems/nces";
 
 import type { ColumnTable } from "arquero";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
-import type { DetailedActualsSettings } from "app/finance/detailedactuals/DetailedActualsPage";
+import type { DetailedActualsSettings, DetailedActualsContextSettings } from "app/finance/detailedactuals/DetailedActualsPage";
 
 const CONNECTOR_ID = "nces-connector";
+
+const ALL_FACETS = ["activity", "program", "object", "school", "nces"];
+export type Facet = (typeof ALL_FACETS)[number];
+export const FACET_OPTIONS: Record<Facet, string> = {
+  activity: "Activity",
+  program: "Program",
+  object: "Object",
+  school: "School",
+  nces: "NCES",
+};
+
+export function serializeFacet(facet: Facet): string {
+  switch (facet) {
+    case "activity":
+      return "0";
+
+    case "program":
+      return "1";
+
+    case "object":
+      return "2";
+
+    case "school":
+      return "3";
+
+    case "nces":
+      return "4";
+  }
+
+  return "0";
+}
+
+export function deserializeFacet(s: string): Facet {
+  switch (s) {
+    case "0":
+      return "activity";
+
+    case "1":
+      return "program";
+
+    case "2":
+      return "object";
+
+    case "3":
+      return "school";
+
+    case "4":
+      return "nces";
+  }
+
+  return "activity";
+}
+
 
 function componentsGenerator(settings: DetailedActualsSettings, facetOrder) {
   const schoolFilter = makeSchoolFilter(settings.ccddd);
@@ -72,7 +128,7 @@ function makeFacetedDetailedActualsForDistrict(
 
   const pdata = data
     .groupby(["class_of", "data_type"])
-    .pivot(["nces_code"], {
+    .pivot([`${facet}_code`], {
       amount: (d) => op.sum(d.amount),
       _pivot_name_hack_: (d) => op.any("_pivot_name_hack_"),
     })
@@ -89,7 +145,7 @@ function makeFacetedDetailedActualsForDistrict(
   );
 }
 
-function compileData(districtDataMap, allSettings : Array<DetailedActualsSettings>, facet) {
+function compileData(districtDataMap, allSettings : Array<DetailedActualsSettings>, facet, sortOrder) {
   const allDatasets = new Array<ColumnTable>();
   let facetInfo;
 
@@ -110,7 +166,7 @@ function compileData(districtDataMap, allSettings : Array<DetailedActualsSetting
         filteredExpenditures,
         facet,
         "amount",
-        "descending" as const,
+        sortOrder,
       );
     }
   }
@@ -128,11 +184,12 @@ export default function DetailedActualsDashboard({
   districtDataMap,
   allSettings,
   contextSettings,
-}: DistrictDataContentProps<DetailedActualsSettings>) {
+}: DistrictDataContentProps<DetailedActualsSettings, DetailedActualsContextSettings>) {
   const [data, facetOrder] = compileData(
     districtDataMap,
     allSettings,
-    "nces" as const,
+    contextSettings.facet,
+    contextSettings.sortOrder,
   );
 
   const result = makeDatasetFacetedDashboard(allSettings, (s) =>
@@ -161,11 +218,15 @@ export default function DetailedActualsDashboard({
     <SettingsLayout
       settingsSerializer={{
         serialize: newAllSettings => serializeDatasetSettings(newAllSettings, SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS),
-        serializeContext: x => "",
+          serializeContext: context => serializeOneSetting(context, SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS),
       }}
       allSettings={allSettings}
       contextSettings={contextSettings}
-      contextSettingsComponents={[]}
+      contextSettingsComponents={[
+        makeFacetContents(FACET_OPTIONS),
+        SortOrderContents,
+        YScaleContents,
+      ]}
       settingsContentsComponents={[
         DatasetSettingsContents,
         ObjectFilterContents,

@@ -8,7 +8,6 @@ import { makeDefaultPaoSettings, makeDefaultDatasetSettings } from "app/finance/
 import ExpendituresDashboard from "./ExpendituresDashboard";
 import { DEFAULT_DASHBOARD_SETTINGS, serializeExpendituresDashbaordFacet, deserializeExpendituresDashbaordFacet } from "./ExpendituresContextSettings";
 
-
 import type { Facet } from "./ExpendituresContextSettings";
 
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
