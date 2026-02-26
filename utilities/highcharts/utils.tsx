@@ -90,6 +90,34 @@ function get1ValueDataBounds(df, name) {
   };
 }
 
+function get2ValueDataBounds(df, a_name, b_name) {
+  const minMaxDf = df
+    .params({
+      a_name,
+      b_name,
+    })
+    .rollup({
+      min_a: (d, $) => op.min(d[$.a_name]),
+      max_a: (d, $) => op.max(d[$.a_name]),
+      min_b: (d, $) => op.min(d[$.b_name]),
+      max_b: (d, $) => op.max(d[$.b_name]),
+    })
+    .derive(
+      {
+        min: (d) => Math.min(d.min_b, d.min_a),
+        max: (d) => Math.max(d.max_b, d.max_a),
+      },
+      {
+        drop: true,
+      },
+    );
+
+  return {
+    min: minMaxDf.get("min", 0),
+    max: minMaxDf.get("max", 0),
+  };
+}
+
 // Returns the min/max value for columnRoot in a budget/actual name format. Used for setting
 // yAxis bounds.
 export function getDataBounds(df, columnRoot) {
@@ -108,7 +136,7 @@ export function getDataBounds(df, columnRoot) {
   }
 
   // Raw value case.
-  get1ValueDataBounds(df, columnRoot);
+  return get1ValueDataBounds(df, columnRoot);
 }
 
 function makeFacetYBounds(facetOrder, expandedAllSettings, data) {

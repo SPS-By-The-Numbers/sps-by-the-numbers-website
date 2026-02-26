@@ -95,7 +95,10 @@ export function deserializeFacet(s: string): Facet {
 }
 
 
-function componentsGenerator(facetOrder, contextSettings, settings: DetailedActualsSettings, yBounds) {
+function componentsGenerator(facetOrder,
+                             contextSettings :DetailedActualsContextSettings,
+                             settings: DetailedActualsSettings,
+                             yBounds) {
   const schoolFilter = makeSchoolFilter(settings.ccddd);
   const subtitle = `
   Act(${ActivityFilter.toSummaryText(settings.activityCodes)}) /
