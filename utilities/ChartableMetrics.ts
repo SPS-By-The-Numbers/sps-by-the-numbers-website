@@ -11,16 +11,6 @@ export type FacetInfo = {
   title: string;
 };
 
-function sortOrderOp(sortOrder: SortOrder, expr) {
-  if (sortOrder === "ascending") {
-    return expr;
-  } else if (sortOrder === "descending") {
-    return aq.desc(expr);
-  }
-
-  throw `Unknown sort order ${sortOrder}`;
-}
-
 function normalizeColumnDeriveClause(metricColumns, normalization) {
   const clauses = metricColumns.map((mc) => [
     `${normalization}_${mc}`,
@@ -157,75 +147,6 @@ export function toChartableDataset(
   return data;
 }
 
-export function extractVarianceFacets(
-  df: ColumnTable,
-  facetColumn: string,
-  sortOrder: SortOrder,
-) : Array<FacetInfo> {
-  const facetCodeColumn = `${facetColumn}_code`;
-
-  // Calculate variance for sort order.
-  let varianceDf = df
-    .groupby("class_of", "data_type", facetColumn, facetCodeColumn)
-    .rollup({
-      val: op.sum(`amount`),
-    })
-    .groupby("class_of", facetColumn, facetCodeColumn)
-    .pivot(["data_type"], { val: (d) => op.sum(d.val) });
-
-  // Ensure the pivot ends up with both a budget and an actual column
-  // in case the dataset was completely missing one or the other.
-  if (!varianceDf.column("budget")) {
-    varianceDf = varianceDf.derive({ budget: () => null });
-  }
-  if (!varianceDf.column("actuals")) {
-    varianceDf = varianceDf.derive({ actuals: () => null });
-  }
-
-  varianceDf = varianceDf
-    .derive({ variance: (d) => d.budget - d.actuals })
-    .filter((d) => !op.is_nan(d.variance));
-
-  const facetInfo = varianceDf
-    .groupby(facetColumn, facetCodeColumn)
-    .rollup({ absmedian: (d) => op.abs(op.median(d.variance)) })
-    .orderby(sortOrderOp(sortOrder, "absmedian"))
-    .derive({
-      facet_info: aq.escape((d) => ({
-        code: d[facetCodeColumn],
-        title: d[facetColumn],
-      })),
-    })
-    .array("facet_info") as Array<FacetInfo>;
-
-  return facetInfo;
-}
-
-export function extractFacetsByAmount(
-  df: ColumnTable,
-  facetColumn: string,
-  sortColumn: string,
-  sortOrder: SortOrder,
-) : Array<FacetInfo> {
-  const facetCodeColumn = `${facetColumn}_code`;
-  const sorted = df
-    .groupby(facetColumn, facetCodeColumn)
-    .params({ sortCol: sortColumn })
-    .rollup({ sortval: (d, $) => op.sum(d[$.sortCol]) })
-    .orderby(aq.desc("sortval"));
-
-  const facetInfo = sorted
-    .derive({
-      facet_info: aq.escape((d) => ({
-        code: d[facetCodeColumn],
-        title: d[facetColumn],
-      })),
-    })
-    .array("facet_info");
-
-  return facetInfo;
-}
-
 export function extractRawExpenditures(df: ColumnTable, facetColumn: string) {
   const facetCodeColumn = `${facetColumn}_code`;
 
@@ -244,4 +165,31 @@ export function extractRawS275Staffing(df: ColumnTable) {
   });
 
   return data;
+}
+
+export function toFacetedCharatbleDataset(
+  districtData,
+  filteredExpenditures,
+  facet,
+  expenditureSettings,
+) {
+  const data = extractRawExpenditures(filteredExpenditures, facet);
+
+  const pdata = data
+    .groupby(["class_of", "data_type"])
+    .pivot([`${facet}_code`], {
+      amount: (d) => op.sum(d.amount),
+      _pivot_name_hack_: (d) => op.any("_pivot_name_hack_"),
+    })
+    .select(aq.not(aq.startswith("_pivot_name_hack_")));
+
+  const names = getDataColumnNames(pdata);
+  return toChartableDataset(
+    districtData,
+    pdata,
+    expenditureSettings,
+    [],
+    names,
+    [],
+  );
 }

@@ -7,10 +7,10 @@ import { serializeDatasetSettings, serializeOneSetting } from "app/finance/_sett
 import { dfToJSONConnectorOptions } from "utilities/highcharts/utils";
 import {
   extractRawExpenditures,
-  extractFacetsByAmount,
-  toChartableDataset,
+  toFacetedCharatbleDataset,
   getDataColumnNames,
 } from "utilities/ChartableMetrics";
+import { extractFacets } from "utilities/ChartableVitals";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { makeFacetComponents } from "utilities/highcharts/FacetedBudgetActualCharts";
 import {
@@ -118,82 +118,22 @@ function componentsGenerator(settings: DetailedActualsSettings, facetOrder) {
   return components;
 }
 
-function makeFacetedDetailedActualsForDistrict(
-  districtData,
-  filteredExpenditures,
-  facet,
-  expenditureSettings,
-) {
-  const data = extractRawExpenditures(filteredExpenditures, facet);
-
-  const pdata = data
-    .groupby(["class_of", "data_type"])
-    .pivot([`${facet}_code`], {
-      amount: (d) => op.sum(d.amount),
-      _pivot_name_hack_: (d) => op.any("_pivot_name_hack_"),
-    })
-    .select(aq.not("_pivot_name_hack_"));
-
-  const names = getDataColumnNames(pdata);
-  return toChartableDataset(
-    districtData,
-    pdata,
-    expenditureSettings,
-    [],
-    names,
-    [],
-  );
-}
-
-function compileData(districtDataMap, allSettings : Array<DetailedActualsSettings>, facet, sortOrder) {
-  const allDatasets = new Array<ColumnTable>();
-  let facetInfo;
-
-  // Geneate one set of columns per dataset.
-  for (const settings of allSettings) {
-    const districtData = districtDataMap[settings.ccddd];
-    const filteredExpenditures = districtData.filteredExpenditures(settings);
-
-    const data = makeFacetedDetailedActualsForDistrict(
-      districtData,
-      filteredExpenditures,
-      facet,
-      settings,
-    );
-    allDatasets.push(data);
-    if (facetInfo === undefined) {
-      facetInfo = extractFacetsByAmount(
-        filteredExpenditures,
-        facet,
-        "amount",
-        sortOrder,
-      );
-    }
-  }
-
-  // Join each dataset into one big dataframe.
-  let data = allDatasets[0];
-  for (const d of allDatasets.slice(1)) {
-    data = data.join(d);
-  }
-  return [data, facetInfo];
-}
-
 // Charts expenditures for
 export default function DetailedActualsDashboard({
   districtDataMap,
   allSettings,
   contextSettings,
 }: DistrictDataContentProps<DetailedActualsSettings, DetailedActualsContextSettings>) {
-  const [data, facetOrder] = compileData(
+  const { data, fullFacetOrder } = extractFacets(
     districtDataMap,
     allSettings,
     contextSettings.facet,
+    contextSettings.sortType,
     contextSettings.sortOrder,
   );
 
   const result = makeDatasetFacetedDashboard(allSettings, (s) =>
-    componentsGenerator(s, facetOrder),
+    componentsGenerator(s, fullFacetOrder),
   );
   if (result === undefined) {
     return <div>No Datasets defined.</div>;
@@ -237,7 +177,7 @@ export default function DetailedActualsDashboard({
       ]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">
-        Actual School Spend. Data is more granular but only covers FY19-2020 forward.
+        Actual School Spend. Data is more granular but only covers FY2019-20 forward.
       </Typography>
       <HcDashboard config={config} />
     </SettingsLayout>

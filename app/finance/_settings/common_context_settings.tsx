@@ -2,12 +2,33 @@ import { deserializeByConfig } from "app/finance/_settings/common_settings";
 import * as ChartOptions from "utilities/ChartOptions";
 
 import type { BaseSettings, SettingsConfig, SettingsConfigGenerators } from "app/finance/_settings/base_settings";
+import type { SortOrder, SortType, YScale, FacetLimit } from "utilities/ChartOptions";
 
 export type CommonContextSettings = BaseSettings;
+
+export type BaseFacetContextSettings = CommonContextSettings & {
+  facetLimit: FacetLimit;
+  sortOrder: SortOrder;
+  sortType: SortType;
+  yScale: YScale;
+};
+
+export type CommonFacetContextSettings<FacetType> = BaseFacetContextSettings & {
+  facet: FacetType;
+};
 
 export const DEFAULT_COMMON_CONTEXT_SETTINGS: CommonContextSettings = {
   name: "Dashboard Settings",
   id: -1,
+};
+
+export const DEFAULT_COMMON_FACET_CONTEXT_SETTINGS : BaseFacetContextSettings = {
+  ...DEFAULT_COMMON_CONTEXT_SETTINGS,
+
+  facetLimit: "0",
+  sortOrder: "descending",
+  sortType: "variance",
+  yScale: "fixed",
 };
 
 // Type that constraints to just a string literal.
@@ -97,3 +118,9 @@ export function deserializeContextSettings<ContextSettingsType extends BaseSetti
 
   return settings;
 }
+
+export const COMMON_FACET_CONTEXT_SETTINGS_GENERATORS = [
+  makeSortOrderSerializeConfig,
+  makeSortOrderSerializeConfig,
+  makeYScaleSerializeConfig,
+];

@@ -1,9 +1,12 @@
 import * as aq from "arquero";
 import { op } from "arquero";
 
-import { toChartableDataset } from "utilities/ChartableMetrics";
+import { toChartableDataset, toFacetedCharatbleDataset, getDataColumnNames } from "utilities/ChartableMetrics";
+import DistrictData from "utilities/DistrictData";
 
 import type { ColumnTable } from "arquero";
+import type { FacetInfo } from "utilities/ChartableMetrics";
+import type { SortOrder, SortType } from "utilities/ChartOptions";
 import type { DistrictDataMap } from "app/finance/_providers/DistrictDataProvider";
 import type { VitalsSettings } from "app/finance/vitals/VitalsDashboard";
 import type { CurrencyNormalization } from "utilities/normalizations";
@@ -71,3 +74,163 @@ export function makeChartableVitals(
   }
   return data;
 }
+
+function deriveDeltaColumns(df, baselineClassOf) {
+  const params = {};
+  const clauses = {
+    class_of: (d) => d.class_of,
+  };
+  for (const name of getDataColumnNames(df)) {
+    const baselineValue = df
+      .params({ baselineClassOf })
+      .filter((d, $) => d.class_of === $.baselineClassOf)
+      .get(name);
+    clauses[`delta_${name}`] = aq.escape((d) => d[name] - baselineValue);
+  }
+
+  const data = df.join(df.orderby("class_of").derive(clauses, { drop: true }));
+
+  return data;
+}
+
+function sortOrderOp(sortOrder: SortOrder, expr) {
+  if (sortOrder === "ascending") {
+    return expr;
+  } else if (sortOrder === "descending") {
+    return aq.desc(expr);
+  }
+
+  throw `Unknown sort order ${sortOrder}`;
+}
+
+function extractFacetsSortedByLatestAmount(
+  df: ColumnTable,
+  facetColumn: string,
+  sortColumn: string,
+  sortOrder: SortOrder,
+) : Array<FacetInfo> {
+  const facetCodeColumn = `${facetColumn}_code`;
+  const sorted = df
+    .filter(d => d.class_of === op.max(d.class_of))  // Only get latest year.
+    .groupby(facetColumn, facetCodeColumn)
+    .params({ sortCol: sortColumn })
+    .rollup({ sortval: (d, $) => op.sum(d[$.sortCol]) })  // Sum up across non-facet categories
+    .orderby(aq.desc('sortval'));
+
+  const facetInfo = sorted
+    .derive({
+      facet_info: aq.escape((d) => ({
+        code: d[facetCodeColumn],
+        title: d[facetColumn],
+      })),
+    })
+    .array("facet_info");
+
+  return facetInfo as Array<FacetInfo>;
+}
+
+function extractFacetsSortedByAbsMedianVariance(
+  df: ColumnTable,
+  facetColumn: string,
+  sortOrder: SortOrder,
+) : Array<FacetInfo> {
+  const facetCodeColumn = `${facetColumn}_code`;
+
+  // Calculate variance for sort order.
+  let varianceDf = df
+    .groupby("class_of", "data_type", facetColumn, facetCodeColumn)
+    .rollup({
+      val: op.sum(`amount`),
+    })
+    .groupby("class_of", facetColumn, facetCodeColumn)
+    .pivot(["data_type"], { val: (d) => op.sum(d.val) });
+
+  // Ensure the pivot ends up with both a budget and an actual column
+  // in case the dataset was completely missing one or the other.
+  if (!varianceDf.column("budget")) {
+    varianceDf = varianceDf.derive({ budget: () => null });
+  }
+  if (!varianceDf.column("actuals")) {
+    varianceDf = varianceDf.derive({ actuals: () => null });
+  }
+
+  varianceDf = varianceDf
+    .derive({ variance: (d) => d.budget - d.actuals })
+    .filter((d) => !op.is_nan(d.variance));
+
+  const facetInfo = varianceDf
+    .groupby(facetColumn, facetCodeColumn)
+    .rollup({ absmedian: (d) => op.abs(op.median(d.variance)) })
+    .orderby(sortOrderOp(sortOrder, "absmedian"))
+    .derive({
+      facet_info: aq.escape((d) => ({
+        code: d[facetCodeColumn],
+        title: d[facetColumn],
+      })),
+    })
+    .array("facet_info") as Array<FacetInfo>;
+
+  return facetInfo;
+}
+
+// TODO: Remove magic number.
+export function extractFacets(
+  districtDataMap,
+  allSettings,
+  facet,
+  sortType : SortType,
+  sortOrder : SortOrder,
+  extractor = DistrictData.prototype.filteredExpenditures,
+  dataTransform = toFacetedCharatbleDataset,
+  valueColumn : string = "amount",
+  baselineClassOf = 2019
+) {
+  const allDatasets = new Array<ColumnTable>();
+  let fullFacetOrder;
+  for (const expenditureSettings of allSettings) {
+    const districtData = districtDataMap[expenditureSettings.ccddd];
+    const filteredExpenditures = extractor.call(districtData, expenditureSettings);
+
+    const data = dataTransform(
+      districtData,
+      filteredExpenditures,
+      facet,
+      expenditureSettings,
+    );
+
+    allDatasets.push(data);
+    if (fullFacetOrder === undefined) {
+      if (sortType === 'variance') {
+        fullFacetOrder = extractFacetsSortedByAbsMedianVariance(
+          filteredExpenditures,
+          facet,
+          sortOrder,
+        );
+      } else {
+        fullFacetOrder = extractFacetsSortedByLatestAmount(
+          filteredExpenditures,
+          facet,
+          valueColumn,
+          sortOrder,
+        );
+      }
+    }
+  }
+
+  let data = makeChartableVitals(districtDataMap, [
+    {
+      ...allSettings[0],
+      id: "context",
+      currencyNormalization: "amount",
+    },
+  ]);
+
+  for (const d of allDatasets) {
+    data = data.join(deriveDeltaColumns(d, baselineClassOf));
+  }
+
+  data = data.orderby("class_of");
+
+  return { data, fullFacetOrder };
+}
+

@@ -1,6 +1,6 @@
 "use client";
 
-import { DEFAULT_COMMON_CONTEXT_SETTINGS } from "app/finance/_settings/common_context_settings";
+import { DEFAULT_COMMON_FACET_CONTEXT_SETTINGS } from "app/finance/_settings/common_context_settings";
 import { DEFAULT_DATASET_SETTINGS } from "app/finance/_settings/dataset_settings";
 import { DUMMY_BASE_SETTINGS } from "app/finance/_settings/base_settings";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
@@ -12,7 +12,7 @@ import DetailedActualsDashboard from "./DetailedActualsDashboard";
 
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 import type { Facet } from "./DetailedActualsDashboard";
-import type { CommonContextSettings } from "app/finance/_settings/common_context_settings";
+import type { CommonFacetContextSettings } from "app/finance/_settings/common_context_settings";
 import type { SortOrder, SortType, YScale, FacetLimit } from "utilities/ChartOptions";
 import type { PAOFilters, SchoolFilters, NcesFilters } from "utilities/DistrictData";
 
@@ -23,21 +23,11 @@ const DEFAULT_DETAILED_ACTUALS_SETTINGS = DEFAULT_DATASET_SETTINGS.map((v) => ({
   ...makeDefaultSettings(v.ccddd)
 }));
 
-export type DetailedActualsContextSettings = CommonContextSettings & {
-  facet: Facet;
-  facetLimit: FacetLimit;
-  sortOrder: SortOrder;
-  sortType: SortType;
-  yScale: YScale;
-}
+export type DetailedActualsContextSettings = CommonFacetContextSettings<Facet>;
 
-const DEFAULT_DASHBOARD_SETTINGS = {
-  ...DEFAULT_COMMON_CONTEXT_SETTINGS,
+const DEFAULT_DASHBOARD_SETTINGS : DetailedActualsContextSettings = {
+  ...DEFAULT_COMMON_FACET_CONTEXT_SETTINGS,
   facet: "nces",
-  facetLimit: "0",
-  sortOrder: "descending",
-  sortType: "variance",
-  yScale: "fixed",
 };
 
 export const SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS = [

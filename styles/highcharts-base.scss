@@ -1,6 +1,6 @@
-@import url('https://code.highcharts.com/css/highcharts.css');
-@import url('https://code.highcharts.com/dashboards/css/datagrid.css');
-@import url('https://code.highcharts.com/dashboards/css/dashboards.css');
+@import '../node_modules/highcharts/css/highcharts.css';
+@import '../node_modules/@highcharts/grid-pro/css/grid-pro.css';
+@import '../node_modules/@highcharts/dashboards/css/dashboards.css';
 
 :root {
       /* Colors for data series and points */

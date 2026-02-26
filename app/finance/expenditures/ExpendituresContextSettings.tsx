@@ -1,4 +1,4 @@
-import { DEFAULT_COMMON_CONTEXT_SETTINGS } from "app/finance/_settings/common_context_settings";
+import { DEFAULT_COMMON_FACET_CONTEXT_SETTINGS } from "app/finance/_settings/common_context_settings";
 import { useId } from "react";
 import * as ChartOptions from "utilities/ChartOptions";
 import InputLabel from "@mui/material/InputLabel";
@@ -31,12 +31,8 @@ export type ExpendituresContextSettings = CommonContextSettings & {
 }
 
 export const DEFAULT_DASHBOARD_SETTINGS: ExpendituresContextSettings = {
-  ...DEFAULT_COMMON_CONTEXT_SETTINGS,
+  ...DEFAULT_COMMON_FACET_CONTEXT_SETTINGS,
   facet: "activity",
-  facetLimit: "0",
-  sortOrder: "descending",
-  sortType: "variance",
-  yScale: "fixed",
 };
 
 export function serializeExpendituresDashbaordFacet(facet: Facet): string {

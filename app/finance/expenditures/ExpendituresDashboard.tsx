@@ -7,8 +7,7 @@ import { serializeDatasetSettings, serializeOneSetting } from "app/finance/_sett
 import { dfToJSONConnectorOptions } from "utilities/highcharts/utils";
 import {
   extractRawExpenditures,
-  extractVarianceFacets,
-  toChartableDataset,
+  toFacetedCharatbleDataset,
   getDataColumnNames,
 } from "utilities/ChartableMetrics";
 import {
@@ -17,7 +16,7 @@ import {
   makeBudgetActualsContextChartConfig,
   makeContextCell,
 } from "utilities/highcharts/ChartConfigGenerators";
-import { makeChartableVitals } from "utilities/ChartableVitals";
+import { extractFacets } from "utilities/ChartableVitals";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import {
   makeFacetComponents,
@@ -86,33 +85,6 @@ function componentsGenerator(
   return components;
 }
 
-function makeFacetedExpendituresForDistrict(
-  districtData,
-  filteredExpenditures,
-  facet,
-  expenditureSettings,
-) {
-  const data = extractRawExpenditures(filteredExpenditures, facet);
-
-  const pdata = data
-    .groupby(["class_of", "data_type"])
-    .pivot([`${facet}_code`], {
-      amount: (d) => op.sum(d.amount),
-      _pivot_name_hack_: (d) => op.any("_pivot_name_hack_"),
-    })
-    .select(aq.not(aq.startswith("_pivot_name_hack_")));
-
-  const names = getDataColumnNames(pdata);
-  return toChartableDataset(
-    districtData,
-    pdata,
-    expenditureSettings,
-    [],
-    names,
-    [],
-  );
-}
-
 function deriveDeltaColumns(df, baselineClassOf) {
   const params = {};
   const clauses = {
@@ -129,46 +101,6 @@ function deriveDeltaColumns(df, baselineClassOf) {
   const data = df.join(df.orderby("class_of").derive(clauses, { drop: true }));
 
   return data;
-}
-
-function compileData(districtDataMap, expandedAllSettings, facet, sortOrder) {
-  const allDatasets = new Array<ColumnTable>();
-  let fullFacetOrder;
-  for (const expenditureSettings of expandedAllSettings) {
-    const districtData = districtDataMap[expenditureSettings.ccddd];
-    const filteredExpenditures = districtData.filteredExpenditures(expenditureSettings);
-
-    const data = makeFacetedExpendituresForDistrict(
-      districtData,
-      filteredExpenditures,
-      facet,
-      expenditureSettings,
-    );
-
-    allDatasets.push(data);
-    if (fullFacetOrder === undefined) {
-      fullFacetOrder = extractVarianceFacets(
-        filteredExpenditures,
-        facet,
-        sortOrder,
-      );
-    }
-  }
-
-  let data = makeChartableVitals(districtDataMap, [
-    {
-      ...expandedAllSettings[0],
-      id: "context",
-      currencyNormalization: "amount",
-    },
-  ]);
-  for (const d of allDatasets) {
-    data = data.join(deriveDeltaColumns(d, 2019));
-  }
-
-  data = data.orderby("class_of");
-
-  return { data, fullFacetOrder };
 }
 
 function expandFilters(allSettings : Array<ExpendituresSettings>): Array<ExpendituresSettings> {
@@ -378,10 +310,11 @@ export default function ExpendituresDashboard({
     // Expand out the filter per sub-setting.
     const expandedAllSettings: Array<ExpendituresSettings> =
       expandFilters(allSettings);
-    const { data, fullFacetOrder } = compileData(
+    const { data, fullFacetOrder } = extractFacets(
       districtDataMap,
       expandedAllSettings,
       contextSettings.facet,
+      contextSettings.sortType,
       contextSettings.sortOrder,
     );
 

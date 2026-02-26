@@ -9,25 +9,28 @@ import {
 import { dfToJSONConnectorOptions } from "utilities/highcharts/utils";
 import {
   extractRawS275Staffing,
-  extractFacetsByAmount,
   toChartableDataset,
   getDataColumnNames,
 } from "utilities/ChartableMetrics";
-import { serializeDatasetSettings } from "app/finance/_settings/common_settings";
+import {
+  extractFacets,
+} from "utilities/ChartableVitals";
+import { serializeDatasetSettings, serializeOneSetting } from "app/finance/_settings/common_settings";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { makeFacetComponents } from "utilities/highcharts/FacetedBudgetActualCharts";
 import { op } from "arquero";
-import { SERIALIZE_STAFFING_SETTINGS_GENERATORS } from "./StaffingPage";
+import { SERIALIZE_STAFFING_SETTINGS_GENERATORS, SERIALIZE_STAFFING_CONTEXT_SETTINGS_GENERATORS } from "./StaffingPage";
 import { serializeSettings } from "app/finance/_settings/base_settings";
 import * as aq from "arquero";
 import HcDashboard from "components/HcDashboard";
 import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
+import DistrictData from "utilities/DistrictData";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
 
 import type { ColumnTable } from "arquero";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
-import type { StaffingSettings } from "./StaffingPage";
+import type { StaffingSettings, StaffingContextSettings } from "./StaffingPage";
 
 const CONNECTOR_ID = "settings-connector";
 
@@ -77,53 +80,25 @@ function makeFacetedStaffingForDistrict(
   );
 }
 
-function compileData(districtDataMap, allSettings, facet) {
-  const allDatasets = new Array<ColumnTable>();
-  let facetInfo;
-  for (const staffingSettings of allSettings) {
-    const districtData = districtDataMap[staffingSettings.ccddd];
-
-    // IF it has a school code, it has an staffing code.
-    const filteredS275Summary = districtData.filteredS275Summary(staffingSettings);
-
-    const data = makeFacetedStaffingForDistrict(
-      districtData,
-      filteredS275Summary,
-      facet,
-      staffingSettings,
-    );
-    allDatasets.push(data);
-    if (facetInfo === undefined) {
-      facetInfo = extractFacetsByAmount(
-        filteredS275Summary,
-        facet,
-        "fte_in_assignment",
-        "descending" as const,
-      );
-    }
-  }
-
-  let data = allDatasets[0];
-  for (const d of allDatasets.slice(1)) {
-    data = data.join(d);
-  }
-  return [data, facetInfo];
-}
-
 // Charts expenditures for
 export default function StaffingDashboard({
   districtDataMap,
   allSettings,
   contextSettings,
-}: DistrictDataContentProps<StaffingSettings>) {
-  const [data, facetOrder] = compileData(
+}: DistrictDataContentProps<StaffingSettings, StaffingContextSettings>) {
+  const {data, fullFacetOrder} = extractFacets(
     districtDataMap,
     allSettings,
     "duty_root" as const,
+    contextSettings.sortType,
+    contextSettings.sortOrder,
+    DistrictData.prototype.filteredS275Summary,
+    makeFacetedStaffingForDistrict,
+    "fte_in_assignment",
   );
 
   const result = makeDatasetFacetedDashboard(allSettings, (s) =>
-    componentsGenerator(s, facetOrder),
+    componentsGenerator(s, fullFacetOrder),
   );
   if (result === undefined) {
     return <div>No Datasets defined.</div>;
@@ -148,7 +123,7 @@ export default function StaffingDashboard({
     <SettingsLayout
       settingsSerializer={{
         serialize: newAllSettings => serializeDatasetSettings(newAllSettings, SERIALIZE_STAFFING_SETTINGS_GENERATORS),
-        serializeContext: x => "",
+          serializeContext: context => serializeOneSetting(context, SERIALIZE_STAFFING_CONTEXT_SETTINGS_GENERATORS),
       }}
       allSettings={allSettings}
       contextSettings={contextSettings}
