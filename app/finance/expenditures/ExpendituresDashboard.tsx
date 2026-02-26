@@ -4,7 +4,7 @@ import * as aq from "arquero";
 import { op } from "arquero";
 import { SERIALIZE_EXPENDITURES_SETTINGS_GENERATORS, SERIALIZE_EXPENDITURES_CONTEXT_SETTINGS_GENERATORS } from "./ExpendituresPage";
 import { serializeDatasetSettings, serializeOneSetting } from "app/finance/_settings/common_settings";
-import { dfToJSONConnectorOptions } from "utilities/highcharts/utils";
+import { makeHighchartConfig, getDataBounds } from "utilities/highcharts/utils";
 import {
   extractRawExpenditures,
   toFacetedCharatbleDataset,
@@ -17,7 +17,6 @@ import {
   makeContextCell,
 } from "utilities/highcharts/ChartConfigGenerators";
 import { extractFacets } from "utilities/ChartableVitals";
-import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import {
   makeFacetComponents,
 } from "utilities/highcharts/FacetedBudgetActualCharts";
@@ -47,16 +46,6 @@ import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDa
 import type { ExpendituresSettings } from "./ExpendituresPage";
 
 const CONNECTOR_ID = "expenditures-connector";
-
-// Build the column name format for a facet.
-function makeFacetColumnRoot(
-  idPrefix,
-  normalization,
-  metricName,
-  facet,
-) {
-  return [idPrefix, normalization, metricName, facet].join("_");
-}
 
 function componentsGenerator(
   facetOrder,
@@ -127,62 +116,6 @@ function expandFilters(allSettings : Array<ExpendituresSettings>): Array<Expendi
   return results;
 }
 
-// Returns the min/max value for columnRoot in a budget/actual name format. Used for setting
-// yAxis bounds.
-function getDataBounds(data, columnRoot) {
-  const a_name = `${columnRoot}_actuals`;
-  const b_name = `${columnRoot}_budget`;
-
-  const minMaxDf = data
-    .params({
-      a_name: `${columnRoot}_actuals`,
-      b_name: `${columnRoot}_budget`,
-    })
-    .rollup({
-      min_a: (d, $) => op.min(d[$.a_name]),
-      max_a: (d, $) => op.max(d[$.a_name]),
-      min_b: (d, $) => op.min(d[$.b_name]),
-      max_b: (d, $) => op.max(d[$.b_name]),
-    })
-    .derive(
-      {
-        min: (d) => Math.min(d.min_b, d.min_a),
-        max: (d) => Math.max(d.max_b, d.max_a),
-      },
-      {
-        drop: true,
-      },
-    );
-
-  return {
-    min: minMaxDf.get("min", 0),
-    max: minMaxDf.get("max", 0),
-  };
-}
-
-function makeFacetYBounds(facetOrder, expandedAllSettings, data) {
-  const bounds = {
-    min: 0,
-    max: 0,
-  };
-  for (const s of expandedAllSettings) {
-    // TODO: This shouldn't be "amount", it should be "act".
-    for (const f of facetOrder) {
-      const columnRoot = makeFacetColumnRoot(
-        s.id,
-        s.currencyNormalization,
-        "amount",
-        f.code,
-      );
-      const facetBounds = getDataBounds(data, columnRoot);
-      bounds.min = Math.min(bounds.min, facetBounds.min);
-      bounds.max = Math.max(bounds.max, facetBounds.max);
-    }
-  }
-
-  return bounds;
-}
-
 function augmentContextComponents(gui, components, data) {
   const fundedEnrollmentBounds = getDataBounds(
     data,
@@ -249,54 +182,6 @@ function augmentContextComponents(gui, components, data) {
   );
 }
 
-function makeHighchartConfig(
-  contextSettings,
-  expandedAllSettings,
-  fullFacetOrder,
-  data,
-) {
-  const facetLimit = parseInt(contextSettings.facetLimit);
-  // Trim the list for rendering speed.
-  const facetOrder = fullFacetOrder.slice(
-    0,
-    facetLimit === 0 ? undefined : facetLimit,
-  );
-
-  const facetYBounds =
-    contextSettings.yScale === "fixed"
-      ? makeFacetYBounds(facetOrder, expandedAllSettings, data)
-      : {};
-
-  const result = makeDatasetFacetedDashboard(
-    expandedAllSettings,
-    (s: ExpendituresSettings) =>
-      componentsGenerator(facetOrder, contextSettings, s, facetYBounds),
-  );
-
-  if (result === undefined) {
-    return <div>No Datasets defined.</div>;
-  }
-  const { gui, components } = result;
-
-  augmentContextComponents(gui, components, data);
-
-  const config = {
-    gui,
-    components,
-    dataPool: {
-      connectors: [
-        {
-          id: CONNECTOR_ID,
-          type: "JSON",
-          ...dfToJSONConnectorOptions(data),
-        },
-      ],
-    },
-  };
-
-  return config;
-}
-
 // Charts expenditures for
 export default function ExpendituresDashboard({
   districtDataMap,
@@ -319,9 +204,12 @@ export default function ExpendituresDashboard({
     );
 
     return makeHighchartConfig(
+      CONNECTOR_ID,
       contextSettings,
       expandedAllSettings,
       fullFacetOrder,
+      componentsGenerator,
+      augmentContextComponents,
       data,
     );
   }, [contextSettings, districtDataMap, allSettings]);

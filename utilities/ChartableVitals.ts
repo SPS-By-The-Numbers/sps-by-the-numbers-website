@@ -75,24 +75,6 @@ export function makeChartableVitals(
   return data;
 }
 
-function deriveDeltaColumns(df, baselineClassOf) {
-  const params = {};
-  const clauses = {
-    class_of: (d) => d.class_of,
-  };
-  for (const name of getDataColumnNames(df)) {
-    const baselineValue = df
-      .params({ baselineClassOf })
-      .filter((d, $) => d.class_of === $.baselineClassOf)
-      .get(name);
-    clauses[`delta_${name}`] = aq.escape((d) => d[name] - baselineValue);
-  }
-
-  const data = df.join(df.orderby("class_of").derive(clauses, { drop: true }));
-
-  return data;
-}
-
 function sortOrderOp(sortOrder: SortOrder, expr) {
   if (sortOrder === "ascending") {
     return expr;
@@ -183,7 +165,6 @@ export function extractFacets(
   extractor = DistrictData.prototype.filteredExpenditures,
   dataTransform = toFacetedCharatbleDataset,
   valueColumn : string = "amount",
-  baselineClassOf = 2019
 ) {
   const allDatasets = new Array<ColumnTable>();
   let fullFacetOrder;
@@ -226,7 +207,7 @@ export function extractFacets(
   ]);
 
   for (const d of allDatasets) {
-    data = data.join(deriveDeltaColumns(d, baselineClassOf));
+    data = data.join(d);
   }
 
   data = data.orderby("class_of");
