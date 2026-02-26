@@ -204,13 +204,15 @@ export default function ExpendituresDashboard({
     );
 
     return makeHighchartConfig(
-      CONNECTOR_ID,
-      contextSettings,
-      expandedAllSettings,
-      fullFacetOrder,
-      componentsGenerator,
-      augmentContextComponents,
-      data,
+      {
+        connectorId: CONNECTOR_ID,
+        contextSettings,
+        allSettings: expandedAllSettings,
+        fullFacetOrder,
+        componentsGenerator,
+        augmentContextComponents,
+        data,
+      }
     );
   }, [contextSettings, districtDataMap, allSettings]);
 

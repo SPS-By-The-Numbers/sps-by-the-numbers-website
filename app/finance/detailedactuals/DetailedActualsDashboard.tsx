@@ -4,7 +4,8 @@ import { DEFAULT_DATASET_SETTINGS } from "app/finance/_settings/dataset_settings
 import * as aq from "arquero";
 import { op } from "arquero";
 import { serializeDatasetSettings, serializeOneSetting } from "app/finance/_settings/common_settings";
-import { dfToJSONConnectorOptions } from "utilities/highcharts/utils";
+import { useMemo } from "react";
+import { makeHighchartConfig } from "utilities/highcharts/utils";
 import {
   extractRawExpenditures,
   toFacetedCharatbleDataset,
@@ -94,7 +95,7 @@ export function deserializeFacet(s: string): Facet {
 }
 
 
-function componentsGenerator(settings: DetailedActualsSettings, facetOrder) {
+function componentsGenerator(facetOrder, contextSettings, settings: DetailedActualsSettings, yBounds) {
   const schoolFilter = makeSchoolFilter(settings.ccddd);
   const subtitle = `
   Act(${ActivityFilter.toSummaryText(settings.activityCodes)}) /
@@ -113,6 +114,7 @@ function componentsGenerator(settings: DetailedActualsSettings, facetOrder) {
     normalizations: [settings.currencyNormalization],
     captionType: "stats",
     subtitle,
+    yBounds,
   });
 
   return components;
@@ -124,35 +126,27 @@ export default function DetailedActualsDashboard({
   allSettings,
   contextSettings,
 }: DistrictDataContentProps<DetailedActualsSettings, DetailedActualsContextSettings>) {
-  const { data, fullFacetOrder } = extractFacets(
-    districtDataMap,
-    allSettings,
-    contextSettings.facet,
-    contextSettings.sortType,
-    contextSettings.sortOrder,
-  );
+  const config = useMemo(() => {
+    // Expand out the filter per sub-setting.
+    const { data, fullFacetOrder } = extractFacets(
+      districtDataMap,
+      allSettings,
+      contextSettings.facet,
+      contextSettings.sortType,
+      contextSettings.sortOrder,
+    );
 
-  const result = makeDatasetFacetedDashboard(allSettings, (s) =>
-    componentsGenerator(s, fullFacetOrder),
-  );
-  if (result === undefined) {
-    return <div>No Datasets defined.</div>;
-  }
-  const { components, gui } = result;
-
-  const config = {
-    gui,
-    components,
-    dataPool: {
-      connectors: [
-        {
-          id: CONNECTOR_ID,
-          type: "JSON",
-          ...dfToJSONConnectorOptions(data),
-        },
-      ],
-    },
-  };
+    return makeHighchartConfig(
+      {
+        connectorId: CONNECTOR_ID,
+        contextSettings,
+        allSettings,
+        fullFacetOrder,
+        componentsGenerator,
+        data,
+      }
+    );
+  }, [contextSettings, districtDataMap, allSettings]);
 
   return (
     <SettingsLayout

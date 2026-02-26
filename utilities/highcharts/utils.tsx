@@ -76,32 +76,13 @@ function makeFacetColumnRoot(
   return [idPrefix, normalization, metricName, facet].join("_");
 }
 
-// Returns the min/max value for columnRoot in a budget/actual name format. Used for setting
-// yAxis bounds.
-export function getDataBounds(data, columnRoot) {
-  const a_name = `${columnRoot}_actuals`;
-  const b_name = `${columnRoot}_budget`;
-
-  const minMaxDf = data
-    .params({
-      a_name: `${columnRoot}_actuals`,
-      b_name: `${columnRoot}_budget`,
-    })
+function get1ValueDataBounds(df, name) {
+  const minMaxDf = df
+    .params({ name })
     .rollup({
-      min_a: (d, $) => op.min(d[$.a_name]),
-      max_a: (d, $) => op.max(d[$.a_name]),
-      min_b: (d, $) => op.min(d[$.b_name]),
-      max_b: (d, $) => op.max(d[$.b_name]),
-    })
-    .derive(
-      {
-        min: (d) => Math.min(d.min_b, d.min_a),
-        max: (d) => Math.max(d.max_b, d.max_a),
-      },
-      {
-        drop: true,
-      },
-    );
+      min: (d, $) => op.min(d[$.name]),
+      max: (d, $) => op.max(d[$.name]),
+    });
 
   return {
     min: minMaxDf.get("min", 0),
@@ -109,6 +90,26 @@ export function getDataBounds(data, columnRoot) {
   };
 }
 
+// Returns the min/max value for columnRoot in a budget/actual name format. Used for setting
+// yAxis bounds.
+export function getDataBounds(df, columnRoot) {
+  const a_name = `${columnRoot}_actuals`;
+  const b_name = `${columnRoot}_budget`;
+
+  if (df.column(a_name) && df.column(b_name)) {
+    // Budget Actuals case.
+    return get2ValueDataBounds(df, a_name, b_name);
+  } else if (df.column(a_name)) {
+    // Actuals only case.
+    return get1ValueDataBounds(df, a_name);
+  } else if (df.column(b_name)) {
+    // Budget only case.
+    return get1ValueDataBounds(df, b_name);
+  }
+
+  // Raw value case.
+  get1ValueDataBounds(df, columnRoot);
+}
 
 function makeFacetYBounds(facetOrder, expandedAllSettings, data) {
   const bounds = {
@@ -132,15 +133,17 @@ function makeFacetYBounds(facetOrder, expandedAllSettings, data) {
   return bounds;
 }
 
-export function makeHighchartConfig(
-  connectorId: string,
-  contextSettings,
-  allSettings,
-  fullFacetOrder,
-  componentsGenerator,
-  augmentContextComponents,
-  data,
-) {
+export function makeHighchartConfig(options) {
+  const {
+    connectorId,
+    contextSettings,
+    allSettings,
+    fullFacetOrder,
+    componentsGenerator,
+    augmentContextComponents,
+    data
+  } = options;
+
   const facetLimit = parseInt(contextSettings.facetLimit);
   // Trim the list for rendering speed.
   const facetOrder = fullFacetOrder.slice(
@@ -163,7 +166,9 @@ export function makeHighchartConfig(
   }
   const { gui, components } = result;
 
-  augmentContextComponents(gui, components, data);
+  if (augmentContextComponents) {
+    augmentContextComponents(gui, components, data);
+  }
 
   const config = {
     gui,
