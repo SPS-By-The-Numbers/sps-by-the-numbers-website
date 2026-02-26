@@ -174,7 +174,10 @@ function combineCommonActivities(df, combiner) {
 //
 // Data is joinable on the 'class_of' and 'data_type' columns.
 export default class DistrictData {
+  private enrollment_df: ColumnTable;
   private fundedEnrollment_df: ColumnTable;
+  private assessment_df: ColumnTable;
+  private sqss_df: ColumnTable;
   private gf_expenditure_df: ColumnTable;
   private gf_revenue_df: ColumnTable;
   private budget_items_df: ColumnTable;
@@ -183,14 +186,20 @@ export default class DistrictData {
   private all_class_ofs_df: ColumnTable;
 
   constructor(
+    enrollment_df,
     fundedEnrollment_df,
+    assessment_df,
+    sqss_df,
     gf_expenditure_df,
     gf_revenue_df,
     budget_items_df,
     actuals_items_df,
     s275_summary_df,
   ) {
+    this.enrollment_df = enrollment_df;
     this.fundedEnrollment_df = fundedEnrollment_df;
+    this.assessment_df = assessment_df;
+    this.sqss_df = sqss_df;
     this.gf_expenditure_df = gf_expenditure_df;
     this.gf_revenue_df = gf_revenue_df;
     this.budget_items_df = budget_items_df;
@@ -228,14 +237,20 @@ export default class DistrictData {
 
   static async loadFromGcs(ccddd) {
     const [
+      enrollment_df,
       fundedEnrollment_df,
+      assessment_df,
+      sqss_df,
       gf_expenditure_df,
       gf_revenue_df,
       budget_items_df,
       actuals_items_df,
       s275_summary_df,
     ] = await Promise.all([
+      fetchDataset(ccddd, "enrollment"),
       fetchDataset(ccddd, "fundedEnrollment"),
+      fetchDataset(ccddd, "assessment"),
+      fetchDataset(ccddd, "sqss"),
       fetchDataset(ccddd, "gf_expenditures"),
       fetchDataset(ccddd, "gf_revenues"),
       fetchDataset(ccddd, "budget_items"),
@@ -243,7 +258,10 @@ export default class DistrictData {
       fetchDataset(ccddd, "s275_summary"),
     ]);
     return new DistrictData(
+      enrollment_df,
       fundedEnrollment_df,
+      assessment_df,
+      sqss_df,
       gf_expenditure_df,
       gf_revenue_df,
       budget_items_df,
@@ -502,6 +520,9 @@ export default class DistrictData {
       .join_full(revenues_df)
       .derive({ cashflow: (d) => d.revenues - d.expenditures });
     return merged_df;
+  }
+
+  enrollmentSummary() {
   }
 
   fundedEnrollmentSummary() {

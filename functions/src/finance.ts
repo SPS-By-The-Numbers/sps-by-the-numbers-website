@@ -58,6 +58,36 @@ function prefixWithExport(path, query) {
   `;
 }
 
+function getEnrollment(ccddd) {
+  return `
+  SELECT
+    *
+  FROM
+    sps-btn-data.ospi.rc_enrollment
+  WHERE ccddd=${ccddd}
+  `;
+}
+
+function getSqss(ccddd) {
+  return `
+  SELECT
+    *
+  FROM
+    sps-btn-data.ospi.rc_sqss
+  WHERE ccddd=${ccddd}
+  `;
+}
+
+function getAssessment(ccddd) {
+  return `
+  SELECT
+    *
+  FROM
+    sps-btn-data.ospi.rc_assessment
+  WHERE ccddd=${ccddd}
+  `;
+}
+
 function getFundedEnrollment(ccddd) {
   return `
   SELECT
@@ -225,8 +255,14 @@ function getQueryForDataset(ccddd, dataset) {
   if (ccddd === 'domain') {
     return getDomain(dataset);
   } else {
-    if (dataset === 'fundedEnrollment') {
+    if (dataset === 'enrollment') {
+      return getEnrollment(ccddd);
+    } else if (dataset === 'fundedEnrollment') {
       return getFundedEnrollment(ccddd);
+    } else if (dataset === 'sqss') {
+      return getSqss(ccddd);
+    } else if (dataset === 'assessment') {
+      return getAssessment(ccddd);
     } else if (dataset === 'gf_expenditures') {
       return getExpenditures(ccddd);
     } else if (dataset === 'gf_revenues') {
