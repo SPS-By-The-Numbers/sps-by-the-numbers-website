@@ -155,7 +155,6 @@ function extractFacetsSortedByAbsMedianVariance(
   return facetInfo;
 }
 
-// TODO: Remove magic number.
 export function extractFacets(
   districtDataMap,
   allSettings,

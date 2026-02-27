@@ -206,6 +206,7 @@ export default function ExpendituresDashboard({
     return makeHighchartConfig(
       {
         connectorId: CONNECTOR_ID,
+        metricName: "amount",
         contextSettings,
         allSettings: expandedAllSettings,
         fullFacetOrder,

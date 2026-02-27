@@ -169,13 +169,13 @@ export function extractRawS275Staffing(df: ColumnTable) {
 
 export function toFacetedCharatbleDataset(
   districtData,
-  filteredExpenditures,
+  filteredDf,
   facet,
-  expenditureSettings,
+  settings,
 ) {
-  const data = extractRawExpenditures(filteredExpenditures, facet);
+  const df = extractRawExpenditures(filteredDf, facet);
 
-  const pdata = data
+  const pdata = df
     .groupby(["class_of", "data_type"])
     .pivot([`${facet}_code`], {
       amount: (d) => op.sum(d.amount),
@@ -187,7 +187,46 @@ export function toFacetedCharatbleDataset(
   return toChartableDataset(
     districtData,
     pdata,
-    expenditureSettings,
+    settings,
+    [],
+    names,
+    [],
+  );
+}
+
+function extractRawEnrollment(df: ColumnTable, facetColumn: string) {
+  const facetCodeColumn = `${facetColumn}_code`;
+
+  return df
+  .groupby("class_of", "grade", facetCodeColumn)
+  .rollup({
+    all_students: op.sum(`all_students`),
+  });
+}
+
+export function toFacetedCharatbleEnrollmentDataset(
+  districtData,
+  filteredDf,
+  facet,
+  settings
+) {
+  const df = extractRawEnrollment(filteredDf, facet);
+
+  const pdata = df
+    .filter(d => d.grade != "All Grades")
+    .groupby(["class_of"])
+    .pivot([`${facet}_code`], {
+      all_students: (d) => op.sum(d.all_students),
+      _pivot_name_hack_: (d) => op.any("_pivot_name_hack_"),
+    })
+    .select(aq.not(aq.startswith("_pivot_name_hack_")))
+    .derive({ data_type: (d) => "actuals" });
+
+  const names = getDataColumnNames(pdata);
+  return toChartableDataset(
+    districtData,
+    pdata,
+    settings,
     [],
     names,
     [],

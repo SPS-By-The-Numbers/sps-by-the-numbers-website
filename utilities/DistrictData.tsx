@@ -39,8 +39,13 @@ export type DutyRootFilters = {
   dutyRootCodes: Set<number>;
 };
 
+export type DemographicFilters = {
+  activityCodes: Set<number>;
+};
+
 type ExpendituresFilters = Partial<PAOFilters & NcesFilters & SchoolFilters>;
 type StaffingFilters = Partial<PAFilters & DutyRootFilters & SchoolFilters>;
+type EnrollmentFilters = Partial<DemographicFilters & SchoolFilters>;
 
 const YEAR_GROUP_BY = ["class_of"];
 const FINANCE_GROUP_BY = ["data_type", ...YEAR_GROUP_BY];
@@ -522,7 +527,16 @@ export default class DistrictData {
     return merged_df;
   }
 
-  enrollmentSummary() {
+  filteredEnrollment(filter: EnrollmentFilters) {
+    let results = this.enrollment_df;
+
+    if (filter.schoolCodes !== undefined) {
+      results = results
+        .params(filter)
+        .filter((d, $) => d.includes([...$.schoolCodes], d.school_code));
+    }
+
+    return results;
   }
 
   fundedEnrollmentSummary() {

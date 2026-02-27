@@ -139,7 +139,7 @@ export function getDataBounds(df, columnRoot) {
   return get1ValueDataBounds(df, columnRoot);
 }
 
-function makeFacetYBounds(facetOrder, expandedAllSettings, data) {
+function makeFacetYBounds(facetOrder, metricName, expandedAllSettings, data) {
   const bounds = {
     min: 0,
     max: 0,
@@ -149,7 +149,7 @@ function makeFacetYBounds(facetOrder, expandedAllSettings, data) {
       const columnRoot = makeFacetColumnRoot(
         s.id,
         s.currencyNormalization,
-        "amount",
+        metricName,
         f.code,
       );
       const facetBounds = getDataBounds(data, columnRoot);
@@ -164,6 +164,7 @@ function makeFacetYBounds(facetOrder, expandedAllSettings, data) {
 export function makeHighchartConfig(options) {
   const {
     connectorId,
+    metricName,
     contextSettings,
     allSettings,
     fullFacetOrder,
@@ -181,7 +182,7 @@ export function makeHighchartConfig(options) {
 
   const facetYBounds =
     contextSettings.yScale === "fixed"
-      ? makeFacetYBounds(facetOrder, allSettings, data)
+      ? makeFacetYBounds(facetOrder, metricName, allSettings, data)
       : {};
 
   const result = makeDatasetFacetedDashboard(

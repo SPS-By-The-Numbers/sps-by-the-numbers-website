@@ -142,6 +142,7 @@ export default function DetailedActualsDashboard({
     return makeHighchartConfig(
       {
         connectorId: CONNECTOR_ID,
+        metricName: "amount",
         contextSettings,
         allSettings,
         fullFacetOrder,

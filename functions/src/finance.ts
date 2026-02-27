@@ -61,7 +61,8 @@ function prefixWithExport(path, query) {
 function getEnrollment(ccddd) {
   return `
   SELECT
-    *
+    * EXCEPT (school_name),
+    school_name school
   FROM
     sps-btn-data.ospi.rc_enrollment
   WHERE ccddd=${ccddd}

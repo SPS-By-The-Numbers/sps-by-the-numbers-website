@@ -15,7 +15,7 @@ import {
   formatForNormalization,
 } from "utilities/highcharts/ChartConfigGenerators";
 
-import type { CaptionType } from "utilities/highcharts/ChartConfigGenerators";
+import type { CaptionType, ValueFormat } from "utilities/highcharts/ChartConfigGenerators";
 import type { ColumnTable } from "arquero";
 import type { CurrencyNormalization, StaffingNormalization } from "utilities/normalizations";
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
@@ -37,6 +37,8 @@ type FacetComponentParams = {
   captionType: CaptionType;  // What kind of summary to do over zoomed data.
   subtitle?: string;  // Optional chart subtitle.
   yBounds?: AxisBounds;  // Optional chart bounds.
+  yValueFormatOverride?: ValueFormat;  // Overrides the default format inferred from normalizations
+
 };
 
 // Makes the cell-id for a specific facet and normalization.
@@ -74,6 +76,7 @@ export function makeFacetComponents(params : FacetComponentParams) {
     normalizations,
     subtitle,
     yBounds,
+    yValueFormatOverride,
   } = params;
   const r = normalizations.flatMap((normalization, normalizationOrdinal) =>
     facetOrder.map((facetInfo) =>
@@ -84,7 +87,7 @@ export function makeFacetComponents(params : FacetComponentParams) {
         metricColumn: [idPrefix, normalization, yColumnRoot].join("_"),
         connectorId,
         xDataColumn: xColumn,
-        yValueFormat: formatForNormalization(normalization),
+        yValueFormat: yValueFormatOverride ? yValueFormatOverride : formatForNormalization(normalization),
         xValueFormat: "year",
         xLabel,
         captionType,
