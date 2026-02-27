@@ -3,6 +3,7 @@ export type SchoolInfo = {
   school_code: number;  // OSPI Location ID.
   serialization_code: number;   // short code for representing in a fitler.
   is_district_office: boolean;  // Is this the district office entry?
+  region?: string;  // Region tag for school districts that want it.
 };
 
 export type SchoolMap = Record<number, Array<SchoolInfo>>;
@@ -4498,7 +4499,7 @@ const ALL_SCHOOLS: SchoolMap = {
     {
       school_code: 1002,
       school: 'District Office',
-      region: 'Invalid',
+      region: 'Non-instructional',
       is_district_office: true,
       serialization_code: 1
     },
@@ -4990,7 +4991,6 @@ const ALL_SCHOOLS: SchoolMap = {
       school: 'Graham Hill Elementary School',
       region: 'SE',
       is_district_office: false,
-      is_district_office: false,
       serialization_code: 71
     },
     {
@@ -4998,14 +4998,12 @@ const ALL_SCHOOLS: SchoolMap = {
       school: 'Rainier View Elementary School',
       region: 'SE',
       is_district_office: false,
-      is_district_office: false,
       serialization_code: 72
     },
     {
       school_code: 3429,
       school: 'Genesee Hill Elementary',
       region: 'SW',
-      is_district_office: false,
       is_district_office: false,
       serialization_code: 73
     },

@@ -27,7 +27,7 @@ export function sortBySchoolName(a, b) {
   return 0;
 }
 
-function makeSchoolFilterInternal(ccddd: number, groupingKey?: string) : Filter {
+function makeSchoolFilterInternal(ccddd: number, groupingKey: string = "region") : Filter {
   const schools = ALL_SCHOOLS[ccddd];
   const childrenByGroups = {} as Record<string, Array<FilterDomainTree>>;
   for (const s of schools.sort(sortBySchoolName)) {
@@ -47,8 +47,8 @@ function makeSchoolFilterInternal(ccddd: number, groupingKey?: string) : Filter 
     schoolFilterTree = makeInternalNode('all', 'All Schools', Object.values(childrenByGroups)[0]);
   } else {
     const children = new Array<FilterDomainTree>;
-    for (const [name, c] of Object.entries(childrenByGroups)) {
-      children.push(makeInternalNode(name, name, c));
+    for (const groupName of Object.keys(childrenByGroups).sort()) {
+      children.push(makeInternalNode(groupName, groupName, childrenByGroups[groupName]));
     }
     schoolFilterTree = makeInternalNode('all', 'All Schools', children);
   }
