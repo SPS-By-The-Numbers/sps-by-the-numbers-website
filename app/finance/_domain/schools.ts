@@ -4498,678 +4498,794 @@ const ALL_SCHOOLS: SchoolMap = {
     {
       school_code: 1002,
       school: 'District Office',
+      region: 'Invalid',
       is_district_office: true,
       serialization_code: 1
     },
     {
       school_code: 1547,
       school: 'Middle College High School',
+      region: 'Other',
       is_district_office: false,
       serialization_code: 2
     },
     {
       school_code: 1579,
       school: 'Tops K-8 School',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 3
     },
     {
       school_code: 1596,
       school: 'Seattle World School',
+      region: 'Other',
       is_district_office: false,
       serialization_code: 4
     },
     {
       school_code: 1620,
       school: 'Pathfinder K-8 School',
+      region: 'SW',
       is_district_office: false,
       serialization_code: 5
     },
     {
       school_code: 1635,
       school: 'Interagency Programs',
+      region: 'Other',
       is_district_office: false,
       serialization_code: 6
     },
     {
       school_code: 1751,
       school: 'Cascade Parent Partnership Program',
+      region: 'Other',
       is_district_office: false,
       serialization_code: 7
     },
     {
       school_code: 1796,
       school: 'Salmon Bay K-8 School',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 8
     },
     {
       school_code: 1856,
       school: 'The Center School',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 9
     },
     {
       school_code: 2061,
       school: 'Green Lake Elementary School',
+      region: 'NE',
       is_district_office: false,
       serialization_code: 10
     },
     {
       school_code: 2063,
       school: 'John Hay Elementary School',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 11
     },
     {
       school_code: 2069,
       school: 'Madrona K-5 School',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 12
     },
     {
       school_code: 2070,
       school: 'Beacon Hill International School',
+      region: 'SE',
       is_district_office: false,
       serialization_code: 13
     },
     {
       school_code: 2080,
       school: 'Stevens Elementary School',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 14
     },
     {
       school_code: 2081,
       school: 'John Stanford International School',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 15
     },
     {
       school_code: 2089,
       school: 'Martin Luther King Jr. Elementary School',
+      region: 'SE',
       is_district_office: false,
       serialization_code: 16
     },
     {
       school_code: 2090,
       school: 'Frantz Coe Elementary School',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 17
     },
     {
       school_code: 2092,
       school: 'Whittier Elementary School',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 18
     },
     {
       school_code: 2118,
       school: 'Emerson Elementary School',
+      region: 'SE',
       is_district_office: false,
       serialization_code: 19
     },
     {
       school_code: 2120,
       school: 'Rising Star Elementary School',
+      region: 'SE',
       is_district_office: false,
       serialization_code: 20
     },
     {
       school_code: 2121,
       school: 'Leschi Elementary School',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 21
     },
     {
       school_code: 2123,
       school: 'Greenwood Elementary School',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 22
     },
     {
       school_code: 2138,
       school: 'Adams Elementary School',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 23
     },
     {
       school_code: 2139,
       school: 'Gatewood Elementary School',
+      region: 'SW',
       is_district_office: false,
       serialization_code: 24
     },
     {
       school_code: 2141,
       school: 'Thurgood Marshall Elementary',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 25
     },
     {
       school_code: 2142,
       school: 'West Woodland Elementary School',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 26
     },
     {
       school_code: 2143,
       school: 'John Muir Elementary School',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 27
     },
     {
       school_code: 2181,
       school: 'Alki Elementary School',
+      region: 'SW',
       is_district_office: false,
       serialization_code: 28
     },
     {
       school_code: 2182,
       school: 'Franklin High School',
+      region: 'SE',
       is_district_office: false,
       serialization_code: 29
     },
     {
       school_code: 2183,
       school: 'Lawton Elementary School',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 30
     },
     {
       school_code: 2199,
       school: 'Concord International School',
+      region: 'SW',
       is_district_office: false,
       serialization_code: 31
     },
     {
       school_code: 2201,
       school: 'McGilvra Elementary School',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 32
     },
     {
       school_code: 2209,
       school: 'Broadview-Thomson K-8 School',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 33
     },
     {
       school_code: 2220,
       school: 'Ballard High School',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 34
     },
     {
       school_code: 2234,
       school: 'West Seattle High School',
+      region: 'SW',
       is_district_office: false,
       serialization_code: 35
     },
     {
       school_code: 2256,
       school: 'Olympic View Elementary School',
+      region: 'NE',
       is_district_office: false,
       serialization_code: 36
     },
     {
       school_code: 2269,
       school: 'Highland Park Elementary School',
+      region: 'SW',
       is_district_office: false,
       serialization_code: 37
     },
     {
       school_code: 2285,
       school: 'Roosevelt High School',
+      region: 'NE',
       is_district_office: false,
       serialization_code: 38
     },
     {
       school_code: 2306,
       school: 'Garfield High School',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 39
     },
     {
       school_code: 2307,
       school: 'Bailey Gatzert Elementary School',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 40
     },
     {
       school_code: 2321,
       school: 'Dunlap Elementary School',
+      region: 'SE',
       is_district_office: false,
       serialization_code: 41
     },
     {
       school_code: 2322,
       school: 'Montlake Elementary School',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 42
     },
     {
       school_code: 2353,
       school: 'Maple Elementary School',
+      region: 'SE',
       is_district_office: false,
       serialization_code: 43
     },
     {
       school_code: 2371,
       school: 'Hamilton International Middle School',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 44
     },
     {
       school_code: 2372,
       school: 'Bryant Elementary School',
+      region: 'NE',
       is_district_office: false,
       serialization_code: 45
     },
     {
       school_code: 2392,
       school: 'Cleveland High School STEM',
+      region: 'SE',
       is_district_office: false,
       serialization_code: 46
     },
     {
       school_code: 2435,
       school: 'Madison Middle School',
+      region: 'SW',
       is_district_office: false,
       serialization_code: 47
     },
     {
       school_code: 2437,
       school: 'Laurelhurst Elementary School',
+      region: 'NE',
       is_district_office: false,
       serialization_code: 48
     },
     {
       school_code: 2450,
       school: 'Daniel Bagley Elementary School',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 49
     },
     {
       school_code: 2462,
       school: 'Loyal Heights Elementary School',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 50
     },
     {
       school_code: 2645,
       school: 'West Seattle Elementary School',
+      region: 'SW',
       is_district_office: false,
       serialization_code: 51
     },
     {
       school_code: 2667,
       school: 'View Ridge Elementary School',
+      region: 'NE',
       is_district_office: false,
       serialization_code: 52
     },
     {
       school_code: 2729,
       school: 'Eckstein Middle School',
+      region: 'NE',
       is_district_office: false,
       serialization_code: 53
     },
     {
       school_code: 2730,
       school: 'Arbor Heights Elementary School',
+      region: 'SW',
       is_district_office: false,
       serialization_code: 54
     },
     {
       school_code: 2733,
       school: 'Lafayette Elementary School',
+      region: 'SW',
       is_district_office: false,
       serialization_code: 55
     },
     {
       school_code: 2838,
       school: 'Catharine Blaine K-8 School',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 56
     },
     {
       school_code: 2839,
       school: 'David T. Denny International Middle School',
+      region: 'SW',
       is_district_office: false,
       serialization_code: 57
     },
     {
       school_code: 2975,
       school: 'John Rogers Elementary School',
+      region: 'NE',
       is_district_office: false,
       serialization_code: 58
     },
     {
       school_code: 2976,
       school: 'Olympic Hills Elementary School',
+      region: 'NE',
       is_district_office: false,
       serialization_code: 59
     },
     {
       school_code: 2977,
       school: 'Viewlands Elementary School',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 60
     },
     {
       school_code: 3026,
       school: 'Wedgwood Elementary School',
+      region: 'NE',
       is_district_office: false,
       serialization_code: 61
     },
     {
       school_code: 3027,
-      school: 'Northgate Elementary School',
+      school: 'James Baldwin Elementary',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 62
     },
     {
       school_code: 3028,
       school: 'Sacajawea Elementary School',
+      region: 'NE',
       is_district_office: false,
       serialization_code: 63
     },
     {
       school_code: 3095,
       school: 'Mercer International Middle School',
+      region: 'SE',
       is_district_office: false,
       serialization_code: 64
     },
     {
       school_code: 3096,
       school: 'Chief Sealth International High School',
+      region: 'SW',
       is_district_office: false,
       serialization_code: 65
     },
     {
       school_code: 3157,
       school: 'Roxhill Elementary School',
+      region: 'SW',
       is_district_office: false,
       serialization_code: 66
     },
     {
       school_code: 3218,
       school: 'North Beach Elementary School',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 67
     },
     {
       school_code: 3276,
       school: 'Ingraham High School',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 68
     },
     {
       school_code: 3277,
       school: 'Whitman Middle School',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 69
     },
     {
       school_code: 3327,
       school: 'Rainier Beach High School',
+      region: 'SE',
       is_district_office: false,
       serialization_code: 70
     },
     {
       school_code: 3378,
       school: 'Graham Hill Elementary School',
+      region: 'SE',
+      is_district_office: false,
       is_district_office: false,
       serialization_code: 71
     },
     {
       school_code: 3380,
       school: 'Rainier View Elementary School',
+      region: 'SE',
+      is_district_office: false,
       is_district_office: false,
       serialization_code: 72
     },
     {
       school_code: 3429,
       school: 'Genesee Hill Elementary',
+      region: 'SW',
+      is_district_office: false,
       is_district_office: false,
       serialization_code: 73
     },
     {
       school_code: 3478,
       school: 'Kimball Elementary School',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 74
     },
     {
       school_code: 3479,
       school: 'Nathan Hale High School',
+      region: 'NE',
       is_district_office: false,
       serialization_code: 75
     },
     {
       school_code: 3496,
       school: 'Interagency Detention School',
+      region: 'Other',
       is_district_office: false,
       serialization_code: 76
     },
     {
       school_code: 3517,
       school: 'McClure Middle School',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 77
     },
     {
       school_code: 3518,
       school: 'Fairmount Park Elementary School',
+      region: 'SW',
       is_district_office: false,
       serialization_code: 78
     },
     {
       school_code: 3581,
       school: 'Wing Luke Elementary School',
+      region: 'SE',
       is_district_office: false,
       serialization_code: 79
     },
     {
       school_code: 3665,
       school: 'Sanislo Elementary School',
+      region: 'SW',
       is_district_office: false,
       serialization_code: 80
     },
     {
       school_code: 3714,
       school: 'Lowell Elementary School',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 81
     },
     {
       school_code: 3717,
       school: 'B F Day Elementary School',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 82
     },
     {
       school_code: 3774,
       school: 'Aki Kurose Middle School',
+      region: 'SE',
       is_district_office: false,
       serialization_code: 83
     },
     {
       school_code: 3778,
-      school: 'South Lake High School',
+      school: 'Alan T. Sugiyama High School',
+      region: 'Other',
       is_district_office: false,
       serialization_code: 84
     },
     {
       school_code: 3803,
       school: 'Dearborn Park International School',
+      region: 'SE',
       is_district_office: false,
       serialization_code: 85
     },
     {
       school_code: 3868,
       school: 'Nova High School',
+      region: 'Other',
       is_district_office: false,
       serialization_code: 86
     },
     {
       school_code: 3874,
       school: 'Licton Springs K-8',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 87
     },
     {
       school_code: 3974,
       school: 'Thornton Creek Elementary School',
+      region: 'NE',
       is_district_office: false,
       serialization_code: 88
     },
     {
       school_code: 4064,
       school: 'Washington Middle School',
+      region: 'SE',
       is_district_office: false,
       serialization_code: 89
     },
     {
       school_code: 4065,
       school: 'Orca K-8 School',
+      region: 'SE',
       is_district_office: false,
       serialization_code: 90
     },
     {
       school_code: 4218,
       school: 'South Shore PK-8 School',
+      region: 'SE',
       is_district_office: false,
       serialization_code: 91
     },
     {
       school_code: 4248,
       school: 'Hawthorne Elementary School - Seattle',
+      region: 'SE',
       is_district_office: false,
       serialization_code: 92
     },
     {
       school_code: 4263,
       school: 'Residential Consortium',
+      region: 'Other',
       is_district_office: false,
       serialization_code: 93
     },
     {
       school_code: 4277,
       school: 'Hutch School',
+      region: 'Other',
       is_district_office: false,
       serialization_code: 94
     },
     {
       school_code: 5046,
       school: 'Private School Services',
+      region: 'Other',
       is_district_office: false,
       serialization_code: 95
     },
     {
       school_code: 5048,
       school: 'Birth to 3 Contracts',
+      region: 'Other',
       is_district_office: false,
       serialization_code: 96
     },
     {
       school_code: 5175,
       school: 'Hazel Wolf K-8',
+      region: 'NE',
       is_district_office: false,
       serialization_code: 97
     },
     {
       school_code: 5203,
       school: 'McDonald International School',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 98
     },
     {
       school_code: 5204,
       school: 'Queen Anne Elementary',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 99
     },
     {
       school_code: 5205,
       school: 'Sand Point Elementary',
+      region: 'NE',
       is_district_office: false,
       serialization_code: 100
     },
     {
       school_code: 5260,
       school: 'Seattle Skills Center',
+      region: 'Other',
       is_district_office: false,
       serialization_code: 101
     },
     {
       school_code: 5276,
       school: 'Louisa Boren STEM K-8',
+      region: 'SW',
       is_district_office: false,
       serialization_code: 102
     },
     {
       school_code: 5292,
       school: 'Cascadia Elementary',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 103
     },
     {
       school_code: 5351,
       school: 'Jane Addams Middle School',
+      region: 'NE',
       is_district_office: false,
       serialization_code: 104
     },
     {
       school_code: 5405,
       school: 'Interagency Open Doors',
+      region: 'Other',
       is_district_office: false,
       serialization_code: 105
     },
     {
       school_code: 5406,
       school: 'Bridges Transition',
+      region: 'Other',
       is_district_office: false,
       serialization_code: 106
     },
     {
       school_code: 5485,
       school: 'Meany Middle School',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 107
     },
     {
       school_code: 5486,
       school: 'Robert Eagle Staff Middle School',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 108
     },
     {
       school_code: 5487,
       school: 'Cedar Park Elementary School',
+      region: 'NE',
       is_district_office: false,
       serialization_code: 109
     },
     {
       school_code: 5488,
       school: 'Decatur Elementary School',
+      region: 'NE',
       is_district_office: false,
       serialization_code: 110
     },
     {
       school_code: 5565,
       school: 'Magnolia Elementary',
+      region: 'Central',
       is_district_office: false,
       serialization_code: 111
     },
     {
       school_code: 5566,
       school: 'Lincoln High School',
+      region: 'NW',
       is_district_office: false,
       serialization_code: 112
     },
     {
       school_code: 5649,
       school: 'Cascade Parent Partnership Program',
+      region: 'Other',
       is_district_office: false,
       serialization_code: 113
     }

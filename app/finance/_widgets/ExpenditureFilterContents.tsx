@@ -132,7 +132,7 @@ export function SchoolFilterContents({
   settings,
   setSettings,
 }: Props<DatasetSettings & SchoolFilters>) {
-  const schoolFilter = makeSchoolFilter(settings.ccddd);
+  const schoolFilter = makeSchoolFilter(settings.ccddd, "region");
 
   return (
     <FilterTree
