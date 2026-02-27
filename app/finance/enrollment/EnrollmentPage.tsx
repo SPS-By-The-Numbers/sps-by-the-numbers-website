@@ -29,7 +29,6 @@ const DEFAULT_DASHBOARD_SETTINGS : EnrollmentContextSettings = {
   ...DEFAULT_COMMON_FACET_CONTEXT_SETTINGS,
   sortType: "latest" as const,
   facet: deserializeFacet(""),
-  yScale: "free" as const,
 };
 
 export const SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS = [
