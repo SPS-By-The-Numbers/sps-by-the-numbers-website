@@ -51,7 +51,7 @@ $context-chart-row-height: 230px;
 }
 
 .hcdashboard .highcharts-dashboards-cell.context-cell div.chart-title h3 {
-  font-size: 1rem;
+  font-size: 0.75rem;
   margin: 0.2ex 0.2ex;
 }
 
@@ -60,4 +60,13 @@ $context-chart-row-height: 230px;
   max-width: 100%;
   min-height: $context-chart-row-height;
   max-height: $context-chart-row-height;
+}
+
+.hcdashboard .highcharts-dashboards-cell.context-cell.context-smaller {
+  min-height: calc($context-chart-row-height * 0.7);
+  max-height: calc($context-chart-row-height * 0.7);
+}
+
+.hcdashboard .highcharts-dashboards-cell.context-cell.context-smaller div.chart-title h3 {
+  margin: 0.1ex 0.1ex;
 }

@@ -41,6 +41,11 @@ const CONNECTOR_ID = "default-connector";
 const METRIC_NAME = "fte";
 
 function augmentContextComponents(gui, components, data) {
+  const fundedEnrollmentBounds = getDataBounds(
+    data,
+    "context_amount_fundedEnrollment",
+  );
+
   const teachingBounds = {
     min: 0,
     max: getDataBounds(data, "context_fte_teachingFte_actuals").max,
@@ -57,12 +62,16 @@ function augmentContextComponents(gui, components, data) {
   const cashflowBounds = getDataBounds(data, "context_amount_cashflow");
   gui.layouts.unshift({
     rowClassName: "context-row",
-    cellClassName: "context-cell",
+    cellClassName: "context-cell context-smaller",
 
     rows: [
       {
         cells: [
+          { id: "context-fundedEnrollment" },
           { id: "context-teachingFte" },
+        ]
+      }, {
+        cells: [
           { id: "context-studentSupportFte" },
           { id: "context-buildingSupportFte" },
           { id: "context-otherFte" },
@@ -73,6 +82,14 @@ function augmentContextComponents(gui, components, data) {
 
   // Add Context cells.
   components.push(
+    makeContextCell(
+      `context-fundedEnrollment`,
+      CONNECTOR_ID,
+      `context_amount_fundedEnrollment`,
+      "Funded Enrollment",
+      "fte" as const,
+      fundedEnrollmentBounds,
+    ),
     makeContextCell(
       `context-teachingFte`,
       CONNECTOR_ID,
