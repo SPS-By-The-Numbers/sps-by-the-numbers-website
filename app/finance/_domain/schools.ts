@@ -4501,8 +4501,8 @@ const ALL_SCHOOLS: SchoolMap = {
   ],
   17001: [
     {
-      type: 'Invalid',
-      region: 'Invalid',
+      type: 'Non-Instructional',
+      region: 'Non-Instructional',
       ms_assignment_code: 0,
       ms_assignment: 'unknown',
       school_code: 1002,
