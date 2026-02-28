@@ -6,44 +6,122 @@ import {
   SchoolFilterContents,
   DutyRootFilterContents,
 } from "app/finance/_widgets/ExpenditureFilterContents";
-import { dfToJSONConnectorOptions } from "utilities/highcharts/utils";
+import { makeHighchartConfig, getDataBounds } from "utilities/highcharts/utils";
+import { useMemo } from "react";
 import {
   extractRawS275Staffing,
   toChartableDataset,
   getDataColumnNames,
 } from "utilities/ChartableMetrics";
 import {
+  makeContextCell,
+} from "utilities/highcharts/ChartConfigGenerators";
+import {
   extractFacets,
 } from "utilities/ChartableVitals";
+import { makeFacetContents } from "app/finance/_widgets/FacetContents";
+import SortOrderContents from "app/finance/_widgets/SortOrderContents";
+import YScaleContents from "app/finance/_widgets/YScaleContents";
 import { serializeDatasetSettings, serializeOneSetting } from "app/finance/_settings/common_settings";
-import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { makeFacetComponents } from "utilities/highcharts/FacetedBudgetActualCharts";
 import { op } from "arquero";
 import { SERIALIZE_STAFFING_SETTINGS_GENERATORS, SERIALIZE_STAFFING_CONTEXT_SETTINGS_GENERATORS } from "./StaffingPage";
-import { serializeSettings } from "app/finance/_settings/base_settings";
 import * as aq from "arquero";
 import HcDashboard from "components/HcDashboard";
 import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
 import DistrictData from "utilities/DistrictData";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
+import { FACET_OPTIONS } from "./StaffingPage";
 
-import type { ColumnTable } from "arquero";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
 import type { StaffingSettings, StaffingContextSettings } from "./StaffingPage";
 
-const CONNECTOR_ID = "settings-connector";
+const CONNECTOR_ID = "default-connector";
+const METRIC_NAME = "fte";
 
-function componentsGenerator(staffingSettings: StaffingSettings, facetOrder) {
+function augmentContextComponents(gui, components, data) {
+  const teachingBounds = {
+    min: 0,
+    max: getDataBounds(data, "context_fte_teachingFte_actuals").max,
+  };
+
+  const fteBounds = {
+    min: 0,
+    max: Math.max(...[
+      getDataBounds(data, "context_fte_studentSupportFte_actuals").max,
+      getDataBounds(data, "context_fte_buildingSupportFte_actuals").max,
+      getDataBounds(data, "context_fte_otherFte_actuals").max,
+    ])
+  }
+  const cashflowBounds = getDataBounds(data, "context_amount_cashflow");
+  gui.layouts.unshift({
+    rowClassName: "context-row",
+    cellClassName: "context-cell",
+
+    rows: [
+      {
+        cells: [
+          { id: "context-teachingFte" },
+          { id: "context-studentSupportFte" },
+          { id: "context-buildingSupportFte" },
+          { id: "context-otherFte" },
+        ],
+      },
+    ],
+  });
+
+  // Add Context cells.
+  components.push(
+    makeContextCell(
+      `context-teachingFte`,
+      CONNECTOR_ID,
+      `context_fte_teachingFte`,
+      "Teaching FTE (scale!) ",
+      "fte" as const,
+      teachingBounds,
+    ),
+    makeContextCell(
+      `context-studentSupportFte`,
+      CONNECTOR_ID,
+      `context_fte_studentSupportFte`,
+      "Student Support FTE",
+      "fte" as const,
+      fteBounds,
+    ),
+    makeContextCell(
+      `context-buildingSupportFte`,
+      CONNECTOR_ID,
+      'context_fte_buildingSupportFte',
+      "Building Support FTE",
+      "fte" as const,
+      fteBounds,
+    ),
+    makeContextCell(
+      `context-otherFte`,
+      CONNECTOR_ID,
+      `context_fte_otherFte`,
+      "Other FTE",
+      "fte" as const,
+      fteBounds,
+    ),
+  );
+}
+
+function componentsGenerator(facetOrder,
+                             contextSettings: StaffingContextSettings,
+                             settings: StaffingSettings,
+                             yBounds) {
   const components = makeFacetComponents({
-    idPrefix: staffingSettings.id.toString(),
+    idPrefix: settings.id.toString(),
     xColumn: "class_of",
     xLabel: "Fiscal Year End",
-    yColumnRoot: "fte",
+    yColumnRoot: METRIC_NAME,
     facetOrder,
     connectorId: CONNECTOR_ID,
-    normalizations: [staffingSettings.staffingNormalization],
+    normalizations: [settings.staffingNormalization],
     captionType: "stats",
+    yBounds,
   });
 
   return components;
@@ -58,10 +136,11 @@ function makeFacetedStaffingForDistrict(
   const rawData = extractRawS275Staffing(filteredS275Summary);
 
   const formatedData = rawData
+    .params({ name: METRIC_NAME })
     .groupby("class_of")
     .pivot(["duty_root_code"], {
       finalSalary: (d) => op.sum(d.finalSalary),
-      fte: (d) => op.sum(d.fte),
+      fte: (d, $) => op.sum(d[$.name]),
     })
     .select(aq.not("_pivot_name_hack_"))
     .derive({ data_type: (d) => "actuals" });
@@ -86,38 +165,33 @@ export default function StaffingDashboard({
   allSettings,
   contextSettings,
 }: DistrictDataContentProps<StaffingSettings, StaffingContextSettings>) {
-  const {data, fullFacetOrder} = extractFacets(
-    districtDataMap,
-    allSettings,
-    "duty_root" as const,
-    contextSettings.sortType,
-    contextSettings.sortOrder,
-    DistrictData.prototype.filteredS275Summary,
-    makeFacetedStaffingForDistrict,
-    "fte_in_assignment",
-  );
 
-  const result = makeDatasetFacetedDashboard(allSettings, (s) =>
-    componentsGenerator(s, fullFacetOrder),
-  );
-  if (result === undefined) {
-    return <div>No Datasets defined.</div>;
-  }
-  const { components, gui } = result;
+  const config = useMemo(() => {
+    // Expand out the filter per sub-setting.
+    const { data, fullFacetOrder } = extractFacets(
+      districtDataMap,
+      allSettings,
+      contextSettings.facet,
+      contextSettings.sortType,
+      contextSettings.sortOrder,
+      DistrictData.prototype.filteredS275Summary,
+      makeFacetedStaffingForDistrict,
+      METRIC_NAME,
+    );
 
-  const config = {
-    gui,
-    components,
-    dataPool: {
-      connectors: [
-        {
-          id: CONNECTOR_ID,
-          type: "JSON",
-          ...dfToJSONConnectorOptions(data),
-        },
-      ],
-    },
-  };
+    return makeHighchartConfig(
+      {
+        connectorId: CONNECTOR_ID,
+        metricName: METRIC_NAME,
+        contextSettings,
+        allSettings,
+        fullFacetOrder,
+        componentsGenerator,
+        augmentContextComponents,
+        data,
+      }
+    );
+  }, [contextSettings, districtDataMap, allSettings]);
 
   return (
     <SettingsLayout
@@ -127,7 +201,11 @@ export default function StaffingDashboard({
       }}
       allSettings={allSettings}
       contextSettings={contextSettings}
-      contextSettingsComponents={[]}
+      contextSettingsComponents={[
+        makeFacetContents(FACET_OPTIONS),
+        SortOrderContents,
+        YScaleContents,
+      ]}
       settingsContentsComponents={[
         DatasetSettingsContents,
         ActivityFilterContents,

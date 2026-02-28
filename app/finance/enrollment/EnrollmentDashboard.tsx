@@ -1,25 +1,15 @@
 "use client";
 
-import { DEFAULT_DATASET_SETTINGS } from "app/finance/_settings/dataset_settings";
-import * as aq from "arquero";
-import { op } from "arquero";
 import { serializeDatasetSettings, serializeOneSetting } from "app/finance/_settings/common_settings";
 import { useMemo } from "react";
 import { makeHighchartConfig } from "utilities/highcharts/utils";
 import {
-  extractRawExpenditures,
   toFacetedCharatbleEnrollmentDataset,
-  getDataColumnNames,
 } from "utilities/ChartableMetrics";
 import { extractFacets } from "utilities/ChartableVitals";
-import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { makeFacetComponents } from "utilities/highcharts/FacetedBudgetActualCharts";
 import {
-  ObjectFilterContents,
-  ActivityFilterContents,
-  ProgramFilterContents,
   SchoolFilterContents,
-  NcesFilterContents,
 } from "app/finance/_widgets/ExpenditureFilterContents";
 import DistrictData from "utilities/DistrictData";
 import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
@@ -31,13 +21,8 @@ import { makeFacetContents } from "app/finance/_widgets/FacetContents";
 import SortOrderContents from "app/finance/_widgets/SortOrderContents";
 import YScaleContents from "app/finance/_widgets/YScaleContents";
 
-import ActivityFilter from "app/finance/_filteritems/activity";
-import ObjectFilter from "app/finance/_filteritems/object";
-import ProgramFilter from "app/finance/_filteritems/program";
 import { makeSchoolFilter } from "app/finance/_filteritems/school";
-import NcesFilter from "app/finance/_filteritems/nces";
 
-import type { ColumnTable } from "arquero";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
 import type { EnrollmentSettings, EnrollmentContextSettings } from "app/finance/enrollment/EnrollmentPage";
 

@@ -139,7 +139,7 @@ function combineActivitiesS275(df, codes, synth_activity_code, synth_activity) {
     .rollup({
       c_est_total_initial_salary: (d) => op.sum(d.c_est_total_initial_salary),
       c_est_total_final_salary: (d) => op.sum(d.c_est_total_final_salary),
-      fte_in_assignment: (d) => op.sum(d.fte_in_assignment),
+      fte: (d) => op.sum(d.fte),
       activity_code: (_, $) => $.synth_activity_code,
       activity: (_, $) => $.synth_activity,
     });
@@ -296,7 +296,7 @@ export default class DistrictData {
   staffingSummary() {
     const staffFteActuals = this.s275_summary_df.groupby(["class_of"]).rollup({
       data_type: () => "actuals",
-      staffFte: op.sum("fte_in_assignment"),
+      staffFte: op.sum("fte"),
     });
 
     // 317 is certificated FTE counts
@@ -311,7 +311,7 @@ export default class DistrictData {
       .groupby("class_of")
       .rollup({
         data_type: () => "actuals",
-        teachingFte: op.sum("fte_in_assignment"),
+        teachingFte: op.sum("fte"),
       });
 
     const studentSupportFte = this.s275_summary_df
@@ -321,7 +321,7 @@ export default class DistrictData {
       .groupby("class_of")
       .rollup({
         data_type: () => "actuals",
-        studentSupportFte: op.sum("fte_in_assignment"),
+        studentSupportFte: op.sum("fte"),
       });
 
     const buildingSupportFte = this.s275_summary_df
@@ -329,7 +329,7 @@ export default class DistrictData {
       .groupby("class_of")
       .rollup({
         data_type: () => "actuals",
-        buildingSupportFte: op.sum("fte_in_assignment"),
+        buildingSupportFte: op.sum("fte"),
       });
 
     const otherFte = this.s275_summary_df
@@ -349,7 +349,7 @@ export default class DistrictData {
       .groupby("class_of")
       .rollup({
         data_type: () => "actuals",
-        otherFte: op.sum("fte_in_assignment"),
+        otherFte: op.sum("fte"),
       });
 
     return staffFteActuals

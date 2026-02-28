@@ -6,14 +6,9 @@ import { SERIALIZE_EXPENDITURES_SETTINGS_GENERATORS, SERIALIZE_EXPENDITURES_CONT
 import { serializeDatasetSettings, serializeOneSetting } from "app/finance/_settings/common_settings";
 import { makeHighchartConfig, getDataBounds } from "utilities/highcharts/utils";
 import {
-  extractRawExpenditures,
-  toFacetedCharatbleDataset,
   getDataColumnNames,
 } from "utilities/ChartableMetrics";
 import {
-  makeBaseChartConfig,
-  makeBudgetActualsChartConfig,
-  makeBudgetActualsContextChartConfig,
   makeContextCell,
 } from "utilities/highcharts/ChartConfigGenerators";
 import { extractFacets } from "utilities/ChartableVitals";

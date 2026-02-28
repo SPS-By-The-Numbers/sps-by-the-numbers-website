@@ -161,7 +161,7 @@ export function extractRawS275Staffing(df: ColumnTable) {
   const data = df.groupby("class_of", "duty_root_code").rollup({
     finalSalary: (d) => op.sum(d.c_est_total_final_salary),
     initialSalary: (d) => op.sum(d.c_est_total_initial_salary),
-    fte: (d) => op.sum(d.fte_in_assignment),
+    fte: (d) => op.sum(d.fte),
   });
 
   return data;

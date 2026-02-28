@@ -21,7 +21,7 @@ export const FACET_OPTIONS: Record<Facet, string> = {
   activity: "Activity",
   program: "Program",
   school: "School",
-  dutyroot: "Duty Root",
+  duty_root: "Duty Root",
 };
 
 export function serializeFacet(facet: Facet): string {
@@ -35,7 +35,7 @@ export function serializeFacet(facet: Facet): string {
     case "school":
       return "2";
 
-    case "dutyroot":
+    case "duty_root":
       return "3";
   }
 
@@ -51,16 +51,13 @@ export function deserializeFacet(s: string): Facet {
       return "program";
 
     case "2":
-      return "object";
-
-    case "3":
       return "school";
 
-    case "4":
-      return "nces";
+    case "3":
+      return "duty_root";
   }
 
-  return "activity";
+  return "duty_root";
 }
 
 const DEFAULT_STAFF_SETTINGS = DEFAULT_DATASET_SETTINGS.map((v) => ({
@@ -82,8 +79,8 @@ export const SERIALIZE_STAFFING_CONTEXT_SETTINGS_GENERATORS = [
 
 const DEFAULT_CONTEXT_SETTINGS : StaffingContextSettings = {
   ...DEFAULT_COMMON_FACET_CONTEXT_SETTINGS,
-  facet: "dutyroot",
-  sortType: "amount",
+  facet: deserializeFacet(""),
+  sortType: "latest" as const,
 };
 
 export default function StaffingPage() {
