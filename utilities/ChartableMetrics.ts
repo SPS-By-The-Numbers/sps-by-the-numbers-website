@@ -33,7 +33,7 @@ export function normalizeColumn(
     normalization,
   );
   const normalizedDf = df
-    .join(nd)
+    .join_left(nd)
     .derive(deriveClause)
     .select(["class_of", "data_type", ...Object.keys(deriveClause)]);
 
@@ -200,7 +200,7 @@ function extractRawEnrollment(df: ColumnTable, facetColumn: string) {
   return df
   .groupby("class_of", "grade", facetCodeColumn)
   .rollup({
-    all_students: op.sum(`all_students`),
+    all_students: d => op.sum(d.all_students),
   });
 }
 
