@@ -6,7 +6,11 @@ import {
   SchoolFilterContents,
   DutyRootFilterContents,
 } from "app/finance/_widgets/ExpenditureFilterContents";
+import ActivityFilter from "app/finance/_filteritems/activity";
+import ProgramFilter from "app/finance/_filteritems/program";
+import DutyRootFilter from "app/finance/_filteritems/duty_root";
 import { makeHighchartConfig, getDataBounds } from "utilities/highcharts/utils";
+import { makeSchoolFilter } from "app/finance/_filteritems/school";
 import { useMemo } from "react";
 import {
   extractRawS275Staffing,
@@ -129,6 +133,13 @@ function componentsGenerator(facetOrder,
                              contextSettings: StaffingContextSettings,
                              settings: StaffingSettings,
                              yBounds) {
+  const schoolFilter = makeSchoolFilter(settings.ccddd);
+  const subtitle = `
+  School(${schoolFilter.toSummaryText(settings.schoolCodes)}) /
+  Prog(${ProgramFilter.toSummaryText(settings.programCodes)}) /
+  Act(${ActivityFilter.toSummaryText(settings.activityCodes)}) /
+  Duty(${DutyRootFilter.toSummaryText(settings.dutyRootCodes)})
+  `;
   const components = makeFacetComponents({
     idPrefix: settings.id.toString(),
     xColumn: "class_of",
@@ -138,6 +149,7 @@ function componentsGenerator(facetOrder,
     connectorId: CONNECTOR_ID,
     normalizations: [settings.staffingNormalization],
     captionType: "stats",
+    subtitle,
     yBounds,
     disableLegend: true,
   });
