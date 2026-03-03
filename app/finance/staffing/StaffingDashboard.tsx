@@ -139,6 +139,7 @@ function componentsGenerator(facetOrder,
     normalizations: [settings.staffingNormalization],
     captionType: "stats",
     yBounds,
+    disableLegend: true,
   });
 
   return components;

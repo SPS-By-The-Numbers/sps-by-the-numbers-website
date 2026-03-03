@@ -73,6 +73,7 @@ function componentsGenerator(facetOrder,
     subtitle,
     yBounds,
     yValueFormatOverride: "decimal",
+    disableLegend: true,
   });
 
   return components;
@@ -129,7 +130,7 @@ export default function EnrollmentDashboard({
       ]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">
-        Enrollment Headcount (Differenet from AAFTE in budgets which treats Running Start and Special Education students as less than 1).
+        Enrollment Headcount (Different from AAFTE in budgets which treats Running Start and Special Education students as less than 1).
       </Typography>
       <HcDashboard config={config} />
     </SettingsLayout>

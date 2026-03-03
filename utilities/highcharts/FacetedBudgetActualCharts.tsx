@@ -38,7 +38,7 @@ type FacetComponentParams = {
   subtitle?: string;  // Optional chart subtitle.
   yBounds?: AxisBounds;  // Optional chart bounds.
   yValueFormatOverride?: ValueFormat;  // Overrides the default format inferred from normalizations
-
+  disableLegend?: boolean;  // Disables the legend.
 };
 
 // Makes the cell-id for a specific facet and normalization.
@@ -77,6 +77,7 @@ export function makeFacetComponents(params : FacetComponentParams) {
     subtitle,
     yBounds,
     yValueFormatOverride,
+    disableLegend,
   } = params;
   const r = normalizations.flatMap((normalization, normalizationOrdinal) =>
     facetOrder.map((facetInfo) =>
@@ -93,6 +94,7 @@ export function makeFacetComponents(params : FacetComponentParams) {
         captionType,
         yMin: yBounds?.min,
         yMax: yBounds?.max,
+        disableLegend,
       }),
     ),
   );

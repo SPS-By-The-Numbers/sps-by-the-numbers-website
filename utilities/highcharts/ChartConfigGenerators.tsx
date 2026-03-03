@@ -55,6 +55,8 @@ export type BudgetActualsChartOptions = BaseChartConfigOptions & {
   captionType: CaptionType;
 
   xDataColumn: string;
+
+  disableLegend?: boolean;
 };
 
 type SeriesDef = {
@@ -501,7 +503,7 @@ export function makeBudgetActualsChartConfig(
     return valueFormatter(point.y);
   };
 
-  return merge(baseChartConfig, {
+  const config = merge(baseChartConfig, {
     connector: {
       columnAssignment: [
         {
@@ -589,13 +591,19 @@ export function makeBudgetActualsChartConfig(
       },
     },
   });
+
+  if (options.disableLegend) {
+    config.chartOptions.legend.enabled = false;
+  }
+
+  return config;
 }
 
 // Context charts have much smaller space so remove things like legends, etc.
 export function makeBudgetActualsContextChartConfig(
   options: BudgetActualsChartOptions,
 ) {
-  const config = makeBudgetActualsChartConfig(options);
+  const config = makeBudgetActualsChartConfig({...options, disableLegend: true});
 
   config.chartOptions.title.text = makeTitle(
     `${options.title} (${options.yLabel ?? inferLabel(options.yValueFormat)})`,
@@ -603,7 +611,6 @@ export function makeBudgetActualsContextChartConfig(
   config.chartOptions.yAxis.title.text = "";
   delete config.chartOptions.xAxis.title;
   delete config.chartOptions.xAxis.events.afterSetExtremes; // Remove variance
-  config.chartOptions.legend.enabled = false;
   config.chartOptions.plotOptions.series.label.enabled = false;
   for (const s of config.chartOptions.series) {
     delete s.dataLabels;
