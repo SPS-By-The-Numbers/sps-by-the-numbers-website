@@ -1,5 +1,5 @@
 import { Filter, makeInternalNode, makeLeafNode } from "utilities/filter";
-import ALL_DUTY_ROOTS from "app/finance/_domain/duty_roots";
+import ALL_DUTY_ROOTS from "utilities/domain/duty_roots";
 
 import type { FilterDomainTree } from "utilities/filter";
 

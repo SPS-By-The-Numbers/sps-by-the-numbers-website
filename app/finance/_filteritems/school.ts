@@ -1,5 +1,5 @@
 // Produces the Filter + UI structure for grouping schools in a district.
-import ALL_SCHOOLS from 'app/finance/_domain/schools';
+import ALL_SCHOOLS from 'utilities/domain/schools';
 import { Filter, makeInternalNode, makeLeafNodeWithSerialization } from "utilities/filter";
 import memoize from "lodash/memoize";
 

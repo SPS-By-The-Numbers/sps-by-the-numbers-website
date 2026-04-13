@@ -1,5 +1,5 @@
 import { Filter, makeInternalNode, makeLeafNode } from "utilities/filter";
-import ALL_STUDENT_GROUPS from "app/finance/_domain/student_groups";
+import ALL_STUDENT_GROUPS from "utilities/domain/student_groups";
 
 import type { FilterDomainTree } from "utilities/filter";
 

@@ -9,7 +9,7 @@ import {
 import { extractFacets } from "utilities/ChartableVitals";
 import { makeFacetComponents } from "utilities/highcharts/FacetedBudgetActualCharts";
 import { makeMultiSeriesLineChartConfig } from "utilities/highcharts/ChartConfigGenerators";
-import ALL_TEST_SUBJECTS from "app/finance/_domain/test_subjects";
+import ALL_TEST_SUBJECTS from "utilities/domain/test_subjects";
 
 import type { SeriesCodeDef } from "utilities/highcharts/ChartConfigGenerators";
 import {

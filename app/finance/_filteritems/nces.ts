@@ -1,5 +1,5 @@
 import { Filter, makeInternalNode, makeLeafNodeWithSerialization } from "utilities/filter";
-import ALL_NCES from "app/finance/_domain/nces";
+import ALL_NCES from "utilities/domain/nces";
 
 import type { FilterDomainTree } from "utilities/filter";
 

@@ -1,5 +1,5 @@
 import { Filter, makeInternalNode, makeLeafNode } from "utilities/filter";
-import ALL_TEST_SUBJECTS from "app/finance/_domain/test_subjects";
+import ALL_TEST_SUBJECTS from "utilities/domain/test_subjects";
 
 import type { FilterDomainTree } from "utilities/filter";
 

@@ -41,7 +41,7 @@ Dashboard filters are serialized to URL query params for shareable links. The se
 
 ### Filter System
 
-Finance data uses OSPI classification codes: Activity, Program, Object, and Duty Root. Filters live in `app/finance/_filteritems/` with domain mappings in `app/finance/_domain/`. CCDDD codes are county+district identifiers. Synthetic activity codes 9990+ represent combined historical activities.
+Finance data uses OSPI classification codes: Activity, Program, Object, and Duty Root. Filters live in `app/finance/_filteritems/` with domain mappings in `utilities/domain/`. CCDDD codes are county+district identifiers. Synthetic activity codes 9990+ represent combined historical activities.
 
 ### Highcharts Integration
 
@@ -54,7 +54,7 @@ Root layout (`app/layout.tsx`) wraps the app in MUI and Highcharts providers. `D
 ## Key Directories
 
 - `app/finance/` — main finance dashboards (expenditures, vitals, staffing, correlations, enrollment, assessments)
-- `app/finance/_domain/` — OSPI code mappings
+- `utilities/domain/` — OSPI code mappings
 - `app/finance/_filteritems/` — filter logic with tests
 - `app/finance/_settings/` — settings serialization with tests
 - `app/finance/_widgets/` — dashboard UI components (selectors, settings panels)

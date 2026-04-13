@@ -2,7 +2,9 @@ import {
   serializeSettingsDict,
   deserializeSettingsDict,
 } from "utilities/settings";
-import ALL_DISTRICTS from "app/finance/_domain/ccddd";
+import ALL_ASSESSMENT_TYPES from "utilities/domain/assessment_types";
+import ALL_DISTRICTS from "utilities/domain/ccddd";
+import ALL_STUDENT_GROUPS from "utilities/domain/student_groups";
 import * as Normalizations from "utilities/normalizations";
 import { makeSchoolFilter } from "app/finance/_filteritems/school";
 import { serializeFilterGrouping, deserializeFilterGrouping } from "app/finance/_settings/dataset_settings";
@@ -221,8 +223,8 @@ export function makeTestSubjectSerializeConfig(context?) : SettingsConfig {
 export function makeDefaultAssessmentFilterSettings() {
   return {
     gradeLevelCodes: GradeLevelFilter.allCodes(),
-    testAdministrationCodes: AssessmentTypeFilter.allCodes(),
-    studentGroupCodes: StudentGroupFilter.allCodes(),
+    testAdministrationCodes: new Set(ALL_ASSESSMENT_TYPES.filter(t => t.test_administration === "SBAC").map(t => t.test_administration_code)),
+    studentGroupCodes: new Set(ALL_STUDENT_GROUPS.filter(g => g.student_group === "All Students").map(g => g.student_group_code)),
     testSubjectCodes: TestSubjectFilter.allCodes(),
   };
 }

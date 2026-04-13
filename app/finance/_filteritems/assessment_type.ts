@@ -1,5 +1,5 @@
 import { Filter, makeInternalNode, makeLeafNode } from "utilities/filter";
-import ALL_ASSESSMENT_TYPES from "app/finance/_domain/assessment_types";
+import ALL_ASSESSMENT_TYPES from "utilities/domain/assessment_types";
 
 import type { FilterDomainTree } from "utilities/filter";
 

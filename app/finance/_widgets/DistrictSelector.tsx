@@ -1,9 +1,9 @@
 import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
-import ALL_DISTRICTS from "app/finance/_domain/ccddd";
+import ALL_DISTRICTS from "utilities/domain/ccddd";
 
 import type { SxProps, Theme } from "@mui/material";
-import type { DistrictsMap } from "app/finance/_domain/ccddd";
+import type { DistrictsMap } from "utilities/domain/ccddd";
 
 type Params = {
   ccddd: number;

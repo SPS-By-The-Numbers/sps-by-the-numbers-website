@@ -1,4 +1,4 @@
-import ALL_DISTRICTS from "app/finance/_domain/ccddd";
+import ALL_DISTRICTS from "utilities/domain/ccddd";
 
 import type { BaseSettings } from "app/finance/_settings/base_settings";
 import type {

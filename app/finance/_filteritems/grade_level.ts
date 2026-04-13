@@ -1,5 +1,5 @@
 import { Filter, makeInternalNode, makeLeafNode } from "utilities/filter";
-import ALL_GRADE_LEVELS from "app/finance/_domain/grade_levels";
+import ALL_GRADE_LEVELS from "utilities/domain/grade_levels";
 
 import type { FilterDomainTree } from "utilities/filter";
 

@@ -1,10 +1,10 @@
 import { op } from "arquero";
 import * as aq from "arquero";
 import { fetchDataset } from "utilities/client/FetchData";
-import ALL_GRADE_LEVELS from "app/finance/_domain/grade_levels";
-import ALL_ASSESSMENT_TYPES from "app/finance/_domain/assessment_types";
-import ALL_STUDENT_GROUPS from "app/finance/_domain/student_groups";
-import ALL_TEST_SUBJECTS from "app/finance/_domain/test_subjects";
+import ALL_GRADE_LEVELS from "utilities/domain/grade_levels";
+import ALL_ASSESSMENT_TYPES from "utilities/domain/assessment_types";
+import ALL_STUDENT_GROUPS from "utilities/domain/student_groups";
+import ALL_TEST_SUBJECTS from "utilities/domain/test_subjects";
 
 import type { ColumnTable } from "arquero";
 
