@@ -82,10 +82,26 @@ function getSqss(ccddd) {
 function getAssessment(ccddd) {
   return `
   SELECT
-    *
+    a.class_of,
+
+    a.school_code,
+    d_s.school,
+
+    a.test_subject,
+
+    a.test_administration,
+    a.test_administration_group,
+
+    a.student_group,
+    a.student_group_type,
+
+    a.grade_level,
+
+    a.pct_met_standard pct_met_standard_str
   FROM
-    sps-btn-data.ospi.rc_assessment
-  WHERE ccddd=${ccddd}
+    sps-btn-data.ospi.rc_assessment a
+    JOIN sps-btn-data.safs_domains.d_school d_s ON (a.school_code = d_s.school_code AND a.ccddd = d_s.ccddd)
+  WHERE a.ccddd=${ccddd}
   `;
 }
 

@@ -200,7 +200,7 @@ function extractRawEnrollment(df: ColumnTable, facetColumn: string) {
   return df
   .groupby("class_of", "grade", facetCodeColumn)
   .rollup({
-    all_students: d => op.sum(d.all_students),
+    pct_met_standard: d => op.sum(d.pct_met_standard),
   });
 }
 
@@ -216,11 +216,33 @@ export function toFacetedCharatbleEnrollmentDataset(
     .filter(d => d.grade != "All Grades")
     .groupby(["class_of"])
     .pivot([`${facet}_code`], {
-      all_students: (d) => op.sum(d.all_students),
+      pct_met_standard: (d) => op.sum(d.pct_met_standard),
       _pivot_name_hack_: (d) => op.any("_pivot_name_hack_"),
     })
     .select(aq.not(aq.startswith("_pivot_name_hack_")))
     .derive({ data_type: (d) => "actuals" });
+
+  const names = getDataColumnNames(pdata);
+  return toChartableDataset(
+    districtData,
+    pdata,
+    settings,
+    [],
+    names,
+    [],
+  );
+}
+
+export function toFacetedCharatbleAssessmentDataset(
+  districtData,
+  filteredDf,
+  facet,
+  settings
+) {
+  const df = filteredDf;
+
+  const pdata = df
+    .select('class_of', 'pct_met_standard', 'school_code');
 
   const names = getDataColumnNames(pdata);
   return toChartableDataset(

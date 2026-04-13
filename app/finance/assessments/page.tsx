@@ -1,14 +1,14 @@
 import { Metadata } from "next";
-import EnrollmentPage from "./EnrollmentPage";
+import AssessmentPage from "./AssessmentPage";
 
 export const metadata: Metadata = {
-  title: "Enrollment Dashboard for Washingtion State Schools",
+  title: "Assessment Dashboard for Washingtion State Schools",
   description:
-    "Gives detailed breakdown of Enrollment over the years.",
+    "Gives detailed breakdown of Assessment over the years.",
 };
 
 export default async function Page() {
   return (
-    <EnrollmentPage />
+    <AssessmentPage />
   );
 }

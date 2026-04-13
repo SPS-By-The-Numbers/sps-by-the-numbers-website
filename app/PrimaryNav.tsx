@@ -96,10 +96,14 @@ const FINANCE_NAV_CONFIGS : Array<NavConfig> = [
     isAppPath: true,
     pathPrefix: 'enrollment',
   },
+  { name: 'Assessments',
+    isAppPath: true,
+    pathPrefix: 'assessments',
+  },
   { name: 'Correlations',
     isAppPath: true,
     pathPrefix: 'correlations',
-  }
+  },
 ];
 
 const NAV_CONFIGS_FOR_APP = {

@@ -4,7 +4,7 @@ import { serializeDatasetSettings, serializeOneSetting } from "app/finance/_sett
 import { useMemo } from "react";
 import { makeHighchartConfig } from "utilities/highcharts/utils";
 import {
-  toFacetedCharatbleEnrollmentDataset,
+  toFacetedCharatbleAssessmentDataset,
 } from "utilities/ChartableMetrics";
 import { extractFacets } from "utilities/ChartableVitals";
 import { makeFacetComponents } from "utilities/highcharts/FacetedBudgetActualCharts";
@@ -16,7 +16,7 @@ import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContent
 import HcDashboard from "components/HcDashboard";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
-import { SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS, SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS } from "app/finance/enrollment/EnrollmentPage";
+import { SERIALIZE_ASSESSMENTS_SETTINGS_GENERATORS, SERIALIZE_ASSESSMENTS_CONTEXT_SETTINGS_GENERATORS } from "app/finance/assessments/AssessmentPage";
 import { makeFacetContents } from "app/finance/_widgets/FacetContents";
 import SortOrderContents from "app/finance/_widgets/SortOrderContents";
 import YScaleContents from "app/finance/_widgets/YScaleContents";
@@ -24,10 +24,10 @@ import YScaleContents from "app/finance/_widgets/YScaleContents";
 import { makeSchoolFilter } from "app/finance/_filteritems/school";
 
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
-import type { EnrollmentSettings, EnrollmentContextSettings } from "app/finance/enrollment/EnrollmentPage";
+import type { AssessmentSettings, AssessmentContextSettings } from "app/finance/assessments/AssessmentPage";
 
 const CONNECTOR_ID = "default-connector";
-const METRIC_NAME = "all_students";
+const METRIC_NAME = "pct_met_standard";
 
 const ALL_FACETS = ["school"];
 export type Facet = (typeof ALL_FACETS)[number];
@@ -54,8 +54,8 @@ export function deserializeFacet(s: string): Facet {
 }
 
 function componentsGenerator(facetOrder,
-                             contextSettings :EnrollmentContextSettings,
-                             settings: EnrollmentSettings,
+                             contextSettings :AssessmentContextSettings,
+                             settings: AssessmentSettings,
                              yBounds) {
   const schoolFilter = makeSchoolFilter(settings.ccddd);
   const subtitle = `
@@ -80,11 +80,11 @@ function componentsGenerator(facetOrder,
 }
 
 // Charts expenditures for
-export default function EnrollmentDashboard({
+export default function AssessmentDashboard({
   districtDataMap,
   allSettings,
   contextSettings,
-}: DistrictDataContentProps<EnrollmentSettings, EnrollmentContextSettings>) {
+}: DistrictDataContentProps<AssessmentSettings, AssessmentContextSettings>) {
   const config = useMemo(() => {
     // Expand out the filter per sub-setting.
     const { data, fullFacetOrder } = extractFacets(
@@ -93,8 +93,8 @@ export default function EnrollmentDashboard({
       contextSettings.facet,
       contextSettings.sortType,
       contextSettings.sortOrder,
-      DistrictData.prototype.filteredEnrollment,
-      toFacetedCharatbleEnrollmentDataset,
+      DistrictData.prototype.filteredAssessment,
+      toFacetedCharatbleAssessmentDataset,
       METRIC_NAME,
     );
 
@@ -114,8 +114,8 @@ export default function EnrollmentDashboard({
   return (
     <SettingsLayout
       settingsSerializer={{
-        serialize: newAllSettings => serializeDatasetSettings(newAllSettings, SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS),
-          serializeContext: context => serializeOneSetting(context, SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS),
+        serialize: newAllSettings => serializeDatasetSettings(newAllSettings, SERIALIZE_ASSESSMENTS_SETTINGS_GENERATORS),
+          serializeContext: context => serializeOneSetting(context, SERIALIZE_ASSESSMENTS_CONTEXT_SETTINGS_GENERATORS),
       }}
       allSettings={allSettings}
       contextSettings={contextSettings}
@@ -130,7 +130,7 @@ export default function EnrollmentDashboard({
       ]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">
-        Enrollment Headcount (Different from AAFTE in budgets which treats Running Start and Special Education students as less than 1).
+        Assessment Data.
       </Typography>
       <HcDashboard config={config} />
     </SettingsLayout>

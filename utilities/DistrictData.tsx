@@ -46,6 +46,7 @@ export type DemographicFilters = {
 type ExpendituresFilters = Partial<PAOFilters & NcesFilters & SchoolFilters>;
 type StaffingFilters = Partial<PAFilters & DutyRootFilters & SchoolFilters>;
 type EnrollmentFilters = Partial<DemographicFilters & SchoolFilters>;
+type AssessmentFilters = Partial<SchoolFilters>;
 
 const YEAR_GROUP_BY = ["class_of"];
 const FINANCE_GROUP_BY = ["data_type", ...YEAR_GROUP_BY];
@@ -525,6 +526,27 @@ export default class DistrictData {
       .join_full(revenues_df)
       .derive({ cashflow: (d) => d.revenues - d.expenditures });
     return merged_df;
+  }
+
+  filteredAssessment(filter: AssessmentFilters) {
+    let results = this.assessment_df;
+
+    if (filter.schoolCodes !== undefined) {
+      results = results
+        .params(filter)
+        .filter((d, $) => d.includes([...$.schoolCodes], d.school_code));
+    }
+
+    return results
+    .filter(d => (
+      d.grade_level === "All Grades" &&
+        d.test_administration === "SBAC" &&
+        d.student_group === "All Students"
+    ))
+    .derive({
+      data_type: d => "actuals",
+      pct_met_standard: d => op.parse_float(op.replace(d.pct_met_standard_str, /[<>%]/,'')),
+    });
   }
 
   filteredEnrollment(filter: EnrollmentFilters) {
