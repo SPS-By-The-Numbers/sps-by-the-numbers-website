@@ -31,6 +31,7 @@ export type AssessmentContextSettings = CommonFacetContextSettings<Facet>;
 const DEFAULT_DASHBOARD_SETTINGS : AssessmentContextSettings = {
   ...DEFAULT_COMMON_FACET_CONTEXT_SETTINGS,
   sortType: "latest" as const,
+  yScale: "free" as const,
   facet: deserializeFacet(""),
 };
 

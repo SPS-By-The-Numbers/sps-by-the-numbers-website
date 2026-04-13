@@ -4,6 +4,7 @@ import {
 } from "utilities/settings";
 import ALL_ASSESSMENT_TYPES from "utilities/domain/assessment_types";
 import ALL_DISTRICTS from "utilities/domain/ccddd";
+import ALL_GRADE_LEVELS from "utilities/domain/grade_levels";
 import ALL_STUDENT_GROUPS from "utilities/domain/student_groups";
 import * as Normalizations from "utilities/normalizations";
 import { makeSchoolFilter } from "app/finance/_filteritems/school";
@@ -222,7 +223,7 @@ export function makeTestSubjectSerializeConfig(context?) : SettingsConfig {
 
 export function makeDefaultAssessmentFilterSettings() {
   return {
-    gradeLevelCodes: GradeLevelFilter.allCodes(),
+    gradeLevelCodes: new Set(ALL_GRADE_LEVELS.filter(g => g.grade_level === "05" || g.grade_level === "08").map(g => g.grade_level_code)),
     testAdministrationCodes: new Set(ALL_ASSESSMENT_TYPES.filter(t => t.test_administration === "SBAC").map(t => t.test_administration_code)),
     studentGroupCodes: new Set(ALL_STUDENT_GROUPS.filter(g => g.student_group === "All Students").map(g => g.student_group_code)),
     testSubjectCodes: TestSubjectFilter.allCodes(),
