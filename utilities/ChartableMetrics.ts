@@ -233,6 +233,16 @@ export function toFacetedCharatbleEnrollmentDataset(
   );
 }
 
+// All assessment code columns in a fixed order. The facet dimension is
+// separated out and the rest form the series key within each chart.
+const ASSESSMENT_CODE_COLUMNS = [
+  "school_code",
+  "test_subject_code",
+  "grade_level_code",
+  "test_administration_code",
+  "student_group_code",
+];
+
 export function toFacetedCharatbleAssessmentDataset(
   districtData,
   filteredDf,
@@ -240,13 +250,14 @@ export function toFacetedCharatbleAssessmentDataset(
   settings
 ) {
   const facetCodeColumn = `${facet}_code`;
+  const seriesCodeColumns = ASSESSMENT_CODE_COLUMNS.filter(c => c !== facetCodeColumn);
 
-  // Create composite pivot key combining facet (school) with all series
-  // dimensions so each unique tuple is a separate line.
+  // Create composite pivot key: facet code first, then remaining dimensions.
   const withComposite = filteredDf
-    .params({ facetCodeColumn })
     .derive({
-      composite_key: aq.escape(d => `${d[facetCodeColumn]}_${d.test_subject_code}_${d.grade_level_code}_${d.test_administration_code}_${d.student_group_code}`),
+      composite_key: aq.escape(d =>
+        `${d[facetCodeColumn]}_${seriesCodeColumns.map(c => d[c]).join("_")}`
+      ),
     });
 
   // Pivot by composite key, averaging pct_met_standard per group.

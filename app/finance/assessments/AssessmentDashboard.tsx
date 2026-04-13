@@ -40,52 +40,73 @@ import type { AssessmentSettings, AssessmentContextSettings } from "app/finance/
 const CONNECTOR_ID = "default-connector";
 const METRIC_NAME = "pct_met_standard";
 
-const ALL_FACETS = ["school"];
+const ALL_FACETS = ["school", "test_subject", "grade_level", "test_administration", "student_group"] as const;
 export type Facet = (typeof ALL_FACETS)[number];
 export const FACET_OPTIONS: Record<Facet, string> = {
   school: "School",
+  test_subject: "Test Subject",
+  grade_level: "Grade Level",
+  test_administration: "Assessment Type",
+  student_group: "Student Group",
 };
 
-export function serializeFacet(facet: Facet): string {
-  switch (facet) {
-    case "school":
-      return "0";
-  }
+const FACET_SERIALIZE_MAP: Record<Facet, string> = {
+  school: "0",
+  test_subject: "1",
+  grade_level: "2",
+  test_administration: "3",
+  student_group: "4",
+};
+const FACET_DESERIALIZE_MAP = Object.fromEntries(
+  Object.entries(FACET_SERIALIZE_MAP).map(([k, v]) => [v, k])
+) as Record<string, Facet>;
 
-  return "0";
+export function serializeFacet(facet: Facet): string {
+  return FACET_SERIALIZE_MAP[facet] ?? "0";
 }
 
 export function deserializeFacet(s: string): Facet {
-  switch (s) {
-    case "0":
-      return "school";
-  }
-
-  return "school";
+  return FACET_DESERIALIZE_MAP[s] ?? "school";
 }
 
-// Domain lookups for translating codes to display names.
-const testSubjectLookup = new Map(ALL_TEST_SUBJECTS.map(t => [t.test_subject_code, t.test_subject]));
-const gradeLevelLookup = new Map(ALL_GRADE_LEVELS.map(g => [g.grade_level_code, g.grade_level]));
-const assessmentTypeLookup = new Map(ALL_ASSESSMENT_TYPES.map(t => [t.test_administration_code, t.test_administration]));
-const studentGroupLookup = new Map(ALL_STUDENT_GROUPS.map(g => [g.student_group_code, g.student_group]));
-
-type SeriesTuple = {
-  testSubjectCode: number;
-  gradeLevelCode: number;
-  testAdministrationCode: number;
-  studentGroupCode: number;
+// All assessment dimension definitions. The facet picks one of these as the
+// chart-per-value dimension; the rest become series within each chart.
+type DimensionDef = {
+  facetName: Facet;
+  codeColumn: string;
+  lookup: Map<number, string>;
 };
 
-function tupleToSeriesDef(t: SeriesTuple): SeriesCodeDef {
-  const key = `${t.testSubjectCode}_${t.gradeLevelCode}_${t.testAdministrationCode}_${t.studentGroupCode}`;
-  const parts = [
-    testSubjectLookup.get(t.testSubjectCode),
-    gradeLevelLookup.get(t.gradeLevelCode),
-    assessmentTypeLookup.get(t.testAdministrationCode),
-    studentGroupLookup.get(t.studentGroupCode),
-  ].filter(Boolean);
-  return { key, name: parts.join(" / ") };
+const DIMENSIONS: Array<DimensionDef> = [
+  { facetName: "school", codeColumn: "school_code", lookup: new Map() },  // school names come from data, not a static domain
+  { facetName: "test_subject", codeColumn: "test_subject_code", lookup: new Map(ALL_TEST_SUBJECTS.map(t => [t.test_subject_code, t.test_subject])) },
+  { facetName: "grade_level", codeColumn: "grade_level_code", lookup: new Map(ALL_GRADE_LEVELS.map(g => [g.grade_level_code, g.grade_level])) },
+  { facetName: "test_administration", codeColumn: "test_administration_code", lookup: new Map(ALL_ASSESSMENT_TYPES.map(t => [t.test_administration_code, t.test_administration])) },
+  { facetName: "student_group", codeColumn: "student_group_code", lookup: new Map(ALL_STUDENT_GROUPS.map(g => [g.student_group_code, g.student_group])) },
+];
+
+function getSeriesDimensions(facet: Facet): Array<DimensionDef> {
+  return DIMENSIONS.filter(d => d.facetName !== facet);
+}
+
+function extractSeriesDefs(filtered, facet: Facet): Array<SeriesCodeDef> {
+  const seriesDims = getSeriesDimensions(facet);
+  const arrays = seriesDims.map(d => filtered.array(d.codeColumn) as number[]);
+
+  const seen = new Set<string>();
+  const defs: Array<SeriesCodeDef> = [];
+  for (let i = 0; i < filtered.numRows(); i++) {
+    const codes = arrays.map(a => a[i]);
+    const key = codes.join("_");
+    if (!seen.has(key)) {
+      seen.add(key);
+      const nameParts = seriesDims.map((dim, j) =>
+        dim.lookup.get(codes[j]) ?? codes[j].toString()
+      );
+      defs.push({ key, name: nameParts.join(" / ") });
+    }
+  }
+  return defs;
 }
 
 function makeComponentsGenerator(seriesDefs: Array<SeriesCodeDef>) {
@@ -123,30 +144,12 @@ export default function AssessmentDashboard({
   contextSettings,
 }: DistrictDataContentProps<AssessmentSettings, AssessmentContextSettings>) {
   const config = useMemo(() => {
-    // Extract unique series tuples from the filtered data.
+    // Extract unique series definitions from the filtered data,
+    // excluding the facet dimension (which becomes one chart per value).
     const firstSettings = allSettings[0];
     const districtData = districtDataMap[firstSettings.ccddd];
     const filtered = districtData.filteredAssessment(firstSettings);
-
-    const tupleSet = new Set<string>();
-    const seriesTuples: Array<SeriesTuple> = [];
-    const tsArr = filtered.array("test_subject_code") as number[];
-    const glArr = filtered.array("grade_level_code") as number[];
-    const taArr = filtered.array("test_administration_code") as number[];
-    const sgArr = filtered.array("student_group_code") as number[];
-    for (let i = 0; i < filtered.numRows(); i++) {
-      const key = `${tsArr[i]}_${glArr[i]}_${taArr[i]}_${sgArr[i]}`;
-      if (!tupleSet.has(key)) {
-        tupleSet.add(key);
-        seriesTuples.push({
-          testSubjectCode: tsArr[i],
-          gradeLevelCode: glArr[i],
-          testAdministrationCode: taArr[i],
-          studentGroupCode: sgArr[i],
-        });
-      }
-    }
-    const seriesDefs = seriesTuples.map(tupleToSeriesDef);
+    const seriesDefs = extractSeriesDefs(filtered, contextSettings.facet);
 
     // Expand out the filter per sub-setting.
     const { data, fullFacetOrder } = extractFacets(

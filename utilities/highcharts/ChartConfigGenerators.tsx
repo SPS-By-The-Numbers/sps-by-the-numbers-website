@@ -630,18 +630,23 @@ export function makeMultiSeriesLineChartConfig(
     marker: { enabled: true },
   }));
 
+  const showLegend = !options.disableLegend && options.seriesDefs.length <= 4;
+
   const config = merge(baseChartConfig, {
     connector: { columnAssignment },
     chartOptions: {
       chart: { shadow: false, type: "line" },
       series,
+      legend: {
+        layout: "horizontal",
+        align: "center",
+        verticalAlign: "bottom",
+        floating: false,
+        enabled: showLegend,
+      },
       caption: { useHTML: true, align: "right" },
     },
   });
-
-  if (options.disableLegend) {
-    config.chartOptions.legend.enabled = false;
-  }
 
   return config;
 }
