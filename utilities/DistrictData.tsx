@@ -595,10 +595,22 @@ export default class DistrictData {
         .filter((d, $) => d.includes($.testSubjects, d.test_subject));
     }
 
-    // Join with domain table to add test_subject_code.
+    // Join with domain tables to add code columns for series identification.
     const testSubjectDomain = aq.table({
       test_subject: ALL_TEST_SUBJECTS.map(t => t.test_subject),
       test_subject_code: ALL_TEST_SUBJECTS.map(t => t.test_subject_code),
+    });
+    const gradeLevelDomain = aq.table({
+      grade_level: ALL_GRADE_LEVELS.map(g => g.grade_level),
+      grade_level_code: ALL_GRADE_LEVELS.map(g => g.grade_level_code),
+    });
+    const assessmentTypeDomain = aq.table({
+      test_administration: ALL_ASSESSMENT_TYPES.map(t => t.test_administration),
+      test_administration_code: ALL_ASSESSMENT_TYPES.map(t => t.test_administration_code),
+    });
+    const studentGroupDomain = aq.table({
+      student_group: ALL_STUDENT_GROUPS.map(g => g.student_group),
+      student_group_code: ALL_STUDENT_GROUPS.map(g => g.student_group_code),
     });
 
     return results
@@ -606,7 +618,10 @@ export default class DistrictData {
       data_type: d => "actuals",
       pct_met_standard: d => op.parse_float(op.replace(d.pct_met_standard_str, /[<>%]/,'')),
     })
-    .join_left(testSubjectDomain, "test_subject");
+    .join_left(testSubjectDomain, "test_subject")
+    .join_left(gradeLevelDomain, "grade_level")
+    .join_left(assessmentTypeDomain, "test_administration")
+    .join_left(studentGroupDomain, "student_group");
   }
 
   filteredEnrollment(filter: EnrollmentFilters) {

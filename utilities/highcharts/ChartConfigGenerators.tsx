@@ -600,12 +600,12 @@ export function makeBudgetActualsChartConfig(
 }
 
 export type SeriesCodeDef = {
-  code: number;
-  name: string;
+  key: string;   // Composite code key used in column names (e.g., "1_3").
+  name: string;  // Display name for the UI.
 };
 
 // Generates a line chart with one series per entry in seriesDefs.
-// Each series maps to a column: {metricColumn}_{facet}_{code}_actuals.
+// Each series maps to a column: {metricColumn}_{facet}_{key}_actuals.
 // The name is used only for display labels.
 export function makeMultiSeriesLineChartConfig(
   options: BudgetActualsChartOptions & { seriesDefs: Array<SeriesCodeDef> },
@@ -614,17 +614,17 @@ export function makeMultiSeriesLineChartConfig(
   const realFacet = options.facet ? `_${options.facet}` : "";
 
   const columnAssignment = options.seriesDefs.map((def) => ({
-    seriesId: def.code.toString(),
+    seriesId: def.key,
     data: {
       name: options.xDataColumn,
-      y: `${options.metricColumn}${realFacet}_${def.code}_actuals`,
+      y: `${options.metricColumn}${realFacet}_${def.key}_actuals`,
       "marker.radius": "marker_radius",
       "marker.symbol": "covid_shape",
     },
   }));
 
   const series = options.seriesDefs.map((def, i) => ({
-    id: def.code.toString(),
+    id: def.key,
     name: def.name,
     colorIndex: i,
     marker: { enabled: true },

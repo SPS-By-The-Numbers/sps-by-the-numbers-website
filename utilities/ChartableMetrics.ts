@@ -241,12 +241,12 @@ export function toFacetedCharatbleAssessmentDataset(
 ) {
   const facetCodeColumn = `${facet}_code`;
 
-  // Create composite pivot key combining facet (school) and test_subject_code
-  // so each subject becomes a separate column (and thus a separate line).
+  // Create composite pivot key combining facet (school) with all series
+  // dimensions so each unique tuple is a separate line.
   const withComposite = filteredDf
     .params({ facetCodeColumn })
     .derive({
-      composite_key: aq.escape(d => `${d[facetCodeColumn]}_${d.test_subject_code}`),
+      composite_key: aq.escape(d => `${d[facetCodeColumn]}_${d.test_subject_code}_${d.grade_level_code}_${d.test_administration_code}_${d.student_group_code}`),
     });
 
   // Pivot by composite key, averaging pct_met_standard per group.
