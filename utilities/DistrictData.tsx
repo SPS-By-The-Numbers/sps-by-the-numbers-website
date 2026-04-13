@@ -1,8 +1,22 @@
 import { op } from "arquero";
 import * as aq from "arquero";
 import { fetchDataset } from "utilities/client/FetchData";
+import ALL_GRADE_LEVELS from "app/finance/_domain/grade_levels";
+import ALL_ASSESSMENT_TYPES from "app/finance/_domain/assessment_types";
+import ALL_STUDENT_GROUPS from "app/finance/_domain/student_groups";
+import ALL_TEST_SUBJECTS from "app/finance/_domain/test_subjects";
 
 import type { ColumnTable } from "arquero";
+
+function codesToStrings<T>(domain: Array<T>, codeKey: string, valueKey: string, codes: Set<number>): Set<string> {
+  const result = new Set<string>();
+  for (const entry of domain) {
+    if (codes.has(entry[codeKey])) {
+      result.add(entry[valueKey]);
+    }
+  }
+  return result;
+}
 
 // Combining activities that have been split over the years so they can
 // be compared with history.
@@ -46,7 +60,23 @@ export type DemographicFilters = {
 type ExpendituresFilters = Partial<PAOFilters & NcesFilters & SchoolFilters>;
 type StaffingFilters = Partial<PAFilters & DutyRootFilters & SchoolFilters>;
 type EnrollmentFilters = Partial<DemographicFilters & SchoolFilters>;
-type AssessmentFilters = Partial<SchoolFilters>;
+export type GradeLevelFilters = {
+  gradeLevelCodes: Set<number>;
+};
+
+export type TestAdministrationFilters = {
+  testAdministrationCodes: Set<number>;
+};
+
+export type StudentGroupFilters = {
+  studentGroupCodes: Set<number>;
+};
+
+export type TestSubjectFilters = {
+  testSubjectCodes: Set<number>;
+};
+
+type AssessmentFilters = Partial<SchoolFilters & GradeLevelFilters & TestAdministrationFilters & StudentGroupFilters & TestSubjectFilters>;
 
 const YEAR_GROUP_BY = ["class_of"];
 const FINANCE_GROUP_BY = ["data_type", ...YEAR_GROUP_BY];
@@ -537,16 +567,46 @@ export default class DistrictData {
         .filter((d, $) => d.includes([...$.schoolCodes], d.school_code));
     }
 
+    if (filter.gradeLevelCodes !== undefined) {
+      const gradeLevels = codesToStrings(ALL_GRADE_LEVELS, "grade_level_code", "grade_level", filter.gradeLevelCodes);
+      results = results
+        .params({ gradeLevels: [...gradeLevels] })
+        .filter((d, $) => d.includes($.gradeLevels, d.grade_level));
+    }
+
+    if (filter.testAdministrationCodes !== undefined) {
+      const testAdministrations = codesToStrings(ALL_ASSESSMENT_TYPES, "test_administration_code", "test_administration", filter.testAdministrationCodes);
+      results = results
+        .params({ testAdministrations: [...testAdministrations] })
+        .filter((d, $) => d.includes($.testAdministrations, d.test_administration));
+    }
+
+    if (filter.studentGroupCodes !== undefined) {
+      const studentGroups = codesToStrings(ALL_STUDENT_GROUPS, "student_group_code", "student_group", filter.studentGroupCodes);
+      results = results
+        .params({ studentGroups: [...studentGroups] })
+        .filter((d, $) => d.includes($.studentGroups, d.student_group));
+    }
+
+    if (filter.testSubjectCodes !== undefined) {
+      const testSubjects = codesToStrings(ALL_TEST_SUBJECTS, "test_subject_code", "test_subject", filter.testSubjectCodes);
+      results = results
+        .params({ testSubjects: [...testSubjects] })
+        .filter((d, $) => d.includes($.testSubjects, d.test_subject));
+    }
+
+    // Join with domain table to add test_subject_code.
+    const testSubjectDomain = aq.table({
+      test_subject: ALL_TEST_SUBJECTS.map(t => t.test_subject),
+      test_subject_code: ALL_TEST_SUBJECTS.map(t => t.test_subject_code),
+    });
+
     return results
-    .filter(d => (
-      d.grade_level === "All Grades" &&
-        d.test_administration === "SBAC" &&
-        d.student_group === "All Students"
-    ))
     .derive({
       data_type: d => "actuals",
       pct_met_standard: d => op.parse_float(op.replace(d.pct_met_standard_str, /[<>%]/,'')),
-    });
+    })
+    .join_left(testSubjectDomain, "test_subject");
   }
 
   filteredEnrollment(filter: EnrollmentFilters) {

@@ -7,10 +7,14 @@ import * as Normalizations from "utilities/normalizations";
 import { makeSchoolFilter } from "app/finance/_filteritems/school";
 import { serializeFilterGrouping, deserializeFilterGrouping } from "app/finance/_settings/dataset_settings";
 import ActivityFilter from "app/finance/_filteritems/activity";
+import AssessmentTypeFilter from "app/finance/_filteritems/assessment_type";
 import DutyRootFilter from "app/finance/_filteritems/duty_root";
+import GradeLevelFilter from "app/finance/_filteritems/grade_level";
 import NcesFilter from "app/finance/_filteritems/nces";
 import ObjectFilter from "app/finance/_filteritems/object";
 import ProgramFilter from "app/finance/_filteritems/program";
+import StudentGroupFilter from "app/finance/_filteritems/student_group";
+import TestSubjectFilter from "app/finance/_filteritems/test_subject";
 import memoize from "lodash/memoize";
 
 import type { BaseSettings, SettingsConfig, SettingsConfigGenerators } from "app/finance/_settings/base_settings";
@@ -161,6 +165,67 @@ export function makeNcesSerializeConfig(context?) : SettingsConfig {
     ]
   ];
 };
+
+export function makeGradeLevelSerializeConfig(context?) : SettingsConfig {
+  return [
+    [
+      "gradeLevelCodes",
+      {
+        serializerType: "filter",
+        urlVar: "gl",
+        filter: GradeLevelFilter,
+      },
+    ]
+  ];
+};
+
+export function makeTestAdministrationSerializeConfig(context?) : SettingsConfig {
+  return [
+    [
+      "testAdministrationCodes",
+      {
+        serializerType: "filter",
+        urlVar: "ta",
+        filter: AssessmentTypeFilter,
+      },
+    ]
+  ];
+};
+
+export function makeStudentGroupSerializeConfig(context?) : SettingsConfig {
+  return [
+    [
+      "studentGroupCodes",
+      {
+        serializerType: "filter",
+        urlVar: "sg",
+        filter: StudentGroupFilter,
+      },
+    ]
+  ];
+};
+
+export function makeTestSubjectSerializeConfig(context?) : SettingsConfig {
+  return [
+    [
+      "testSubjectCodes",
+      {
+        serializerType: "filter",
+        urlVar: "ts",
+        filter: TestSubjectFilter,
+      },
+    ]
+  ];
+};
+
+export function makeDefaultAssessmentFilterSettings() {
+  return {
+    gradeLevelCodes: GradeLevelFilter.allCodes(),
+    testAdministrationCodes: AssessmentTypeFilter.allCodes(),
+    studentGroupCodes: StudentGroupFilter.allCodes(),
+    testSubjectCodes: TestSubjectFilter.allCodes(),
+  };
+}
 
 function makeSchoolFilterConfigInternal(settings) : SettingsConfig {
   return [

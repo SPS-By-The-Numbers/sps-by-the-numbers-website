@@ -135,8 +135,13 @@ export function getDataBounds(df, columnRoot) {
     return get1ValueDataBounds(df, b_name);
   }
 
-  // Raw value case.
-  return get1ValueDataBounds(df, columnRoot);
+  if (df.column(columnRoot)) {
+    // Raw value case.
+    return get1ValueDataBounds(df, columnRoot);
+  }
+
+  // Column not found — return neutral bounds.
+  return { min: 0, max: 0 };
 }
 
 function makeFacetYBounds(facetOrder, metricName, expandedAllSettings, data) {

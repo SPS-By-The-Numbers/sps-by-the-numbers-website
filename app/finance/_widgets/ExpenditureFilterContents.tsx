@@ -1,15 +1,19 @@
 import { makeSchoolFilter } from "app/finance/_filteritems/school";
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
 import ActivityFilter from "app/finance/_filteritems/activity";
+import AssessmentTypeFilter from "app/finance/_filteritems/assessment_type";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import DutyRootFilter from "app/finance/_filteritems/duty_root";
+import GradeLevelFilter from "app/finance/_filteritems/grade_level";
 import FormGroup from "@mui/material/FormGroup";
 import NcesFilter from "app/finance/_filteritems/nces";
 import ObjectFilter from "app/finance/_filteritems/object";
 import ProgramFilter from "app/finance/_filteritems/program";
+import StudentGroupFilter from "app/finance/_filteritems/student_group";
 import Switch from "@mui/material/Switch";
+import TestSubjectFilter from "app/finance/_filteritems/test_subject";
 
-import type { PFilters, AFilters, OFilters, SchoolFilters, DutyRootFilters, NcesFilters } from "utilities/DistrictData";
+import type { PFilters, AFilters, OFilters, SchoolFilters, DutyRootFilters, NcesFilters, GradeLevelFilters, TestAdministrationFilters, StudentGroupFilters, TestSubjectFilters } from "utilities/DistrictData";
 import type { BaseSettings } from "app/finance/_settings/base_settings";
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 
@@ -183,6 +187,86 @@ export function NcesFilterContents({
         setSettings({
           ...settings,
           ncesCodes: NcesFilter.treeViewItemsToCodes(selected)
+        })
+      }
+    />
+  );
+}
+
+// Settings component to render selection of grade levels.
+export function GradeLevelFilterContents({
+  settings,
+  setSettings,
+}: Props<BaseSettings & GradeLevelFilters>) {
+  return (
+    <FilterTree
+      title="Grade Level"
+      items={GradeLevelFilter.treeViewItems()}
+      selectedItems={GradeLevelFilter.codesToTreeViewItems(settings.gradeLevelCodes)}
+      setSelectedItems={selected =>
+        setSettings({
+          ...settings,
+          gradeLevelCodes: GradeLevelFilter.treeViewItemsToCodes(selected)
+        })
+      }
+    />
+  );
+}
+
+// Settings component to render selection of assessment types.
+export function AssessmentTypeFilterContents({
+  settings,
+  setSettings,
+}: Props<BaseSettings & TestAdministrationFilters>) {
+  return (
+    <FilterTree
+      title="Assessment Type"
+      items={AssessmentTypeFilter.treeViewItems()}
+      selectedItems={AssessmentTypeFilter.codesToTreeViewItems(settings.testAdministrationCodes)}
+      setSelectedItems={selected =>
+        setSettings({
+          ...settings,
+          testAdministrationCodes: AssessmentTypeFilter.treeViewItemsToCodes(selected)
+        })
+      }
+    />
+  );
+}
+
+// Settings component to render selection of student groups.
+export function StudentGroupFilterContents({
+  settings,
+  setSettings,
+}: Props<BaseSettings & StudentGroupFilters>) {
+  return (
+    <FilterTree
+      title="Student Group"
+      items={StudentGroupFilter.treeViewItems()}
+      selectedItems={StudentGroupFilter.codesToTreeViewItems(settings.studentGroupCodes)}
+      setSelectedItems={selected =>
+        setSettings({
+          ...settings,
+          studentGroupCodes: StudentGroupFilter.treeViewItemsToCodes(selected)
+        })
+      }
+    />
+  );
+}
+
+// Settings component to render selection of test subjects.
+export function TestSubjectFilterContents({
+  settings,
+  setSettings,
+}: Props<BaseSettings & TestSubjectFilters>) {
+  return (
+    <FilterTree
+      title="Test Subject"
+      items={TestSubjectFilter.treeViewItems()}
+      selectedItems={TestSubjectFilter.codesToTreeViewItems(settings.testSubjectCodes)}
+      setSelectedItems={selected =>
+        setSettings({
+          ...settings,
+          testSubjectCodes: TestSubjectFilter.treeViewItemsToCodes(selected)
         })
       }
     />

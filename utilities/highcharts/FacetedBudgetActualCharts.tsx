@@ -15,7 +15,7 @@ import {
   formatForNormalization,
 } from "utilities/highcharts/ChartConfigGenerators";
 
-import type { CaptionType, ValueFormat } from "utilities/highcharts/ChartConfigGenerators";
+import type { BudgetActualsChartOptions, CaptionType, ValueFormat } from "utilities/highcharts/ChartConfigGenerators";
 import type { ColumnTable } from "arquero";
 import type { CurrencyNormalization, StaffingNormalization } from "utilities/normalizations";
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
@@ -25,6 +25,8 @@ type AxisBounds = {
   min: number;
   max: number;
 };
+
+type ChartConfigMaker = (options: BudgetActualsChartOptions) => any;
 
 type FacetComponentParams = {
   idPrefix: string;  // The id of the setting used for generating unique identifiers.
@@ -39,6 +41,7 @@ type FacetComponentParams = {
   yBounds?: AxisBounds;  // Optional chart bounds.
   yValueFormatOverride?: ValueFormat;  // Overrides the default format inferred from normalizations
   disableLegend?: boolean;  // Disables the legend.
+  chartConfigMaker?: ChartConfigMaker;  // Override chart config generator. Defaults to makeBudgetActualsChartConfig.
 };
 
 // Makes the cell-id for a specific facet and normalization.
@@ -78,10 +81,11 @@ export function makeFacetComponents(params : FacetComponentParams) {
     yBounds,
     yValueFormatOverride,
     disableLegend,
+    chartConfigMaker = makeBudgetActualsChartConfig,
   } = params;
   const r = normalizations.flatMap((normalization, normalizationOrdinal) =>
     facetOrder.map((facetInfo) =>
-      makeBudgetActualsChartConfig({
+      chartConfigMaker({
         title: makeTitle(`${facetInfo.title}${makeFacetCodeText(facetInfo)}`, subtitle),
         renderTo: makeCellId(idPrefix, normalizationOrdinal, facetInfo),
         facet: facetInfo.code,

@@ -90,7 +90,6 @@ function getAssessment(ccddd) {
     a.test_subject,
 
     a.test_administration,
-    a.test_administration_group,
 
     a.student_group,
     a.student_group_type,

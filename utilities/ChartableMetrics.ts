@@ -239,10 +239,24 @@ export function toFacetedCharatbleAssessmentDataset(
   facet,
   settings
 ) {
-  const df = filteredDf;
+  const facetCodeColumn = `${facet}_code`;
 
-  const pdata = df
-    .select('class_of', 'pct_met_standard', 'school_code');
+  // Create composite pivot key combining facet (school) and test_subject_code
+  // so each subject becomes a separate column (and thus a separate line).
+  const withComposite = filteredDf
+    .params({ facetCodeColumn })
+    .derive({
+      composite_key: aq.escape(d => `${d[facetCodeColumn]}_${d.test_subject_code}`),
+    });
+
+  // Pivot by composite key, averaging pct_met_standard per group.
+  const pdata = withComposite
+    .groupby(["class_of", "data_type"])
+    .pivot(["composite_key"], {
+      pct_met_standard: (d) => op.mean(d.pct_met_standard),
+      _pivot_name_hack_: (d) => op.any("_pivot_name_hack_"),
+    })
+    .select(aq.not(aq.startswith("_pivot_name_hack_")));
 
   const names = getDataColumnNames(pdata);
   return toChartableDataset(

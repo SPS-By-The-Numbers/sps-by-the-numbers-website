@@ -8,8 +8,16 @@ import {
 } from "utilities/ChartableMetrics";
 import { extractFacets } from "utilities/ChartableVitals";
 import { makeFacetComponents } from "utilities/highcharts/FacetedBudgetActualCharts";
+import { makeMultiSeriesLineChartConfig } from "utilities/highcharts/ChartConfigGenerators";
+import ALL_TEST_SUBJECTS from "app/finance/_domain/test_subjects";
+
+import type { SeriesCodeDef } from "utilities/highcharts/ChartConfigGenerators";
 import {
   SchoolFilterContents,
+  GradeLevelFilterContents,
+  AssessmentTypeFilterContents,
+  StudentGroupFilterContents,
+  TestSubjectFilterContents,
 } from "app/finance/_widgets/ExpenditureFilterContents";
 import DistrictData from "utilities/DistrictData";
 import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
@@ -53,30 +61,39 @@ export function deserializeFacet(s: string): Facet {
   return "school";
 }
 
-function componentsGenerator(facetOrder,
+// Map test subject codes to display names for the chart series.
+function codesToSeriesDefs(codes: Array<number>): Array<SeriesCodeDef> {
+  const lookup = new Map(ALL_TEST_SUBJECTS.map(t => [t.test_subject_code, t.test_subject]));
+  return codes.map(code => ({ code, name: lookup.get(code) ?? code.toString() }));
+}
+
+function makeComponentsGenerator(testSubjectCodes: Array<number>) {
+  const seriesDefs = codesToSeriesDefs(testSubjectCodes);
+  return function componentsGenerator(facetOrder,
                              contextSettings :AssessmentContextSettings,
                              settings: AssessmentSettings,
                              yBounds) {
-  const schoolFilter = makeSchoolFilter(settings.ccddd);
-  const subtitle = `
-  School(${schoolFilter.toSummaryText(settings.schoolCodes)})
-  `;
-  const components = makeFacetComponents({
-    idPrefix: settings.id.toString(),
-    xColumn: "class_of",
-    xLabel: "Fiscal Year End",
-    yColumnRoot: METRIC_NAME,
-    facetOrder,
-    connectorId: CONNECTOR_ID,
-    normalizations: [settings.currencyNormalization],
-    captionType: "stats",
-    subtitle,
-    yBounds,
-    yValueFormatOverride: "decimal",
-    disableLegend: true,
-  });
+    const schoolFilter = makeSchoolFilter(settings.ccddd);
+    const subtitle = `
+    School(${schoolFilter.toSummaryText(settings.schoolCodes)})
+    `;
+    const components = makeFacetComponents({
+      idPrefix: settings.id.toString(),
+      xColumn: "class_of",
+      xLabel: "Fiscal Year End",
+      yColumnRoot: METRIC_NAME,
+      facetOrder,
+      connectorId: CONNECTOR_ID,
+      normalizations: [settings.currencyNormalization],
+      captionType: "none",
+      subtitle,
+      yBounds,
+      yValueFormatOverride: "decimal",
+      chartConfigMaker: (options) => makeMultiSeriesLineChartConfig({...options, seriesDefs}),
+    });
 
-  return components;
+    return components;
+  };
 }
 
 // Charts expenditures for
@@ -86,6 +103,12 @@ export default function AssessmentDashboard({
   contextSettings,
 }: DistrictDataContentProps<AssessmentSettings, AssessmentContextSettings>) {
   const config = useMemo(() => {
+    // Extract the unique test subject codes from the filtered data.
+    const firstSettings = allSettings[0];
+    const districtData = districtDataMap[firstSettings.ccddd];
+    const filtered = districtData.filteredAssessment(firstSettings);
+    const testSubjectCodes = [...new Set(filtered.array("test_subject_code") as number[])].sort((a, b) => a - b);
+
     // Expand out the filter per sub-setting.
     const { data, fullFacetOrder } = extractFacets(
       districtDataMap,
@@ -105,7 +128,7 @@ export default function AssessmentDashboard({
         contextSettings,
         allSettings,
         fullFacetOrder,
-        componentsGenerator,
+        componentsGenerator: makeComponentsGenerator(testSubjectCodes),
         data,
       }
     );
@@ -127,6 +150,10 @@ export default function AssessmentDashboard({
       settingsContentsComponents={[
         DatasetSettingsContents,
         SchoolFilterContents,
+        GradeLevelFilterContents,
+        AssessmentTypeFilterContents,
+        StudentGroupFilterContents,
+        TestSubjectFilterContents,
       ]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">

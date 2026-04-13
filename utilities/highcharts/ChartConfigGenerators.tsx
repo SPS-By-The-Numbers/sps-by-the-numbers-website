@@ -599,6 +599,129 @@ export function makeBudgetActualsChartConfig(
   return config;
 }
 
+export type SeriesCodeDef = {
+  code: number;
+  name: string;
+};
+
+// Generates a line chart with one series per entry in seriesDefs.
+// Each series maps to a column: {metricColumn}_{facet}_{code}_actuals.
+// The name is used only for display labels.
+export function makeMultiSeriesLineChartConfig(
+  options: BudgetActualsChartOptions & { seriesDefs: Array<SeriesCodeDef> },
+) {
+  const baseChartConfig = makeBaseChartConfig(options);
+  const realFacet = options.facet ? `_${options.facet}` : "";
+
+  const columnAssignment = options.seriesDefs.map((def) => ({
+    seriesId: def.code.toString(),
+    data: {
+      name: options.xDataColumn,
+      y: `${options.metricColumn}${realFacet}_${def.code}_actuals`,
+      "marker.radius": "marker_radius",
+      "marker.symbol": "covid_shape",
+    },
+  }));
+
+  const series = options.seriesDefs.map((def, i) => ({
+    id: def.code.toString(),
+    name: def.name,
+    colorIndex: i,
+    marker: { enabled: true },
+  }));
+
+  const config = merge(baseChartConfig, {
+    connector: { columnAssignment },
+    chartOptions: {
+      chart: { shadow: false, type: "line" },
+      series,
+      caption: { useHTML: true, align: "right" },
+    },
+  });
+
+  if (options.disableLegend) {
+    config.chartOptions.legend.enabled = false;
+  }
+
+  return config;
+}
+
+// Generates a line chart showing only the actuals series (no budget).
+// Used for datasets like assessments that don't have a budget/actuals split.
+export function makeActualsLineChartConfig(
+  options: BudgetActualsChartOptions,
+) {
+  const { actualsColumn } = getBAColumns(
+    options.metricColumn,
+    options.facet,
+  );
+
+  const baseChartConfig = makeBaseChartConfig(options);
+
+  const valueFormat = options.yValueFormat;
+  const precision = options.precision;
+  const valueFormatter = getFormatter(valueFormat, precision);
+
+  const config = merge(baseChartConfig, {
+    connector: {
+      columnAssignment: [
+        {
+          seriesId: "actuals",
+          data: {
+            name: options.xDataColumn,
+            y: actualsColumn,
+            "marker.radius": "marker_radius",
+            "marker.symbol": "covid_shape",
+          },
+        },
+      ],
+    },
+    chartOptions: {
+      chart: {
+        shadow: false,
+        type: "line",
+      },
+      xAxis: {
+        events: {
+          afterSetExtremes: function (event) {
+            try {
+              setCaptionFromType(this.chart, event, options.captionType, valueFormatter);
+            } catch (e) {
+              console.warn(
+                `Failed calculating stats for ${options.metricColumn}, ${options.facet}:`,
+                e,
+              );
+              this.chart.setCaption({
+                text: `<table class="ba-chartstats-table"><tr><td>[${e}]</td></tr></table>`,
+              });
+            }
+          },
+        },
+      },
+      series: [
+        {
+          id: "actuals",
+          name: "Actuals",
+          colorIndex: 1,
+          marker: {
+            enabled: true,
+          },
+        },
+      ],
+      caption: {
+        useHTML: true,
+        align: "right",
+      },
+    },
+  });
+
+  if (options.disableLegend) {
+    config.chartOptions.legend.enabled = false;
+  }
+
+  return config;
+}
+
 // Context charts have much smaller space so remove things like legends, etc.
 export function makeBudgetActualsContextChartConfig(
   options: BudgetActualsChartOptions,
