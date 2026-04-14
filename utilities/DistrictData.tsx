@@ -1,8 +1,8 @@
 import { op } from "arquero";
 import * as aq from "arquero";
 import { fetchDataset } from "utilities/client/FetchData";
-import ALL_GRADE_LEVELS from "utilities/domain/grade_levels";
 import ALL_ASSESSMENT_TYPES from "utilities/domain/assessment_types";
+import ALL_GRADE_LEVELS from "utilities/domain/grade_levels";
 import ALL_STUDENT_GROUPS from "utilities/domain/student_groups";
 import ALL_TEST_SUBJECTS from "utilities/domain/test_subjects";
 
@@ -568,10 +568,9 @@ export default class DistrictData {
     }
 
     if (filter.gradeLevelCodes !== undefined) {
-      const gradeLevels = codesToStrings(ALL_GRADE_LEVELS, "grade_level_code", "grade_level", filter.gradeLevelCodes);
       results = results
-        .params({ gradeLevels: [...gradeLevels] })
-        .filter((d, $) => d.includes($.gradeLevels, d.grade_level));
+        .params({ gradeLevelCodes: [...filter.gradeLevelCodes] })
+        .filter((d, $) => d.includes($.gradeLevelCodes, d.grade_level_code));
     }
 
     if (filter.testAdministrationCodes !== undefined) {
@@ -595,14 +594,14 @@ export default class DistrictData {
         .filter((d, $) => d.includes($.testSubjects, d.test_subject));
     }
 
-    // Join with domain tables to add code columns for series identification.
+    // Join with domain tables to add display names and code columns for series identification.
+    const gradeLevelDomain = aq.table({
+      grade_level_code: ALL_GRADE_LEVELS.map(g => g.grade_level_code),
+      grade_level: ALL_GRADE_LEVELS.map(g => g.grade_level),
+    });
     const testSubjectDomain = aq.table({
       test_subject: ALL_TEST_SUBJECTS.map(t => t.test_subject),
       test_subject_code: ALL_TEST_SUBJECTS.map(t => t.test_subject_code),
-    });
-    const gradeLevelDomain = aq.table({
-      grade_level: ALL_GRADE_LEVELS.map(g => g.grade_level),
-      grade_level_code: ALL_GRADE_LEVELS.map(g => g.grade_level_code),
     });
     const assessmentTypeDomain = aq.table({
       test_administration: ALL_ASSESSMENT_TYPES.map(t => t.test_administration),
@@ -618,8 +617,8 @@ export default class DistrictData {
       data_type: d => "actuals",
       pct_met_standard: d => op.parse_float(op.replace(d.pct_met_standard_str, /[<>%]/,'')),
     })
+    .join_left(gradeLevelDomain, "grade_level_code")
     .join_left(testSubjectDomain, "test_subject")
-    .join_left(gradeLevelDomain, "grade_level")
     .join_left(assessmentTypeDomain, "test_administration")
     .join_left(studentGroupDomain, "student_group");
   }

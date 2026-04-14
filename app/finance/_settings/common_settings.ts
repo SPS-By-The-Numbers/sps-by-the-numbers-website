@@ -223,7 +223,7 @@ export function makeTestSubjectSerializeConfig(context?) : SettingsConfig {
 
 export function makeDefaultAssessmentFilterSettings() {
   return {
-    gradeLevelCodes: new Set(ALL_GRADE_LEVELS.filter(g => g.grade_level === "05" || g.grade_level === "08").map(g => g.grade_level_code)),
+    gradeLevelCodes: new Set(ALL_GRADE_LEVELS.filter(g => g.grade_level_code === 5 || g.grade_level_code === 8).map(g => g.grade_level_code)),
     testAdministrationCodes: new Set(ALL_ASSESSMENT_TYPES.filter(t => t.test_administration === "SBAC").map(t => t.test_administration_code)),
     studentGroupCodes: new Set(ALL_STUDENT_GROUPS.filter(g => g.student_group === "All Students").map(g => g.student_group_code)),
     testSubjectCodes: TestSubjectFilter.allCodes(),

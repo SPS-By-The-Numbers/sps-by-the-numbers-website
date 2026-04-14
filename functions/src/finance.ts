@@ -94,7 +94,23 @@ function getAssessment(ccddd) {
     a.student_group,
     a.student_group_type,
 
-    a.grade_level,
+    -- Keep in sync with utilities/domain/grade_levels.ts
+    CASE a.grade_level
+      WHEN 'All Grades' THEN 99
+      WHEN 'KG' THEN 98
+      WHEN '01' THEN 1
+      WHEN '02' THEN 2
+      WHEN '03' THEN 3
+      WHEN '04' THEN 4
+      WHEN '05' THEN 5
+      WHEN '06' THEN 6
+      WHEN '07' THEN 7
+      WHEN '08' THEN 8
+      WHEN '09' THEN 9
+      WHEN '10' THEN 10
+      WHEN '11' THEN 11
+      WHEN '12' THEN 12
+    END AS grade_level_code,
 
     a.pct_met_standard pct_met_standard_str
   FROM
