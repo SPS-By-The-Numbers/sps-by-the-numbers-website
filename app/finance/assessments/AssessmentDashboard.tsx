@@ -89,27 +89,36 @@ function getSeriesDimensions(facet: Facet): Array<DimensionDef> {
   return DIMENSIONS.filter(d => d.facetName !== facet);
 }
 
-function extractSeriesDefs(filtered, facet: Facet): Array<SeriesCodeDef> {
+function extractSeriesDefsByFacet(filtered, facet: Facet): Map<string, Array<SeriesCodeDef>> {
+  const facetDim = DIMENSIONS.find(d => d.facetName === facet)!;
   const seriesDims = getSeriesDimensions(facet);
-  const arrays = seriesDims.map(d => filtered.array(d.codeColumn) as number[]);
+  const facetArray = filtered.array(facetDim.codeColumn) as number[];
+  const seriesArrays = seriesDims.map(d => filtered.array(d.codeColumn) as number[]);
 
-  const seen = new Set<string>();
-  const defs: Array<SeriesCodeDef> = [];
+  const result = new Map<string, Array<SeriesCodeDef>>();
+  const seenByFacet = new Map<string, Set<string>>();
   for (let i = 0; i < filtered.numRows(); i++) {
-    const codes = arrays.map(a => a[i]);
+    const facetCode = String(facetArray[i]);
+    const codes = seriesArrays.map(a => a[i]);
     const key = codes.join("_");
+    let seen = seenByFacet.get(facetCode);
+    if (!seen) {
+      seen = new Set();
+      seenByFacet.set(facetCode, seen);
+      result.set(facetCode, []);
+    }
     if (!seen.has(key)) {
       seen.add(key);
       const nameParts = seriesDims.map((dim, j) =>
         dim.lookup.get(codes[j]) ?? codes[j].toString()
       );
-      defs.push({ key, name: nameParts.join(" / ") });
+      result.get(facetCode)!.push({ key, name: nameParts.join(" / ") });
     }
   }
-  return defs;
+  return result;
 }
 
-function makeComponentsGenerator(seriesDefs: Array<SeriesCodeDef>) {
+function makeComponentsGenerator(seriesDefsByFacet: Map<string, Array<SeriesCodeDef>>) {
   return function componentsGenerator(facetOrder,
                              contextSettings :AssessmentContextSettings,
                              settings: AssessmentSettings,
@@ -130,7 +139,10 @@ function makeComponentsGenerator(seriesDefs: Array<SeriesCodeDef>) {
       subtitle,
       yBounds,
       yValueFormatOverride: "decimal",
-      chartConfigMaker: (options) => makeMultiSeriesLineChartConfig({...options, seriesDefs}),
+      chartConfigMaker: (options) => makeMultiSeriesLineChartConfig({
+        ...options,
+        seriesDefs: seriesDefsByFacet.get(String(options.facet)) ?? [],
+      }),
     });
 
     return components;
@@ -149,7 +161,7 @@ export default function AssessmentDashboard({
     const firstSettings = allSettings[0];
     const districtData = districtDataMap[firstSettings.ccddd];
     const filtered = districtData.filteredAssessment(firstSettings);
-    const seriesDefs = extractSeriesDefs(filtered, contextSettings.facet);
+    const seriesDefsByFacet = extractSeriesDefsByFacet(filtered, contextSettings.facet);
 
     // Expand out the filter per sub-setting.
     const { data, fullFacetOrder } = extractFacets(
@@ -170,7 +182,7 @@ export default function AssessmentDashboard({
         contextSettings,
         allSettings,
         fullFacetOrder,
-        componentsGenerator: makeComponentsGenerator(seriesDefs),
+        componentsGenerator: makeComponentsGenerator(seriesDefsByFacet),
         data,
       }
     );
