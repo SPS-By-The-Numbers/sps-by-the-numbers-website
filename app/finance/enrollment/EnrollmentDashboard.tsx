@@ -18,6 +18,7 @@ import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
 import { SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS, SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS } from "app/finance/enrollment/EnrollmentPage";
 import { makeFacetContents } from "app/finance/_widgets/FacetContents";
+import SchoolGroupingContents from "app/finance/_widgets/SchoolGroupingContents";
 import SortOrderContents from "app/finance/_widgets/SortOrderContents";
 import YScaleContents from "app/finance/_widgets/YScaleContents";
 
@@ -57,7 +58,7 @@ function componentsGenerator(facetOrder,
                              contextSettings :EnrollmentContextSettings,
                              settings: EnrollmentSettings,
                              yBounds) {
-  const schoolFilter = makeSchoolFilter(settings.ccddd);
+  const schoolFilter = makeSchoolFilter(settings.ccddd, contextSettings.schoolGrouping);
   const subtitle = `
   School(${schoolFilter.toSummaryText(settings.schoolCodes)})
   `;
@@ -123,6 +124,7 @@ export default function EnrollmentDashboard({
         makeFacetContents(FACET_OPTIONS),
         SortOrderContents,
         YScaleContents,
+        SchoolGroupingContents,
       ]}
       settingsContentsComponents={[
         DatasetSettingsContents,

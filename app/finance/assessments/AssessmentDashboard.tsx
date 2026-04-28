@@ -29,6 +29,7 @@ import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
 import { SERIALIZE_ASSESSMENTS_SETTINGS_GENERATORS, SERIALIZE_ASSESSMENTS_CONTEXT_SETTINGS_GENERATORS } from "app/finance/assessments/AssessmentPage";
 import { makeFacetContents } from "app/finance/_widgets/FacetContents";
+import SchoolGroupingContents from "app/finance/_widgets/SchoolGroupingContents";
 import SortOrderContents from "app/finance/_widgets/SortOrderContents";
 import YScaleContents from "app/finance/_widgets/YScaleContents";
 
@@ -38,7 +39,7 @@ import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDa
 import type { AssessmentSettings, AssessmentContextSettings } from "app/finance/assessments/AssessmentPage";
 
 const CONNECTOR_ID = "default-connector";
-const METRIC_NAME = "pct_met_standard";
+const METRIC_NAME = "pct_met_standard_withdat";
 
 const ALL_FACETS = ["school", "test_subject", "grade_level", "test_administration", "student_group"] as const;
 export type Facet = (typeof ALL_FACETS)[number];
@@ -123,7 +124,7 @@ function makeComponentsGenerator(seriesDefsByFacet: Map<string, Array<SeriesCode
                              contextSettings :AssessmentContextSettings,
                              settings: AssessmentSettings,
                              yBounds) {
-    const schoolFilter = makeSchoolFilter(settings.ccddd);
+    const schoolFilter = makeSchoolFilter(settings.ccddd, contextSettings.schoolGrouping);
     const subtitle = `
     School(${schoolFilter.toSummaryText(settings.schoolCodes)})
     `;
@@ -138,7 +139,7 @@ function makeComponentsGenerator(seriesDefsByFacet: Map<string, Array<SeriesCode
       captionType: "none",
       subtitle,
       yBounds,
-      yValueFormatOverride: "decimal",
+      yValueFormatOverride: "pctexp",
       chartConfigMaker: (options) => makeMultiSeriesLineChartConfig({
         ...options,
         seriesDefs: seriesDefsByFacet.get(String(options.facet)) ?? [],
@@ -175,13 +176,29 @@ export default function AssessmentDashboard({
       METRIC_NAME,
     );
 
+    // Drop facets whose data columns are entirely null/NaN — otherwise
+    // they render as empty charts and break fixed-scale y-axis bounds.
+    const facetsWithData = fullFacetOrder.filter(f =>
+      allSettings.some(s => {
+        const prefix = `${s.id}_${s.currencyNormalization}_${METRIC_NAME}_${f.code}_`;
+        const cols = data.columnNames().filter(c =>
+          c.startsWith(prefix) && c.endsWith("_actuals"),
+        );
+        return cols.some(c =>
+          (data.array(c) as Array<number | null>).some(v =>
+            v !== null && v !== undefined && !Number.isNaN(v),
+          ),
+        );
+      }),
+    );
+
     return makeHighchartConfig(
       {
         connectorId: CONNECTOR_ID,
         metricName: METRIC_NAME,
         contextSettings,
         allSettings,
-        fullFacetOrder,
+        fullFacetOrder: facetsWithData,
         componentsGenerator: makeComponentsGenerator(seriesDefsByFacet),
         data,
       }
@@ -200,6 +217,7 @@ export default function AssessmentDashboard({
         makeFacetContents(FACET_OPTIONS),
         SortOrderContents,
         YScaleContents,
+        SchoolGroupingContents,
       ]}
       settingsContentsComponents={[
         DatasetSettingsContents,
@@ -211,7 +229,7 @@ export default function AssessmentDashboard({
       ]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">
-        Assessment Data.
+        % Meeting Standard for Assessment
       </Typography>
       <HcDashboard config={config} />
     </SettingsLayout>

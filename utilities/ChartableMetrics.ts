@@ -200,7 +200,7 @@ function extractRawEnrollment(df: ColumnTable, facetColumn: string) {
   return df
   .groupby("class_of", "grade", facetCodeColumn)
   .rollup({
-    pct_met_standard: d => op.sum(d.pct_met_standard),
+    all_students: d => op.sum(d.all_students),
   });
 }
 
@@ -216,7 +216,7 @@ export function toFacetedCharatbleEnrollmentDataset(
     .filter(d => d.grade != "All Grades")
     .groupby(["class_of"])
     .pivot([`${facet}_code`], {
-      pct_met_standard: (d) => op.sum(d.pct_met_standard),
+      all_students: (d) => op.sum(d.all_students),
       _pivot_name_hack_: (d) => op.any("_pivot_name_hack_"),
     })
     .select(aq.not(aq.startswith("_pivot_name_hack_")))
@@ -260,11 +260,12 @@ export function toFacetedCharatbleAssessmentDataset(
       ),
     });
 
-  // Pivot by composite key, averaging pct_met_standard per group.
+  // Pivot by composite key, averaging pct_met_standard_withdat per group.
+  // Multiply by 100 so the chart axis renders as a percent.
   const pdata = withComposite
     .groupby(["class_of", "data_type"])
     .pivot(["composite_key"], {
-      pct_met_standard: (d) => op.mean(d.pct_met_standard),
+      pct_met_standard_withdat: (d) => op.mean(d.pct_met_standard_withdat) * 100,
       _pivot_name_hack_: (d) => op.any("_pivot_name_hack_"),
     })
     .select(aq.not(aq.startswith("_pivot_name_hack_")));

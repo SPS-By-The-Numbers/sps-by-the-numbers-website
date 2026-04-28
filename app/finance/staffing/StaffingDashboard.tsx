@@ -24,6 +24,7 @@ import {
   extractFacets,
 } from "utilities/ChartableVitals";
 import { makeFacetContents } from "app/finance/_widgets/FacetContents";
+import SchoolGroupingContents from "app/finance/_widgets/SchoolGroupingContents";
 import SortOrderContents from "app/finance/_widgets/SortOrderContents";
 import YScaleContents from "app/finance/_widgets/YScaleContents";
 import { serializeDatasetSettings, serializeOneSetting } from "app/finance/_settings/common_settings";
@@ -133,7 +134,7 @@ function componentsGenerator(facetOrder,
                              contextSettings: StaffingContextSettings,
                              settings: StaffingSettings,
                              yBounds) {
-  const schoolFilter = makeSchoolFilter(settings.ccddd);
+  const schoolFilter = makeSchoolFilter(settings.ccddd, contextSettings.schoolGrouping);
   const subtitle = `
   School(${schoolFilter.toSummaryText(settings.schoolCodes)}) /
   Prog(${ProgramFilter.toSummaryText(settings.programCodes)}) /
@@ -235,6 +236,7 @@ export default function StaffingDashboard({
         makeFacetContents(FACET_OPTIONS),
         SortOrderContents,
         YScaleContents,
+        SchoolGroupingContents,
       ]}
       settingsContentsComponents={[
         DatasetSettingsContents,

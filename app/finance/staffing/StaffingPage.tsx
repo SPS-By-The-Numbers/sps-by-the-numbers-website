@@ -75,6 +75,7 @@ export const SERIALIZE_STAFFING_SETTINGS_GENERATORS = [
 export const SERIALIZE_STAFFING_CONTEXT_SETTINGS_GENERATORS = [
   ...CommonContextSettingsAll.COMMON_FACET_CONTEXT_SETTINGS_GENERATORS,
   CommonContextSettingsAll.makeFacetSerializeConfigHelper<Facet>(serializeFacet, deserializeFacet),
+  CommonContextSettingsAll.makeSchoolGroupingSerializeConfig,
 ];
 
 const DEFAULT_CONTEXT_SETTINGS : StaffingContextSettings = {

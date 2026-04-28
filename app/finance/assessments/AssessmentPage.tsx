@@ -31,7 +31,7 @@ export type AssessmentContextSettings = CommonFacetContextSettings<Facet>;
 const DEFAULT_DASHBOARD_SETTINGS : AssessmentContextSettings = {
   ...DEFAULT_COMMON_FACET_CONTEXT_SETTINGS,
   sortType: "latest" as const,
-  yScale: "free" as const,
+  yScale: "fixed" as const,
   facet: deserializeFacet(""),
 };
 
@@ -49,6 +49,7 @@ export const SERIALIZE_ASSESSMENTS_CONTEXT_SETTINGS_GENERATORS = [
   CommonContextSettingsAll.makeSortOrderSerializeConfig,
   CommonContextSettingsAll.makeSortOrderSerializeConfig,
   CommonContextSettingsAll.makeYScaleSerializeConfig,
+  CommonContextSettingsAll.makeSchoolGroupingSerializeConfig,
 ];
 
 export default function AssessmentPage() {

@@ -15,6 +15,7 @@ import TestSubjectFilter from "app/finance/_filteritems/test_subject";
 
 import type { PFilters, AFilters, OFilters, SchoolFilters, DutyRootFilters, NcesFilters, GradeLevelFilters, TestAdministrationFilters, StudentGroupFilters, TestSubjectFilters } from "utilities/DistrictData";
 import type { BaseSettings } from "app/finance/_settings/base_settings";
+import type { BaseFacetContextSettings } from "app/finance/_settings/common_context_settings";
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 
 interface Props<T extends BaseSettings, U extends BaseSettings = BaseSettings> {
@@ -133,10 +134,11 @@ export function ProgramFilterContents({
 
 // Settings component to render selection of schools.
 export function SchoolFilterContents({
+  contextSettings,
   settings,
   setSettings,
-}: Props<DatasetSettings & SchoolFilters>) {
-  const schoolFilter = makeSchoolFilter(settings.ccddd, "region");
+}: Props<DatasetSettings & SchoolFilters, BaseFacetContextSettings>) {
+  const schoolFilter = makeSchoolFilter(settings.ccddd, contextSettings?.schoolGrouping);
 
   return (
     <FilterTree

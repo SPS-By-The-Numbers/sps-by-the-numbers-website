@@ -6,11 +6,31 @@ import type { SortOrder, SortType, YScale, FacetLimit } from "utilities/ChartOpt
 
 export type CommonContextSettings = BaseSettings;
 
+const ALL_SCHOOL_GROUPING = ["region", "ms_assignment_code"] as const;
+export type SchoolGrouping = (typeof ALL_SCHOOL_GROUPING)[number];
+
+const SCHOOL_GROUPING_SERIALIZE_MAP: Record<SchoolGrouping, string> = {
+  ms_assignment_code: "0",
+  region: "1",
+};
+const SCHOOL_GROUPING_DESERIALIZE_MAP = Object.fromEntries(
+  Object.entries(SCHOOL_GROUPING_SERIALIZE_MAP).map(([k, v]) => [v, k]),
+) as Record<string, SchoolGrouping>;
+
+export function serializeSchoolGrouping(grouping: SchoolGrouping) : string {
+  return SCHOOL_GROUPING_SERIALIZE_MAP[grouping] ?? "0";
+}
+
+export function deserializeSchoolGrouping(s: string) : SchoolGrouping {
+  return SCHOOL_GROUPING_DESERIALIZE_MAP[s] ?? "ms_assignment_code";
+}
+
 export type BaseFacetContextSettings = CommonContextSettings & {
   facetLimit: FacetLimit;
   sortOrder: SortOrder;
   sortType: SortType;
   yScale: YScale;
+  schoolGrouping: SchoolGrouping;
 };
 
 export type CommonFacetContextSettings<FacetType> = BaseFacetContextSettings & {
@@ -29,6 +49,7 @@ export const DEFAULT_COMMON_FACET_CONTEXT_SETTINGS : BaseFacetContextSettings = 
   sortOrder: "descending",
   sortType: "variance",
   yScale: "fixed",
+  schoolGrouping: "ms_assignment_code",
 };
 
 // Type that constraints to just a string literal.
@@ -76,6 +97,19 @@ export function makeSortOrderSerializeConfig(context?) : SettingsConfig {
         urlVar: "st",
         serialize: (settings, key) => ChartOptions.serializeSortType(settings[key]),
           deserialize: (settings, s) => ChartOptions.deserializeSortType(s),
+      },
+    ]
+  ];
+}
+
+export function makeSchoolGroupingSerializeConfig(context?) : SettingsConfig {
+  return [
+    [
+      "schoolGrouping", {
+        serializerType: "custom",
+        urlVar: "csg",
+        serialize: (settings, key) => serializeSchoolGrouping(settings[key]),
+          deserialize: (settings, s) => deserializeSchoolGrouping(s),
       },
     ]
   ];
