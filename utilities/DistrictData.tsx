@@ -615,7 +615,7 @@ export default class DistrictData {
     return results
     .derive({
       data_type: d => "actuals",
-      pct_met_standard: d => op.parse_float(op.replace(d.pct_met_standard_str, /[<>%]/,'')),
+      pct_met_standard: d => d.pct_met_standard_withdat,
     })
     .join_left(gradeLevelDomain, "grade_level_code")
     .join_left(testSubjectDomain, "test_subject")

@@ -112,7 +112,8 @@ function getAssessment(ccddd) {
       WHEN '12' THEN 12
     END AS grade_level_code,
 
-    a.pct_met_standard pct_met_standard_str
+    SAFE_CAST(REGEXP_EXTRACT(a.pct_met_standard, r'^([0-9]+(?:\.[0-9]+)?)%$') AS FLOAT64) / 100 AS pct_met_standard_nodat,
+    SAFE_CAST(REGEXP_EXTRACT(a.pct_met_standard, r'^[<>]?([0-9]+(?:\.[0-9]+)?)%$') AS FLOAT64) / 100 AS pct_met_standard_withdat
   FROM
     sps-btn-data.ospi.rc_assessment a
     JOIN sps-btn-data.safs_domains.d_school d_s ON (a.school_code = d_s.school_code AND a.ccddd = d_s.ccddd)
