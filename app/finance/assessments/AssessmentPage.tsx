@@ -32,7 +32,7 @@ export function serializeCovidYears(v: CovidYears): string {
 }
 
 export function deserializeCovidYears(s: string): CovidYears {
-  return COVID_YEARS_DESERIALIZE_MAP[s] ?? "exclude";
+  return COVID_YEARS_DESERIALIZE_MAP[s] ?? "include";
 }
 
 function makeCovidYearsSerializeConfig(context?): SettingsConfig {
@@ -68,7 +68,7 @@ const DEFAULT_DASHBOARD_SETTINGS : AssessmentContextSettings = {
   sortType: "latest" as const,
   yScale: "fixed" as const,
   facet: deserializeFacet(""),
-  covidYears: "exclude" as const,
+  covidYears: "include" as const,
 };
 
 export const SERIALIZE_ASSESSMENTS_SETTINGS_GENERATORS = [

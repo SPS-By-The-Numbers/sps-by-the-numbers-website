@@ -209,6 +209,29 @@ export function extractFacets(
     data = data.join(d);
   }
 
+  // Fill in any missing class_of values between the min and max year
+  // present in the joined data with null-valued rows. Line charts then
+  // render a gap at those years rather than connecting a misleading
+  // straight line across them. We only fill the interior — older years
+  // unique to one dataset (e.g. vitals back to 2002) stay excluded by
+  // the inner join above.
+  const years = (data.array("class_of") as Array<number | null>)
+    .filter((y): y is number => y !== null && y !== undefined);
+  if (years.length > 0) {
+    const minYear = Math.min(...years);
+    const maxYear = Math.max(...years);
+    const existing = new Set(years);
+    const missing: Array<number> = [];
+    for (let y = minYear; y <= maxYear; y++) {
+      if (!existing.has(y)) {
+        missing.push(y);
+      }
+    }
+    if (missing.length > 0) {
+      data = data.join_full(aq.table({ class_of: missing }));
+    }
+  }
+
   data = data.orderby("class_of");
 
   return { data, fullFacetOrder };

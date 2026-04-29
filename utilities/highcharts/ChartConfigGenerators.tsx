@@ -602,13 +602,20 @@ export function makeBudgetActualsChartConfig(
 export type SeriesCodeDef = {
   key: string;   // Composite code key used in column names (e.g., "1_3").
   name: string;  // Display name for the UI.
+  colorIndex?: number;  // Optional stable color index. Falls back to position.
 };
 
 // Generates a line chart with one series per entry in seriesDefs.
 // Each series maps to a column: {metricColumn}_{facet}_{key}_actuals.
 // The name is used only for display labels.
 export function makeMultiSeriesLineChartConfig(
-  options: BudgetActualsChartOptions & { seriesDefs: Array<SeriesCodeDef> },
+  options: BudgetActualsChartOptions & {
+    seriesDefs: Array<SeriesCodeDef>;
+    // Opt-in: bind per-point marker shape/size to year via the
+    // marker_radius/covid_shape columns populated in
+    // dfToJSONConnectorOptions. Default is a uniform series-level marker.
+    useCovidMarker?: boolean;
+  },
 ) {
   const baseChartConfig = makeBaseChartConfig(options);
   const realFacet = options.facet ? `_${options.facet}` : "";
@@ -618,15 +625,17 @@ export function makeMultiSeriesLineChartConfig(
     data: {
       name: options.xDataColumn,
       y: `${options.metricColumn}${realFacet}_${def.key}_actuals`,
-      "marker.radius": "marker_radius",
-      "marker.symbol": "covid_shape",
+      ...(options.useCovidMarker ? {
+        "marker.radius": "marker_radius",
+        "marker.symbol": "covid_shape",
+      } : {}),
     },
   }));
 
   const series = options.seriesDefs.map((def, i) => ({
     id: def.key,
     name: def.name,
-    colorIndex: i,
+    colorIndex: def.colorIndex ?? i,
     marker: { enabled: true },
   }));
 

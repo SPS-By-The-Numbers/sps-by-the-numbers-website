@@ -99,6 +99,9 @@ function extractSeriesDefsByFacet(filtered, facet: Facet): Map<string, Array<Ser
 
   const result = new Map<string, Array<SeriesCodeDef>>();
   const seenByFacet = new Map<string, Set<string>>();
+  // Global registry so the same series key gets the same colorIndex
+  // in every chart on the page.
+  const globalColorIndex = new Map<string, number>();
   for (let i = 0; i < filtered.numRows(); i++) {
     const facetCode = String(facetArray[i]);
     const codes = seriesArrays.map(a => a[i]);
@@ -111,10 +114,17 @@ function extractSeriesDefsByFacet(filtered, facet: Facet): Map<string, Array<Ser
     }
     if (!seen.has(key)) {
       seen.add(key);
+      if (!globalColorIndex.has(key)) {
+        globalColorIndex.set(key, globalColorIndex.size);
+      }
       const nameParts = seriesDims.map((dim, j) =>
         dim.lookup.get(codes[j]) ?? codes[j].toString()
       );
-      result.get(facetCode)!.push({ key, name: nameParts.join(" / ") });
+      result.get(facetCode)!.push({
+        key,
+        name: nameParts.join(" / "),
+        colorIndex: globalColorIndex.get(key)!,
+      });
     }
   }
   return result;
