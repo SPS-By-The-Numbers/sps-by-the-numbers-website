@@ -235,6 +235,9 @@ export function toFacetedCharatbleEnrollmentDataset(
 
 // All assessment code columns in a fixed order. The facet dimension is
 // separated out and the rest form the series key within each chart.
+// ms_assignment_code is intentionally absent — it is only ever used as a
+// chart facet (never a series), and including it as a series component
+// would just duplicate information already encoded by school_code.
 const ASSESSMENT_CODE_COLUMNS = [
   "school_code",
   "test_subject_code",
