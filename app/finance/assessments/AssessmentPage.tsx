@@ -14,6 +14,39 @@ import AssessmentDashboard from "./AssessmentDashboard";
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 import type { Facet } from "./AssessmentDashboard";
 import type { CommonFacetContextSettings } from "app/finance/_settings/common_context_settings";
+import type { SettingsConfig } from "app/finance/_settings/base_settings";
+
+export const ALL_COVID_YEARS = ["exclude", "include"] as const;
+export type CovidYears = (typeof ALL_COVID_YEARS)[number];
+
+const COVID_YEARS_SERIALIZE_MAP: Record<CovidYears, string> = {
+  exclude: "0",
+  include: "1",
+};
+const COVID_YEARS_DESERIALIZE_MAP = Object.fromEntries(
+  Object.entries(COVID_YEARS_SERIALIZE_MAP).map(([k, v]) => [v, k]),
+) as Record<string, CovidYears>;
+
+export function serializeCovidYears(v: CovidYears): string {
+  return COVID_YEARS_SERIALIZE_MAP[v] ?? "0";
+}
+
+export function deserializeCovidYears(s: string): CovidYears {
+  return COVID_YEARS_DESERIALIZE_MAP[s] ?? "exclude";
+}
+
+function makeCovidYearsSerializeConfig(context?): SettingsConfig {
+  return [
+    [
+      "covidYears", {
+        serializerType: "custom",
+        urlVar: "cy",
+        serialize: (settings, key) => serializeCovidYears(settings[key]),
+          deserialize: (settings, s) => deserializeCovidYears(s),
+      },
+    ]
+  ];
+}
 import type { SortOrder, SortType, YScale, FacetLimit } from "utilities/ChartOptions";
 import type { SchoolFilters, GradeLevelFilters, TestAdministrationFilters, StudentGroupFilters, TestSubjectFilters } from "utilities/DistrictData";
 
@@ -26,13 +59,16 @@ const DEFAULT_ASSESSMENTS_SETTINGS = DEFAULT_DATASET_SETTINGS.map((v) => ({
   ...CommonSettings.makeDefaultAssessmentFilterSettings(),
 }));
 
-export type AssessmentContextSettings = CommonFacetContextSettings<Facet>;
+export type AssessmentContextSettings = CommonFacetContextSettings<Facet> & {
+  covidYears: CovidYears;
+};
 
 const DEFAULT_DASHBOARD_SETTINGS : AssessmentContextSettings = {
   ...DEFAULT_COMMON_FACET_CONTEXT_SETTINGS,
   sortType: "latest" as const,
   yScale: "fixed" as const,
   facet: deserializeFacet(""),
+  covidYears: "exclude" as const,
 };
 
 export const SERIALIZE_ASSESSMENTS_SETTINGS_GENERATORS = [
@@ -50,6 +86,7 @@ export const SERIALIZE_ASSESSMENTS_CONTEXT_SETTINGS_GENERATORS = [
   CommonContextSettingsAll.makeSortOrderSerializeConfig,
   CommonContextSettingsAll.makeYScaleSerializeConfig,
   CommonContextSettingsAll.makeSchoolGroupingSerializeConfig,
+  makeCovidYearsSerializeConfig,
 ];
 
 export default function AssessmentPage() {

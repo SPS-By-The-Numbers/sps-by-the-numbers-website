@@ -23,7 +23,8 @@ import {
   TestSubjectFilterContents,
 } from "app/finance/_widgets/ExpenditureFilterContents";
 import DistrictData from "utilities/DistrictData";
-import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
+import AssessmentDatasetSettingsContents from "app/finance/assessments/AssessmentDatasetSettingsContents";
+import CovidYearsContents from "app/finance/assessments/CovidYearsContents";
 import HcDashboard from "components/HcDashboard";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
@@ -142,6 +143,7 @@ function makeComponentsGenerator(seriesDefsByFacet: Map<string, Array<SeriesCode
       yValueFormatOverride: "pctexp",
       chartConfigMaker: (options) => makeMultiSeriesLineChartConfig({
         ...options,
+        yLabel: "% Met Standard",
         seriesDefs: seriesDefsByFacet.get(String(options.facet)) ?? [],
       }),
     });
@@ -161,7 +163,17 @@ export default function AssessmentDashboard({
     // excluding the facet dimension (which becomes one chart per value).
     const firstSettings = allSettings[0];
     const districtData = districtDataMap[firstSettings.ccddd];
-    const filtered = districtData.filteredAssessment(firstSettings);
+
+    // 2020 and 2021 were the COVID-disrupted assessment years.
+    const excludeCovid = contextSettings.covidYears === "exclude";
+    function filteredAssessmentMaybeNoCovid(this: DistrictData, s: AssessmentSettings) {
+      const result = this.filteredAssessment(s);
+      return excludeCovid
+        ? result.filter(d => d.class_of !== 2020 && d.class_of !== 2021)
+        : result;
+    }
+
+    const filtered = filteredAssessmentMaybeNoCovid.call(districtData, firstSettings);
     const seriesDefsByFacet = extractSeriesDefsByFacet(filtered, contextSettings.facet);
 
     // Expand out the filter per sub-setting.
@@ -171,7 +183,7 @@ export default function AssessmentDashboard({
       contextSettings.facet,
       contextSettings.sortType,
       contextSettings.sortOrder,
-      DistrictData.prototype.filteredAssessment,
+      filteredAssessmentMaybeNoCovid,
       toFacetedCharatbleAssessmentDataset,
       METRIC_NAME,
     );
@@ -218,9 +230,10 @@ export default function AssessmentDashboard({
         SortOrderContents,
         YScaleContents,
         SchoolGroupingContents,
+        CovidYearsContents,
       ]}
       settingsContentsComponents={[
-        DatasetSettingsContents,
+        AssessmentDatasetSettingsContents,
         SchoolFilterContents,
         GradeLevelFilterContents,
         AssessmentTypeFilterContents,
