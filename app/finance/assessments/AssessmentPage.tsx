@@ -19,6 +19,45 @@ import type { SettingsConfig } from "app/finance/_settings/base_settings";
 export const ALL_COVID_YEARS = ["exclude", "include"] as const;
 export type CovidYears = (typeof ALL_COVID_YEARS)[number];
 
+export const ALL_DISCLOSURE_AVOIDANCE = ["best_guess", "drop"] as const;
+export type DisclosureAvoidance = (typeof ALL_DISCLOSURE_AVOIDANCE)[number];
+
+const DISCLOSURE_AVOIDANCE_SERIALIZE_MAP: Record<DisclosureAvoidance, string> = {
+  best_guess: "0",
+  drop: "1",
+};
+const DISCLOSURE_AVOIDANCE_DESERIALIZE_MAP = Object.fromEntries(
+  Object.entries(DISCLOSURE_AVOIDANCE_SERIALIZE_MAP).map(([k, v]) => [v, k]),
+) as Record<string, DisclosureAvoidance>;
+
+export function serializeDisclosureAvoidance(v: DisclosureAvoidance): string {
+  return DISCLOSURE_AVOIDANCE_SERIALIZE_MAP[v] ?? "0";
+}
+
+export function deserializeDisclosureAvoidance(s: string): DisclosureAvoidance {
+  return DISCLOSURE_AVOIDANCE_DESERIALIZE_MAP[s] ?? "best_guess";
+}
+
+// Maps a disclosure-avoidance choice to the BigQuery column the chart
+// should source pct_met_standard from.
+export const DISCLOSURE_AVOIDANCE_METRIC: Record<DisclosureAvoidance, string> = {
+  best_guess: "pct_met_standard_withdat",
+  drop: "pct_met_standard_nodat",
+};
+
+function makeDisclosureAvoidanceSerializeConfig(context?): SettingsConfig {
+  return [
+    [
+      "disclosureAvoidance", {
+        serializerType: "custom",
+        urlVar: "da",
+        serialize: (settings, key) => serializeDisclosureAvoidance(settings[key]),
+          deserialize: (settings, s) => deserializeDisclosureAvoidance(s),
+      },
+    ]
+  ];
+}
+
 const COVID_YEARS_SERIALIZE_MAP: Record<CovidYears, string> = {
   exclude: "0",
   include: "1",
@@ -61,6 +100,7 @@ const DEFAULT_ASSESSMENTS_SETTINGS = DEFAULT_DATASET_SETTINGS.map((v) => ({
 
 export type AssessmentContextSettings = CommonFacetContextSettings<Facet> & {
   covidYears: CovidYears;
+  disclosureAvoidance: DisclosureAvoidance;
 };
 
 const DEFAULT_DASHBOARD_SETTINGS : AssessmentContextSettings = {
@@ -69,6 +109,7 @@ const DEFAULT_DASHBOARD_SETTINGS : AssessmentContextSettings = {
   yScale: "fixed" as const,
   facet: deserializeFacet(""),
   covidYears: "include" as const,
+  disclosureAvoidance: "best_guess" as const,
 };
 
 export const SERIALIZE_ASSESSMENTS_SETTINGS_GENERATORS = [
@@ -87,6 +128,7 @@ export const SERIALIZE_ASSESSMENTS_CONTEXT_SETTINGS_GENERATORS = [
   CommonContextSettingsAll.makeYScaleSerializeConfig,
   CommonContextSettingsAll.makeSchoolGroupingSerializeConfig,
   makeCovidYearsSerializeConfig,
+  makeDisclosureAvoidanceSerializeConfig,
 ];
 
 export default function AssessmentPage() {

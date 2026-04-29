@@ -25,10 +25,15 @@ import {
 import DistrictData from "utilities/DistrictData";
 import AssessmentDatasetSettingsContents from "app/finance/assessments/AssessmentDatasetSettingsContents";
 import CovidYearsContents from "app/finance/assessments/CovidYearsContents";
+import DisclosureAvoidanceContents from "app/finance/assessments/DisclosureAvoidanceContents";
 import HcDashboard from "components/HcDashboard";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
-import { SERIALIZE_ASSESSMENTS_SETTINGS_GENERATORS, SERIALIZE_ASSESSMENTS_CONTEXT_SETTINGS_GENERATORS } from "app/finance/assessments/AssessmentPage";
+import {
+  DISCLOSURE_AVOIDANCE_METRIC,
+  SERIALIZE_ASSESSMENTS_SETTINGS_GENERATORS,
+  SERIALIZE_ASSESSMENTS_CONTEXT_SETTINGS_GENERATORS,
+} from "app/finance/assessments/AssessmentPage";
 import { makeFacetContents } from "app/finance/_widgets/FacetContents";
 import SchoolGroupingContents from "app/finance/_widgets/SchoolGroupingContents";
 import SortOrderContents from "app/finance/_widgets/SortOrderContents";
@@ -40,7 +45,6 @@ import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDa
 import type { AssessmentSettings, AssessmentContextSettings } from "app/finance/assessments/AssessmentPage";
 
 const CONNECTOR_ID = "default-connector";
-const METRIC_NAME = "pct_met_standard_withdat";
 
 const ALL_FACETS = ["school", "test_subject", "grade_level", "test_administration", "student_group"] as const;
 export type Facet = (typeof ALL_FACETS)[number];
@@ -91,7 +95,11 @@ function getSeriesDimensions(facet: Facet): Array<DimensionDef> {
   return DIMENSIONS.filter(d => d.facetName !== facet);
 }
 
-function extractSeriesDefsByFacet(filtered, facet: Facet): Map<string, Array<SeriesCodeDef>> {
+function extractSeriesDefsByFacet(
+  filtered,
+  facet: Facet,
+  globalColorIndex: Map<string, number>,
+): Map<string, Array<SeriesCodeDef>> {
   const facetDim = DIMENSIONS.find(d => d.facetName === facet)!;
   const seriesDims = getSeriesDimensions(facet);
   const facetArray = filtered.array(facetDim.codeColumn) as number[];
@@ -99,9 +107,6 @@ function extractSeriesDefsByFacet(filtered, facet: Facet): Map<string, Array<Ser
 
   const result = new Map<string, Array<SeriesCodeDef>>();
   const seenByFacet = new Map<string, Set<string>>();
-  // Global registry so the same series key gets the same colorIndex
-  // in every chart on the page.
-  const globalColorIndex = new Map<string, number>();
   for (let i = 0; i < filtered.numRows(); i++) {
     const facetCode = String(facetArray[i]);
     const codes = seriesArrays.map(a => a[i]);
@@ -130,11 +135,15 @@ function extractSeriesDefsByFacet(filtered, facet: Facet): Map<string, Array<Ser
   return result;
 }
 
-function makeComponentsGenerator(seriesDefsByFacet: Map<string, Array<SeriesCodeDef>>) {
+function makeComponentsGenerator(
+  seriesDefsBySettings: Map<number | string, Map<string, Array<SeriesCodeDef>>>,
+  metricName: string,
+) {
   return function componentsGenerator(facetOrder,
                              contextSettings :AssessmentContextSettings,
                              settings: AssessmentSettings,
                              yBounds) {
+    const seriesDefsByFacet = seriesDefsBySettings.get(settings.id) ?? new Map();
     const schoolFilter = makeSchoolFilter(settings.ccddd, contextSettings.schoolGrouping);
     const subtitle = `
     School(${schoolFilter.toSummaryText(settings.schoolCodes)})
@@ -143,7 +152,7 @@ function makeComponentsGenerator(seriesDefsByFacet: Map<string, Array<SeriesCode
       idPrefix: settings.id.toString(),
       xColumn: "class_of",
       xLabel: "Fiscal Year End",
-      yColumnRoot: METRIC_NAME,
+      yColumnRoot: metricName,
       facetOrder,
       connectorId: CONNECTOR_ID,
       normalizations: [settings.currencyNormalization],
@@ -173,6 +182,7 @@ export default function AssessmentDashboard({
     // excluding the facet dimension (which becomes one chart per value).
     const firstSettings = allSettings[0];
     const districtData = districtDataMap[firstSettings.ccddd];
+    const metricName = DISCLOSURE_AVOIDANCE_METRIC[contextSettings.disclosureAvoidance];
 
     // 2020 and 2021 were the COVID-disrupted assessment years.
     const excludeCovid = contextSettings.covidYears === "exclude";
@@ -183,8 +193,20 @@ export default function AssessmentDashboard({
         : result;
     }
 
-    const filtered = filteredAssessmentMaybeNoCovid.call(districtData, firstSettings);
-    const seriesDefsByFacet = extractSeriesDefsByFacet(filtered, contextSettings.facet);
+    // Build series defs per dataset using a shared global color index,
+    // so the same (subject, grade, admin, group) tuple gets the same
+    // colour in every chart on the page across datasets, and each
+    // dataset's chart only declares the series its own filters produce.
+    const globalColorIndex = new Map<string, number>();
+    const seriesDefsBySettings = new Map<number | string, Map<string, Array<SeriesCodeDef>>>();
+    for (const s of allSettings) {
+      const dd = districtDataMap[s.ccddd];
+      const filteredS = filteredAssessmentMaybeNoCovid.call(dd, s);
+      seriesDefsBySettings.set(
+        s.id,
+        extractSeriesDefsByFacet(filteredS, contextSettings.facet, globalColorIndex),
+      );
+    }
 
     // Expand out the filter per sub-setting.
     const { data, fullFacetOrder } = extractFacets(
@@ -194,15 +216,16 @@ export default function AssessmentDashboard({
       contextSettings.sortType,
       contextSettings.sortOrder,
       filteredAssessmentMaybeNoCovid,
-      toFacetedCharatbleAssessmentDataset,
-      METRIC_NAME,
+      (districtData, filteredDf, facet, settings) =>
+        toFacetedCharatbleAssessmentDataset(districtData, filteredDf, facet, settings, metricName),
+      metricName,
     );
 
     // Drop facets whose data columns are entirely null/NaN — otherwise
     // they render as empty charts and break fixed-scale y-axis bounds.
     const facetsWithData = fullFacetOrder.filter(f =>
       allSettings.some(s => {
-        const prefix = `${s.id}_${s.currencyNormalization}_${METRIC_NAME}_${f.code}_`;
+        const prefix = `${s.id}_${s.currencyNormalization}_${metricName}_${f.code}_`;
         const cols = data.columnNames().filter(c =>
           c.startsWith(prefix) && c.endsWith("_actuals"),
         );
@@ -217,11 +240,11 @@ export default function AssessmentDashboard({
     return makeHighchartConfig(
       {
         connectorId: CONNECTOR_ID,
-        metricName: METRIC_NAME,
+        metricName,
         contextSettings,
         allSettings,
         fullFacetOrder: facetsWithData,
-        componentsGenerator: makeComponentsGenerator(seriesDefsByFacet),
+        componentsGenerator: makeComponentsGenerator(seriesDefsBySettings, metricName),
         data,
       }
     );
@@ -241,6 +264,7 @@ export default function AssessmentDashboard({
         YScaleContents,
         SchoolGroupingContents,
         CovidYearsContents,
+        DisclosureAvoidanceContents,
       ]}
       settingsContentsComponents={[
         AssessmentDatasetSettingsContents,

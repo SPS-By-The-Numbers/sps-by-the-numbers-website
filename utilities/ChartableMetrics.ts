@@ -247,25 +247,32 @@ export function toFacetedCharatbleAssessmentDataset(
   districtData,
   filteredDf,
   facet,
-  settings
+  settings,
+  metricColumn: string = "pct_met_standard_withdat",
 ) {
   const facetCodeColumn = `${facet}_code`;
   const seriesCodeColumns = ASSESSMENT_CODE_COLUMNS.filter(c => c !== facetCodeColumn);
 
-  // Create composite pivot key: facet code first, then remaining dimensions.
+  // Stage the chosen metric under a known name so the rollup expression
+  // can reference it without depending on dynamic column-name parsing.
+  // Then create the composite pivot key: facet code first, then the
+  // remaining dimensions.
   const withComposite = filteredDf
     .derive({
+      _metric: aq.escape((d) => d[metricColumn]),
       composite_key: aq.escape(d =>
         `${d[facetCodeColumn]}_${seriesCodeColumns.map(c => d[c]).join("_")}`
       ),
     });
 
-  // Pivot by composite key, averaging pct_met_standard_withdat per group.
-  // Multiply by 100 so the chart axis renders as a percent.
+  // Pivot by composite key, averaging the chosen metric per group.
+  // Multiply by 100 so the chart axis renders as a percent. The output
+  // column prefix uses metricColumn so the chart's expected
+  // `<id>_<norm>_<metric>_<facet>_<series>_actuals` columns line up.
   const pdata = withComposite
     .groupby(["class_of", "data_type"])
     .pivot(["composite_key"], {
-      pct_met_standard_withdat: (d) => op.mean(d.pct_met_standard_withdat) * 100,
+      [metricColumn]: (d) => op.mean(d._metric) * 100,
       _pivot_name_hack_: (d) => op.any("_pivot_name_hack_"),
     })
     .select(aq.not(aq.startswith("_pivot_name_hack_")));
