@@ -26,6 +26,7 @@ import {
 } from "app/finance/_widgets/ExpenditureFilterContents";
 import DistrictData from "utilities/DistrictData";
 import AssessmentDatasetSettingsContents from "app/finance/assessments/AssessmentDatasetSettingsContents";
+import ChartsEnabledContents from "app/finance/_widgets/ChartsEnabledContents";
 import CovidYearsContents from "app/finance/assessments/CovidYearsContents";
 import DisclosureAvoidanceContents from "app/finance/assessments/DisclosureAvoidanceContents";
 import HcDashboard from "components/HcDashboard";
@@ -270,6 +271,12 @@ export default function AssessmentDashboard({
   contextSettings,
 }: DistrictDataContentProps<AssessmentSettings, AssessmentContextSettings>) {
   const config = useMemo(() => {
+    // Skip the (often-expensive) chart-config build when the user has
+    // toggled rendering off in the context settings panel.
+    if (contextSettings.chartsEnabled === false) {
+      return null;
+    }
+
     // Extract unique series definitions from the filtered data,
     // excluding the facet dimension (which becomes one chart per value).
     const firstSettings = allSettings[0];
@@ -390,6 +397,7 @@ export default function AssessmentDashboard({
         SchoolGroupingContents,
         CovidYearsContents,
         DisclosureAvoidanceContents,
+        ChartsEnabledContents,
       ]}
       settingsContentsComponents={[
         AssessmentDatasetSettingsContents,
@@ -403,7 +411,7 @@ export default function AssessmentDashboard({
       <Typography className="analysis-title" component="h1" variant="h1">
         % Meeting Standard for Assessment
       </Typography>
-      <HcDashboard config={config} />
+      {config && <HcDashboard config={config} />}
     </SettingsLayout>
   );
 }

@@ -127,6 +127,7 @@ export const SERIALIZE_ASSESSMENTS_CONTEXT_SETTINGS_GENERATORS = [
   CommonContextSettingsAll.makeSortOrderSerializeConfig,
   CommonContextSettingsAll.makeYScaleSerializeConfig,
   CommonContextSettingsAll.makeSchoolGroupingSerializeConfig,
+  CommonContextSettingsAll.makeChartsEnabledSerializeConfig,
   makeCovidYearsSerializeConfig,
   makeDisclosureAvoidanceSerializeConfig,
 ];

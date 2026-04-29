@@ -31,6 +31,7 @@ export type BaseFacetContextSettings = CommonContextSettings & {
   sortType: SortType;
   yScale: YScale;
   schoolGrouping: SchoolGrouping;
+  chartsEnabled: boolean;
 };
 
 export type CommonFacetContextSettings<FacetType> = BaseFacetContextSettings & {
@@ -50,6 +51,7 @@ export const DEFAULT_COMMON_FACET_CONTEXT_SETTINGS : BaseFacetContextSettings = 
   sortType: "variance",
   yScale: "fixed",
   schoolGrouping: "ms_assignment_code",
+  chartsEnabled: true,
 };
 
 // Type that constraints to just a string literal.
@@ -110,6 +112,19 @@ export function makeSchoolGroupingSerializeConfig(context?) : SettingsConfig {
         urlVar: "csg",
         serialize: (settings, key) => serializeSchoolGrouping(settings[key]),
           deserialize: (settings, s) => deserializeSchoolGrouping(s),
+      },
+    ]
+  ];
+}
+
+export function makeChartsEnabledSerializeConfig(context?) : SettingsConfig {
+  return [
+    [
+      "chartsEnabled", {
+        serializerType: "custom",
+        urlVar: "ce",
+        serialize: (settings, key) => settings[key] ? "1" : "0",
+          deserialize: (settings, s) => s !== "0",
       },
     ]
   ];
