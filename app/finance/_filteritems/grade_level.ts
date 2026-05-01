@@ -29,7 +29,7 @@ function makeGradeLevelTree() {
     ...([9, 10, 11, 12].map(c => makeLeaf(byCode(c)))),
   ]);
 
-  return makeInternalNode("all", "All Grade Levels", [allGrades, k5, middle, high]);
+  return makeInternalNode("all", "Grades", [allGrades, k5, middle, high]);
 }
 
 const GradeLevelFilter = new Filter(makeGradeLevelTree(), ITEM_PREFIX);

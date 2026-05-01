@@ -19,13 +19,17 @@ function byCode(code: number) {
 }
 
 function makeEnrollmentGradeLevelTree() {
-  const earlyChildhood = makeInternalNode("early", "Early", [
+  const preK = makeInternalNode("prek", "Pre-K", [
     makeLeaf(byCode(97)),
-    makeLeaf(byCode(98)),
   ]);
 
-  const k5 = makeInternalNode("15", "1-5", [
-    ...([1, 2, 3, 4, 5].map(c => makeLeaf(byCode(c)))),
+  const k2 = makeInternalNode("k2", "K-2", [
+    makeLeaf(byCode(98)),
+    ...([1, 2].map(c => makeLeaf(byCode(c)))),
+  ]);
+
+  const upperElementary = makeInternalNode("35", "3-5", [
+    ...([3, 4, 5].map(c => makeLeaf(byCode(c)))),
   ]);
 
   const middle = makeInternalNode("68", "6-8", [
@@ -36,7 +40,7 @@ function makeEnrollmentGradeLevelTree() {
     ...([9, 10, 11, 12].map(c => makeLeaf(byCode(c)))),
   ]);
 
-  return makeInternalNode("all", "All Grade Levels", [earlyChildhood, k5, middle, high]);
+  return makeInternalNode("all", "Grades", [preK, k2, upperElementary, middle, high]);
 }
 
 const EnrollmentGradeLevelFilter = new Filter(makeEnrollmentGradeLevelTree(), ITEM_PREFIX);

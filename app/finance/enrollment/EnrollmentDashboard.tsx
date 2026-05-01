@@ -38,18 +38,22 @@ import type { EnrollmentSettings, EnrollmentContextSettings } from "app/finance/
 
 const CONNECTOR_ID = "default-connector";
 
-const ALL_FACETS = ["school", "ms_assignment", "region"] as const;
+const ALL_FACETS = ["school", "ms_assignment", "region", "grade_level", "grade_cohort"] as const;
 export type Facet = (typeof ALL_FACETS)[number];
 export const FACET_OPTIONS: Record<Facet, string> = {
   school: "School",
   ms_assignment: "Middle School Area",
   region: "Region",
+  grade_level: "Grade",
+  grade_cohort: "Grade Cohort",
 };
 
 const FACET_SERIALIZE_MAP: Record<Facet, string> = {
   school: "0",
   ms_assignment: "1",
   region: "2",
+  grade_level: "3",
+  grade_cohort: "4",
 };
 const FACET_DESERIALIZE_MAP = Object.fromEntries(
   Object.entries(FACET_SERIALIZE_MAP).map(([k, v]) => [v, k]),

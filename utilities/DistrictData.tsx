@@ -637,7 +637,31 @@ export default class DistrictData {
         .filter((d, $) => d.includes($.gradeLevelCodes, d.grade_level_code));
     }
 
-    return results;
+    // Provide a grade_level string alongside the existing grade column so
+    // the dashboard can facet by grade_level the same way the assessment
+    // dashboard does (extractFacetsSortedByLatestAmount groups on
+    // (facetColumn, facetCodeColumn) = ("grade_level", "grade_level_code")).
+    // Also derive grade_cohort / grade_cohort_code so the dashboard can
+    // facet by the standard grade-cohort buckets (PreK, K-2, 3-5, 6-8,
+    // 9-12). Cohort codes are >= 9000 so makeFacetCodeText suppresses
+    // them in chart titles.
+    return results.derive({
+      grade_level: (d) => d.grade,
+      grade_cohort: (d) =>
+        d.grade_level_code === 97 ? "PreK" :
+        d.grade_level_code === 98 || d.grade_level_code === 1 || d.grade_level_code === 2 ? "K-2" :
+        d.grade_level_code === 3 || d.grade_level_code === 4 || d.grade_level_code === 5 ? "3-5" :
+        d.grade_level_code === 6 || d.grade_level_code === 7 || d.grade_level_code === 8 ? "6-8" :
+        d.grade_level_code === 9 || d.grade_level_code === 10 || d.grade_level_code === 11 || d.grade_level_code === 12 ? "9-12" :
+        "Other",
+      grade_cohort_code: (d) =>
+        d.grade_level_code === 97 ? 9001 :
+        d.grade_level_code === 98 || d.grade_level_code === 1 || d.grade_level_code === 2 ? 9002 :
+        d.grade_level_code === 3 || d.grade_level_code === 4 || d.grade_level_code === 5 ? 9003 :
+        d.grade_level_code === 6 || d.grade_level_code === 7 || d.grade_level_code === 8 ? 9004 :
+        d.grade_level_code === 9 || d.grade_level_code === 10 || d.grade_level_code === 11 || d.grade_level_code === 12 ? 9005 :
+        9999,
+    });
   }
 
   fundedEnrollmentSummary() {
