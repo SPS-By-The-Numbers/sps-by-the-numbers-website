@@ -1,13 +1,12 @@
 "use client";
 
-import { DUMMY_BASE_SETTINGS } from "app/finance/_settings/base_settings";
+import { DEFAULT_COMMON_CONTEXT_SETTINGS, makeChartsEnabledSerializeConfig } from "app/finance/_settings/common_context_settings";
 import { DEFAULT_DATASET_SETTINGS } from "app/finance/_settings/dataset_settings";
 import * as CommonSettings from "app/finance/_settings/common_settings";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
 import { makeDefaultDatasetSettings } from "app/finance/_settings/common_settings";
 import CorrelationsDashboard from "./CorrelationsDashboard";
 
-import type { SettingsConfigGenerators } from "app/finance/_settings/base_settings";
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 
 export type CorrelationsSettings = DatasetSettings;
@@ -24,13 +23,17 @@ export const SERIALIZE_CORRELATIONS_SETTINGS_GENERATORS = [
   CommonSettings.makeDatasetSerializeConfig,
 ];
 
+export const SERIALIZE_CORRELATIONS_CONTEXT_SETTINGS_GENERATORS = [
+  makeChartsEnabledSerializeConfig,
+];
+
 export default function CorrelationsPage() {
   return (
     <EnsureDistrictData
       defaultAllSettings={DEFAULT_CORRELATIONS_SETTINGS}
       allSettingsConfigGenerators={SERIALIZE_CORRELATIONS_SETTINGS_GENERATORS}
-      defaultContextSettings={DUMMY_BASE_SETTINGS}
-      contextSettingsConfigGenerators={[] as SettingsConfigGenerators}
+      defaultContextSettings={DEFAULT_COMMON_CONTEXT_SETTINGS}
+      contextSettingsConfigGenerators={SERIALIZE_CORRELATIONS_CONTEXT_SETTINGS_GENERATORS}
       ContentComponent={CorrelationsDashboard}
     />
   );

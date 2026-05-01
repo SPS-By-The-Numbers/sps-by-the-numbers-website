@@ -24,6 +24,7 @@ import {
   extractFacets,
 } from "utilities/ChartableVitals";
 import { makeFacetContents } from "app/finance/_widgets/FacetContents";
+import ChartsEnabledContents from "app/finance/_widgets/ChartsEnabledContents";
 import SchoolGroupingContents from "app/finance/_widgets/SchoolGroupingContents";
 import SortOrderContents from "app/finance/_widgets/SortOrderContents";
 import YScaleContents from "app/finance/_widgets/YScaleContents";
@@ -198,6 +199,8 @@ export default function StaffingDashboard({
 }: DistrictDataContentProps<StaffingSettings, StaffingContextSettings>) {
 
   const config = useMemo(() => {
+    if (contextSettings.chartsEnabled === false) return null;
+
     // Expand out the filter per sub-setting.
     const { data, fullFacetOrder } = extractFacets(
       districtDataMap,
@@ -237,6 +240,7 @@ export default function StaffingDashboard({
         SortOrderContents,
         YScaleContents,
         SchoolGroupingContents,
+        ChartsEnabledContents,
       ]}
       settingsContentsComponents={[
         DatasetSettingsContents,
@@ -249,7 +253,7 @@ export default function StaffingDashboard({
       <Typography className="analysis-title" component="h1" variant="h1">
         Staffing Dashboard
       </Typography>
-      <HcDashboard config={config} />
+      {config && <HcDashboard config={config} />}
     </SettingsLayout>
   );
 }

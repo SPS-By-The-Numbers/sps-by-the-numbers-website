@@ -1,17 +1,20 @@
 "use client";
 
 import { dfToJSONConnectorOptions } from "utilities/highcharts/utils";
-import { DUMMY_BASE_SETTINGS } from "app/finance/_settings/base_settings";
 import { SERIALIZE_VITALS_SETTINGS_GENERATORS } from "./VitalsPage";
-import { serializeDatasetSettings } from "app/finance/_settings/common_settings";
+import { serializeDatasetSettings, serializeOneSetting } from "app/finance/_settings/common_settings";
+import { SERIALIZE_VITALS_CONTEXT_SETTINGS_GENERATORS } from "./VitalsPage";
 import { makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGenerators";
 import { makeChartableVitals } from "utilities/ChartableVitals";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { useSearchParams } from "next/navigation";
+import ChartsEnabledContents from "app/finance/_widgets/ChartsEnabledContents";
 import HcDashboard from "components/HcDashboard";
 import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
+
+import type { CommonContextSettings } from "app/finance/_settings/common_context_settings";
 
 import type {
   BudgetActualsChartOptions,
@@ -147,47 +150,49 @@ function componentsGenerator(vitalsSettings: VitalsSettings) {
 export default function VitalsDashboard({
   districtDataMap,
   allSettings,
-}: DistrictDataContentProps<VitalsSettings>) {
+  contextSettings,
+}: DistrictDataContentProps<VitalsSettings, CommonContextSettings>) {
   const searchParams = useSearchParams();
 
-  const result = makeDatasetFacetedDashboard(allSettings, componentsGenerator);
-  if (result === undefined) {
-    return <div>No Datasets defined.</div>;
-  }
-  const { components, gui } = result;
+  const config = (() => {
+    if (contextSettings.chartsEnabled === false) return null;
+    const result = makeDatasetFacetedDashboard(allSettings, componentsGenerator);
+    if (result === undefined) return null;
+    const { components, gui } = result;
 
-  const data = makeChartableVitals(districtDataMap, allSettings);
-  const connectorOptions = data ? dfToJSONConnectorOptions(data) : {};
+    const data = makeChartableVitals(districtDataMap, allSettings);
+    const connectorOptions = data ? dfToJSONConnectorOptions(data) : {};
 
-  const config = {
-    gui,
-    components,
-    dataPool: {
-      connectors: [
-        {
-          id: CONNECTOR_ID,
-          type: "JSON",
-          ...connectorOptions,
-        },
-      ],
-    },
-  };
+    return {
+      gui,
+      components,
+      dataPool: {
+        connectors: [
+          {
+            id: CONNECTOR_ID,
+            type: "JSON",
+            ...connectorOptions,
+          },
+        ],
+      },
+    };
+  })();
 
   return (
     <SettingsLayout
       settingsSerializer={{
         serialize: newAllSettings => serializeDatasetSettings(newAllSettings, SERIALIZE_VITALS_SETTINGS_GENERATORS),
-        serializeContext: x => "",
+        serializeContext: context => serializeOneSetting(context, SERIALIZE_VITALS_CONTEXT_SETTINGS_GENERATORS),
       }}
       allSettings={allSettings}
-      contextSettings={DUMMY_BASE_SETTINGS}
+      contextSettings={contextSettings}
       settingsContentsComponents={[DatasetSettingsContents]}
-      contextSettingsComponents={[]}
+      contextSettingsComponents={[ChartsEnabledContents]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">
         Vitals Dashboard
       </Typography>
-      <HcDashboard config={config} />
+      {config && <HcDashboard config={config} />}
     </SettingsLayout>
   );
 }

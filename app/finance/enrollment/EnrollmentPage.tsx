@@ -45,6 +45,7 @@ export const SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS = [
   CommonContextSettingsAll.makeSortOrderSerializeConfig,
   CommonContextSettingsAll.makeYScaleSerializeConfig,
   CommonContextSettingsAll.makeSchoolGroupingSerializeConfig,
+  CommonContextSettingsAll.makeChartsEnabledSerializeConfig,
 ];
 
 export default function EnrollmentPage() {

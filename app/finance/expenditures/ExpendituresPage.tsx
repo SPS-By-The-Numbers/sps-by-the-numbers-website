@@ -53,6 +53,7 @@ export const SERIALIZE_EXPENDITURES_CONTEXT_SETTINGS_GENERATORS = [
     deserializeExpendituresDashbaordFacet),
   CommonContextSettings.makeSortOrderSerializeConfig,
   CommonContextSettings.makeYScaleSerializeConfig,
+  CommonContextSettings.makeChartsEnabledSerializeConfig,
 ];
 
 export default function ExpendituresPage() {

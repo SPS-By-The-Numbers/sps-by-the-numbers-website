@@ -4,7 +4,12 @@ import * as ChartOptions from "utilities/ChartOptions";
 import type { BaseSettings, SettingsConfig, SettingsConfigGenerators } from "app/finance/_settings/base_settings";
 import type { SortOrder, SortType, YScale, FacetLimit } from "utilities/ChartOptions";
 
-export type CommonContextSettings = BaseSettings;
+export type CommonContextSettings = BaseSettings & {
+  // Whether the dashboard should actually build and render the chart
+  // config. Toggling off lets the user stage filter/setting changes
+  // without paying the per-dataset chart-build cost.
+  chartsEnabled: boolean;
+};
 
 const ALL_SCHOOL_GROUPING = ["region", "ms_assignment_code"] as const;
 export type SchoolGrouping = (typeof ALL_SCHOOL_GROUPING)[number];
@@ -31,7 +36,6 @@ export type BaseFacetContextSettings = CommonContextSettings & {
   sortType: SortType;
   yScale: YScale;
   schoolGrouping: SchoolGrouping;
-  chartsEnabled: boolean;
 };
 
 export type CommonFacetContextSettings<FacetType> = BaseFacetContextSettings & {
@@ -41,6 +45,7 @@ export type CommonFacetContextSettings<FacetType> = BaseFacetContextSettings & {
 export const DEFAULT_COMMON_CONTEXT_SETTINGS: CommonContextSettings = {
   name: "Dashboard Settings",
   id: -1,
+  chartsEnabled: true,
 };
 
 export const DEFAULT_COMMON_FACET_CONTEXT_SETTINGS : BaseFacetContextSettings = {
@@ -51,7 +56,6 @@ export const DEFAULT_COMMON_FACET_CONTEXT_SETTINGS : BaseFacetContextSettings = 
   sortType: "variance",
   yScale: "fixed",
   schoolGrouping: "ms_assignment_code",
-  chartsEnabled: true,
 };
 
 // Type that constraints to just a string literal.
@@ -172,4 +176,5 @@ export const COMMON_FACET_CONTEXT_SETTINGS_GENERATORS = [
   makeSortOrderSerializeConfig,
   makeSortOrderSerializeConfig,
   makeYScaleSerializeConfig,
+  makeChartsEnabledSerializeConfig,
 ];

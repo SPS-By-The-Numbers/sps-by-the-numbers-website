@@ -1,18 +1,19 @@
 "use client";
 
 import { dfToJSONConnectorOptions } from "utilities/highcharts/utils";
-import { SERIALIZE_CORRELATIONS_SETTINGS_GENERATORS } from "./CorrelationsPage";
-import { serializeDatasetSettings } from "app/finance/_settings/common_settings";
+import { SERIALIZE_CORRELATIONS_SETTINGS_GENERATORS, SERIALIZE_CORRELATIONS_CONTEXT_SETTINGS_GENERATORS } from "./CorrelationsPage";
+import { serializeDatasetSettings, serializeOneSetting } from "app/finance/_settings/common_settings";
 import { makeCorrelationChartConfig } from "utilities/highcharts/ChartConfigGenerators";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { makeChartableVitals } from "utilities/ChartableVitals";
 import { useSearchParams } from "next/navigation";
+import ChartsEnabledContents from "app/finance/_widgets/ChartsEnabledContents";
 import HcDashboard from "components/HcDashboard";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
 import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
 
-import type { BaseSettings } from "app/finance/_settings/base_settings";
+import type { CommonContextSettings } from "app/finance/_settings/common_context_settings";
 import type { CorrelationChartOptions } from "utilities/highcharts/ChartConfigGenerators";
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
@@ -191,47 +192,48 @@ export default function CorrelationsDashboard({
   districtDataMap,
   allSettings,
   contextSettings,
-}: DistrictDataContentProps<CorrelationsSettings, BaseSettings>) {
+}: DistrictDataContentProps<CorrelationsSettings, CommonContextSettings>) {
   const searchParams = useSearchParams();
 
-  const result = makeDatasetFacetedDashboard(allSettings, componentsGenerator);
-  if (result === undefined) {
-    return <div>No Datasets defined.</div>;
-  }
-  const { components, gui } = result;
+  const config = (() => {
+    if (contextSettings.chartsEnabled === false) return null;
+    const result = makeDatasetFacetedDashboard(allSettings, componentsGenerator);
+    if (result === undefined) return null;
+    const { components, gui } = result;
 
-  const data = makeChartableVitals(districtDataMap, allSettings);
-  const connectorOptions = data ? dfToJSONConnectorOptions(data) : {};
+    const data = makeChartableVitals(districtDataMap, allSettings);
+    const connectorOptions = data ? dfToJSONConnectorOptions(data) : {};
 
-  const config = {
-    gui,
-    components,
-    dataPool: {
-      connectors: [
-        {
-          id: CONNECTOR_ID,
-          type: "JSON",
-          ...connectorOptions,
-        },
-      ],
-    },
-  };
+    return {
+      gui,
+      components,
+      dataPool: {
+        connectors: [
+          {
+            id: CONNECTOR_ID,
+            type: "JSON",
+            ...connectorOptions,
+          },
+        ],
+      },
+    };
+  })();
 
   return (
     <SettingsLayout
       settingsSerializer={{
         serialize: newAllSettings => serializeDatasetSettings(newAllSettings, SERIALIZE_CORRELATIONS_SETTINGS_GENERATORS),
-        serializeContext: x => "",
+        serializeContext: context => serializeOneSetting(context, SERIALIZE_CORRELATIONS_CONTEXT_SETTINGS_GENERATORS),
       }}
       allSettings={allSettings}
       contextSettings={contextSettings}
       settingsContentsComponents={[DatasetSettingsContents]}
-      contextSettingsComponents={[]}
+      contextSettingsComponents={[ChartsEnabledContents]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">
         Cashflow Dashboard
       </Typography>
-      <HcDashboard config={config} />
+      {config && <HcDashboard config={config} />}
     </SettingsLayout>
   );
 }

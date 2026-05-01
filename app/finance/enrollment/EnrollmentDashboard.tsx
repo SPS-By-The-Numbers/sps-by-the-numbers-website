@@ -1,5 +1,6 @@
 "use client";
 
+import * as aq from "arquero";
 import { serializeDatasetSettings, serializeOneSetting } from "app/finance/_settings/common_settings";
 import { useMemo } from "react";
 import { makeHighchartConfig } from "utilities/highcharts/utils";
@@ -11,13 +12,15 @@ import { makeFacetComponents } from "utilities/highcharts/FacetedBudgetActualCha
 import {
   SchoolFilterContents,
 } from "app/finance/_widgets/ExpenditureFilterContents";
+import ALL_SCHOOLS from "utilities/domain/schools";
 import DistrictData from "utilities/DistrictData";
-import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
+import EnrollmentDatasetSettingsContents from "app/finance/enrollment/EnrollmentDatasetSettingsContents";
 import HcDashboard from "components/HcDashboard";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
 import { SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS, SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS } from "app/finance/enrollment/EnrollmentPage";
 import { makeFacetContents } from "app/finance/_widgets/FacetContents";
+import ChartsEnabledContents from "app/finance/_widgets/ChartsEnabledContents";
 import SchoolGroupingContents from "app/finance/_widgets/SchoolGroupingContents";
 import SortOrderContents from "app/finance/_widgets/SortOrderContents";
 import YScaleContents from "app/finance/_widgets/YScaleContents";
@@ -30,28 +33,29 @@ import type { EnrollmentSettings, EnrollmentContextSettings } from "app/finance/
 const CONNECTOR_ID = "default-connector";
 const METRIC_NAME = "all_students";
 
-const ALL_FACETS = ["school"];
+const ALL_FACETS = ["school", "ms_assignment", "region"] as const;
 export type Facet = (typeof ALL_FACETS)[number];
 export const FACET_OPTIONS: Record<Facet, string> = {
   school: "School",
+  ms_assignment: "Middle School Area",
+  region: "Region",
 };
 
-export function serializeFacet(facet: Facet): string {
-  switch (facet) {
-    case "school":
-      return "0";
-  }
+const FACET_SERIALIZE_MAP: Record<Facet, string> = {
+  school: "0",
+  ms_assignment: "1",
+  region: "2",
+};
+const FACET_DESERIALIZE_MAP = Object.fromEntries(
+  Object.entries(FACET_SERIALIZE_MAP).map(([k, v]) => [v, k]),
+) as Record<string, Facet>;
 
-  return "0";
+export function serializeFacet(facet: Facet): string {
+  return FACET_SERIALIZE_MAP[facet] ?? "0";
 }
 
 export function deserializeFacet(s: string): Facet {
-  switch (s) {
-    case "0":
-      return "school";
-  }
-
-  return "school";
+  return FACET_DESERIALIZE_MAP[s] ?? "school";
 }
 
 function componentsGenerator(facetOrder,
@@ -87,6 +91,39 @@ export default function EnrollmentDashboard({
   contextSettings,
 }: DistrictDataContentProps<EnrollmentSettings, EnrollmentContextSettings>) {
   const config = useMemo(() => {
+    if (contextSettings.chartsEnabled === false) return null;
+
+    // Per-district lookup that adds the school's middle-school
+    // attendance area and region to each row, so the dashboard can
+    // facet by MS area or region. Districts with no ms_assignment_code
+    // populated collapse every school under code 0 / "unknown".
+    // Region is a string in the schools domain; synthesize a numeric
+    // region_code (>= 9000 so makeFacetCodeText suppresses the code in
+    // the chart title) to use as the pivot facet key.
+    function buildSchoolDomain(ccddd: number) {
+      const schools = ALL_SCHOOLS[ccddd] ?? [];
+      const regionCodes = new Map<string, number>();
+      let nextRegionCode = 9001;
+      const regionPerSchool = schools.map(s => {
+        const region = s.region ?? "unknown";
+        if (!regionCodes.has(region)) {
+          regionCodes.set(region, nextRegionCode++);
+        }
+        return { region, region_code: regionCodes.get(region)! };
+      });
+      return aq.table({
+        school_code: schools.map(s => s.school_code),
+        ms_assignment_code: schools.map(s => s.ms_assignment_code ?? 0),
+        ms_assignment: schools.map(s => s.ms_assignment ?? "unknown"),
+        region: regionPerSchool.map(r => r.region),
+        region_code: regionPerSchool.map(r => r.region_code),
+      });
+    }
+
+    function filteredEnrollmentWithSchoolDomain(this: DistrictData, s: EnrollmentSettings) {
+      return this.filteredEnrollment(s).join_left(buildSchoolDomain(s.ccddd), "school_code");
+    }
+
     // Expand out the filter per sub-setting.
     const { data, fullFacetOrder } = extractFacets(
       districtDataMap,
@@ -94,10 +131,37 @@ export default function EnrollmentDashboard({
       contextSettings.facet,
       contextSettings.sortType,
       contextSettings.sortOrder,
-      DistrictData.prototype.filteredEnrollment,
+      filteredEnrollmentWithSchoolDomain,
       toFacetedCharatbleEnrollmentDataset,
       METRIC_NAME,
     );
+
+    // Drop facets whose data columns are entirely null/NaN — otherwise
+    // they render as empty charts. This matters most for the MS-area
+    // facet, where some areas may have no enrolled schools in the
+    // user's filter.
+    const facetsWithData = fullFacetOrder.filter(f =>
+      allSettings.some(s => {
+        const prefix = `${s.id}_${s.currencyNormalization}_${METRIC_NAME}_${f.code}_`;
+        const cols = data.columnNames().filter(c =>
+          c.startsWith(prefix) && c.endsWith("_actuals"),
+        );
+        return cols.some(c =>
+          (data.array(c) as Array<number | null>).some(v =>
+            v !== null && v !== undefined && !Number.isNaN(v),
+          ),
+        );
+      }),
+    );
+
+    // For Middle School Area charts, the facet value is the name of the
+    // middle school the area is assigned to — append a clarifier so the
+    // chart title reads e.g. "Aki Kurose Middle School (3774) Attendance
+    // Area" rather than implying the chart is for that one school.
+    const titledFacetOrder =
+      contextSettings.facet === "ms_assignment"
+        ? facetsWithData.map(f => ({ ...f, title: `${f.title} Attendance Area` }))
+        : facetsWithData;
 
     return makeHighchartConfig(
       {
@@ -105,7 +169,7 @@ export default function EnrollmentDashboard({
         metricName: METRIC_NAME,
         contextSettings,
         allSettings,
-        fullFacetOrder,
+        fullFacetOrder: titledFacetOrder,
         componentsGenerator,
         data,
       }
@@ -125,16 +189,17 @@ export default function EnrollmentDashboard({
         SortOrderContents,
         YScaleContents,
         SchoolGroupingContents,
+        ChartsEnabledContents,
       ]}
       settingsContentsComponents={[
-        DatasetSettingsContents,
+        EnrollmentDatasetSettingsContents,
         SchoolFilterContents,
       ]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">
         Enrollment Headcount (Different from AAFTE in budgets which treats Running Start and Special Education students as less than 1).
       </Typography>
-      <HcDashboard config={config} />
+      {config && <HcDashboard config={config} />}
     </SettingsLayout>
   );
 }

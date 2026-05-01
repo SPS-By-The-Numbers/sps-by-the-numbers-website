@@ -1,6 +1,6 @@
 "use client";
 
-import { DUMMY_BASE_SETTINGS } from "app/finance/_settings/base_settings";
+import { DEFAULT_COMMON_CONTEXT_SETTINGS, makeChartsEnabledSerializeConfig } from "app/finance/_settings/common_context_settings";
 import { DEFAULT_DATASET_SETTINGS } from "app/finance/_settings/dataset_settings";
 import * as CommonSettings from "app/finance/_settings/common_settings";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
@@ -23,13 +23,17 @@ export const SERIALIZE_VITALS_SETTINGS_GENERATORS = [
   CommonSettings.makeDatasetSerializeConfig,
 ];
 
+export const SERIALIZE_VITALS_CONTEXT_SETTINGS_GENERATORS = [
+  makeChartsEnabledSerializeConfig,
+];
+
 export default function VitalsPage() {
   return (
     <EnsureDistrictData
       defaultAllSettings={DEFAULT_VITALS_SETTINGS}
       allSettingsConfigGenerators={SERIALIZE_VITALS_SETTINGS_GENERATORS}
-      defaultContextSettings={DUMMY_BASE_SETTINGS}
-      contextSettingsConfigGenerators={[]}
+      defaultContextSettings={DEFAULT_COMMON_CONTEXT_SETTINGS}
+      contextSettingsConfigGenerators={SERIALIZE_VITALS_CONTEXT_SETTINGS_GENERATORS}
       ContentComponent={VitalsDashboard}
     />
   );

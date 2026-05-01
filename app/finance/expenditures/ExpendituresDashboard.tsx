@@ -31,6 +31,7 @@ import { serializeSettings } from "app/finance/_settings/base_settings";
 import HcDashboard from "components/HcDashboard";
 import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
+import ChartsEnabledContents from "app/finance/_widgets/ChartsEnabledContents";
 import SortOrderContents from "app/finance/_widgets/SortOrderContents";
 import Typography from "@mui/material/Typography";
 import YScaleContents from "app/finance/_widgets/YScaleContents";
@@ -187,6 +188,8 @@ export default function ExpendituresDashboard({
   ExpendituresContextSettings
 >) {
   const config = useMemo(() => {
+    if (contextSettings.chartsEnabled === false) return null;
+
     // Expand out the filter per sub-setting.
     const expandedAllSettings: Array<ExpendituresSettings> =
       expandFilters(allSettings);
@@ -223,6 +226,7 @@ export default function ExpendituresDashboard({
         makeFacetContents(FACET_OPTIONS),
         SortOrderContents,
         YScaleContents,
+        ChartsEnabledContents,
       ]}
       allSettings={allSettings}
       settingsContentsComponents={[
@@ -252,7 +256,7 @@ export default function ExpendituresDashboard({
         ),
       ]}
     >
-      <HcDashboard config={config} className="hascontext" />
+      {config && <HcDashboard config={config} className="hascontext" />}
     </SettingsLayout>
   );
 }
