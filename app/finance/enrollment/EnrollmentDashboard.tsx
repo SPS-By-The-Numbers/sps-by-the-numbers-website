@@ -18,7 +18,13 @@ import EnrollmentDatasetSettingsContents from "app/finance/enrollment/Enrollment
 import HcDashboard from "components/HcDashboard";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
-import { SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS, SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS } from "app/finance/enrollment/EnrollmentPage";
+import {
+  ENROLLMENT_STUDENT_GROUP_OPTIONS,
+  SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS,
+  SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS,
+} from "app/finance/enrollment/EnrollmentPage";
+import EnrollmentStudentGroupContents from "app/finance/enrollment/EnrollmentStudentGroupContents";
+import EnrollmentGradeLevelFilterContents from "app/finance/enrollment/EnrollmentGradeLevelFilterContents";
 import { makeFacetContents } from "app/finance/_widgets/FacetContents";
 import ChartsEnabledContents from "app/finance/_widgets/ChartsEnabledContents";
 import SchoolGroupingContents from "app/finance/_widgets/SchoolGroupingContents";
@@ -31,7 +37,6 @@ import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDa
 import type { EnrollmentSettings, EnrollmentContextSettings } from "app/finance/enrollment/EnrollmentPage";
 
 const CONNECTOR_ID = "default-connector";
-const METRIC_NAME = "all_students";
 
 const ALL_FACETS = ["school", "ms_assignment", "region"] as const;
 export type Facet = (typeof ALL_FACETS)[number];
@@ -58,30 +63,34 @@ export function deserializeFacet(s: string): Facet {
   return FACET_DESERIALIZE_MAP[s] ?? "school";
 }
 
-function componentsGenerator(facetOrder,
-                             contextSettings :EnrollmentContextSettings,
-                             settings: EnrollmentSettings,
-                             yBounds) {
-  const schoolFilter = makeSchoolFilter(settings.ccddd, contextSettings.schoolGrouping);
-  const subtitle = `
-  School(${schoolFilter.toSummaryText(settings.schoolCodes)})
-  `;
-  const components = makeFacetComponents({
-    idPrefix: settings.id.toString(),
-    xColumn: "class_of",
-    xLabel: "Fiscal Year End",
-    yColumnRoot: METRIC_NAME,
+function makeComponentsGenerator(metricName: string) {
+  return function componentsGenerator(
     facetOrder,
-    connectorId: CONNECTOR_ID,
-    normalizations: [settings.currencyNormalization],
-    captionType: "stats",
-    subtitle,
+    contextSettings: EnrollmentContextSettings,
+    settings: EnrollmentSettings,
     yBounds,
-    yValueFormatOverride: "decimal",
-    disableLegend: true,
-  });
-
-  return components;
+  ) {
+    const schoolFilter = makeSchoolFilter(settings.ccddd, contextSettings.schoolGrouping);
+    const groupLabel = ENROLLMENT_STUDENT_GROUP_OPTIONS[contextSettings.studentGroup] ?? contextSettings.studentGroup;
+    const subtitle = `
+    School(${schoolFilter.toSummaryText(settings.schoolCodes)}) /
+    Group(${groupLabel})
+    `;
+    return makeFacetComponents({
+      idPrefix: settings.id.toString(),
+      xColumn: "class_of",
+      xLabel: "Fiscal Year End",
+      yColumnRoot: metricName,
+      facetOrder,
+      connectorId: CONNECTOR_ID,
+      normalizations: [settings.currencyNormalization],
+      captionType: "stats",
+      subtitle,
+      yBounds,
+      yValueFormatOverride: "decimal",
+      disableLegend: true,
+    });
+  };
 }
 
 // Charts expenditures for
@@ -92,6 +101,8 @@ export default function EnrollmentDashboard({
 }: DistrictDataContentProps<EnrollmentSettings, EnrollmentContextSettings>) {
   const config = useMemo(() => {
     if (contextSettings.chartsEnabled === false) return null;
+
+    const metricName = contextSettings.studentGroup;
 
     // Per-district lookup that adds the school's middle-school
     // attendance area and region to each row, so the dashboard can
@@ -132,8 +143,9 @@ export default function EnrollmentDashboard({
       contextSettings.sortType,
       contextSettings.sortOrder,
       filteredEnrollmentWithSchoolDomain,
-      toFacetedCharatbleEnrollmentDataset,
-      METRIC_NAME,
+      (districtData, filteredDf, facet, settings) =>
+        toFacetedCharatbleEnrollmentDataset(districtData, filteredDf, facet, settings, metricName),
+      metricName,
     );
 
     // Drop facets whose data columns are entirely null/NaN — otherwise
@@ -142,7 +154,7 @@ export default function EnrollmentDashboard({
     // user's filter.
     const facetsWithData = fullFacetOrder.filter(f =>
       allSettings.some(s => {
-        const prefix = `${s.id}_${s.currencyNormalization}_${METRIC_NAME}_${f.code}_`;
+        const prefix = `${s.id}_${s.currencyNormalization}_${metricName}_${f.code}_`;
         const cols = data.columnNames().filter(c =>
           c.startsWith(prefix) && c.endsWith("_actuals"),
         );
@@ -166,11 +178,11 @@ export default function EnrollmentDashboard({
     return makeHighchartConfig(
       {
         connectorId: CONNECTOR_ID,
-        metricName: METRIC_NAME,
+        metricName,
         contextSettings,
         allSettings,
         fullFacetOrder: titledFacetOrder,
-        componentsGenerator,
+        componentsGenerator: makeComponentsGenerator(metricName),
         data,
       }
     );
@@ -189,11 +201,13 @@ export default function EnrollmentDashboard({
         SortOrderContents,
         YScaleContents,
         SchoolGroupingContents,
+        EnrollmentStudentGroupContents,
         ChartsEnabledContents,
       ]}
       settingsContentsComponents={[
         EnrollmentDatasetSettingsContents,
         SchoolFilterContents,
+        EnrollmentGradeLevelFilterContents,
       ]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">

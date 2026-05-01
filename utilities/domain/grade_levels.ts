@@ -17,6 +17,11 @@ const ALL_GRADE_LEVELS : Array<GradeLevelInfo> = [
     grade_level: "K",
   },
   {
+    grade_level_code: 97,
+    db_grade_level_code: "PK",
+    grade_level: "PK",
+  },
+  {
     grade_level_code: 1,
     db_grade_level_code: "01",
     grade_level: "1",

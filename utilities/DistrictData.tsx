@@ -59,7 +59,7 @@ export type DemographicFilters = {
 
 type ExpendituresFilters = Partial<PAOFilters & NcesFilters & SchoolFilters>;
 type StaffingFilters = Partial<PAFilters & DutyRootFilters & SchoolFilters>;
-type EnrollmentFilters = Partial<DemographicFilters & SchoolFilters>;
+type EnrollmentFilters = Partial<DemographicFilters & SchoolFilters & GradeLevelFilters>;
 export type GradeLevelFilters = {
   gradeLevelCodes: Set<number>;
 };
@@ -629,6 +629,12 @@ export default class DistrictData {
       results = results
         .params(filter)
         .filter((d, $) => d.includes([...$.schoolCodes], d.school_code));
+    }
+
+    if (filter.gradeLevelCodes !== undefined) {
+      results = results
+        .params({ gradeLevelCodes: [...filter.gradeLevelCodes] })
+        .filter((d, $) => d.includes($.gradeLevelCodes, d.grade_level_code));
     }
 
     return results;

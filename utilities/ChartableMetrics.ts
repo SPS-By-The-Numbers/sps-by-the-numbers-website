@@ -194,13 +194,21 @@ export function toFacetedCharatbleDataset(
   );
 }
 
-function extractRawEnrollment(df: ColumnTable, facetColumn: string) {
+function extractRawEnrollment(
+  df: ColumnTable,
+  facetColumn: string,
+  metricColumn: string = "all_students",
+) {
   const facetCodeColumn = `${facetColumn}_code`;
 
+  // Stage the chosen metric under a known name so the rollup can stay
+  // a static expression while the caller picks an arbitrary rc_enrollment
+  // column (e.g. all_students, female, low_income, …).
   return df
+  .derive({ _metric: aq.escape((d) => d[metricColumn]) })
   .groupby("class_of", "grade", facetCodeColumn)
   .rollup({
-    all_students: d => op.sum(d.all_students),
+    [metricColumn]: (d) => op.sum(d._metric),
   });
 }
 
@@ -208,15 +216,17 @@ export function toFacetedCharatbleEnrollmentDataset(
   districtData,
   filteredDf,
   facet,
-  settings
+  settings,
+  metricColumn: string = "all_students",
 ) {
-  const df = extractRawEnrollment(filteredDf, facet);
+  const df = extractRawEnrollment(filteredDf, facet, metricColumn);
 
   const pdata = df
     .filter(d => d.grade != "All Grades")
+    .derive({ _metric: aq.escape((d) => d[metricColumn]) })
     .groupby(["class_of"])
     .pivot([`${facet}_code`], {
-      all_students: (d) => op.sum(d.all_students),
+      [metricColumn]: (d) => op.sum(d._metric),
       _pivot_name_hack_: (d) => op.any("_pivot_name_hack_"),
     })
     .select(aq.not(aq.startswith("_pivot_name_hack_")))
