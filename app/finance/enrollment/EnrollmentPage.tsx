@@ -116,7 +116,7 @@ export type EnrollmentContextSettings = CommonFacetContextSettings<Facet> & {
 const DEFAULT_DASHBOARD_SETTINGS : EnrollmentContextSettings = {
   ...DEFAULT_COMMON_FACET_CONTEXT_SETTINGS,
   sortType: "latest" as const,
-  facet: deserializeFacet(""),
+  facet: "ms_assignment" as const,
   breakdown: "grade_cohort",
 };
 

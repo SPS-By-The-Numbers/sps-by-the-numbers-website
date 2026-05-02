@@ -70,9 +70,10 @@ $context-chart-row-height: 230px;
 .hcdashboard .highcharts-dashboards-layout.faceted-row {
   height: 100%;
   overflow: scroll;
-  // Bottom padding so the last grid row's legend isn't cropped right
-  // at the scroll boundary.
-  padding-bottom: 80px;
+  // Generous bottom padding so the last grid row's legend (and any
+  // x-axis label / caption) clears the scroll boundary even with
+  // multi-series charts that have tall legends.
+  padding-bottom: 240px;
 }
 
 .hcdashboard .highcharts-dashboards-layout.context-row {

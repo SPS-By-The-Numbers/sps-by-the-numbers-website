@@ -107,7 +107,7 @@ const DEFAULT_DASHBOARD_SETTINGS : AssessmentContextSettings = {
   ...DEFAULT_COMMON_FACET_CONTEXT_SETTINGS,
   sortType: "latest" as const,
   yScale: "fixed" as const,
-  facet: deserializeFacet(""),
+  facet: "ms_assignment" as const,
   covidYears: "include" as const,
   disclosureAvoidance: "best_guess" as const,
 };
