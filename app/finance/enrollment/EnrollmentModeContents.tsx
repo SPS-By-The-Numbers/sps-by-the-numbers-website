@@ -1,21 +1,21 @@
 import SettingsSelect from "app/finance/_widgets/SettingsSelect";
 
 import {
-  ENROLLMENT_BREAKDOWN_OPTIONS,
+  ENROLLMENT_MODE_OPTIONS,
 } from "app/finance/enrollment/EnrollmentPage";
 
 import type { EnrollmentContextSettings } from "app/finance/enrollment/EnrollmentPage";
 
-export default function EnrollmentBreakdownContents(props: {
+export default function EnrollmentModeContents(props: {
   settings: EnrollmentContextSettings;
   setSettings: (x: EnrollmentContextSettings) => void;
 }) {
   return (
     <SettingsSelect
       {...props}
-      label="Breakdown"
-      fieldName="breakdown"
-      options={ENROLLMENT_BREAKDOWN_OPTIONS as Record<string, string>}
+      label="Mode"
+      fieldName="mode"
+      options={ENROLLMENT_MODE_OPTIONS as Record<string, string>}
     />
   );
 }

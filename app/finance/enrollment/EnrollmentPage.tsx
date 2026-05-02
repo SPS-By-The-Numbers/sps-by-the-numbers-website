@@ -17,58 +17,59 @@ import type { Facet } from "./EnrollmentDashboard";
 import type { CommonFacetContextSettings } from "app/finance/_settings/common_context_settings";
 import type { SchoolFilters, GradeLevelFilters, StudentGroupFilters } from "utilities/DistrictData";
 
-// Breakdown picks the series dimension within each facet's chart.
-// Independent from the facet itself — e.g. facet by School, break down
-// into one line per Grade Cohort. "None" produces a single-series
-// chart where each facet just shows its aggregated metric.
-export const ENROLLMENT_BREAKDOWN_OPTIONS = {
-  none: "None",
+// Mode picks the series dimension within each facet's chart.
+// Independent from the facet itself — e.g. facet by School, with mode
+// Grade Cohort to get one line per cohort. "Summed" produces a
+// single-series chart where each facet just shows its aggregated
+// metric.
+export const ENROLLMENT_MODE_OPTIONS = {
+  none: "Summed",
   grade: "Grade",
   grade_cohort: "Grade Cohort",
 } as const;
 
-export type EnrollmentBreakdown = keyof typeof ENROLLMENT_BREAKDOWN_OPTIONS;
+export type EnrollmentMode = keyof typeof ENROLLMENT_MODE_OPTIONS;
 
-const BREAKDOWN_SERIALIZE_MAP: Record<EnrollmentBreakdown, string> = {
+const MODE_SERIALIZE_MAP: Record<EnrollmentMode, string> = {
   none: "0",
   grade: "1",
   grade_cohort: "2",
 };
-const BREAKDOWN_DESERIALIZE_MAP = Object.fromEntries(
-  Object.entries(BREAKDOWN_SERIALIZE_MAP).map(([k, v]) => [v, k]),
-) as Record<string, EnrollmentBreakdown>;
+const MODE_DESERIALIZE_MAP = Object.fromEntries(
+  Object.entries(MODE_SERIALIZE_MAP).map(([k, v]) => [v, k]),
+) as Record<string, EnrollmentMode>;
 
-export function serializeEnrollmentBreakdown(b: EnrollmentBreakdown): string {
-  return BREAKDOWN_SERIALIZE_MAP[b] ?? "2";
+export function serializeEnrollmentMode(m: EnrollmentMode): string {
+  return MODE_SERIALIZE_MAP[m] ?? "2";
 }
 
-export function deserializeEnrollmentBreakdown(s: string): EnrollmentBreakdown {
-  return BREAKDOWN_DESERIALIZE_MAP[s] ?? "grade_cohort";
+export function deserializeEnrollmentMode(s: string): EnrollmentMode {
+  return MODE_DESERIALIZE_MAP[s] ?? "grade_cohort";
 }
 
-function makeEnrollmentBreakdownSerializeConfig(context?): SettingsConfig {
+function makeEnrollmentModeSerializeConfig(context?): SettingsConfig {
   return [
     [
-      "breakdown", {
+      "mode", {
         serializerType: "custom",
-        urlVar: "ebd",
-        serialize: (settings, key) => serializeEnrollmentBreakdown(settings[key]),
-          deserialize: (settings, s) => deserializeEnrollmentBreakdown(s),
+        urlVar: "em",
+        serialize: (settings, key) => serializeEnrollmentMode(settings[key]),
+          deserialize: (settings, s) => deserializeEnrollmentMode(s),
       },
     ]
   ];
 }
 
-// codeColumn name on the enrollment frame for each breakdown choice.
+// codeColumn name on the enrollment frame for each mode choice.
 // "none" maps to null so the dashboard skips per-series splitting.
-export const ENROLLMENT_BREAKDOWN_CODE_COLUMNS: Record<EnrollmentBreakdown, string | null> = {
+export const ENROLLMENT_MODE_CODE_COLUMNS: Record<EnrollmentMode, string | null> = {
   none: null,
   grade: "grade_level_code",
   grade_cohort: "grade_cohort_code",
 };
 
-// Display-label column for each breakdown choice (used in chart legends).
-export const ENROLLMENT_BREAKDOWN_LABEL_COLUMNS: Record<EnrollmentBreakdown, string | null> = {
+// Display-label column for each mode choice (used in chart legends).
+export const ENROLLMENT_MODE_LABEL_COLUMNS: Record<EnrollmentMode, string | null> = {
   none: null,
   grade: "grade_level",
   grade_cohort: "grade_cohort",
@@ -110,14 +111,14 @@ const DEFAULT_DETAILED_ACTUALS_SETTINGS = DEFAULT_DATASET_SETTINGS.map((v) => ({
 }));
 
 export type EnrollmentContextSettings = CommonFacetContextSettings<Facet> & {
-  breakdown: EnrollmentBreakdown;
+  mode: EnrollmentMode;
 };
 
 const DEFAULT_DASHBOARD_SETTINGS : EnrollmentContextSettings = {
   ...DEFAULT_COMMON_FACET_CONTEXT_SETTINGS,
   sortType: "latest" as const,
   facet: "ms_assignment" as const,
-  breakdown: "grade_cohort",
+  mode: "grade_cohort",
 };
 
 export const SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS = [
@@ -132,7 +133,7 @@ export const SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS = [
   CommonContextSettingsAll.makeYScaleSerializeConfig,
   CommonContextSettingsAll.makeSchoolGroupingSerializeConfig,
   CommonContextSettingsAll.makeChartsEnabledSerializeConfig,
-  makeEnrollmentBreakdownSerializeConfig,
+  makeEnrollmentModeSerializeConfig,
 ];
 
 export default function EnrollmentPage() {
