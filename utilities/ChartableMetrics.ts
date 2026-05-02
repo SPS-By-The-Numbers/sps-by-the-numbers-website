@@ -198,16 +198,21 @@ function extractRawEnrollment(
   df: ColumnTable,
   facetColumn: string,
   metricColumn: string = "all_students",
+  breakdownCodeColumn: string | null = null,
 ) {
   const facetCodeColumn = `${facetColumn}_code`;
 
   // Stage the chosen metric under a known name so the rollup can stay
   // a static expression while the caller picks an arbitrary rc_enrollment
-  // column (e.g. all_students, female, low_income, …).
-  return df
-  .derive({ _metric: aq.escape((d) => d[metricColumn]) })
-  .groupby("class_of", "grade", facetCodeColumn)
-  .rollup({
+  // column (e.g. all_students, female, low_income, …). The breakdown
+  // column (if any) is added to the groupby so each (facet, breakdown)
+  // pair becomes its own series within a chart.
+  const useBreakdown = breakdownCodeColumn && breakdownCodeColumn !== facetCodeColumn;
+  const staged = df.derive({ _metric: aq.escape((d) => d[metricColumn]) });
+  const grouped = useBreakdown
+    ? staged.groupby("class_of", "grade", facetCodeColumn, breakdownCodeColumn)
+    : staged.groupby("class_of", "grade", facetCodeColumn);
+  return grouped.rollup({
     [metricColumn]: (d) => op.sum(d._metric),
   });
 }
@@ -218,14 +223,31 @@ export function toFacetedCharatbleEnrollmentDataset(
   facet,
   settings,
   metricColumn: string = "all_students",
+  breakdownCodeColumn: string | null = null,
 ) {
-  const df = extractRawEnrollment(filteredDf, facet, metricColumn);
+  const facetCodeColumn = `${facet}_code`;
+  const useBreakdown = breakdownCodeColumn && breakdownCodeColumn !== facetCodeColumn;
+  const df = extractRawEnrollment(filteredDf, facet, metricColumn, breakdownCodeColumn);
 
-  const pdata = df
+  // composite_key always has the form `<facetCode>_<seriesCode>` so the
+  // multi-series chart's column lookup
+  // (`<metricColumn>_<facetCode>_<seriesCode>_actuals`) matches the
+  // pivoted column. When no breakdown is selected, the series code is
+  // the facet code itself — every chart ends up with a single line
+  // keyed `<facetCode>` whose data column is
+  // `<metricColumn>_<facetCode>_<facetCode>_actuals`.
+  const withComposite = df
     .filter(d => d.grade != "All Grades")
     .derive({ _metric: aq.escape((d) => d[metricColumn]) })
+    .derive({
+      composite_key: useBreakdown
+        ? aq.escape((d) => `${d[facetCodeColumn]}_${d[breakdownCodeColumn]}`)
+        : aq.escape((d) => `${d[facetCodeColumn]}_${d[facetCodeColumn]}`),
+    });
+
+  const pdata = withComposite
     .groupby(["class_of"])
-    .pivot([`${facet}_code`], {
+    .pivot(["composite_key"], {
       [metricColumn]: (d) => op.sum(d._metric),
       _pivot_name_hack_: (d) => op.any("_pivot_name_hack_"),
     })

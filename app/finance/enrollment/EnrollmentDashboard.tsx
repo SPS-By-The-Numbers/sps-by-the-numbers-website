@@ -1,14 +1,19 @@
 "use client";
 
 import * as aq from "arquero";
+import { op } from "arquero";
 import { serializeDatasetSettings, serializeOneSetting } from "app/finance/_settings/common_settings";
 import { useMemo } from "react";
-import { makeHighchartConfig } from "utilities/highcharts/utils";
+import { getDataBounds, makeHighchartConfig } from "utilities/highcharts/utils";
+import { makeContextCell } from "utilities/highcharts/ChartConfigGenerators";
 import {
   toFacetedCharatbleEnrollmentDataset,
 } from "utilities/ChartableMetrics";
 import { extractFacets } from "utilities/ChartableVitals";
 import { makeFacetComponents } from "utilities/highcharts/FacetedBudgetActualCharts";
+import { makeMultiSeriesLineChartConfig } from "utilities/highcharts/ChartConfigGenerators";
+
+import type { SeriesCodeDef } from "utilities/highcharts/ChartConfigGenerators";
 import {
   SchoolFilterContents,
 } from "app/finance/_widgets/ExpenditureFilterContents";
@@ -19,16 +24,18 @@ import HcDashboard from "components/HcDashboard";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
 import {
-  ENROLLMENT_STUDENT_GROUP_OPTIONS,
+  ENROLLMENT_BREAKDOWN_CODE_COLUMNS,
+  ENROLLMENT_BREAKDOWN_LABEL_COLUMNS,
+  ENROLLMENT_BREAKDOWN_OPTIONS,
   SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS,
   SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS,
 } from "app/finance/enrollment/EnrollmentPage";
-import EnrollmentStudentGroupContents from "app/finance/enrollment/EnrollmentStudentGroupContents";
+import EnrollmentBreakdownContents from "app/finance/enrollment/EnrollmentBreakdownContents";
 import EnrollmentGradeLevelFilterContents from "app/finance/enrollment/EnrollmentGradeLevelFilterContents";
+import EnrollmentStudentGroupFilterContents from "app/finance/enrollment/EnrollmentStudentGroupFilterContents";
 import { makeFacetContents } from "app/finance/_widgets/FacetContents";
 import ChartsEnabledContents from "app/finance/_widgets/ChartsEnabledContents";
 import SchoolGroupingContents from "app/finance/_widgets/SchoolGroupingContents";
-import SortOrderContents from "app/finance/_widgets/SortOrderContents";
 import YScaleContents from "app/finance/_widgets/YScaleContents";
 
 import { makeSchoolFilter } from "app/finance/_filteritems/school";
@@ -67,7 +74,10 @@ export function deserializeFacet(s: string): Facet {
   return FACET_DESERIALIZE_MAP[s] ?? "school";
 }
 
-function makeComponentsGenerator(metricName: string) {
+function makeComponentsGenerator(
+  metricName: string,
+  seriesDefsByFacet: Map<string, Array<SeriesCodeDef>>,
+) {
   return function componentsGenerator(
     facetOrder,
     contextSettings: EnrollmentContextSettings,
@@ -75,10 +85,12 @@ function makeComponentsGenerator(metricName: string) {
     yBounds,
   ) {
     const schoolFilter = makeSchoolFilter(settings.ccddd, contextSettings.schoolGrouping);
-    const groupLabel = ENROLLMENT_STUDENT_GROUP_OPTIONS[contextSettings.studentGroup] ?? contextSettings.studentGroup;
+    const groupLabel = `${settings.studentGroupCodes?.size ?? 0} group(s)`;
+    const breakdownLabel = ENROLLMENT_BREAKDOWN_OPTIONS[contextSettings.breakdown] ?? contextSettings.breakdown;
     const subtitle = `
     School(${schoolFilter.toSummaryText(settings.schoolCodes)}) /
-    Group(${groupLabel})
+    Group(${groupLabel}) /
+    Breakdown(${breakdownLabel})
     `;
     return makeFacetComponents({
       idPrefix: settings.id.toString(),
@@ -92,7 +104,11 @@ function makeComponentsGenerator(metricName: string) {
       subtitle,
       yBounds,
       yValueFormatOverride: "decimal",
-      disableLegend: true,
+      chartConfigMaker: (options) => makeMultiSeriesLineChartConfig({
+        ...options,
+        yLabel: "Student Headcount",
+        seriesDefs: seriesDefsByFacet.get(String(options.facet)) ?? [],
+      }),
     });
   };
 }
@@ -106,7 +122,10 @@ export default function EnrollmentDashboard({
   const config = useMemo(() => {
     if (contextSettings.chartsEnabled === false) return null;
 
-    const metricName = contextSettings.studentGroup;
+    // After filteredEnrollment fold-into-long, the headcount is in the
+    // "amount" column regardless of which student group(s) the user
+    // picked.
+    const metricName = "amount";
 
     // Per-district lookup that adds the school's middle-school
     // attendance area and region to each row, so the dashboard can
@@ -139,24 +158,124 @@ export default function EnrollmentDashboard({
       return this.filteredEnrollment(s).join_left(buildSchoolDomain(s.ccddd), "school_code");
     }
 
-    // Expand out the filter per sub-setting.
-    const { data, fullFacetOrder } = extractFacets(
+    // Map breakdown choice to the matching code/label columns on the
+    // enrollment frame. When the breakdown column is the same as the
+    // current facet's code column, the dataset transformer treats the
+    // chart as a single-line render (no breakdown applied).
+    const breakdownCodeColumn = ENROLLMENT_BREAKDOWN_CODE_COLUMNS[contextSettings.breakdown];
+    const breakdownLabelColumn = ENROLLMENT_BREAKDOWN_LABEL_COLUMNS[contextSettings.breakdown];
+    const facetCodeColumn = `${contextSettings.facet}_code`;
+    const effectiveBreakdownCol = breakdownCodeColumn === facetCodeColumn ? null : breakdownCodeColumn;
+
+    // Expand out the filter per sub-setting. The enrollment dashboard
+    // sorts facets alphabetically by name, so the sortType/sortOrder
+    // arguments here are placeholders — the result is re-sorted below.
+    const { data: facetData, fullFacetOrder } = extractFacets(
       districtDataMap,
       allSettings,
       contextSettings.facet,
-      contextSettings.sortType,
-      contextSettings.sortOrder,
+      "latest",
+      "ascending",
       filteredEnrollmentWithSchoolDomain,
       (districtData, filteredDf, facet, settings) =>
-        toFacetedCharatbleEnrollmentDataset(districtData, filteredDf, facet, settings, metricName),
+        toFacetedCharatbleEnrollmentDataset(
+          districtData,
+          filteredDf,
+          facet,
+          settings,
+          metricName,
+          effectiveBreakdownCol,
+        ),
       metricName,
+    );
+
+    // Per-facet series defs for the multi-series chart. The series key
+    // is only the breakdown code (or the facet code when breakdown
+    // collapses with the facet) — the chart prepends the facet code on
+    // its own when looking up data columns.
+    const seriesDefsByFacet = (() => {
+      const result = new Map<string, Array<SeriesCodeDef>>();
+      const firstFiltered = filteredEnrollmentWithSchoolDomain.call(
+        districtDataMap[allSettings[0].ccddd],
+        allSettings[0],
+      ).filter((d) => d.grade != "All Grades");
+      const facetArr = firstFiltered.array(facetCodeColumn) as Array<number | null>;
+      if (effectiveBreakdownCol) {
+        const breakdownArr = firstFiltered.array(effectiveBreakdownCol) as Array<number | null>;
+        const labelArr = firstFiltered.array(breakdownLabelColumn) as Array<string | null>;
+        const seenByFacet = new Map<string, Set<string>>();
+        const labelByCode = new Map<string, string>();
+        for (let i = 0; i < firstFiltered.numRows(); i++) {
+          const facetCode = String(facetArr[i]);
+          const breakdownCode = String(breakdownArr[i]);
+          let seen = seenByFacet.get(facetCode);
+          if (!seen) {
+            seen = new Set();
+            seenByFacet.set(facetCode, seen);
+            result.set(facetCode, []);
+          }
+          if (!labelByCode.has(breakdownCode)) {
+            labelByCode.set(breakdownCode, String(labelArr[i] ?? breakdownCode));
+          }
+          if (!seen.has(breakdownCode)) {
+            seen.add(breakdownCode);
+            result.get(facetCode)!.push({
+              key: breakdownCode,
+              name: labelByCode.get(breakdownCode)!,
+            });
+          }
+        }
+        // Stable sort by breakdown code so series ordering is consistent
+        // across facets.
+        for (const defs of result.values()) {
+          defs.sort((a, b) => Number(a.key) - Number(b.key));
+        }
+      } else {
+        // No effective breakdown — one self-keyed series per facet so
+        // the column lookup `<metric>_<facetCode>_<facetCode>_actuals`
+        // resolves against the duplicated-key column produced by the
+        // dataset transformer.
+        for (let i = 0; i < firstFiltered.numRows(); i++) {
+          const facetCode = String(facetArr[i]);
+          if (!result.has(facetCode)) {
+            result.set(facetCode, [{
+              key: facetCode,
+              name: "Headcount",
+            }]);
+          }
+        }
+      }
+      return result;
+    })();
+
+    // Inject a district-wide total-enrollment column into the data so
+    // augmentContextComponents below can render a Total Enrollment
+    // context graph alongside the funded-enrollment / cashflow ones
+    // already supplied by makeChartableVitals.
+    const firstDistrictData = districtDataMap[allSettings[0].ccddd];
+    // filteredEnrollment now returns long-format rows keyed by
+    // student_group_code; pick the All Students rows (code 1) and sum
+    // their amount per class_of for the district-wide total.
+    const totalEnrollmentDf = firstDistrictData
+      .filteredEnrollment({ studentGroupCodes: new Set<number>([1]) })
+      .filter((d) => d.grade != "All Grades")
+      .groupby("class_of")
+      .rollup({
+        context_amount_totalEnrollment_actuals: (d) => op.sum(d.amount),
+      });
+    const data = facetData.join_left(totalEnrollmentDf, "class_of");
+
+    // Sort by facet name (alphabetical, locale-aware) so charts
+    // appear in a stable order regardless of underlying data values.
+    const nameSortedFacetOrder = [...fullFacetOrder].sort((a, b) =>
+      String(a.title).localeCompare(String(b.title)),
     );
 
     // Drop facets whose data columns are entirely null/NaN — otherwise
     // they render as empty charts. This matters most for the MS-area
     // facet, where some areas may have no enrolled schools in the
     // user's filter.
-    const facetsWithData = fullFacetOrder.filter(f =>
+    const facetsWithData = nameSortedFacetOrder.filter(f =>
       allSettings.some(s => {
         const prefix = `${s.id}_${s.currencyNormalization}_${metricName}_${f.code}_`;
         const cols = data.columnNames().filter(c =>
@@ -179,6 +298,53 @@ export default function EnrollmentDashboard({
         ? facetsWithData.map(f => ({ ...f, title: `${f.title} Attendance Area` }))
         : facetsWithData;
 
+    function augmentContextComponents(gui, components, _data) {
+      const totalEnrollmentBounds = getDataBounds(data, "context_amount_totalEnrollment");
+      const fundedEnrollmentBounds = getDataBounds(data, "context_amount_fundedEnrollment");
+      const cashflowBounds = getDataBounds(data, "context_amount_cashflow");
+
+      gui.layouts.unshift({
+        rowClassName: "context-row",
+        cellClassName: "context-cell context-smaller",
+        rows: [
+          {
+            cells: [
+              { id: "context-totalEnrollment" },
+              { id: "context-fundedEnrollment" },
+              { id: "context-cashflow" },
+            ],
+          },
+        ],
+      });
+
+      components.push(
+        makeContextCell(
+          "context-totalEnrollment",
+          CONNECTOR_ID,
+          "context_amount_totalEnrollment",
+          "Total Enrollment",
+          "decimal" as const,
+          totalEnrollmentBounds,
+        ),
+        makeContextCell(
+          "context-fundedEnrollment",
+          CONNECTOR_ID,
+          "context_amount_fundedEnrollment",
+          "Funded Enrollment",
+          "fte" as const,
+          fundedEnrollmentBounds,
+        ),
+        makeContextCell(
+          "context-cashflow",
+          CONNECTOR_ID,
+          "context_amount_cashflow",
+          "Cashflow",
+          "currency" as const,
+          cashflowBounds,
+        ),
+      );
+    }
+
     return makeHighchartConfig(
       {
         connectorId: CONNECTOR_ID,
@@ -186,7 +352,8 @@ export default function EnrollmentDashboard({
         contextSettings,
         allSettings,
         fullFacetOrder: titledFacetOrder,
-        componentsGenerator: makeComponentsGenerator(metricName),
+        componentsGenerator: makeComponentsGenerator(metricName, seriesDefsByFacet),
+        augmentContextComponents,
         data,
       }
     );
@@ -202,16 +369,16 @@ export default function EnrollmentDashboard({
       contextSettings={contextSettings}
       contextSettingsComponents={[
         makeFacetContents(FACET_OPTIONS),
-        SortOrderContents,
+        EnrollmentBreakdownContents,
         YScaleContents,
         SchoolGroupingContents,
-        EnrollmentStudentGroupContents,
         ChartsEnabledContents,
       ]}
       settingsContentsComponents={[
         EnrollmentDatasetSettingsContents,
         SchoolFilterContents,
         EnrollmentGradeLevelFilterContents,
+        EnrollmentStudentGroupFilterContents,
       ]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">

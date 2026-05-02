@@ -149,6 +149,7 @@ function makeFacetYBounds(facetOrder, metricName, expandedAllSettings, data) {
     min: 0,
     max: 0,
   };
+  const allColumns = data.columnNames();
   for (const s of expandedAllSettings) {
     for (const f of facetOrder) {
       const columnRoot = makeFacetColumnRoot(
@@ -157,9 +158,30 @@ function makeFacetYBounds(facetOrder, metricName, expandedAllSettings, data) {
         metricName,
         f.code,
       );
-      const facetBounds = getDataBounds(data, columnRoot);
-      bounds.min = Math.min(bounds.min, facetBounds.min);
-      bounds.max = Math.max(bounds.max, facetBounds.max);
+      const directActuals = `${columnRoot}_actuals`;
+      const directBudget = `${columnRoot}_budget`;
+      if (data.column(directActuals) || data.column(directBudget)) {
+        // Single-line chart — bounds come straight from the
+        // <columnRoot>_actuals / _budget pair.
+        const facetBounds = getDataBounds(data, columnRoot);
+        bounds.min = Math.min(bounds.min, facetBounds.min);
+        bounds.max = Math.max(bounds.max, facetBounds.max);
+      } else {
+        // Multi-series chart — scan every column starting with
+        // <columnRoot>_ and ending with _actuals/_budget so each
+        // (facet, series) pair contributes to the y-axis range.
+        const prefix = `${columnRoot}_`;
+        for (const col of allColumns) {
+          if (!col.startsWith(prefix)) continue;
+          if (col.endsWith("_actuals") || col.endsWith("_budget")) {
+            const suffixLength = col.endsWith("_actuals") ? "_actuals".length : "_budget".length;
+            const seriesRoot = col.slice(0, -suffixLength);
+            const seriesBounds = getDataBounds(data, seriesRoot);
+            bounds.min = Math.min(bounds.min, seriesBounds.min);
+            bounds.max = Math.max(bounds.max, seriesBounds.max);
+          }
+        }
+      }
     }
   }
 

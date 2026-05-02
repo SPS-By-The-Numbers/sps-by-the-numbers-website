@@ -8,67 +8,75 @@ import { serializeFacet, deserializeFacet } from "./EnrollmentDashboard";
 import * as CommonContextSettingsAll from "app/finance/_settings/common_context_settings";
 import * as CommonSettings from "app/finance/_settings/common_settings";
 import EnrollmentGradeLevelFilter from "app/finance/_filteritems/enrollment_grade_level";
+import EnrollmentStudentGroupFilter from "app/finance/_filteritems/enrollment_student_group";
 import EnrollmentDashboard from "./EnrollmentDashboard";
 
 import type { SettingsConfig } from "app/finance/_settings/base_settings";
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 import type { Facet } from "./EnrollmentDashboard";
 import type { CommonFacetContextSettings } from "app/finance/_settings/common_context_settings";
-import type { SchoolFilters, GradeLevelFilters } from "utilities/DistrictData";
+import type { SchoolFilters, GradeLevelFilters, StudentGroupFilters } from "utilities/DistrictData";
 
-// rc_enrollment columns we expose as selectable counts. The key is the
-// BigQuery column name (also used as the chart's metric name); the
-// value is the user-visible label. Order shapes the dropdown UI.
-export const ENROLLMENT_STUDENT_GROUP_OPTIONS: Record<string, string> = {
-  all_students: "All Students",
-  female: "Female",
-  male: "Male",
-  gender_x: "Gender X",
-  american_indian_alaskan_native: "American Indian / Alaskan Native",
-  asian: "Asian",
-  black_african_american: "Black / African American",
-  hispanic_latino_of_any_race: "Hispanic / Latino of any race",
-  native_hawaiian_other_pacific: "Native Hawaiian / Other Pacific Islander",
-  two_or_more_races: "Two or More Races",
-  white: "White",
-  english_language_learners: "English Language Learners",
-  students_with_disabilities: "Students With Disabilities",
-  section_504: "Section 504",
-  highly_capable: "Highly Capable",
-  low_income: "Low Income",
-  homeless: "Homeless",
-  foster_care: "Foster Care",
-  migrant: "Migrant",
-  military_parent: "Military Parent",
-  mobile: "Mobile",
+// Breakdown picks the series dimension within each facet's chart.
+// Independent from the facet itself — e.g. facet by School, break down
+// into one line per Grade Cohort. "None" produces a single-series
+// chart where each facet just shows its aggregated metric.
+export const ENROLLMENT_BREAKDOWN_OPTIONS = {
+  none: "None",
+  grade: "Grade",
+  grade_cohort: "Grade Cohort",
+  student_group: "Student Group",
+} as const;
+
+export type EnrollmentBreakdown = keyof typeof ENROLLMENT_BREAKDOWN_OPTIONS;
+
+const BREAKDOWN_SERIALIZE_MAP: Record<EnrollmentBreakdown, string> = {
+  none: "0",
+  grade: "1",
+  grade_cohort: "2",
+  student_group: "3",
 };
+const BREAKDOWN_DESERIALIZE_MAP = Object.fromEntries(
+  Object.entries(BREAKDOWN_SERIALIZE_MAP).map(([k, v]) => [v, k]),
+) as Record<string, EnrollmentBreakdown>;
 
-export type EnrollmentStudentGroup = keyof typeof ENROLLMENT_STUDENT_GROUP_OPTIONS;
-
-const ENROLLMENT_STUDENT_GROUP_KEYS = Object.keys(ENROLLMENT_STUDENT_GROUP_OPTIONS);
-
-export function serializeEnrollmentStudentGroup(g: EnrollmentStudentGroup): string {
-  // Use the column name itself as the URL fragment — readable URLs and
-  // stable across reorderings of the options map.
-  return g as string;
+export function serializeEnrollmentBreakdown(b: EnrollmentBreakdown): string {
+  return BREAKDOWN_SERIALIZE_MAP[b] ?? "2";
 }
 
-export function deserializeEnrollmentStudentGroup(s: string): EnrollmentStudentGroup {
-  return (ENROLLMENT_STUDENT_GROUP_KEYS.includes(s) ? s : "all_students") as EnrollmentStudentGroup;
+export function deserializeEnrollmentBreakdown(s: string): EnrollmentBreakdown {
+  return BREAKDOWN_DESERIALIZE_MAP[s] ?? "grade_cohort";
 }
 
-function makeEnrollmentStudentGroupSerializeConfig(context?): SettingsConfig {
+function makeEnrollmentBreakdownSerializeConfig(context?): SettingsConfig {
   return [
     [
-      "studentGroup", {
+      "breakdown", {
         serializerType: "custom",
-        urlVar: "esg",
-        serialize: (settings, key) => serializeEnrollmentStudentGroup(settings[key]),
-          deserialize: (settings, s) => deserializeEnrollmentStudentGroup(s),
+        urlVar: "ebd",
+        serialize: (settings, key) => serializeEnrollmentBreakdown(settings[key]),
+          deserialize: (settings, s) => deserializeEnrollmentBreakdown(s),
       },
     ]
   ];
 }
+
+// codeColumn name on the enrollment frame for each breakdown choice.
+// "none" maps to null so the dashboard skips per-series splitting.
+export const ENROLLMENT_BREAKDOWN_CODE_COLUMNS: Record<EnrollmentBreakdown, string | null> = {
+  none: null,
+  grade: "grade_level_code",
+  grade_cohort: "grade_cohort_code",
+  student_group: "student_group_code",
+};
+
+// Display-label column for each breakdown choice (used in chart legends).
+export const ENROLLMENT_BREAKDOWN_LABEL_COLUMNS: Record<EnrollmentBreakdown, string | null> = {
+  none: null,
+  grade: "grade_level",
+  grade_cohort: "grade_cohort",
+  student_group: "student_group",
+};
 
 function makeEnrollmentGradeLevelSerializeConfig(context?): SettingsConfig {
   return [
@@ -82,39 +90,53 @@ function makeEnrollmentGradeLevelSerializeConfig(context?): SettingsConfig {
   ];
 }
 
-export type EnrollmentSettings = DatasetSettings & SchoolFilters & GradeLevelFilters;
+function makeEnrollmentStudentGroupFilterConfig(context?): SettingsConfig {
+  return [
+    [
+      "studentGroupCodes", {
+        serializerType: "filter",
+        urlVar: "esgf",
+        filter: EnrollmentStudentGroupFilter,
+      },
+    ]
+  ];
+}
+
+export type EnrollmentSettings = DatasetSettings & SchoolFilters & GradeLevelFilters & StudentGroupFilters;
 
 const DEFAULT_DETAILED_ACTUALS_SETTINGS = DEFAULT_DATASET_SETTINGS.map((v) => ({
   ...v,
   ...makeDefaultSettings(v.ccddd),
   gradeLevelCodes: new Set<number>(EnrollmentGradeLevelFilter.allCodes()),
+  // Default to just All Students so first-load charts are a single
+  // headcount line per facet.
+  studentGroupCodes: new Set<number>([1]),
 }));
 
 export type EnrollmentContextSettings = CommonFacetContextSettings<Facet> & {
-  studentGroup: EnrollmentStudentGroup;
+  breakdown: EnrollmentBreakdown;
 };
 
 const DEFAULT_DASHBOARD_SETTINGS : EnrollmentContextSettings = {
   ...DEFAULT_COMMON_FACET_CONTEXT_SETTINGS,
   sortType: "latest" as const,
   facet: deserializeFacet(""),
-  studentGroup: "all_students",
+  breakdown: "grade_cohort",
 };
 
 export const SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS = [
   CommonSettings.makeDatasetSerializeConfig,
   CommonSettings.makeSchoolFilterConfig,
   makeEnrollmentGradeLevelSerializeConfig,
+  makeEnrollmentStudentGroupFilterConfig,
 ];
 
 export const SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS = [
   CommonContextSettingsAll.makeFacetSerializeConfigHelper<Facet>(serializeFacet, deserializeFacet),
-  CommonContextSettingsAll.makeSortOrderSerializeConfig,
-  CommonContextSettingsAll.makeSortOrderSerializeConfig,
   CommonContextSettingsAll.makeYScaleSerializeConfig,
   CommonContextSettingsAll.makeSchoolGroupingSerializeConfig,
   CommonContextSettingsAll.makeChartsEnabledSerializeConfig,
-  makeEnrollmentStudentGroupSerializeConfig,
+  makeEnrollmentBreakdownSerializeConfig,
 ];
 
 export default function EnrollmentPage() {

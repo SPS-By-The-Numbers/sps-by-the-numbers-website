@@ -2,6 +2,7 @@ import { op } from "arquero";
 import * as aq from "arquero";
 import { fetchDataset } from "utilities/client/FetchData";
 import ALL_ASSESSMENT_TYPES from "utilities/domain/assessment_types";
+import ALL_ENROLLMENT_STUDENT_GROUPS from "utilities/domain/enrollment_student_groups";
 import ALL_GRADE_LEVELS from "utilities/domain/grade_levels";
 import ALL_STUDENT_GROUPS from "utilities/domain/student_groups";
 import ALL_TEST_SUBJECTS from "utilities/domain/test_subjects";
@@ -59,7 +60,7 @@ export type DemographicFilters = {
 
 type ExpendituresFilters = Partial<PAOFilters & NcesFilters & SchoolFilters>;
 type StaffingFilters = Partial<PAFilters & DutyRootFilters & SchoolFilters>;
-type EnrollmentFilters = Partial<DemographicFilters & SchoolFilters & GradeLevelFilters>;
+type EnrollmentFilters = Partial<DemographicFilters & SchoolFilters & GradeLevelFilters & StudentGroupFilters>;
 export type GradeLevelFilters = {
   gradeLevelCodes: Set<number>;
 };
@@ -635,6 +636,28 @@ export default class DistrictData {
       results = results
         .params({ gradeLevelCodes: [...filter.gradeLevelCodes] })
         .filter((d, $) => d.includes($.gradeLevelCodes, d.grade_level_code));
+    }
+
+    // rc_enrollment is wide (one column per student-group attribute), but
+    // the dashboard wants a long-format frame keyed by student_group_code
+    // so the existing facet/breakdown machinery can treat student group
+    // as just another dimension. Fold the relevant columns down into
+    // (student_group_column, amount) rows, then attach the human-readable
+    // student_group label and the numeric student_group_code.
+    const groupColumns = ALL_ENROLLMENT_STUDENT_GROUPS.map(g => g.column);
+    results = results.fold(groupColumns, { as: ["student_group_column", "amount"] });
+    const groupDomain = aq.table({
+      student_group_column: ALL_ENROLLMENT_STUDENT_GROUPS.map(g => g.column),
+      student_group_code: ALL_ENROLLMENT_STUDENT_GROUPS.map(g => g.student_group_code),
+      student_group: ALL_ENROLLMENT_STUDENT_GROUPS.map(g => g.student_group),
+      student_group_type: ALL_ENROLLMENT_STUDENT_GROUPS.map(g => g.student_group_type),
+    });
+    results = results.join_left(groupDomain, "student_group_column");
+
+    if (filter.studentGroupCodes !== undefined) {
+      results = results
+        .params({ studentGroupCodes: [...filter.studentGroupCodes] })
+        .filter((d, $) => d.includes($.studentGroupCodes, d.student_group_code));
     }
 
     // Provide a grade_level string alongside the existing grade column so

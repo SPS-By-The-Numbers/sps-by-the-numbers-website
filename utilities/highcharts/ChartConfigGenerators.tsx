@@ -361,7 +361,10 @@ function getFormatter(format: ValueFormat, precision) : ValueFormatter {
 // Convert a metricColumn to names for the budget and actuals of that column.
 // TODO: Move the metricColumn + suffix out into the faceting code.
 function getBAColumns(metricColumn, facet) {
-  const realFacet = facet ? `_${facet}` : "";
+  // Non-falsy check: facet codes can be the literal number 0 (e.g. an
+  // unassigned ms_assignment bucket), which a `truthy` check would
+  // collapse into an empty realFacet and break the column lookup.
+  const realFacet = (facet != null && facet !== "") ? `_${facet}` : "";
   return {
     budgetColumn: `${metricColumn}${realFacet}_budget`,
     actualsColumn: `${metricColumn}${realFacet}_actuals`,
@@ -618,7 +621,10 @@ export function makeMultiSeriesLineChartConfig(
   },
 ) {
   const baseChartConfig = makeBaseChartConfig(options);
-  const realFacet = options.facet ? `_${options.facet}` : "";
+  // Non-falsy check: facet codes can be the literal number 0 (e.g. an
+  // unassigned ms_assignment bucket), which a `truthy` check would
+  // collapse into an empty realFacet and break the column lookup.
+  const realFacet = (options.facet != null && options.facet !== "") ? `_${options.facet}` : "";
 
   const columnAssignment = options.seriesDefs.map((def) => ({
     seriesId: def.key,
@@ -632,14 +638,27 @@ export function makeMultiSeriesLineChartConfig(
     },
   }));
 
-  const series = options.seriesDefs.map((def, i) => ({
-    id: def.key,
-    name: def.name,
-    colorIndex: def.colorIndex ?? i,
-    marker: { enabled: true },
-  }));
+  // Default Highcharts marker rotation; cycle off the same colorIndex
+  // so two series sharing a wrapped colour are still distinguishable
+  // by marker shape.
+  const MARKER_SYMBOLS = ["circle", "square", "diamond", "triangle", "triangle-down"];
+  const series = options.seriesDefs.map((def, i) => {
+    const idx = def.colorIndex ?? i;
+    return {
+      id: def.key,
+      name: def.name,
+      colorIndex: idx,
+      marker: {
+        enabled: true,
+        symbol: MARKER_SYMBOLS[idx % MARKER_SYMBOLS.length],
+      },
+    };
+  });
 
-  const showLegend = !options.disableLegend && options.seriesDefs.length <= 4;
+  const showLegend =
+    !options.disableLegend &&
+    options.seriesDefs.length > 1 &&
+    options.seriesDefs.length <= 8;
 
   const config = merge(baseChartConfig, {
     connector: { columnAssignment },

@@ -1,21 +1,21 @@
 import SettingsSelect from "app/finance/_widgets/SettingsSelect";
 
 import {
-  ENROLLMENT_STUDENT_GROUP_OPTIONS,
+  ENROLLMENT_BREAKDOWN_OPTIONS,
 } from "app/finance/enrollment/EnrollmentPage";
 
 import type { EnrollmentContextSettings } from "app/finance/enrollment/EnrollmentPage";
 
-export default function EnrollmentStudentGroupContents(props: {
+export default function EnrollmentBreakdownContents(props: {
   settings: EnrollmentContextSettings;
   setSettings: (x: EnrollmentContextSettings) => void;
 }) {
   return (
     <SettingsSelect
       {...props}
-      label="Student Group"
-      fieldName="studentGroup"
-      options={ENROLLMENT_STUDENT_GROUP_OPTIONS}
+      label="Breakdown"
+      fieldName="breakdown"
+      options={ENROLLMENT_BREAKDOWN_OPTIONS as Record<string, string>}
     />
   );
 }
