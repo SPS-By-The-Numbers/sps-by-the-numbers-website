@@ -13,9 +13,6 @@
   --highcharts-color-2: #cccccc;
 }
 
-.highcharts-data-label {
-}
-
 .highcharts-data-label-color-1 {
   text-shadow: 0px 0px 6px black;
   color: white;
@@ -24,9 +21,6 @@
 .highcharts-data-label-color-2 {
   text-shadow: 0px 0px 6px white;
   color: #555555;
-}
-
-.highcharts-crosshair {
 }
 
 .highcharts-description {
@@ -44,14 +38,14 @@
 .highcharts-dashboards-cell {
   min-width: 300px;
   max-width: 100%;
-  min-height: 500px;
+  min-height: 450px;
 }
 
 @media screen and (min-width: 1500px) {
   .highcharts-dashboards-cell {
     min-width: 490px;
     max-width: 50%;
-    min-height: 450px;
+    min-height: 500px;
   }
 }
 

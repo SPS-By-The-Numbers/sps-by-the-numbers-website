@@ -10,8 +10,6 @@ import PrimaryNav from './PrimaryNav';
 import { Metadata } from "next";
 import { Roboto } from "next/font/google";
 
-import "../styles/globals.scss";
-
 export const metadata: Metadata = {
   title: Constants.APP_TITLE,
   description: "Apps for analysing data related to Seattle Public Schools",
