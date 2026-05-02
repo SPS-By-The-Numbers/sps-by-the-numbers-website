@@ -24,18 +24,19 @@ import HcDashboard from "components/HcDashboard";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import Typography from "@mui/material/Typography";
 import {
-  ENROLLMENT_MODE_CODE_COLUMNS,
-  ENROLLMENT_MODE_LABEL_COLUMNS,
-  ENROLLMENT_MODE_OPTIONS,
+  ENROLLMENT_BREAKDOWN_CODE_COLUMNS,
+  ENROLLMENT_BREAKDOWN_LABEL_COLUMNS,
+  ENROLLMENT_BREAKDOWN_OPTIONS,
   SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS,
   SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS,
 } from "app/finance/enrollment/EnrollmentPage";
-import EnrollmentModeContents from "app/finance/enrollment/EnrollmentModeContents";
+import EnrollmentBreakdownContents from "app/finance/enrollment/EnrollmentBreakdownContents";
 import EnrollmentGradeLevelFilterContents from "app/finance/enrollment/EnrollmentGradeLevelFilterContents";
 import EnrollmentStudentGroupFilterContents from "app/finance/enrollment/EnrollmentStudentGroupFilterContents";
 import { makeFacetContents } from "app/finance/_widgets/FacetContents";
 import ChartsEnabledContents from "app/finance/_widgets/ChartsEnabledContents";
 import SchoolGroupingContents from "app/finance/_widgets/SchoolGroupingContents";
+import ShowLegendContents from "app/finance/_widgets/ShowLegendContents";
 import YScaleContents from "app/finance/_widgets/YScaleContents";
 
 import { makeSchoolFilter } from "app/finance/_filteritems/school";
@@ -86,11 +87,11 @@ function makeComponentsGenerator(
   ) {
     const schoolFilter = makeSchoolFilter(settings.ccddd, contextSettings.schoolGrouping);
     const groupLabel = `${settings.studentGroupCodes?.size ?? 0} group(s)`;
-    const modeLabel = ENROLLMENT_MODE_OPTIONS[contextSettings.mode] ?? contextSettings.mode;
+    const breakdownLabel = ENROLLMENT_BREAKDOWN_OPTIONS[contextSettings.breakdown] ?? contextSettings.breakdown;
     const subtitle = `
     School(${schoolFilter.toSummaryText(settings.schoolCodes)}) /
     Group(${groupLabel}) /
-    Mode(${modeLabel})
+    Breakdown(${breakdownLabel})
     `;
     return makeFacetComponents({
       idPrefix: settings.id.toString(),
@@ -107,6 +108,7 @@ function makeComponentsGenerator(
       chartConfigMaker: (options) => makeMultiSeriesLineChartConfig({
         ...options,
         yLabel: "Student Headcount",
+        disableLegend: contextSettings.showLegend === false,
         seriesDefs: seriesDefsByFacet.get(String(options.facet)) ?? [],
       }),
     });
@@ -158,14 +160,14 @@ export default function EnrollmentDashboard({
       return this.filteredEnrollment(s).join_left(buildSchoolDomain(s.ccddd), "school_code");
     }
 
-    // Map mode choice to the matching code/label columns on the
-    // enrollment frame. When the mode column is the same as the
+    // Map breakdown choice to the matching code/label columns on the
+    // enrollment frame. When the breakdown column is the same as the
     // current facet's code column, the dataset transformer treats the
-    // chart as a single-line render (no mode applied).
-    const modeCodeColumn = ENROLLMENT_MODE_CODE_COLUMNS[contextSettings.mode];
-    const modeLabelColumn = ENROLLMENT_MODE_LABEL_COLUMNS[contextSettings.mode];
+    // chart as a single-line render (no breakdown applied).
+    const breakdownCodeColumn = ENROLLMENT_BREAKDOWN_CODE_COLUMNS[contextSettings.breakdown];
+    const breakdownLabelColumn = ENROLLMENT_BREAKDOWN_LABEL_COLUMNS[contextSettings.breakdown];
     const facetCodeColumn = `${contextSettings.facet}_code`;
-    const effectiveModeCol = modeCodeColumn === facetCodeColumn ? null : modeCodeColumn;
+    const effectiveBreakdownCol = breakdownCodeColumn === facetCodeColumn ? null : breakdownCodeColumn;
 
     // Expand out the filter per sub-setting. The enrollment dashboard
     // sorts facets alphabetically by name, so the sortType/sortOrder
@@ -184,15 +186,15 @@ export default function EnrollmentDashboard({
           facet,
           settings,
           metricName,
-          effectiveModeCol,
+          effectiveBreakdownCol,
         ),
       metricName,
     );
 
     // Per-facet series defs for the multi-series chart. The series key
-    // is only the mode code (or the facet code when mode collapses with
-    // the facet) — the chart prepends the facet code on its own when
-    // looking up data columns.
+    // is only the breakdown code (or the facet code when breakdown
+    // collapses with the facet) — the chart prepends the facet code on
+    // its own when looking up data columns.
     const seriesDefsByFacet = (() => {
       const result = new Map<string, Array<SeriesCodeDef>>();
       const firstFiltered = filteredEnrollmentWithSchoolDomain.call(
@@ -202,25 +204,25 @@ export default function EnrollmentDashboard({
       const facetArr = firstFiltered.array(facetCodeColumn) as Array<number | null>;
       const studentGroupArr = firstFiltered.array("student_group_code") as Array<number | null>;
       const studentGroupNameArr = firstFiltered.array("student_group") as Array<string | null>;
-      if (effectiveModeCol) {
-        const modeArr = firstFiltered.array(effectiveModeCol) as Array<number | null>;
-        const labelArr = firstFiltered.array(modeLabelColumn) as Array<string | null>;
+      if (effectiveBreakdownCol) {
+        const breakdownArr = firstFiltered.array(effectiveBreakdownCol) as Array<number | null>;
+        const labelArr = firstFiltered.array(breakdownLabelColumn) as Array<string | null>;
         const seenByFacet = new Map<string, Set<string>>();
-        const modeLabelByCode = new Map<string, string>();
+        const breakdownLabelByCode = new Map<string, string>();
         const studentGroupLabelByCode = new Map<string, string>();
         for (let i = 0; i < firstFiltered.numRows(); i++) {
           const facetCode = String(facetArr[i]);
-          const modeCode = String(modeArr[i]);
+          const breakdownCode = String(breakdownArr[i]);
           const studentGroupCode = String(studentGroupArr[i]);
-          const seriesKey = `${modeCode}_${studentGroupCode}`;
+          const seriesKey = `${breakdownCode}_${studentGroupCode}`;
           let seen = seenByFacet.get(facetCode);
           if (!seen) {
             seen = new Set();
             seenByFacet.set(facetCode, seen);
             result.set(facetCode, []);
           }
-          if (!modeLabelByCode.has(modeCode)) {
-            modeLabelByCode.set(modeCode, String(labelArr[i] ?? modeCode));
+          if (!breakdownLabelByCode.has(breakdownCode)) {
+            breakdownLabelByCode.set(breakdownCode, String(labelArr[i] ?? breakdownCode));
           }
           if (!studentGroupLabelByCode.has(studentGroupCode)) {
             studentGroupLabelByCode.set(studentGroupCode, String(studentGroupNameArr[i] ?? studentGroupCode));
@@ -229,11 +231,11 @@ export default function EnrollmentDashboard({
             seen.add(seriesKey);
             result.get(facetCode)!.push({
               key: seriesKey,
-              name: `${modeLabelByCode.get(modeCode)} / ${studentGroupLabelByCode.get(studentGroupCode)}`,
+              name: `${breakdownLabelByCode.get(breakdownCode)} / ${studentGroupLabelByCode.get(studentGroupCode)}`,
             });
           }
         }
-        // Stable sort by (mode code, student-group code).
+        // Stable sort by (breakdown code, student-group code).
         for (const defs of result.values()) {
           defs.sort((a, b) => {
             const [ab, ag] = a.key.split("_").map(Number);
@@ -242,7 +244,7 @@ export default function EnrollmentDashboard({
           });
         }
       } else {
-        // No effective mode — one series per selected dataset. The
+        // No effective breakdown — one series per selected dataset. The
         // composite_key in the dataset transformer is `<facet>_<group>`,
         // so the chart's seriesKey is just the student-group code.
         const seenByFacet = new Map<string, Set<string>>();
@@ -396,9 +398,10 @@ export default function EnrollmentDashboard({
       contextSettings={contextSettings}
       contextSettingsComponents={[
         makeFacetContents(FACET_OPTIONS),
-        EnrollmentModeContents,
+        EnrollmentBreakdownContents,
         YScaleContents,
         SchoolGroupingContents,
+        ShowLegendContents,
         ChartsEnabledContents,
       ]}
       settingsContentsComponents={[

@@ -9,6 +9,11 @@ export type CommonContextSettings = BaseSettings & {
   // config. Toggling off lets the user stage filter/setting changes
   // without paying the per-dataset chart-build cost.
   chartsEnabled: boolean;
+  // Whether the chart legend is rendered. The chart-side machinery
+  // already auto-hides legends for single-series charts; this toggle
+  // lets the user opt out for high-series-count charts where the
+  // legend competes for plot space.
+  showLegend: boolean;
 };
 
 const ALL_SCHOOL_GROUPING = ["region", "ms_assignment_code"] as const;
@@ -46,6 +51,7 @@ export const DEFAULT_COMMON_CONTEXT_SETTINGS: CommonContextSettings = {
   name: "Dashboard Settings",
   id: -1,
   chartsEnabled: true,
+  showLegend: true,
 };
 
 export const DEFAULT_COMMON_FACET_CONTEXT_SETTINGS : BaseFacetContextSettings = {
@@ -128,6 +134,19 @@ export function makeChartsEnabledSerializeConfig(context?) : SettingsConfig {
         serializerType: "custom",
         urlVar: "ce",
         serialize: (settings, key) => settings[key] ? "1" : "0",
+          deserialize: (settings, s) => s !== "0",
+      },
+    ]
+  ];
+}
+
+export function makeShowLegendSerializeConfig(context?) : SettingsConfig {
+  return [
+    [
+      "showLegend", {
+        serializerType: "custom",
+        urlVar: "sl",
+        serialize: (settings, key) => settings[key] === false ? "0" : "1",
           deserialize: (settings, s) => s !== "0",
       },
     ]

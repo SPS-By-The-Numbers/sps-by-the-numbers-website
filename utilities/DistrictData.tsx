@@ -684,6 +684,16 @@ export default class DistrictData {
         d.grade_level_code === 6 || d.grade_level_code === 7 || d.grade_level_code === 8 ? 9004 :
         d.grade_level_code === 9 || d.grade_level_code === 10 || d.grade_level_code === 11 || d.grade_level_code === 12 ? 9005 :
         9999,
+      // Projected high-school diploma year. Grade 12 students
+      // graduate in class_of itself; each grade below adds another
+      // year (Grade 11 → +1, …, Grade 1 → +11, K → +12, PK → +13).
+      // The "All Grades" rollup row gets null since it isn't a
+      // single grade level.
+      diploma_year: (d) =>
+        d.grade_level_code === 99 ? null :
+        d.grade_level_code === 98 ? d.class_of + 12 :
+        d.grade_level_code === 97 ? d.class_of + 13 :
+        d.class_of + (12 - d.grade_level_code),
     });
   }
 

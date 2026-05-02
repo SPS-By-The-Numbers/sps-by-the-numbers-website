@@ -638,12 +638,13 @@ export function makeMultiSeriesLineChartConfig(
     },
   }));
 
-  // Default Highcharts marker rotation; cycle off the same colorIndex
-  // so two series sharing a wrapped colour are still distinguishable
-  // by marker shape.
+  // Cap distinct colours at the Highcharts default styled palette of
+  // 10. Series beyond the tenth recycle through the same indices,
+  // letting the marker rotation below disambiguate them.
+  const PALETTE_SIZE = 10;
   const MARKER_SYMBOLS = ["circle", "square", "diamond", "triangle", "triangle-down"];
   const series = options.seriesDefs.map((def, i) => {
-    const idx = def.colorIndex ?? i;
+    const idx = (def.colorIndex ?? i) % PALETTE_SIZE;
     return {
       id: def.key,
       name: def.name,
@@ -655,10 +656,7 @@ export function makeMultiSeriesLineChartConfig(
     };
   });
 
-  const showLegend =
-    !options.disableLegend &&
-    options.seriesDefs.length > 1 &&
-    options.seriesDefs.length <= 8;
+  const showLegend = !options.disableLegend && options.seriesDefs.length > 1;
 
   const config = merge(baseChartConfig, {
     connector: { columnAssignment },
