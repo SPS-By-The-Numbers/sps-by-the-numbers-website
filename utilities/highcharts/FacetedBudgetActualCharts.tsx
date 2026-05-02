@@ -32,6 +32,7 @@ type FacetComponentParams = {
   idPrefix: string;  // The id of the setting used for generating unique identifiers.
   xColumn: string;  // Name of data column for x-Axis
   xLabel: string;  // Label to use on x-axis of graph.
+  xAxisReversed?: boolean;  // Reverse the X axis (e.g. years-to-diploma 13→0).
   yColumnRoot: string;  // Root of y-axis columns. Will be combined with facetOrder to generate column name.
   facetOrder: Array<FacetInfo>;  // Whcih facets to show.
   connectorId: string;  // Highcharts connector id.
@@ -72,6 +73,7 @@ export function makeFacetComponents(params : FacetComponentParams) {
     idPrefix,
     xColumn,
     xLabel,
+    xAxisReversed,
     yColumnRoot,
     captionType,
     facetOrder,
@@ -95,6 +97,7 @@ export function makeFacetComponents(params : FacetComponentParams) {
         yValueFormat: yValueFormatOverride ? yValueFormatOverride : formatForNormalization(normalization),
         xValueFormat: "year",
         xLabel,
+        xAxisReversed,
         captionType,
         yMin: yBounds?.min,
         yMax: yBounds?.max,

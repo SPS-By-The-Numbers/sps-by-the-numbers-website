@@ -694,6 +694,16 @@ export default class DistrictData {
         d.grade_level_code === 98 ? d.class_of + 12 :
         d.grade_level_code === 97 ? d.class_of + 13 :
         d.class_of + (12 - d.grade_level_code),
+      diploma_year_code: (d) =>
+        d.grade_level_code === 99 ? null :
+        d.grade_level_code === 98 ? d.class_of + 12 :
+        d.grade_level_code === 97 ? d.class_of + 13 :
+        d.class_of + (12 - d.grade_level_code),
+      years_to_diploma: (d) =>
+        d.grade_level_code === 99 ? null :
+        d.grade_level_code === 98 ? 12 :
+        d.grade_level_code === 97 ? 13 :
+        12 - d.grade_level_code,
     });
   }
 

@@ -25,15 +25,20 @@ export function normalizeColumn(
   df,
   metricColumns,
   normalization,
+  skipNormalizationJoin = false,
 ) {
-  // We need to rename the column to amount.
-  const nd = extractNormalizationDf(districtData, normalization);
   const deriveClause = normalizeColumnDeriveClause(
     metricColumns,
     normalization,
   );
-  const normalizedDf = df
-    .join_left(nd)
+  // Bypass the normalization-table join when the caller has remapped
+  // class_of away from real fiscal years (e.g. years_to_diploma). Only
+  // safe for amount/fte where the norm factor is a constant 1; the
+  // EnrollmentDashboard guarantees that when it sets this flag.
+  const joined = skipNormalizationJoin
+    ? df.derive({ norm: () => 1 })
+    : df.join_left(extractNormalizationDf(districtData, normalization));
+  const normalizedDf = joined
     .derive(deriveClause)
     .select(["class_of", "data_type", ...Object.keys(deriveClause)]);
 
@@ -86,6 +91,7 @@ export function toChartableDataset(
   amount_only_columns,
   currency_columns,
   staffing_columns,
+  skipNormalizationJoin = false,
 ): ColumnTable {
   let normalizedData;
   if (amount_only_columns.length > 0) {
@@ -94,6 +100,7 @@ export function toChartableDataset(
       df,
       amount_only_columns,
       "amount" as const,
+      skipNormalizationJoin,
     )
       .join_left(
         normalizeColumn(
@@ -101,6 +108,7 @@ export function toChartableDataset(
           df,
           currency_columns,
           metricSettings.currencyNormalization,
+          skipNormalizationJoin,
         ),
       )
       .join_left(
@@ -109,6 +117,7 @@ export function toChartableDataset(
           df,
           staffing_columns,
           metricSettings.staffingNormalization,
+          skipNormalizationJoin,
         ),
       );
   } else {
@@ -117,12 +126,14 @@ export function toChartableDataset(
       df,
       currency_columns,
       metricSettings.currencyNormalization,
+      skipNormalizationJoin,
     ).join_left(
       normalizeColumn(
         districtData,
         df,
         staffing_columns,
         metricSettings.staffingNormalization,
+        skipNormalizationJoin,
       ),
     );
   }
@@ -199,6 +210,8 @@ function extractRawEnrollment(
   facetColumn: string,
   metricColumn: string = "all_students",
   breakdownCodeColumn: string | null = null,
+  xColumn: string = "class_of",
+  extraSeriesDimCol: string | null = null,
 ) {
   const facetCodeColumn = `${facetColumn}_code`;
 
@@ -209,15 +222,21 @@ function extractRawEnrollment(
   // an implicit series dimension — every selected dataset becomes its own
   // series in each facet's chart. The optional breakdown column adds
   // another nested series dim (e.g. grade-cohort lines per dataset).
+  // extraSeriesDimCol is a synthetic series dim (e.g. diploma_year for
+  // the cohort view) that's always added when present.
   const useBreakdown =
     breakdownCodeColumn &&
     breakdownCodeColumn !== facetCodeColumn &&
     breakdownCodeColumn !== "student_group_code";
   const staged = df.derive({ _metric: aq.escape((d) => d[metricColumn]) });
-  const grouped = useBreakdown
-    ? staged.groupby("class_of", "grade", facetCodeColumn, "student_group_code", breakdownCodeColumn)
-    : staged.groupby("class_of", "grade", facetCodeColumn, "student_group_code");
-  return grouped.rollup({
+  const groupCols = [xColumn, "grade", facetCodeColumn, "student_group_code"];
+  if (useBreakdown) {
+    groupCols.push(breakdownCodeColumn);
+  }
+  if (extraSeriesDimCol && !groupCols.includes(extraSeriesDimCol)) {
+    groupCols.push(extraSeriesDimCol);
+  }
+  return staged.groupby(...groupCols).rollup({
     [metricColumn]: (d) => op.sum(d._metric),
   });
 }
@@ -229,17 +248,23 @@ export function toFacetedCharatbleEnrollmentDataset(
   settings,
   metricColumn: string = "all_students",
   breakdownCodeColumn: string | null = null,
+  xColumn: string = "class_of",
+  extraSeriesDimCol: string | null = null,
 ) {
   const facetCodeColumn = `${facet}_code`;
   const useBreakdown =
     breakdownCodeColumn &&
     breakdownCodeColumn !== facetCodeColumn &&
     breakdownCodeColumn !== "student_group_code";
-  const df = extractRawEnrollment(filteredDf, facet, metricColumn, breakdownCodeColumn);
+  const df = extractRawEnrollment(
+    filteredDf, facet, metricColumn, breakdownCodeColumn, xColumn, extraSeriesDimCol,
+  );
 
   // composite_key shape:
-  //   useBreakdown:  <facetCode>_<breakdownCode>_<studentGroupCode>
-  //   else:          <facetCode>_<studentGroupCode>
+  //   useBreakdown + extra:  <facetCode>_<breakdownCode>_<studentGroupCode>_<extra>
+  //   useBreakdown:          <facetCode>_<breakdownCode>_<studentGroupCode>
+  //   extra:                 <facetCode>_<studentGroupCode>_<extra>
+  //   else:                  <facetCode>_<studentGroupCode>
   // The multi-series chart's column lookup
   // (`<metricColumn>_<facetCode>_<seriesCode>_actuals`) matches by
   // appending `<seriesCode>` after the facet code, where the seriesCode
@@ -248,19 +273,30 @@ export function toFacetedCharatbleEnrollmentDataset(
     .filter(d => d.grade != "All Grades")
     .derive({ _metric: aq.escape((d) => d[metricColumn]) })
     .derive({
-      composite_key: useBreakdown
-        ? aq.escape((d) => `${d[facetCodeColumn]}_${d[breakdownCodeColumn]}_${d.student_group_code}`)
-        : aq.escape((d) => `${d[facetCodeColumn]}_${d.student_group_code}`),
+      composite_key: aq.escape((d) => {
+        const parts = [d[facetCodeColumn]];
+        if (useBreakdown) parts.push(d[breakdownCodeColumn]);
+        parts.push(d.student_group_code);
+        if (extraSeriesDimCol) parts.push(d[extraSeriesDimCol]);
+        return parts.join("_");
+      }),
     });
 
-  const pdata = withComposite
-    .groupby(["class_of"])
+  let pdata = withComposite
+    .groupby([xColumn])
     .pivot(["composite_key"], {
       [metricColumn]: (d) => op.sum(d._metric),
       _pivot_name_hack_: (d) => op.any("_pivot_name_hack_"),
     })
     .select(aq.not(aq.startswith("_pivot_name_hack_")))
     .derive({ data_type: (d) => "actuals" });
+
+  // Downstream chartable pipeline keys on a column named "class_of".
+  // When the caller uses a different x column (e.g. years_to_diploma),
+  // rename it so the pivot/normalize stages don't need parameterization.
+  if (xColumn !== "class_of") {
+    pdata = pdata.rename({ [xColumn]: "class_of" });
+  }
 
   const names = getDataColumnNames(pdata);
   return toChartableDataset(
@@ -270,6 +306,7 @@ export function toFacetedCharatbleEnrollmentDataset(
     [],
     names,
     [],
+    xColumn !== "class_of",
   );
 }
 

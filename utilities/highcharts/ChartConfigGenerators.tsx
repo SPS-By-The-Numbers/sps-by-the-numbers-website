@@ -36,6 +36,7 @@ export type BaseChartConfigOptions = {
 
   xAxisType?: Highcharts.AxisTypeValue;
   yAxisType?: Highcharts.AxisTypeValue;
+  xAxisReversed?: boolean;
 
   // TODO: Infer precision.
   precision?: number;
@@ -452,6 +453,7 @@ export function makeBaseChartConfig(options: BaseChartConfigOptions) {
           inferAxisType(options.xValueFormat, options.xValueShowNegative),
         min: options.xMin,
         max: options.xMax,
+        reversed: options.xAxisReversed,
         title: {
           text: options.xLabel ?? inferLabel(options.xValueFormat),
         },

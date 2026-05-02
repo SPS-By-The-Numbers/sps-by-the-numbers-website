@@ -164,6 +164,7 @@ export function extractFacets(
   extractor = DistrictData.prototype.filteredExpenditures,
   dataTransform = toFacetedCharatbleDataset,
   valueColumn : string = "amount",
+  skipVitalsContext = false,
 ) {
   const allDatasets = new Array<ColumnTable>();
   let fullFacetOrder;
@@ -197,16 +198,28 @@ export function extractFacets(
     }
   }
 
-  let data = makeChartableVitals(districtDataMap, [
-    {
-      ...allSettings[0],
-      id: "context",
-      currencyNormalization: "amount",
-    },
-  ]);
+  let data: ColumnTable;
+  if (skipVitalsContext) {
+    // Caller has remapped class_of away from real fiscal years (e.g.
+    // diploma_year facet uses years_to_diploma in the class_of column),
+    // so the fiscal-year-keyed vitals base would inner-join to nothing.
+    // Start from the first dataset and join the rest on shared columns.
+    data = allDatasets[0];
+    for (let i = 1; i < allDatasets.length; i++) {
+      data = data.join(allDatasets[i]);
+    }
+  } else {
+    data = makeChartableVitals(districtDataMap, [
+      {
+        ...allSettings[0],
+        id: "context",
+        currencyNormalization: "amount",
+      },
+    ]);
 
-  for (const d of allDatasets) {
-    data = data.join(d);
+    for (const d of allDatasets) {
+      data = data.join(d);
+    }
   }
 
   // Fill in any missing class_of values between the min and max year

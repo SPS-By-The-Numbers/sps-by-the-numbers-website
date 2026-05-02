@@ -31,6 +31,7 @@ import {
   SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS,
 } from "app/finance/enrollment/EnrollmentPage";
 import EnrollmentBreakdownContents from "app/finance/enrollment/EnrollmentBreakdownContents";
+import EnrollmentXAxisContents from "app/finance/enrollment/EnrollmentXAxisContents";
 import EnrollmentGradeLevelFilterContents from "app/finance/enrollment/EnrollmentGradeLevelFilterContents";
 import EnrollmentStudentGroupFilterContents from "app/finance/enrollment/EnrollmentStudentGroupFilterContents";
 import { makeFacetContents } from "app/finance/_widgets/FacetContents";
@@ -78,6 +79,8 @@ export function deserializeFacet(s: string): Facet {
 function makeComponentsGenerator(
   metricName: string,
   seriesDefsByFacet: Map<string, Array<SeriesCodeDef>>,
+  xLabel: string,
+  xAxisReversed: boolean,
 ) {
   return function componentsGenerator(
     facetOrder,
@@ -96,7 +99,8 @@ function makeComponentsGenerator(
     return makeFacetComponents({
       idPrefix: settings.id.toString(),
       xColumn: "class_of",
-      xLabel: "Fiscal Year End",
+      xLabel,
+      xAxisReversed,
       yColumnRoot: metricName,
       facetOrder,
       connectorId: CONNECTOR_ID,
@@ -156,8 +160,25 @@ export default function EnrollmentDashboard({
       });
     }
 
+    // X-axis selector. Default is class_of (Fiscal Year End). When
+    // diploma_year is picked, we pivot rows on years_to_diploma so all
+    // cohorts share an aligned X (PreK at 13, graduation at 0,
+    // reversed). In that mode we also force diploma_year_code into the
+    // series key so each cohort gets its own line within each facet.
+    const isCohortView = contextSettings.xAxis === "diploma_year";
+    const xColumn = isCohortView ? "years_to_diploma" : "class_of";
+    const xLabel = isCohortView ? "Years to Diploma" : "Fiscal Year End";
+    const xAxisReversed = isCohortView;
+
     function filteredEnrollmentWithSchoolDomain(this: DistrictData, s: EnrollmentSettings) {
-      return this.filteredEnrollment(s).join_left(buildSchoolDomain(s.ccddd), "school_code");
+      let df = this.filteredEnrollment(s).join_left(buildSchoolDomain(s.ccddd), "school_code");
+      // For the cohort view, drop rows where the cohort has already
+      // graduated (years_to_diploma < 0) — those would render as ghost
+      // data points beyond the right edge of the chart.
+      if (isCohortView) {
+        df = df.filter((d) => d.years_to_diploma === null || d.years_to_diploma >= 0);
+      }
+      return df;
     }
 
     // Map breakdown choice to the matching code/label columns on the
@@ -167,7 +188,29 @@ export default function EnrollmentDashboard({
     const breakdownCodeColumn = ENROLLMENT_BREAKDOWN_CODE_COLUMNS[contextSettings.breakdown];
     const breakdownLabelColumn = ENROLLMENT_BREAKDOWN_LABEL_COLUMNS[contextSettings.breakdown];
     const facetCodeColumn = `${contextSettings.facet}_code`;
-    const effectiveBreakdownCol = breakdownCodeColumn === facetCodeColumn ? null : breakdownCodeColumn;
+    // In cohort view (X = years_to_diploma), grade and grade_cohort are
+    // pure functions of grade_level_code, so each X position has exactly
+    // one possible grade. A grade-keyed series would therefore have a
+    // single non-null data point and render as a dot, not a line —
+    // suppress those breakdowns. Diploma Year breakdown stays as the
+    // primary series dim; extraSeriesDimCol below handles the default.
+    const breakdownIsRedundantInCohort =
+      isCohortView &&
+      breakdownCodeColumn !== null &&
+      breakdownCodeColumn !== "diploma_year";
+    const effectiveBreakdownCol =
+      breakdownCodeColumn === facetCodeColumn || breakdownIsRedundantInCohort
+        ? null
+        : breakdownCodeColumn;
+
+    // In cohort view, force diploma_year as an extra series dimension so
+    // every diploma cohort gets its own line within each facet. Skip
+    // when the breakdown already is diploma_year (would duplicate).
+    const extraSeriesDimCol =
+      isCohortView && breakdownCodeColumn !== "diploma_year"
+        ? "diploma_year"
+        : null;
+    const extraSeriesLabelCol = extraSeriesDimCol;
 
     // Expand out the filter per sub-setting. The enrollment dashboard
     // sorts facets alphabetically by name, so the sortType/sortOrder
@@ -187,8 +230,11 @@ export default function EnrollmentDashboard({
           settings,
           metricName,
           effectiveBreakdownCol,
+          xColumn,
+          extraSeriesDimCol,
         ),
       metricName,
+      isCohortView,
     );
 
     // Per-facet series defs for the multi-series chart. The series key
@@ -204,74 +250,82 @@ export default function EnrollmentDashboard({
       const facetArr = firstFiltered.array(facetCodeColumn) as Array<number | null>;
       const studentGroupArr = firstFiltered.array("student_group_code") as Array<number | null>;
       const studentGroupNameArr = firstFiltered.array("student_group") as Array<string | null>;
-      if (effectiveBreakdownCol) {
-        const breakdownArr = firstFiltered.array(effectiveBreakdownCol) as Array<number | null>;
-        const labelArr = firstFiltered.array(breakdownLabelColumn) as Array<string | null>;
-        const seenByFacet = new Map<string, Set<string>>();
-        const breakdownLabelByCode = new Map<string, string>();
-        const studentGroupLabelByCode = new Map<string, string>();
-        for (let i = 0; i < firstFiltered.numRows(); i++) {
-          const facetCode = String(facetArr[i]);
-          const breakdownCode = String(breakdownArr[i]);
-          const studentGroupCode = String(studentGroupArr[i]);
-          const seriesKey = `${breakdownCode}_${studentGroupCode}`;
-          let seen = seenByFacet.get(facetCode);
-          if (!seen) {
-            seen = new Set();
-            seenByFacet.set(facetCode, seen);
-            result.set(facetCode, []);
-          }
-          if (!breakdownLabelByCode.has(breakdownCode)) {
-            breakdownLabelByCode.set(breakdownCode, String(labelArr[i] ?? breakdownCode));
-          }
-          if (!studentGroupLabelByCode.has(studentGroupCode)) {
-            studentGroupLabelByCode.set(studentGroupCode, String(studentGroupNameArr[i] ?? studentGroupCode));
-          }
-          if (!seen.has(seriesKey)) {
-            seen.add(seriesKey);
-            result.get(facetCode)!.push({
-              key: seriesKey,
-              name: `${breakdownLabelByCode.get(breakdownCode)} / ${studentGroupLabelByCode.get(studentGroupCode)}`,
-            });
-          }
+      const breakdownArr = effectiveBreakdownCol
+        ? firstFiltered.array(effectiveBreakdownCol) as Array<number | null>
+        : null;
+      const breakdownLabelArr = effectiveBreakdownCol && breakdownLabelColumn
+        ? firstFiltered.array(breakdownLabelColumn) as Array<string | null>
+        : null;
+      const extraArr = extraSeriesDimCol
+        ? firstFiltered.array(extraSeriesDimCol) as Array<number | null>
+        : null;
+      const extraLabelArr = extraSeriesLabelCol
+        ? firstFiltered.array(extraSeriesLabelCol) as Array<string | null>
+        : null;
+
+      // Track sort tuples per series so we can order them by
+      // (extraCode = diploma_year/class_of, breakdownCode, studentGroup)
+      // — putting the cohort identity first keeps oldest→newest cohort
+      // ordering visible in the legend.
+      const sortTupleByKey = new Map<string, [number, number, number]>();
+      const seenByFacet = new Map<string, Set<string>>();
+      const breakdownLabelByCode = new Map<string, string>();
+      const studentGroupLabelByCode = new Map<string, string>();
+      const extraLabelByCode = new Map<string, string>();
+      for (let i = 0; i < firstFiltered.numRows(); i++) {
+        const facetCode = String(facetArr[i]);
+        const studentGroupCode = String(studentGroupArr[i]);
+        const breakdownCode = breakdownArr ? String(breakdownArr[i]) : null;
+        const extraCode = extraArr ? String(extraArr[i]) : null;
+        // Skip rows with a null/undefined extra-dim value (e.g. the
+        // "All Grades" rollup has null years_to_diploma → null
+        // diploma_year). Otherwise it materializes a "null" series.
+        if (extraArr && (extraArr[i] === null || extraArr[i] === undefined)) continue;
+
+        const keyParts: Array<string> = [];
+        if (breakdownCode !== null) keyParts.push(breakdownCode);
+        keyParts.push(studentGroupCode);
+        if (extraCode !== null) keyParts.push(extraCode);
+        const seriesKey = keyParts.join("_");
+
+        let seen = seenByFacet.get(facetCode);
+        if (!seen) {
+          seen = new Set();
+          seenByFacet.set(facetCode, seen);
+          result.set(facetCode, []);
         }
-        // Stable sort by (breakdown code, student-group code).
-        for (const defs of result.values()) {
-          defs.sort((a, b) => {
-            const [ab, ag] = a.key.split("_").map(Number);
-            const [bb, bg] = b.key.split("_").map(Number);
-            return ab - bb || ag - bg;
+        if (breakdownCode !== null && breakdownLabelArr && !breakdownLabelByCode.has(breakdownCode)) {
+          breakdownLabelByCode.set(breakdownCode, String(breakdownLabelArr[i] ?? breakdownCode));
+        }
+        if (!studentGroupLabelByCode.has(studentGroupCode)) {
+          studentGroupLabelByCode.set(studentGroupCode, String(studentGroupNameArr[i] ?? studentGroupCode));
+        }
+        if (extraCode !== null && extraLabelArr && !extraLabelByCode.has(extraCode)) {
+          extraLabelByCode.set(extraCode, String(extraLabelArr[i] ?? extraCode));
+        }
+        if (!seen.has(seriesKey)) {
+          seen.add(seriesKey);
+          const nameParts: Array<string> = [];
+          if (breakdownCode !== null) nameParts.push(breakdownLabelByCode.get(breakdownCode)!);
+          nameParts.push(studentGroupLabelByCode.get(studentGroupCode)!);
+          if (extraCode !== null) nameParts.push(`Class of ${extraLabelByCode.get(extraCode) ?? extraCode}`);
+          sortTupleByKey.set(seriesKey, [
+            extraCode !== null ? Number(extraCode) : 0,
+            breakdownCode !== null ? Number(breakdownCode) : 0,
+            Number(studentGroupCode),
+          ]);
+          result.get(facetCode)!.push({
+            key: seriesKey,
+            name: nameParts.join(" / "),
           });
         }
-      } else {
-        // No effective breakdown — one series per selected dataset. The
-        // composite_key in the dataset transformer is `<facet>_<group>`,
-        // so the chart's seriesKey is just the student-group code.
-        const seenByFacet = new Map<string, Set<string>>();
-        const studentGroupLabelByCode = new Map<string, string>();
-        for (let i = 0; i < firstFiltered.numRows(); i++) {
-          const facetCode = String(facetArr[i]);
-          const studentGroupCode = String(studentGroupArr[i]);
-          let seen = seenByFacet.get(facetCode);
-          if (!seen) {
-            seen = new Set();
-            seenByFacet.set(facetCode, seen);
-            result.set(facetCode, []);
-          }
-          if (!studentGroupLabelByCode.has(studentGroupCode)) {
-            studentGroupLabelByCode.set(studentGroupCode, String(studentGroupNameArr[i] ?? studentGroupCode));
-          }
-          if (!seen.has(studentGroupCode)) {
-            seen.add(studentGroupCode);
-            result.get(facetCode)!.push({
-              key: studentGroupCode,
-              name: studentGroupLabelByCode.get(studentGroupCode)!,
-            });
-          }
-        }
-        for (const defs of result.values()) {
-          defs.sort((a, b) => Number(a.key) - Number(b.key));
-        }
+      }
+      for (const defs of result.values()) {
+        defs.sort((a, b) => {
+          const at = sortTupleByKey.get(a.key)!;
+          const bt = sortTupleByKey.get(b.key)!;
+          return (at[0] - bt[0]) || (at[1] - bt[1]) || (at[2] - bt[2]);
+        });
       }
       return result;
     })();
@@ -279,19 +333,24 @@ export default function EnrollmentDashboard({
     // Inject a district-wide total-enrollment column into the data so
     // augmentContextComponents below can render a Total Enrollment
     // context graph alongside the funded-enrollment / cashflow ones
-    // already supplied by makeChartableVitals.
+    // already supplied by makeChartableVitals. The fiscal-year-keyed
+    // context row doesn't apply to the cohort view, where the X axis
+    // is years-to-diploma rather than class_of.
     const firstDistrictData = districtDataMap[allSettings[0].ccddd];
-    // filteredEnrollment now returns long-format rows keyed by
-    // student_group_code; pick the All Students rows (code 1) and sum
-    // their amount per class_of for the district-wide total.
-    const totalEnrollmentDf = firstDistrictData
-      .filteredEnrollment({ studentGroupCodes: new Set<number>([1]) })
-      .filter((d) => d.grade != "All Grades")
-      .groupby("class_of")
-      .rollup({
-        context_amount_totalEnrollment_actuals: (d) => op.sum(d.amount),
-      });
-    const data = facetData.join_left(totalEnrollmentDf, "class_of");
+    let data = facetData;
+    if (!isCohortView) {
+      // filteredEnrollment now returns long-format rows keyed by
+      // student_group_code; pick the All Students rows (code 1) and sum
+      // their amount per class_of for the district-wide total.
+      const totalEnrollmentDf = firstDistrictData
+        .filteredEnrollment({ studentGroupCodes: new Set<number>([1]) })
+        .filter((d) => d.grade != "All Grades")
+        .groupby("class_of")
+        .rollup({
+          context_amount_totalEnrollment_actuals: (d) => op.sum(d.amount),
+        });
+      data = data.join_left(totalEnrollmentDf, "class_of");
+    }
 
     // Sort by facet name (alphabetical, locale-aware) so charts
     // appear in a stable order regardless of underlying data values.
@@ -381,8 +440,8 @@ export default function EnrollmentDashboard({
         contextSettings,
         allSettings,
         fullFacetOrder: titledFacetOrder,
-        componentsGenerator: makeComponentsGenerator(metricName, seriesDefsByFacet),
-        augmentContextComponents,
+        componentsGenerator: makeComponentsGenerator(metricName, seriesDefsByFacet, xLabel, xAxisReversed),
+        ...(isCohortView ? {} : { augmentContextComponents }),
         data,
       }
     );
@@ -398,6 +457,7 @@ export default function EnrollmentDashboard({
       contextSettings={contextSettings}
       contextSettingsComponents={[
         makeFacetContents(FACET_OPTIONS),
+        EnrollmentXAxisContents,
         EnrollmentBreakdownContents,
         YScaleContents,
         SchoolGroupingContents,

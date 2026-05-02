@@ -17,6 +17,46 @@ import type { Facet } from "./EnrollmentDashboard";
 import type { CommonFacetContextSettings } from "app/finance/_settings/common_context_settings";
 import type { SchoolFilters, GradeLevelFilters, StudentGroupFilters } from "utilities/DistrictData";
 
+// X-axis choice. Default is class_of (Fiscal Year End). When
+// diploma_year is picked, the chart's X is years-to-diploma (13→0,
+// reversed) and each diploma cohort becomes its own line so cohorts
+// align at the left edge of every chart regardless of fiscal year.
+export const ENROLLMENT_X_AXIS_OPTIONS = {
+  class_of: "Fiscal Year End",
+  diploma_year: "Years to Diploma",
+} as const;
+
+export type EnrollmentXAxis = keyof typeof ENROLLMENT_X_AXIS_OPTIONS;
+
+const X_AXIS_SERIALIZE_MAP: Record<EnrollmentXAxis, string> = {
+  class_of: "0",
+  diploma_year: "1",
+};
+const X_AXIS_DESERIALIZE_MAP = Object.fromEntries(
+  Object.entries(X_AXIS_SERIALIZE_MAP).map(([k, v]) => [v, k]),
+) as Record<string, EnrollmentXAxis>;
+
+export function serializeEnrollmentXAxis(x: EnrollmentXAxis): string {
+  return X_AXIS_SERIALIZE_MAP[x] ?? "0";
+}
+
+export function deserializeEnrollmentXAxis(s: string): EnrollmentXAxis {
+  return X_AXIS_DESERIALIZE_MAP[s] ?? "class_of";
+}
+
+function makeEnrollmentXAxisSerializeConfig(context?): SettingsConfig {
+  return [
+    [
+      "xAxis", {
+        serializerType: "custom",
+        urlVar: "exa",
+        serialize: (settings, key) => serializeEnrollmentXAxis(settings[key]),
+        deserialize: (settings, s) => deserializeEnrollmentXAxis(s),
+      },
+    ]
+  ];
+}
+
 // Breakdown picks the series dimension within each facet's chart.
 // Independent from the facet itself — e.g. facet by School, with
 // breakdown Grade Cohort to get one line per cohort. "Summed"
@@ -118,6 +158,7 @@ const DEFAULT_DETAILED_ACTUALS_SETTINGS = DEFAULT_DATASET_SETTINGS.map((v) => ({
 
 export type EnrollmentContextSettings = CommonFacetContextSettings<Facet> & {
   breakdown: EnrollmentBreakdown;
+  xAxis: EnrollmentXAxis;
 };
 
 const DEFAULT_DASHBOARD_SETTINGS : EnrollmentContextSettings = {
@@ -125,6 +166,7 @@ const DEFAULT_DASHBOARD_SETTINGS : EnrollmentContextSettings = {
   sortType: "latest" as const,
   facet: "ms_assignment" as const,
   breakdown: "grade_cohort",
+  xAxis: "class_of",
 };
 
 export const SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS = [
@@ -141,6 +183,7 @@ export const SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS = [
   CommonContextSettingsAll.makeChartsEnabledSerializeConfig,
   CommonContextSettingsAll.makeShowLegendSerializeConfig,
   makeEnrollmentBreakdownSerializeConfig,
+  makeEnrollmentXAxisSerializeConfig,
 ];
 
 export default function EnrollmentPage() {
