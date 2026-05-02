@@ -8,7 +8,7 @@ import { serializeFacet, deserializeFacet } from "./EnrollmentDashboard";
 import * as CommonContextSettingsAll from "app/finance/_settings/common_context_settings";
 import * as CommonSettings from "app/finance/_settings/common_settings";
 import EnrollmentGradeLevelFilter from "app/finance/_filteritems/enrollment_grade_level";
-import EnrollmentStudentGroupFilter from "app/finance/_filteritems/enrollment_student_group";
+import EnrollmentStudentGroupFilter from "app/finance/_filteritems/enrollment_datasets";
 import EnrollmentDashboard from "./EnrollmentDashboard";
 
 import type { SettingsConfig } from "app/finance/_settings/base_settings";
@@ -25,7 +25,6 @@ export const ENROLLMENT_BREAKDOWN_OPTIONS = {
   none: "None",
   grade: "Grade",
   grade_cohort: "Grade Cohort",
-  student_group: "Student Group",
 } as const;
 
 export type EnrollmentBreakdown = keyof typeof ENROLLMENT_BREAKDOWN_OPTIONS;
@@ -34,7 +33,6 @@ const BREAKDOWN_SERIALIZE_MAP: Record<EnrollmentBreakdown, string> = {
   none: "0",
   grade: "1",
   grade_cohort: "2",
-  student_group: "3",
 };
 const BREAKDOWN_DESERIALIZE_MAP = Object.fromEntries(
   Object.entries(BREAKDOWN_SERIALIZE_MAP).map(([k, v]) => [v, k]),
@@ -67,7 +65,6 @@ export const ENROLLMENT_BREAKDOWN_CODE_COLUMNS: Record<EnrollmentBreakdown, stri
   none: null,
   grade: "grade_level_code",
   grade_cohort: "grade_cohort_code",
-  student_group: "student_group_code",
 };
 
 // Display-label column for each breakdown choice (used in chart legends).
@@ -75,7 +72,6 @@ export const ENROLLMENT_BREAKDOWN_LABEL_COLUMNS: Record<EnrollmentBreakdown, str
   none: null,
   grade: "grade_level",
   grade_cohort: "grade_cohort",
-  student_group: "student_group",
 };
 
 function makeEnrollmentGradeLevelSerializeConfig(context?): SettingsConfig {

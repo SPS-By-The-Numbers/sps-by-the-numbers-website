@@ -30,7 +30,7 @@ function makeEnrollmentStudentGroupTree() {
   for (const [type, leaves] of byType) {
     children.push(makeInternalNode(type, type, leaves));
   }
-  return makeInternalNode("all", "Student Groups", children);
+  return makeInternalNode("all", "Datasets", children);
 }
 
 const EnrollmentStudentGroupFilter = new Filter(makeEnrollmentStudentGroupTree(), ITEM_PREFIX);

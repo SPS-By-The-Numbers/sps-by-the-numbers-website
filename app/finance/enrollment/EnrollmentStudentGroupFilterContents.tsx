@@ -1,5 +1,5 @@
 import { RichTreeView } from "@mui/x-tree-view/RichTreeView";
-import EnrollmentStudentGroupFilter from "app/finance/_filteritems/enrollment_student_group";
+import EnrollmentStudentGroupFilter from "app/finance/_filteritems/enrollment_datasets";
 
 import type { BaseSettings } from "app/finance/_settings/base_settings";
 import type { StudentGroupFilters } from "utilities/DistrictData";

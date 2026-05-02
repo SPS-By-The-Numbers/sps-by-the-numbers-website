@@ -204,14 +204,19 @@ function extractRawEnrollment(
 
   // Stage the chosen metric under a known name so the rollup can stay
   // a static expression while the caller picks an arbitrary rc_enrollment
-  // column (e.g. all_students, female, low_income, …). The breakdown
-  // column (if any) is added to the groupby so each (facet, breakdown)
-  // pair becomes its own series within a chart.
-  const useBreakdown = breakdownCodeColumn && breakdownCodeColumn !== facetCodeColumn;
+  // column. After the long-format fold in DistrictData.filteredEnrollment,
+  // student_group_code is always present on the input frame and acts as
+  // an implicit series dimension — every selected dataset becomes its own
+  // series in each facet's chart. The optional breakdown column adds
+  // another nested series dim (e.g. grade-cohort lines per dataset).
+  const useBreakdown =
+    breakdownCodeColumn &&
+    breakdownCodeColumn !== facetCodeColumn &&
+    breakdownCodeColumn !== "student_group_code";
   const staged = df.derive({ _metric: aq.escape((d) => d[metricColumn]) });
   const grouped = useBreakdown
-    ? staged.groupby("class_of", "grade", facetCodeColumn, breakdownCodeColumn)
-    : staged.groupby("class_of", "grade", facetCodeColumn);
+    ? staged.groupby("class_of", "grade", facetCodeColumn, "student_group_code", breakdownCodeColumn)
+    : staged.groupby("class_of", "grade", facetCodeColumn, "student_group_code");
   return grouped.rollup({
     [metricColumn]: (d) => op.sum(d._metric),
   });
@@ -226,23 +231,26 @@ export function toFacetedCharatbleEnrollmentDataset(
   breakdownCodeColumn: string | null = null,
 ) {
   const facetCodeColumn = `${facet}_code`;
-  const useBreakdown = breakdownCodeColumn && breakdownCodeColumn !== facetCodeColumn;
+  const useBreakdown =
+    breakdownCodeColumn &&
+    breakdownCodeColumn !== facetCodeColumn &&
+    breakdownCodeColumn !== "student_group_code";
   const df = extractRawEnrollment(filteredDf, facet, metricColumn, breakdownCodeColumn);
 
-  // composite_key always has the form `<facetCode>_<seriesCode>` so the
-  // multi-series chart's column lookup
-  // (`<metricColumn>_<facetCode>_<seriesCode>_actuals`) matches the
-  // pivoted column. When no breakdown is selected, the series code is
-  // the facet code itself — every chart ends up with a single line
-  // keyed `<facetCode>` whose data column is
-  // `<metricColumn>_<facetCode>_<facetCode>_actuals`.
+  // composite_key shape:
+  //   useBreakdown:  <facetCode>_<breakdownCode>_<studentGroupCode>
+  //   else:          <facetCode>_<studentGroupCode>
+  // The multi-series chart's column lookup
+  // (`<metricColumn>_<facetCode>_<seriesCode>_actuals`) matches by
+  // appending `<seriesCode>` after the facet code, where the seriesCode
+  // is the rest of the composite_key after the leading facet segment.
   const withComposite = df
     .filter(d => d.grade != "All Grades")
     .derive({ _metric: aq.escape((d) => d[metricColumn]) })
     .derive({
       composite_key: useBreakdown
-        ? aq.escape((d) => `${d[facetCodeColumn]}_${d[breakdownCodeColumn]}`)
-        : aq.escape((d) => `${d[facetCodeColumn]}_${d[facetCodeColumn]}`),
+        ? aq.escape((d) => `${d[facetCodeColumn]}_${d[breakdownCodeColumn]}_${d.student_group_code}`)
+        : aq.escape((d) => `${d[facetCodeColumn]}_${d.student_group_code}`),
     });
 
   const pdata = withComposite

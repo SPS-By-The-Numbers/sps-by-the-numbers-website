@@ -200,49 +200,75 @@ export default function EnrollmentDashboard({
         allSettings[0],
       ).filter((d) => d.grade != "All Grades");
       const facetArr = firstFiltered.array(facetCodeColumn) as Array<number | null>;
+      const studentGroupArr = firstFiltered.array("student_group_code") as Array<number | null>;
+      const studentGroupNameArr = firstFiltered.array("student_group") as Array<string | null>;
       if (effectiveBreakdownCol) {
         const breakdownArr = firstFiltered.array(effectiveBreakdownCol) as Array<number | null>;
         const labelArr = firstFiltered.array(breakdownLabelColumn) as Array<string | null>;
         const seenByFacet = new Map<string, Set<string>>();
-        const labelByCode = new Map<string, string>();
+        const breakdownLabelByCode = new Map<string, string>();
+        const studentGroupLabelByCode = new Map<string, string>();
         for (let i = 0; i < firstFiltered.numRows(); i++) {
           const facetCode = String(facetArr[i]);
           const breakdownCode = String(breakdownArr[i]);
+          const studentGroupCode = String(studentGroupArr[i]);
+          const seriesKey = `${breakdownCode}_${studentGroupCode}`;
           let seen = seenByFacet.get(facetCode);
           if (!seen) {
             seen = new Set();
             seenByFacet.set(facetCode, seen);
             result.set(facetCode, []);
           }
-          if (!labelByCode.has(breakdownCode)) {
-            labelByCode.set(breakdownCode, String(labelArr[i] ?? breakdownCode));
+          if (!breakdownLabelByCode.has(breakdownCode)) {
+            breakdownLabelByCode.set(breakdownCode, String(labelArr[i] ?? breakdownCode));
           }
-          if (!seen.has(breakdownCode)) {
-            seen.add(breakdownCode);
+          if (!studentGroupLabelByCode.has(studentGroupCode)) {
+            studentGroupLabelByCode.set(studentGroupCode, String(studentGroupNameArr[i] ?? studentGroupCode));
+          }
+          if (!seen.has(seriesKey)) {
+            seen.add(seriesKey);
             result.get(facetCode)!.push({
-              key: breakdownCode,
-              name: labelByCode.get(breakdownCode)!,
+              key: seriesKey,
+              name: `${breakdownLabelByCode.get(breakdownCode)} / ${studentGroupLabelByCode.get(studentGroupCode)}`,
             });
           }
         }
-        // Stable sort by breakdown code so series ordering is consistent
-        // across facets.
+        // Stable sort by (breakdown code, student-group code).
         for (const defs of result.values()) {
-          defs.sort((a, b) => Number(a.key) - Number(b.key));
+          defs.sort((a, b) => {
+            const [ab, ag] = a.key.split("_").map(Number);
+            const [bb, bg] = b.key.split("_").map(Number);
+            return ab - bb || ag - bg;
+          });
         }
       } else {
-        // No effective breakdown — one self-keyed series per facet so
-        // the column lookup `<metric>_<facetCode>_<facetCode>_actuals`
-        // resolves against the duplicated-key column produced by the
-        // dataset transformer.
+        // No effective breakdown — one series per selected dataset. The
+        // composite_key in the dataset transformer is `<facet>_<group>`,
+        // so the chart's seriesKey is just the student-group code.
+        const seenByFacet = new Map<string, Set<string>>();
+        const studentGroupLabelByCode = new Map<string, string>();
         for (let i = 0; i < firstFiltered.numRows(); i++) {
           const facetCode = String(facetArr[i]);
-          if (!result.has(facetCode)) {
-            result.set(facetCode, [{
-              key: facetCode,
-              name: "Headcount",
-            }]);
+          const studentGroupCode = String(studentGroupArr[i]);
+          let seen = seenByFacet.get(facetCode);
+          if (!seen) {
+            seen = new Set();
+            seenByFacet.set(facetCode, seen);
+            result.set(facetCode, []);
           }
+          if (!studentGroupLabelByCode.has(studentGroupCode)) {
+            studentGroupLabelByCode.set(studentGroupCode, String(studentGroupNameArr[i] ?? studentGroupCode));
+          }
+          if (!seen.has(studentGroupCode)) {
+            seen.add(studentGroupCode);
+            result.get(facetCode)!.push({
+              key: studentGroupCode,
+              name: studentGroupLabelByCode.get(studentGroupCode)!,
+            });
+          }
+        }
+        for (const defs of result.values()) {
+          defs.sort((a, b) => Number(a.key) - Number(b.key));
         }
       }
       return result;
