@@ -884,6 +884,7 @@ export function makeContextCell(
   title,
   yValueFormat,
   yBounds,
+  yLabel?: string,
 ) {
   const cell = makeBudgetActualsContextChartConfig({
     renderTo,
@@ -894,6 +895,7 @@ export function makeContextCell(
     xValueFormat: "year" as const,
 
     yValueFormat,
+    yLabel,
 
     // No caption cause it's short.
     captionType: "none",

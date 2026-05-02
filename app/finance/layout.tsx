@@ -5,6 +5,9 @@ import { Suspense } from 'react';
 
 import type { ReactNode } from "react";
 
+import "highcharts/css/highcharts.css";
+import "@highcharts/grid-pro/css/grid-pro.css";
+import "@highcharts/dashboards/css/dashboards.css";
 import "styles/highcharts-base.scss";
 import "styles/finance-dashboard.scss";
 import "styles/hc-ba-history.scss";

@@ -1,11 +1,10 @@
 import DistrictSelector from "app/finance/_widgets/DistrictSelector";
-import FilterGroupingSelector from "app/finance/_widgets/FilterGroupingSelector";
 
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 
-// Enrollment-specific dataset settings: omits the money and staffing
-// normalization selectors since enrollment headcounts aren't normalized
-// against either of those.
+// Enrollment-specific dataset settings: only the district selector
+// applies. Money/staffing normalization don't apply to headcounts, and
+// the OSPI/SPSBTN PAO filter grouping isn't relevant either.
 export default function EnrollmentDatasetSettingsContents({
   settings,
   setSettings,
@@ -14,20 +13,11 @@ export default function EnrollmentDatasetSettingsContents({
   setSettings: (x: DatasetSettings) => void;
 }) {
   return (
-    <>
-      <DistrictSelector
-        ccddd={settings.ccddd}
-        onChange={(ccddd) =>
-          setSettings(Object.assign({}, settings, { ccddd }))
-        }
-      />
-      <FilterGroupingSelector
-        label={`Filter Grouping`}
-        filterGrouping={settings.filterGrouping}
-        onChange={(filterGrouping) =>
-          setSettings(Object.assign({}, settings, { filterGrouping }))
-        }
-      />
-    </>
+    <DistrictSelector
+      ccddd={settings.ccddd}
+      onChange={(ccddd) =>
+        setSettings(Object.assign({}, settings, { ccddd }))
+      }
+    />
   );
 }

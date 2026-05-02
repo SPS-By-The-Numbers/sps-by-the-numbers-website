@@ -291,6 +291,14 @@ export default function SettingsLayout<
         sx={{
           height: "100%",
           flexGrow: 1,
+          // Default flex-item min-width is auto (= min-content), which
+          // would let the dashboard's intrinsic content width (e.g. a
+          // wide context band) push this Box past the viewport on
+          // mobile. minWidth: 0 + overflow: hidden caps the Box at the
+          // available row width and contains any horizontal overflow
+          // inside the inner scroll containers.
+          minWidth: 0,
+          overflow: "hidden",
           p: 0,
           width: { sm: `calc(100% - ${drawerWidthPx}px)` },
         }}

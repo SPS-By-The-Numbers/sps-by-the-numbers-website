@@ -1,9 +1,25 @@
+// Okabe-Ito vermillion / bluish-green: keep the conventional red-bad /
+// green-good finance signal while staying distinguishable for the
+// common deutan and protan colour-vision deficiencies. Bolding and a
+// directional arrow prefix add non-colour cues for monochrome /
+// achromatic viewers. The arrows are pseudo-elements so the cell text
+// itself stays unchanged for screen-reader users.
 .ba-chartstats-bad {
-  color: red;
+  color: #d55e00;
+  font-weight: bold;
+}
+
+.ba-chartstats-bad::before {
+  content: "▼ ";
 }
 
 .ba-chartstats-good {
-  color: green;
+  color: #009e73;
+  font-weight: bold;
+}
+
+.ba-chartstats-good::before {
+  content: "▲ ";
 }
 
 .ba-chartstats-table td {

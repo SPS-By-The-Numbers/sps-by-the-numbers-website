@@ -1,7 +1,28 @@
+// Natural height of the context-cell on tall viewports. The grid
+// template caps the row track at 30dvh, so on short viewports the
+// charts overflow into a vertical scroll within the sticky band
+// rather than the band itself growing.
 $context-chart-row-height: 230px;
 
-.hc-dashboard-row {
+// Grid auto-fit + minmax tiles cells into as many columns as the
+// viewport can fit while keeping each cell above a minimum readable
+// width. min(450px, 100%) keeps the floor at 450px on desktops but
+// drops it to the viewport width on phones in portrait, so the grid
+// never forces a horizontal scrollbar on narrow screens.
+.hcdashboard .highcharts-dashboards-layout.faceted-row .highcharts-dashboards-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(450px, 100%), 1fr));
+  gap: 0.5rem;
+}
+
+// Single-row flex with no-wrap so cells lay out horizontally; the
+// parent layout's overflow-x:auto produces the left-right scroll when
+// the cells exceed the viewport width.
+.hcdashboard .highcharts-dashboards-layout.context-row .highcharts-dashboards-row {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
 }
 
 .analysis-title {
@@ -35,19 +56,42 @@ $context-chart-row-height: 230px;
 
 .hcdashboard.hascontext .highcharts-dashboards-layouts-wrapper {
   display: grid;
-  grid-template-rows: $context-chart-row-height auto;
+  // minmax(0, …) forces the track to clip rather than grow to fit
+  // 180px-pinned context cells; min(natural, 30dvh) keeps the cap on
+  // short viewports without enlarging on tall ones.
+  grid-template-rows: minmax(0, min($context-chart-row-height, 30dvh)) auto;
+  // Cap the column at 100% of the wrapper so the context band's
+  // intrinsic content width (sum of fixed-width cells) doesn't stretch
+  // the page. Combined with the layout's min-width: 0 below, the
+  // overflowing cells stay inside the band and scroll horizontally.
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .hcdashboard .highcharts-dashboards-layout.faceted-row {
   height: 100%;
   overflow: scroll;
+  // Bottom padding so the last grid row's legend isn't cropped right
+  // at the scroll boundary.
+  padding-bottom: 80px;
 }
 
 .hcdashboard .highcharts-dashboards-layout.context-row {
   position: sticky;
   top: 0;
   background-color: #d3d3d3;
-  overflow: hidden;
+  // Hard cap as a backstop in case the grid track sizing isn't
+  // honoured. Cells inside keep their natural height ($context-chart-
+  // row-height); when more cells are present than fit horizontally,
+  // the user scrolls left-right within the sticky band rather than
+  // wrapping cells onto multiple rows.
+  max-height: 30dvh;
+  // Override the default grid-item min-width: auto so the layout can
+  // be narrower than its min-content (the cells), letting overflow-x
+  // contain the horizontal scroll inside the band rather than
+  // widening the page.
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .hcdashboard .highcharts-dashboards-cell.context-cell div.chart-title h3 {
@@ -55,9 +99,12 @@ $context-chart-row-height: 230px;
   margin: 0.2ex 0.2ex;
 }
 
+// Each context cell is a flex item with a fixed 300px width so the
+// row's total width can exceed the viewport, triggering the parent
+// layout's horizontal scroll. Heights stay pinned at the natural
+// readable size.
 .hcdashboard .highcharts-dashboards-cell.context-cell {
-  min-width: 25%;
-  max-width: 100%;
+  flex: 0 0 300px;
   min-height: $context-chart-row-height;
   max-height: $context-chart-row-height;
 }
@@ -65,6 +112,23 @@ $context-chart-row-height: 230px;
 .hcdashboard .highcharts-dashboards-cell.context-cell.context-smaller {
   min-height: calc($context-chart-row-height * 0.7);
   max-height: calc($context-chart-row-height * 0.7);
+}
+
+// On narrow viewports the row track is capped (30dvh) which is
+// shorter than $context-chart-row-height (230px). Drop the cell
+// height pin so each context cell shrinks to fill the track instead
+// of overflowing vertically.
+@media (max-width: 600px) {
+  .hcdashboard .highcharts-dashboards-cell.context-cell {
+    min-height: 0;
+    max-height: 100%;
+    height: 100%;
+  }
+
+  .hcdashboard .highcharts-dashboards-cell.context-cell.context-smaller {
+    height: 70%;
+    max-height: 70%;
+  }
 }
 
 .hcdashboard .highcharts-dashboards-cell.context-cell.context-smaller div.chart-title h3 {

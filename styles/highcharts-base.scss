@@ -1,7 +1,6 @@
-@import '../node_modules/highcharts/css/highcharts.css';
-@import '../node_modules/@highcharts/grid-pro/css/grid-pro.css';
-@import '../node_modules/@highcharts/dashboards/css/dashboards.css';
-
+// Vendor CSS for Highcharts / grid-pro / dashboards is loaded as plain
+// CSS imports from app/finance/layout.tsx so this file can be Sass-only
+// (Dart Sass is phasing out @import).
 :root {
       /* Colors for data series and points */
   /*--highcharts-color-1: #38b9ff; */
@@ -35,17 +34,24 @@
   font-size: x-small;
 }
 
+// Cell width is controlled by the grid layout in finance-dashboard.scss
+// (`grid-template-columns: repeat(auto-fit, minmax(...))`); only the
+// vertical floor is set here so short charts don't collapse. clamp()
+// keeps tall desktops generous (so multi-series legends fit inside the
+// cell) without dominating short mobile viewports — dvh adapts to the
+// mobile browser chrome that vh doesn't.
 .highcharts-dashboards-cell {
-  min-width: 300px;
-  max-width: 100%;
-  min-height: 450px;
+  min-height: clamp(360px, 60dvh, 520px);
 }
 
-@media screen and (min-width: 1500px) {
+// Narrow / mobile viewports: keep each chart shorter than half the
+// visible height so the user can see the chart and at least the
+// beginning of the next one in a single screen. Both min and max are
+// re-pinned to stay within the 50dvh ceiling.
+@media (max-width: 600px) {
   .highcharts-dashboards-cell {
-    min-width: 490px;
-    max-width: 50%;
-    min-height: 500px;
+    min-height: 280px;
+    max-height: 50dvh;
   }
 }
 
