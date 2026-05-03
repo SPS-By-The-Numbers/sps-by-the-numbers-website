@@ -17,41 +17,67 @@ import type { Facet } from "./EnrollmentDashboard";
 import type { CommonFacetContextSettings } from "app/finance/_settings/common_context_settings";
 import type { SchoolFilters, GradeLevelFilters, StudentGroupFilters } from "utilities/DistrictData";
 
-// X-axis choice. Default is class_of (Fiscal Year End). When
-// diploma_year is picked, the chart's X is years-to-diploma (13→0,
-// reversed) and each diploma cohort becomes its own line so cohorts
-// align at the left edge of every chart regardless of fiscal year.
-export const ENROLLMENT_X_AXIS_OPTIONS = {
-  class_of: "Fiscal Year End",
-  diploma_year: "Years to Diploma",
-} as const;
-
-export type EnrollmentXAxis = keyof typeof ENROLLMENT_X_AXIS_OPTIONS;
-
-const X_AXIS_SERIALIZE_MAP: Record<EnrollmentXAxis, string> = {
-  class_of: "0",
-  diploma_year: "1",
-};
-const X_AXIS_DESERIALIZE_MAP = Object.fromEntries(
-  Object.entries(X_AXIS_SERIALIZE_MAP).map(([k, v]) => [v, k]),
-) as Record<string, EnrollmentXAxis>;
-
-export function serializeEnrollmentXAxis(x: EnrollmentXAxis): string {
-  return X_AXIS_SERIALIZE_MAP[x] ?? "0";
-}
-
-export function deserializeEnrollmentXAxis(s: string): EnrollmentXAxis {
-  return X_AXIS_DESERIALIZE_MAP[s] ?? "class_of";
-}
-
-function makeEnrollmentXAxisSerializeConfig(context?): SettingsConfig {
+// When on, force diploma_year as an extra series dim regardless of
+// breakdown selection — overlays cohort lines on top of any breakdown.
+// Each cohort series plots its enrollment per fiscal year for the
+// ~13 years that cohort was in K–12.
+function makeEnrollmentCohortLinesSerializeConfig(context?): SettingsConfig {
   return [
     [
-      "xAxis", {
+      "cohortLines", {
         serializerType: "custom",
-        urlVar: "exa",
-        serialize: (settings, key) => serializeEnrollmentXAxis(settings[key]),
-        deserialize: (settings, s) => deserializeEnrollmentXAxis(s),
+        urlVar: "ecl",
+        serialize: (settings, key) => settings[key] ? "1" : "0",
+        deserialize: (settings, s) => s === "1",
+      },
+    ]
+  ];
+}
+
+// When on, every series is re-anchored to start at (X=0, Y=0). The
+// chart's Y becomes the delta from each series's first non-null point,
+// and X becomes years-since-start. Useful for comparing cohort trends
+// or any group whose lines start at different fiscal years.
+function makeEnrollmentDeltaModeSerializeConfig(context?): SettingsConfig {
+  return [
+    [
+      "deltaMode", {
+        serializerType: "custom",
+        urlVar: "edm",
+        serialize: (settings, key) => settings[key] ? "1" : "0",
+        deserialize: (settings, s) => s === "1",
+      },
+    ]
+  ];
+}
+
+// Bounds for the class_of range slider. Wider than the actual data so
+// users can dial the range in either direction; rows outside the picked
+// range are dropped before pivot, faceting, or delta rebase.
+export const ENROLLMENT_CLASS_OF_MIN = 2010;
+export const ENROLLMENT_CLASS_OF_MAX = 2030;
+
+function makeEnrollmentClassOfRangeSerializeConfig(context?): SettingsConfig {
+  return [
+    [
+      "classOfMin", {
+        serializerType: "custom",
+        urlVar: "ecmn",
+        serialize: (settings, key) => String(settings[key]),
+        deserialize: (settings, s) => {
+          const n = Number(s);
+          return Number.isFinite(n) ? n : ENROLLMENT_CLASS_OF_MIN;
+        },
+      },
+    ], [
+      "classOfMax", {
+        serializerType: "custom",
+        urlVar: "ecmx",
+        serialize: (settings, key) => String(settings[key]),
+        deserialize: (settings, s) => {
+          const n = Number(s);
+          return Number.isFinite(n) ? n : ENROLLMENT_CLASS_OF_MAX;
+        },
       },
     ]
   ];
@@ -61,12 +87,12 @@ function makeEnrollmentXAxisSerializeConfig(context?): SettingsConfig {
 // Independent from the facet itself — e.g. facet by School, with
 // breakdown Grade Cohort to get one line per cohort. "Summed"
 // produces a single-series chart where each facet just shows its
-// aggregated metric.
+// aggregated metric. Cohort identity is exposed via the Cohort Lines
+// toggle, not as a breakdown.
 export const ENROLLMENT_BREAKDOWN_OPTIONS = {
   none: "Summed",
   grade: "Grade",
   grade_cohort: "Grade Cohort",
-  diploma_year: "Diploma Year",
 } as const;
 
 export type EnrollmentBreakdown = keyof typeof ENROLLMENT_BREAKDOWN_OPTIONS;
@@ -75,7 +101,6 @@ const BREAKDOWN_SERIALIZE_MAP: Record<EnrollmentBreakdown, string> = {
   none: "0",
   grade: "1",
   grade_cohort: "2",
-  diploma_year: "3",
 };
 const BREAKDOWN_DESERIALIZE_MAP = Object.fromEntries(
   Object.entries(BREAKDOWN_SERIALIZE_MAP).map(([k, v]) => [v, k]),
@@ -108,9 +133,6 @@ export const ENROLLMENT_BREAKDOWN_CODE_COLUMNS: Record<EnrollmentBreakdown, stri
   none: null,
   grade: "grade_level_code",
   grade_cohort: "grade_cohort_code",
-  // diploma_year is already numeric (the year itself), so it doubles
-  // as both code and label column.
-  diploma_year: "diploma_year",
 };
 
 // Display-label column for each breakdown choice (used in chart legends).
@@ -118,7 +140,6 @@ export const ENROLLMENT_BREAKDOWN_LABEL_COLUMNS: Record<EnrollmentBreakdown, str
   none: null,
   grade: "grade_level",
   grade_cohort: "grade_cohort",
-  diploma_year: "diploma_year",
 };
 
 function makeEnrollmentGradeLevelSerializeConfig(context?): SettingsConfig {
@@ -158,7 +179,10 @@ const DEFAULT_DETAILED_ACTUALS_SETTINGS = DEFAULT_DATASET_SETTINGS.map((v) => ({
 
 export type EnrollmentContextSettings = CommonFacetContextSettings<Facet> & {
   breakdown: EnrollmentBreakdown;
-  xAxis: EnrollmentXAxis;
+  cohortLines: boolean;
+  deltaMode: boolean;
+  classOfMin: number;
+  classOfMax: number;
 };
 
 const DEFAULT_DASHBOARD_SETTINGS : EnrollmentContextSettings = {
@@ -166,7 +190,10 @@ const DEFAULT_DASHBOARD_SETTINGS : EnrollmentContextSettings = {
   sortType: "latest" as const,
   facet: "ms_assignment" as const,
   breakdown: "grade_cohort",
-  xAxis: "class_of",
+  cohortLines: false,
+  deltaMode: false,
+  classOfMin: ENROLLMENT_CLASS_OF_MIN,
+  classOfMax: ENROLLMENT_CLASS_OF_MAX,
 };
 
 export const SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS = [
@@ -183,7 +210,9 @@ export const SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS = [
   CommonContextSettingsAll.makeChartsEnabledSerializeConfig,
   CommonContextSettingsAll.makeShowLegendSerializeConfig,
   makeEnrollmentBreakdownSerializeConfig,
-  makeEnrollmentXAxisSerializeConfig,
+  makeEnrollmentCohortLinesSerializeConfig,
+  makeEnrollmentDeltaModeSerializeConfig,
+  makeEnrollmentClassOfRangeSerializeConfig,
 ];
 
 export default function EnrollmentPage() {

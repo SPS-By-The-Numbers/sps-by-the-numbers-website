@@ -31,7 +31,9 @@ import {
   SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS,
 } from "app/finance/enrollment/EnrollmentPage";
 import EnrollmentBreakdownContents from "app/finance/enrollment/EnrollmentBreakdownContents";
-import EnrollmentXAxisContents from "app/finance/enrollment/EnrollmentXAxisContents";
+import EnrollmentCohortLinesContents from "app/finance/enrollment/EnrollmentCohortLinesContents";
+import EnrollmentDeltaModeContents from "app/finance/enrollment/EnrollmentDeltaModeContents";
+import { makeEnrollmentClassOfRangeContents } from "app/finance/enrollment/EnrollmentClassOfRangeContents";
 import EnrollmentGradeLevelFilterContents from "app/finance/enrollment/EnrollmentGradeLevelFilterContents";
 import EnrollmentStudentGroupFilterContents from "app/finance/enrollment/EnrollmentStudentGroupFilterContents";
 import { makeFacetContents } from "app/finance/_widgets/FacetContents";
@@ -80,7 +82,7 @@ function makeComponentsGenerator(
   metricName: string,
   seriesDefsByFacet: Map<string, Array<SeriesCodeDef>>,
   xLabel: string,
-  xAxisReversed: boolean,
+  yLabel: string,
 ) {
   return function componentsGenerator(
     facetOrder,
@@ -100,7 +102,6 @@ function makeComponentsGenerator(
       idPrefix: settings.id.toString(),
       xColumn: "class_of",
       xLabel,
-      xAxisReversed,
       yColumnRoot: metricName,
       facetOrder,
       connectorId: CONNECTOR_ID,
@@ -111,12 +112,63 @@ function makeComponentsGenerator(
       yValueFormatOverride: "decimal",
       chartConfigMaker: (options) => makeMultiSeriesLineChartConfig({
         ...options,
-        yLabel: "Student Headcount",
+        yLabel,
         disableLegend: contextSettings.showLegend === false,
         seriesDefs: seriesDefsByFacet.get(String(options.facet)) ?? [],
       }),
     });
   };
+}
+
+// Re-anchor every series column at (X=0, Y=0). For each series, find
+// the first non-null value, subtract it from each subsequent value,
+// pack the result starting at row 0, and pad with nulls to a common
+// length. The resulting "class_of" column holds 0..maxLen-1
+// (years-since-start), so different series whose data starts at
+// different fiscal years all line up at the left edge of the chart.
+function rebaseToDelta(df, metricName: string, idPrefixes: Array<string>) {
+  const cols = df.columnNames();
+  const seriesCols = cols.filter(c => {
+    if (!c.endsWith("_actuals")) return false;
+    return idPrefixes.some(p => c.startsWith(p) && c.includes(`_${metricName}_`));
+  });
+  if (seriesCols.length === 0) {
+    return df;
+  }
+  const isReal = (v: number | null | undefined) =>
+    v !== null && v !== undefined && !Number.isNaN(v);
+
+  let maxLen = 0;
+  const rebased: Record<string, Array<number | null>> = {};
+  for (const col of seriesCols) {
+    const arr = df.array(col) as Array<number | null>;
+    let firstIdx = -1;
+    for (let i = 0; i < arr.length; i++) {
+      if (isReal(arr[i])) { firstIdx = i; break; }
+    }
+    if (firstIdx < 0) {
+      rebased[col] = [];
+      continue;
+    }
+    const baseline = arr[firstIdx] as number;
+    const packed: Array<number | null> = [];
+    for (let i = firstIdx; i < arr.length; i++) {
+      const v = arr[i];
+      packed.push(isReal(v) ? (v as number) - baseline : null);
+    }
+    rebased[col] = packed;
+    if (packed.length > maxLen) maxLen = packed.length;
+  }
+
+  const tableData: Record<string, Array<number | null>> = {
+    class_of: Array.from({ length: maxLen }, (_, i) => i),
+  };
+  for (const col of seriesCols) {
+    const padded = rebased[col].slice();
+    while (padded.length < maxLen) padded.push(null);
+    tableData[col] = padded;
+  }
+  return aq.table(tableData);
 }
 
 // Charts expenditures for
@@ -160,25 +212,16 @@ export default function EnrollmentDashboard({
       });
     }
 
-    // X-axis selector. Default is class_of (Fiscal Year End). When
-    // diploma_year is picked, we pivot rows on years_to_diploma so all
-    // cohorts share an aligned X (PreK at 13, graduation at 0,
-    // reversed). In that mode we also force diploma_year_code into the
-    // series key so each cohort gets its own line within each facet.
-    const isCohortView = contextSettings.xAxis === "diploma_year";
-    const xColumn = isCohortView ? "years_to_diploma" : "class_of";
-    const xLabel = isCohortView ? "Years to Diploma" : "Fiscal Year End";
-    const xAxisReversed = isCohortView;
-
+    // Drop rows outside the user-picked class_of range before any
+    // pivot / faceting / delta rebase happens, so every downstream
+    // computation only sees in-range fiscal years.
+    const classOfMin = contextSettings.classOfMin;
+    const classOfMax = contextSettings.classOfMax;
     function filteredEnrollmentWithSchoolDomain(this: DistrictData, s: EnrollmentSettings) {
-      let df = this.filteredEnrollment(s).join_left(buildSchoolDomain(s.ccddd), "school_code");
-      // For the cohort view, drop rows where the cohort has already
-      // graduated (years_to_diploma < 0) — those would render as ghost
-      // data points beyond the right edge of the chart.
-      if (isCohortView) {
-        df = df.filter((d) => d.years_to_diploma === null || d.years_to_diploma >= 0);
-      }
-      return df;
+      return this.filteredEnrollment(s)
+        .params({ classOfMin, classOfMax })
+        .filter((d, $) => d.class_of >= $.classOfMin && d.class_of <= $.classOfMax)
+        .join_left(buildSchoolDomain(s.ccddd), "school_code");
     }
 
     // Map breakdown choice to the matching code/label columns on the
@@ -188,29 +231,21 @@ export default function EnrollmentDashboard({
     const breakdownCodeColumn = ENROLLMENT_BREAKDOWN_CODE_COLUMNS[contextSettings.breakdown];
     const breakdownLabelColumn = ENROLLMENT_BREAKDOWN_LABEL_COLUMNS[contextSettings.breakdown];
     const facetCodeColumn = `${contextSettings.facet}_code`;
-    // In cohort view (X = years_to_diploma), grade and grade_cohort are
-    // pure functions of grade_level_code, so each X position has exactly
-    // one possible grade. A grade-keyed series would therefore have a
-    // single non-null data point and render as a dot, not a line —
-    // suppress those breakdowns. Diploma Year breakdown stays as the
-    // primary series dim; extraSeriesDimCol below handles the default.
-    const breakdownIsRedundantInCohort =
-      isCohortView &&
-      breakdownCodeColumn !== null &&
-      breakdownCodeColumn !== "diploma_year";
     const effectiveBreakdownCol =
-      breakdownCodeColumn === facetCodeColumn || breakdownIsRedundantInCohort
-        ? null
-        : breakdownCodeColumn;
+      breakdownCodeColumn === facetCodeColumn ? null : breakdownCodeColumn;
 
-    // In cohort view, force diploma_year as an extra series dimension so
-    // every diploma cohort gets its own line within each facet. Skip
-    // when the breakdown already is diploma_year (would duplicate).
-    const extraSeriesDimCol =
-      isCohortView && breakdownCodeColumn !== "diploma_year"
-        ? "diploma_year"
-        : null;
+    // Cohort Lines toggle: force diploma_year as an extra series dim so
+    // each diploma cohort gets its own line. Sparse — each (cohort,
+    // breakdown) line spans only the fiscal years that cohort was in
+    // K–12 (and at the matching grade for any grade-derived breakdown).
+    const wantCohortSeries = contextSettings.cohortLines === true;
+    const extraSeriesDimCol = wantCohortSeries ? "diploma_year" : null;
     const extraSeriesLabelCol = extraSeriesDimCol;
+
+    // Delta mode re-anchors every series to start at (X=0, Y=0). The
+    // fiscal-year-keyed vitals base + total-enrollment context don't
+    // make sense after the rebase, so skip them.
+    const isDeltaMode = contextSettings.deltaMode === true;
 
     // Expand out the filter per sub-setting. The enrollment dashboard
     // sorts facets alphabetically by name, so the sortType/sortOrder
@@ -230,11 +265,11 @@ export default function EnrollmentDashboard({
           settings,
           metricName,
           effectiveBreakdownCol,
-          xColumn,
+          "class_of",
           extraSeriesDimCol,
         ),
       metricName,
-      isCohortView,
+      isDeltaMode,
     );
 
     // Per-facet series defs for the multi-series chart. The series key
@@ -306,9 +341,9 @@ export default function EnrollmentDashboard({
         if (!seen.has(seriesKey)) {
           seen.add(seriesKey);
           const nameParts: Array<string> = [];
+          if (extraCode !== null) nameParts.push(`c/o ${extraLabelByCode.get(extraCode) ?? extraCode}`);
           if (breakdownCode !== null) nameParts.push(breakdownLabelByCode.get(breakdownCode)!);
           nameParts.push(studentGroupLabelByCode.get(studentGroupCode)!);
-          if (extraCode !== null) nameParts.push(`Class of ${extraLabelByCode.get(extraCode) ?? extraCode}`);
           sortTupleByKey.set(seriesKey, [
             extraCode !== null ? Number(extraCode) : 0,
             breakdownCode !== null ? Number(breakdownCode) : 0,
@@ -324,24 +359,31 @@ export default function EnrollmentDashboard({
         defs.sort((a, b) => {
           const at = sortTupleByKey.get(a.key)!;
           const bt = sortTupleByKey.get(b.key)!;
-          return (at[0] - bt[0]) || (at[1] - bt[1]) || (at[2] - bt[2]);
+          // Cohort (extra) sorts descending so the most-recent diploma
+          // year is first; breakdown and group stay ascending as
+          // tiebreakers within a cohort.
+          return (bt[0] - at[0]) || (at[1] - bt[1]) || (at[2] - bt[2]);
         });
       }
       return result;
     })();
 
-    // Inject a district-wide total-enrollment column into the data so
-    // augmentContextComponents below can render a Total Enrollment
-    // context graph alongside the funded-enrollment / cashflow ones
-    // already supplied by makeChartableVitals. The fiscal-year-keyed
-    // context row doesn't apply to the cohort view, where the X axis
-    // is years-to-diploma rather than class_of.
+    // In delta mode, replace every series column with deltas from each
+    // series's first non-null value, packed to start at row 0. Skip the
+    // fiscal-year-keyed total-enrollment + vitals context cells since
+    // they would misalign after the rebase.
     const firstDistrictData = districtDataMap[allSettings[0].ccddd];
-    let data = facetData;
-    if (!isCohortView) {
-      // filteredEnrollment now returns long-format rows keyed by
-      // student_group_code; pick the All Students rows (code 1) and sum
-      // their amount per class_of for the district-wide total.
+    let data;
+    if (isDeltaMode) {
+      const idPrefixes = allSettings.map(s =>
+        `${s.id}_${s.currencyNormalization}_${metricName}_`,
+      );
+      data = rebaseToDelta(facetData, metricName, idPrefixes);
+    } else {
+      // Inject a district-wide total-enrollment column into the data so
+      // augmentContextComponents below can render a Total Enrollment
+      // context graph alongside the funded-enrollment / cashflow ones
+      // already supplied by makeChartableVitals.
       const totalEnrollmentDf = firstDistrictData
         .filteredEnrollment({ studentGroupCodes: new Set<number>([1]) })
         .filter((d) => d.grade != "All Grades")
@@ -349,7 +391,7 @@ export default function EnrollmentDashboard({
         .rollup({
           context_amount_totalEnrollment_actuals: (d) => op.sum(d.amount),
         });
-      data = data.join_left(totalEnrollmentDf, "class_of");
+      data = facetData.join_left(totalEnrollmentDf, "class_of");
     }
 
     // Sort by facet name (alphabetical, locale-aware) so charts
@@ -433,6 +475,8 @@ export default function EnrollmentDashboard({
       );
     }
 
+    const xLabel = isDeltaMode ? "Years from Kindergarten" : "Fiscal Year End";
+    const yLabel = isDeltaMode ? "Δ Headcount" : "Student Headcount";
     return makeHighchartConfig(
       {
         connectorId: CONNECTOR_ID,
@@ -440,12 +484,39 @@ export default function EnrollmentDashboard({
         contextSettings,
         allSettings,
         fullFacetOrder: titledFacetOrder,
-        componentsGenerator: makeComponentsGenerator(metricName, seriesDefsByFacet, xLabel, xAxisReversed),
-        ...(isCohortView ? {} : { augmentContextComponents }),
+        componentsGenerator: makeComponentsGenerator(metricName, seriesDefsByFacet, xLabel, yLabel),
+        ...(isDeltaMode ? {} : { augmentContextComponents }),
         data,
       }
     );
   }, [contextSettings, districtDataMap, allSettings]);
+
+  // Compute the actual class_of range across the loaded districts so the
+  // slider only spans years that have data. Memoized on districtDataMap
+  // + allSettings so the bound widget identity is stable across renders
+  // (avoids remounting the slider on every keystroke elsewhere).
+  const classOfRange = useMemo(() => {
+    let min = Infinity;
+    let max = -Infinity;
+    for (const settings of allSettings) {
+      const dd = districtDataMap[settings.ccddd];
+      if (!dd) continue;
+      const arr = dd.all_class_ofs().array("class_of") as Array<number>;
+      for (const v of arr) {
+        if (v < min) min = v;
+        if (v > max) max = v;
+      }
+    }
+    if (!Number.isFinite(min) || !Number.isFinite(max)) {
+      return { min: 2014, max: 2025 };
+    }
+    return { min, max };
+  }, [districtDataMap, allSettings]);
+
+  const classOfRangeContents = useMemo(
+    () => makeEnrollmentClassOfRangeContents(classOfRange.min, classOfRange.max),
+    [classOfRange.min, classOfRange.max],
+  );
 
   return (
     <SettingsLayout
@@ -457,7 +528,9 @@ export default function EnrollmentDashboard({
       contextSettings={contextSettings}
       contextSettingsComponents={[
         makeFacetContents(FACET_OPTIONS),
-        EnrollmentXAxisContents,
+        classOfRangeContents,
+        EnrollmentCohortLinesContents,
+        EnrollmentDeltaModeContents,
         EnrollmentBreakdownContents,
         YScaleContents,
         SchoolGroupingContents,

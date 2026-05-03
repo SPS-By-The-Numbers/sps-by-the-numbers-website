@@ -61,3 +61,26 @@
   overflow: auto;
 }
 
+// Highcharts' fullscreen API puts the chart's renderTo div into the
+// browser fullscreen layer. Without these overrides, our outer cell
+// min-height: clamp(360px, 60dvh, 520px) and the mobile max-height pin
+// still apply to the fullscreen element (and its ancestors), restricting
+// the chart to a small portion of the screen. Force fullscreen elements
+// and their chart container to fill the viewport.
+:fullscreen {
+  min-height: 0 !important;
+  max-height: none !important;
+  height: 100% !important;
+  width: 100% !important;
+  background: white;
+
+  .highcharts-dashboards-cell,
+  .highcharts-container,
+  .highcharts-container > svg {
+    min-height: 0 !important;
+    max-height: none !important;
+    height: 100% !important;
+    width: 100% !important;
+  }
+}
+

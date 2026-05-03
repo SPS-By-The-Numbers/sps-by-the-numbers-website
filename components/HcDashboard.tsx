@@ -39,7 +39,29 @@ export default function HcDashboard({
       onBoardRendered(board);
     }
 
+    // Highcharts uses the Fullscreen API but doesn't reflow nested
+    // dashboard charts when the viewport changes during the
+    // enter/exit-fullscreen transitions. Walk all chart instances on
+    // each fullscreenchange event and reflow them so they pick up the
+    // new container size.
+    const reflowAllCharts = () => {
+      for (const cell of board?.mountedComponents ?? []) {
+        const chart = cell?.component?.chart;
+        if (chart && typeof chart.reflow === "function") {
+          // Defer to the next frame so layout has settled into the
+          // fullscreen / non-fullscreen size before we measure.
+          requestAnimationFrame(() => {
+            try { chart.reflow(); } catch { /* ignore destroyed charts */ }
+          });
+        }
+      }
+    };
+    document.addEventListener("fullscreenchange", reflowAllCharts);
+    document.addEventListener("webkitfullscreenchange", reflowAllCharts);
+
     return () => {
+      document.removeEventListener("fullscreenchange", reflowAllCharts);
+      document.removeEventListener("webkitfullscreenchange", reflowAllCharts);
       try {
         // Clean up all the Highcharts event handlers, etc, on unmount or
         // this will just accumulate cruft and everything will go slow.
