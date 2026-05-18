@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPS Transportation Funding Analysis</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+:root{--c-orange:#E69F00;--c-sky:#56B4E9;--c-green:#009E73;--c-yellow:#F0E442;--c-blue:#0072B2;--c-vermil:#D55E00;--c-pink:#CC79A7;--bg:#F7F4EF;--surface:#FFFFFF;--border:#DDD8CF;--text:#1A1714;--muted:#6B6560;--accent:#0072B2;--accent2:#D55E00;--nav-bg:#1A1714;--nav-text:#F7F4EF;--radius:6px;--shadow:0 1px 4px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6}
+.app{display:flex;flex-direction:column;min-height:100vh}
+header{background:var(--nav-bg);color:var(--nav-text);padding:20px 32px 18px;border-bottom:3px solid var(--c-orange)}
+header h1{font-family:'DM Serif Display',serif;font-size:1.7rem;font-weight:400;letter-spacing:-.01em}
+header p{color:#B0A898;font-size:.85rem;margin-top:3px}
+nav{background:var(--nav-bg);display:flex;gap:2px;padding:0 32px;border-bottom:1px solid #333;overflow-x:auto}
+nav button{background:none;border:none;color:#B0A898;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;letter-spacing:.04em;text-transform:uppercase;padding:10px 14px;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s}
+nav button:hover{color:var(--nav-text)}
+nav button.active{color:var(--c-orange);border-bottom-color:var(--c-orange)}
+main{flex:1;padding:28px 32px;max-width:1200px;width:100%;margin:0 auto}
+.section{display:none}.section.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px 24px;box-shadow:var(--shadow);margin-bottom:20px}
+.card-title{font-family:'DM Serif Display',serif;font-size:1.1rem;font-weight:400;margin-bottom:4px}
+.card-sub{font-size:.8rem;color:var(--muted);margin-bottom:16px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:760px){.grid-2{grid-template-columns:1fr}main{padding:16px}nav{padding:0 16px}header{padding:16px}}
+.stat-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;flex:1;min-width:130px;box-shadow:var(--shadow)}
+.stat-val{font-family:'DM Mono',monospace;font-size:1.55rem;font-weight:500;color:var(--accent);line-height:1.1}
+.stat-val.warn{color:var(--accent2)}
+.stat-label{font-size:.75rem;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.05em}
+.chart-wrap{position:relative;width:100%}.chart-wrap canvas{width:100%!important}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th{background:#F0ECE6;text-align:left;padding:7px 8px;font-weight:600;font-size:.74rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);border-bottom:2px solid var(--border);cursor:pointer;user-select:none;vertical-align:bottom;line-height:1.3}
+th:hover{background:#E8E3DC}
+th .sa{margin-left:3px;opacity:.4}th.sorted .sa{opacity:1;color:var(--accent)}
+td{padding:5px 8px;border-bottom:1px solid #EDE9E2;vertical-align:middle}
+tr:hover td{background:#FAF8F4}
+.num{text-align:right;font-family:'DM Mono',monospace;font-size:.8rem}
+.badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:.71rem;font-weight:600}
+.badge-nbhd{background:#D4EDDA;color:#155724}
+.badge-opt{background:#FFF3CD;color:#7A5200}
+.badge-type{background:#E8EFF7;color:#1A3A5C}
+.filter-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;align-items:center}
+.filter-row label{font-size:.8rem;color:var(--muted);font-weight:500}
+select,input[type=text]{font-family:'DM Sans',sans-serif;font-size:.83rem;padding:5px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text)}
+.callout{border-left:4px solid var(--c-orange);background:#FFF8EC;padding:12px 16px;border-radius:0 var(--radius) var(--radius) 0;font-size:.85rem;margin-bottom:16px;color:#4A3A10}
+.callout.info{border-color:var(--c-blue);background:#EEF5FC;color:#0A2A4A}
+.callout.warn{border-color:var(--c-vermil);background:#FDF0EC;color:#4A1A0A}
+.callout strong{font-weight:600}
+.btn-dl{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:500;cursor:pointer;text-decoration:none;border:1px solid;transition:opacity .15s}
+.btn-dl:hover{opacity:.8}
+.btn-dl.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-dl.secondary{background:var(--surface);color:var(--accent);border-color:var(--accent)}
+.annotation{font-size:.82rem;color:var(--muted);margin-top:10px;font-style:italic}
+.formula-box{background:#F0ECE6;border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;font-family:'DM Mono',monospace;font-size:.82rem;line-height:1.9;margin:14px 0}
+.formula-box .hi{color:var(--accent);font-weight:500}
+.formula-box .hi2{color:var(--accent2);font-weight:500}
+.section-heading{font-family:'DM Serif Display',serif;font-size:1.4rem;font-weight:400;margin-bottom:6px}
+.section-desc{font-size:.88rem;color:var(--muted);margin-bottom:22px;max-width:700px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--muted)}
+.legend-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.legend-line{width:18px;height:3px;flex-shrink:0}
+.yr-tabs{display:flex;gap:4px}
+.yr-tab{padding:5px 12px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface);font-size:.82rem;cursor:pointer;font-family:'DM Sans',sans-serif;color:var(--muted);transition:all .15s}
+.yr-tab:hover{border-color:var(--accent);color:var(--accent)}
+.yr-tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+.analysis-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;box-shadow:var(--shadow);overflow:hidden}
+.ac-header{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 18px;cursor:pointer;background:#F7F4EF;border-bottom:1px solid var(--border);gap:12px}
+.ac-header:hover{background:#F0ECE6}
+.ac-q{display:flex;align-items:flex-start;gap:10px;flex:1;font-weight:500;font-size:.9rem;line-height:1.4}
+.ac-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:.75rem;font-weight:600;flex-shrink:0;margin-top:1px}
+.ac-chevron{color:var(--muted);font-size:.8rem;flex-shrink:0;margin-top:3px}
+.ac-body{padding:0 18px 14px}
+.ac-section{margin-top:14px}
+.ac-section-head{font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:6px}
+.ac-section-body{font-size:.85rem;line-height:1.6;color:var(--text)}
+.ac-list{font-size:.84rem;line-height:1.65;color:var(--text);padding-left:20px;margin:0}
+.ac-list li{margin-bottom:4px}
+.ac-list li::marker{color:var(--muted)}
+.col-route{background:#EEF5FC!important}
+.col-route-head{background:#D4E6F5!important;color:#0A2A4A!important}
+.col-demo{background:#F5F0FF!important}
+.col-demo-head{background:#E5D9FF!important;color:#2A0A4A!important}
+tr:hover .col-route{background:#E0EEF8!important}
+tr:hover .col-demo{background:#EBE4FF!important}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <a href="/analyses" style="display:inline-block;color:#B0A898;font-size:.78rem;text-decoration:none;margin-bottom:8px;letter-spacing:.04em">&larr; Back to SPS By the Numbers &middot; Analyses</a>
+  <h1>Seattle Public Schools — Transportation Funding Analysis</h1>
+  <p>STARS formula inputs, F-196 actuals, and route detail data &middot; 2013&ndash;2026 &middot; Data: OSPI quarterly reports, 1026A allocations, SPS enrollment</p>
+</header>
+<nav>
+  <button class="active" onclick="show('stars',this)">STARS Formula</button>
+  <button onclick="show('funding',this)">Funding Gap</button>
+  <button onclick="show('ridership',this)">Ridership Trends</button>
+  <button onclick="show('routes',this)">Route Detail</button>
+  <button onclick="show('schools',this)">School Explorer</button>
+  <button onclick="show('analyses',this)">Shaky AI Analyses</button>
+  <button onclick="show('downloads',this)">Downloads</button>
+</nav>
+<main>
+
+<!-- STARS -->
+<div id="sec-stars" class="section active">
+  <h2 class="section-heading">The STARS Formula</h2>
+  <p class="section-desc">Washington funds school transportation through STARS &mdash; a log-linear model recalibrated annually. Coefficients for 2022-23 through 2025-26 are extracted from SPS&rsquo;s 1026A allocation documents and verified to reproduce the published expected allocations. Coefficients for 2017-18 through 2021-22 extracted from DOCX versions of the 1026A; values reproduce published EXAL to within 0.02% (rounding from 5-decimal display). 2022-23 through 2025-26 match exactly.</p>
+  <div class="filter-row" style="margin-bottom:8px">
+    <label>School year:</label>
+    <div class="yr-tabs">
+      <button class="yr-tab active" onclick="setStarsYear('2025-26',this)">2025-26</button>
+      <button class="yr-tab" onclick="setStarsYear('2024-25',this)">2024-25</button>
+      <button class="yr-tab" onclick="setStarsYear('2023-24',this)">2023-24</button>
+      <button class="yr-tab" onclick="setStarsYear('2022-23',this)">2022-23</button>
+      <button class="yr-tab" onclick="setStarsYear('2021-22',this)">2021-22</button>
+      <button class="yr-tab" onclick="setStarsYear('2020-21',this)">2020-21</button>
+      <button class="yr-tab" onclick="setStarsYear('2019-20',this)">2019-20</button>
+      <button class="yr-tab" onclick="setStarsYear('2018-19',this)">2018-19</button>
+      <button class="yr-tab" onclick="setStarsYear('2017-18',this)">2017-18</button>
+    </div>
+    <span id="stars-src" style="font-size:.77rem;color:var(--c-green);margin-left:6px"></span>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Formula Structure</div>
+      <div class="card-sub" id="stars-coef-sub"></div>
+      <div class="formula-box">
+EXAL = exp(<br>
+&nbsp;&nbsp;ln(<span class="hi">BasicRiders</span> + 1) &times; <span class="hi" id="f-basic-c"></span><br>
+&nbsp;&nbsp;+ ln(<span class="hi2">SpecialRiders</span> + 1) &times; <span class="hi2" id="f-sped-c"></span><br>
+&nbsp;&nbsp;+ Destinations &times; <span id="f-dest-c"></span><br>
+&nbsp;&nbsp;+ AvgDistance &times; <span id="f-dist-c"></span><br>
+&nbsp;&nbsp;+ ln(LandArea) &times; <span id="f-land-c"></span><br>
+&nbsp;&nbsp;+ NonHighNo &times; (<span id="f-nh-c"></span>)<br>
+&nbsp;&nbsp;+ <strong id="f-const"></strong> &#8592; statewide constant<br>
+)<br><br>
+ALLOC = min(EXAL, D.2 Prior Year Exp)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ Legislative Salary Adj
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">SPS Formula Inputs</div>
+      <div class="card-sub" id="stars-inputs-sub"></div>
+      <div id="stars-inputs-table"></div>
+      <div style="margin-top:12px;font-size:.83rem">
+        <div style="display:flex;justify-content:space-between;padding:5px 8px;background:#F0ECE6;border-radius:4px;font-weight:600"><span>Expected Allocation (EXAL)</span><span id="stars-exal" style="font-family:'DM Mono',monospace;color:var(--accent)"></span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 8px;margin-top:4px"><span>D.2 Prior Year Exp Cap</span><span id="stars-d2" style="font-family:'DM Mono',monospace;color:var(--muted)"></span></div>
+        <div style="display:flex;justify-content:space-between;padding:5px 8px;background:#EEF5FC;border-radius:4px;font-weight:600;margin-top:4px"><span>Actual Allocation</span><span id="stars-alloc" style="font-family:'DM Mono',monospace;color:var(--accent2)"></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Basic Rider Count Over Time (CBPC)</div>
+    <div class="card-sub">Combined Basic Program Count averaged across three reporting periods &mdash; used directly in the formula</div>
+    <div class="chart-wrap" style="height:240px"><canvas id="ch-cbpc"></canvas></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-blue)"></div>Basic CBPC</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-orange)"></div>Special CSPC</div>
+    </div>
+    <p class="annotation">Basic CBPC fell from ~20,000 pre-COVID to ~9,000 today. The log transform means this halving reduces the basic program&rsquo;s formula contribution by ~46% &mdash; but operational costs did not halve.</p>
+  </div>
+  <div class="callout info"><strong>Gifted program:</strong> Per OSPI General Instructions, Gifted Program routes (Type G) count under Special Program totals in STARS, not Basic. HCC students riding Gifted routes contribute to Special Program riders (coefficient 0.11), not the Basic coefficient (0.665).</div>
+</div>
+
+<!-- FUNDING -->
+<div id="sec-funding" class="section">
+  <h2 class="section-heading">Funding Gap: F-196 vs. STARS Allocations</h2>
+  <p class="section-desc">F-196 data shows what SPS actually spent and received. STARS allocations show what the formula paid. The gap is what SPS self-funded from the general fund.</p>
+  <div class="stat-row" id="funding-stats"></div>
+  <div class="card">
+    <div class="card-title">Expenditures, Revenue, and STARS Allocations</div>
+    <div class="card-sub">Millions of dollars</div>
+    <div class="chart-wrap" style="height:320px"><canvas id="ch-funding"></canvas></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-line" style="background:var(--c-vermil)"></div>F-196 Expenditure</div>
+      <div class="legend-item"><div class="legend-line" style="background:var(--c-blue)"></div>F-196 Revenue</div>
+      <div class="legend-item"><div class="legend-line" style="background:var(--c-green);border-top:2px dashed var(--c-green);height:0"></div>STARS Calculated</div>
+      <div class="legend-item"><div class="legend-line" style="background:var(--c-orange);border-top:2px dashed var(--c-orange);height:0"></div>STARS Actual Alloc</div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Annual Funding Gap</div>
+      <div class="card-sub">Allocation minus expenditure &mdash; negative = SPS self-funded this amount</div>
+      <div class="chart-wrap" style="height:240px"><canvas id="ch-gap"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Key Inflection Points</div>
+      <div style="font-size:.83rem;line-height:1.7">
+        <p style="margin-bottom:10px"><strong style="color:var(--c-orange)">2021-22 Cap Trap (&minus;$27.7M):</strong> Formula calculated $53.9M but COVID-year D.2 of $18.3M capped the allocation at $20M. The mechanism designed to prevent overpayment became the instrument of maximum underpayment.</p>
+        <p style="margin-bottom:10px"><strong style="color:var(--c-vermil)">2022-23 Worst Year (&minus;$37.1M):</strong> SPS spent $65.3M while D.2 used 2021-22&rsquo;s partial-recovery figure as ceiling. SPS self-funded 57 cents of every transportation dollar.</p>
+        <p style="margin-bottom:10px"><strong style="color:var(--c-pink)">2023-24 Route Restructuring (+76 net sped routes):</strong> SPS added 141 new Special Ed routes and dropped 65, a near-complete rebuild of the sped routing system. Special Ed routes grew from 223 to 299 (+34%) while sped riders grew from 1,881 to 2,290 (+22%). Riders per sped route fell from 8.4 to 7.7 and has declined every year since. The formula recovered approximately $420K of the ~$7.6M in new route operating costs &mdash; about 5 cents per dollar.</p>
+        <p style="margin-bottom:10px"><strong style="color:var(--c-blue)">2024-25 Partial Recovery (&minus;$23.0M):</strong> D.2 now reflects real expenditures. The cap is no longer artificially low. The remaining gap is structural: Basic ridership has not recovered to pre-COVID levels (~9,200 vs ~18,000 in 2019-20), costing approximately $23M in formula allocation annually.</p>
+        <p><strong>The D.2 Lag:</strong> STARS uses prior-year F-196 actuals as the expenditure cap. When costs jump sharply, D.2 understates what SPS spent &mdash; tightening the cap at the worst moment. The restructuring in 2023-24 raised the cost base that D.2 will reflect in future years, partially closing the lag.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RIDERSHIP -->
+<div id="sec-ridership" class="section">
+  <h2 class="section-heading">Ridership Trends</h2>
+  <p class="section-desc">Student counts from OSPI quarterly district detail report summary pages &mdash; the authoritative &ldquo;On Buses&rdquo; figures that feed the STARS formula.</p>
+  <div class="callout warn"><strong>Data note:</strong> These figures come from the quarterly report summary page. Per OSPI General Instructions, counts represent students loading or unloading at the school load zone. Per-route ridership breakdowns are not available &mdash; route detail page counts cannot be reconciled with these summary figures.</div>
+  <div class="card">
+    <div class="card-title">Basic Program &ldquo;On Buses&rdquo; by Reporting Period</div>
+    <div class="card-sub">Fall, Winter, and Spring counts from quarterly summary pages</div>
+    <div class="chart-wrap" style="height:280px"><canvas id="ch-basic-trend"></canvas></div>
+    <p class="annotation">Pre-COVID (2017-19): 10,800&ndash;12,500 basic riders per period. Post-COVID plateau: 8,000&ndash;10,400. The 2023-24 fall dip to 8,735 is the deepest post-COVID low.</p>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Special Program Breakdown (Fall counts)</div>
+      <div class="card-sub">Subcategories from quarterly summary page</div>
+      <div class="chart-wrap" style="height:280px"><canvas id="ch-special"></canvas></div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-blue)"></div>Sped</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-orange)"></div>Gifted</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-green)"></div>Early Ed</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-pink)"></div>Homeless</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-vermil)"></div>Bilingual</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Key Trends</div>
+      <div style="font-size:.83rem;line-height:1.7">
+        <p style="margin-bottom:10px"><strong>Special Ed rising:</strong> 1,881 Fall 2021-22 &rarr; 2,542 Fall 2025-26 (+35%).</p>
+        <p style="margin-bottom:10px"><strong>Gifted (HCC) below pre-COVID:</strong> 2,580 Fall 2017-18 &rarr; 1,376 Fall 2024-25. Reported under Special Program in the formula.</p>
+        <p style="margin-bottom:10px"><strong>Early Ed contraction:</strong> 37 routes 2022-23 &rarr; 18 in 2024-25. Experimental Education Unit routes reclassified to Special Ed in 2024-25 &mdash; same routes, different code.</p>
+        <p><strong>Homeless growing:</strong> Near zero pre-COVID &rarr; 37&ndash;82 in recent periods.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ROUTES -->
+<div id="sec-routes" class="section">
+  <h2 class="section-heading">Route Detail Data</h2>
+  <p class="section-desc">Route counts from OSPI quarterly district detail pages. One record per route per school destination. <strong>Route counts, not ridership counts.</strong></p>
+  <div class="callout warn"><strong>Important limitation:</strong> Route detail page student counts cannot be reconciled with quarterly summary &ldquo;On Buses&rdquo; totals (they differ by ~6&times;). Use Ridership Trends for any ridership analysis. Route detail is reliable for: route counts, which schools have routes, program mix, and distance patterns.</div>
+  <div class="card">
+    <div class="card-title">Route Counts by Program &mdash; Fall Reports</div>
+    <div class="card-sub">From quarterly district detail pages &middot; Fall reports &middot; 2017-18 through 2025-26 (2018-19 and 2020-21 Fall reports not available; 2020-21 had near-zero service due to COVID)</div>
+    <div class="chart-wrap" style="height:280px"><canvas id="ch-routecounts"></canvas></div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-blue)"></div>Basic</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-orange)"></div>Special Ed</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-green)"></div>Gifted</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-pink)"></div>Early Ed</div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Special Ed Route Growth by School (2017-18 → 2025-26)</div>
+      <div class="card-sub">Change in route count 2017-18 &rarr; 2025-26 &middot; top movers by absolute increase</div>
+      <div class="chart-wrap" style="height:300px"><canvas id="ch-sped-growth"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Average Route Distance by Program</div>
+      <div class="card-sub">Mean one-way distance in miles &middot; Fall reports</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="ch-dist"></canvas></div>
+      <p class="annotation">Gifted routes are consistently the longest (~3.0&ndash;3.3 mi), reflecting district-wide HCC draw. The Early Ed drop in 2024-25 reflects the Experimental Ed Unit reclassification. Pre-COVID (2017-18 through 2019-20) Gifted routes averaged ~5 miles, reflecting wider HCC draw before enrollment changes.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SCHOOLS -->
+<div id="sec-schools" class="section">
+  <h2 class="section-heading">School Explorer</h2>
+  <p class="section-desc">Route counts and enrollment by school for the selected year. Route counts from Fall quarterly detail pages. Enrollment from OSPI F-196 headcount data.</p>
+  <div class="callout info" style="margin-bottom:10px">
+    <strong>&#128202; Route data availability:</strong> Route counts are available for all eight years. 2018-19 uses the Winter report (no Fall report in document set — Winter counts are nearly identical). For 2020-21, the Fall report shows COVID impact: only Homeless routes were running; Basic and Special Ed service resumed in Spring.
+  </div>
+  <div class="callout info"><strong>Option schools:</strong> Schools marked &ldquo;Option / Other&rdquo; draw students city-wide, not from a defined attendance area. K-8 option schools and Seattle World School show substantially more routes relative to enrollment &mdash; reflecting dispersed student geography. Cascadia Elementary&rsquo;s transportation appears entirely under Gifted routes.</div>
+  <div class="filter-row">
+    <label>Year:</label>
+    <div class="yr-tabs">
+      <button class="yr-tab active" onclick="setSchoolYear('2024-25',this)">2024-25</button>
+      <button class="yr-tab" onclick="setSchoolYear('2023-24',this)">2023-24</button>
+      <button class="yr-tab" onclick="setSchoolYear('2022-23',this)">2022-23</button>
+      <button class="yr-tab" onclick="setSchoolYear('2021-22',this)">2021-22</button>
+      <button class="yr-tab" onclick="setSchoolYear('2020-21',this)">2020-21</button>
+      <button class="yr-tab" onclick="setSchoolYear('2019-20',this)">2019-20</button>
+      <button class="yr-tab" onclick="setSchoolYear('2018-19',this)">2018-19</button>
+      <button class="yr-tab" onclick="setSchoolYear('2017-18',this)">2017-18</button>
+    </div>
+    <label>Region:</label>
+    <select id="fil-region" onchange="filterSchools()">
+      <option value="">All regions</option>
+      <option>Central</option><option>NE</option><option>NW</option>
+      <option>SE</option><option>SW</option><option>Other</option>
+    </select>
+    <label>Type:</label>
+    <select id="fil-type" onchange="filterSchools()">
+      <option value="">All types</option>
+      <option>Elementary</option><option>Middle</option><option>Highschool</option>
+      <option>K-8</option><option>Other</option>
+    </select>
+    <label>Status:</label>
+    <select id="fil-reg" onchange="filterSchools()">
+      <option value="">All</option>
+      <option value="1">Neighborhood school</option>
+      <option value="0">Option + Other</option>
+    </select>
+    <label>MS Area:</label>
+    <select id="fil-msarea" onchange="filterSchools()">
+      <option value="">All MS areas</option>
+      <option>Aki Kurose</option>
+      <option>David T. Denny</option>
+      <option>Eckstein</option>
+      <option>Hamilton</option>
+      <option>Jane Addams</option>
+      <option>Madison</option>
+      <option>McClure</option>
+      <option>Meany</option>
+      <option>Mercer</option>
+      <option>Robert Eagle Staff</option>
+      <option>Washington</option>
+      <option>Whitman</option>
+    </select>
+    <input type="text" id="fil-search" placeholder="Search school&hellip;" oninput="filterSchools()" style="width:150px">
+    <span id="school-count" style="font-size:.8rem;color:var(--muted)"></span>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th onclick="sortTable('school')">School <span class="sa">&updownarrow;</span></th>
+        <th onclick="sortTable('region')">Region <span class="sa">&updownarrow;</span></th>
+        <th onclick="sortTable('type')">Type <span class="sa">&updownarrow;</span></th>
+        <th onclick="sortTable('is_regular')">Status <span class="sa">&updownarrow;</span></th>
+        <th onclick="sortTable('ms_area')">MS Attendance Area <span class="sa">&updownarrow;</span></th>
+        <th class="col-route-head" onclick="sortTable('total_routes')">Total Routes <span class="sa">&updownarrow;</span></th>
+        <th class="col-route-head" onclick="sortTable('basic_routes')">Basic <span class="sa">&updownarrow;</span></th>
+        <th class="col-route-head" onclick="sortTable('sped_routes')">Sped <span class="sa">&updownarrow;</span></th>
+        <th class="col-route-head" onclick="sortTable('gifted_routes')">Gifted <span class="sa">&updownarrow;</span></th>
+        <th class="col-route-head" onclick="sortTable('earlyEd_routes')">Early Ed <span class="sa">&updownarrow;</span></th>
+        <th class="col-demo-head" onclick="sortTable('headcount')">Total Headcount <span class="sa">&updownarrow;</span></th>
+        <th class="col-demo-head" onclick="sortTable('swd')">SWD <span class="sa">&updownarrow;</span></th>
+        <th class="col-demo-head" onclick="sortTable('low_income')">Low Inc. <span class="sa">&updownarrow;</span></th>
+        <th class="col-demo-head" onclick="sortTable('ell')">ELL <span class="sa">&updownarrow;</span></th>
+        <th class="col-demo-head" onclick="sortTable('highly_capable')">HC <span class="sa">&updownarrow;</span></th>
+      </tr></thead>
+      <tbody id="school-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- DOWNLOADS -->
+<div id="sec-analyses" class="section">
+  <h2 class="section-heading">Shaky AI Analyses</h2>
+
+  <div class="callout warn" style="margin-bottom:20px">
+    <strong>&#9888; Important disclaimer before reading anything below.</strong>
+    These analyses are preliminary, based on incomplete data, and depend heavily on assumptions
+    that have not been validated against SPS operational data. They are intended to generate
+    hypotheses for further investigation, not to support policy decisions.
+    Several key inputs &mdash; per-route costs, student address distributions, walk zone sizes,
+    IEP transport obligations, and actual count-day attendance &mdash; are estimated or assumed
+    rather than measured. Results could change substantially with better data.
+    <strong>Do not cite these figures without independent verification.</strong>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Global Assumptions Underlying All Analyses</div>
+    <div class="card-sub">These assumptions apply across multiple questions below. Each represents a potential source of error.</div>
+    <ul class="ac-list" style="margin-top:8px"><li>Operating cost per route assumed uniform across all types (~$571/day). Special Ed routes with aides or specialized vehicles almost certainly cost more.</li><li>Per-route ridership derived from quarterly summary On Buses ÷ route count (~51.5 riders/route for Basic). This assumes ridership is uniformly distributed across routes, which is unlikely.</li><li>Walk zone absorption rates (what share of students live close enough to their new school to not need a bus) are estimated at 25–75% with no supporting address-level data.</li><li>New neighborhood routes assumed to average ~25 students each — roughly half the current option school average — reflecting geographic dispersion. Actual routing would depend on address data.</li><li>Transit pass cost assumed at $900/student/year. Actual SPS transit pass cost not verified.</li><li>Geographic distribution of option and HCC school students assumed roughly city-wide. In reality, HCC enrollment likely skews toward certain neighborhoods.</li><li>Formula calculations use 2025-26 coefficients throughout. Coefficients change annually — results would differ in other years.</li><li>Gifted route riders assumed to count in Special Program CSPC per OSPI General Instructions. This has not been independently confirmed against the 1022E form itself.</li><li>Count-day consistency assumed at ~80% (students present on count day). Actual SPS attendance data not reviewed.</li><li>Route length and operational scheduling constraints (driver hours, school start windows) are not modeled except where noted.</li></ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">STARS Formula Coefficients Change Every Year</div>
+    <div class="card-sub">This matters for any analysis that uses the formula — and all five analyses below do.</div>
+    <div class="callout warn" style="margin-bottom:14px">
+      The analyses in this tab use <strong>2025-26 coefficients throughout</strong>. Because coefficients
+      shift substantially year to year, the dollar figures cited are not valid for other years.
+      Results could differ by 20&ndash;50% depending on which year&rsquo;s coefficients are applied.
+    </div>
+    <p style="font-size:.84rem;margin-bottom:12px;color:var(--muted)">Coefficients extracted from 1026A documents for all nine years on file. 2017-18 through 2021-22 reproduce published EXAL within 0.02% (5-decimal rounding in DOCX). 2022-23 onward match exactly.</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Year</th>
+          <th style="text-align:right">Basic (ln)</th>
+          <th style="text-align:right">Special (ln)</th>
+          <th style="text-align:right">Dest</th>
+          <th style="text-align:right">Avg Dist</th>
+          <th style="text-align:right">Land (ln)</th>
+          <th style="text-align:right">Constant</th>
+        </tr></thead>
+        <tbody>
+          <tr><td>2017-18</td><td class="num">0.63154</td><td class="num">0.12422</td><td class="num">0.01432</td><td class="num">0.05163</td><td class="num">0.03765</td><td class="num">8.12484</td></tr>
+          <tr><td>2018-19</td><td class="num">0.66182</td><td class="num">0.11903</td><td class="num">0.01322</td><td class="num">0.04820</td><td class="num">0.05063</td><td class="num">7.95283</td></tr>
+          <tr><td>2019-20</td><td class="num">0.68500</td><td class="num">0.10300</td><td class="num">0.01300</td><td class="num">0.04100</td><td class="num">0.06000</td><td class="num">7.92700</td></tr>
+          <tr><td>2020-21</td><td class="num">0.69600</td><td class="num">0.09200</td><td class="num">0.01200</td><td class="num">0.05100</td><td class="num">0.05900</td><td class="num">7.79800</td></tr>
+          <tr style="background:#FDF0EC"><td><strong>2021-22 &#9888;</strong></td><td class="num" style="color:var(--c-vermil)"><strong>0.39364</strong></td><td class="num" style="color:var(--c-vermil)"><strong>0.30301</strong></td><td class="num">0.02009</td><td class="num">0.03802</td><td class="num" style="color:var(--c-vermil)"><strong>&minus;0.16829</strong></td><td class="num" style="color:var(--c-vermil)"><strong>10.57936</strong></td></tr>
+          <tr><td>2022-23</td><td class="num">0.70400</td><td class="num">0.09700</td><td class="num">0.01300</td><td class="num">0.04300</td><td class="num">0.03400</td><td class="num">8.20200</td></tr>
+          <tr><td>2023-24</td><td class="num">0.67012</td><td class="num">0.11381</td><td class="num">0.01627</td><td class="num">0.04259</td><td class="num">0.04374</td><td class="num">8.36534</td></tr>
+          <tr><td>2024-25</td><td class="num">0.68110</td><td class="num">0.10362</td><td class="num">0.01535</td><td class="num">0.02963</td><td class="num">0.06072</td><td class="num">8.37210</td></tr>
+          <tr style="background:#EEF5FC"><td><strong>2025-26</strong></td><td class="num"><strong>0.66498</strong></td><td class="num"><strong>0.11000</strong></td><td class="num"><strong>0.01523</strong></td><td class="num"><strong>0.04231</strong></td><td class="num"><strong>0.02839</strong></td><td class="num"><strong>8.60130</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="font-size:.82rem;color:var(--muted);margin-top:12px;line-height:1.7">
+      <p><strong style="color:var(--text)">2021-22 is a severe outlier.</strong> The COVID year produced a regression on abnormal ridership data: Basic coefficient halved (0.394 vs ~0.67 in normal years), Special tripled (0.303 vs ~0.11), and the land area coefficient went <em>negative</em> (&minus;0.169). The constant jumped to 10.58 — nearly 2.8 points above any other year. This is also the year the formula calculated $53.9M for SPS while D.2 capped the actual allocation at $20M.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">Basic coefficient range: 0.394&ndash;0.704.</strong> The marginal value of a Basic rider (used in the walk zone analysis) ranges from roughly $1,500 to $2,900 depending on the year&rsquo;s coefficients and current rider counts. The $2,650 figure cited in that analysis is 2025-26 only.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">Special coefficient range: 0.092&ndash;0.303.</strong> In normal years (excluding 2021-22) the Special coefficient sits between 0.092 and 0.124 — consistently about one-sixth of the Basic coefficient. The 2021-22 inversion (Special &gt; Basic) is a statistical artifact of COVID-era data and should not be treated as representing a real policy choice.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Routes vs. Riders Over Time</div>
+    <div class="card-sub">
+      Fall route counts (from quarterly detail pages) vs. Fall &ldquo;On Buses&rdquo; counts (from quarterly summary pages).
+      All available years: 2017-18 through 2025-26. 2018-19 uses Winter report (no Fall available); 2020-21 shows COVID gap (near-zero Fall service). Lines break where data is unavailable.
+    </div>
+    <div class="grid-2" style="margin-bottom:16px">
+      <div>
+        <div style="font-size:.8rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Route Count by Program</div>
+        <div class="chart-wrap" style="height:240px"><canvas id="ch-routes-riders-idx"></canvas></div>
+        <div class="legend" style="margin-top:8px">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-blue)"></div>Basic routes</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-orange)"></div>Sped routes</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-green)"></div>Gifted routes</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:.8rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Riders per Route (Fall)</div>
+        <div class="chart-wrap" style="height:240px"><canvas id="ch-riders-per-route"></canvas></div>
+        <div class="legend" style="margin-top:8px">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-blue)"></div>Basic (~50/route)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-orange)"></div>Sped (~7-8/route)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-green)"></div>Gifted (~27-34/route)</div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:.82rem;color:var(--muted);line-height:1.7">
+      <p><strong style="color:var(--text)">Basic:</strong> Pre-COVID peak: 225 routes (2017-18) vs 187 today (2025-26). Riders fell further and have only partially recovered. Route structure shrank while riders were still down.</p>
+      <p style="margin-top:6px"><strong style="color:var(--text)">Special Ed:</strong> Routes grew from 342 (2017-18) to 362 (2025-26) while riders barely changed (2,236 to 2,542). Riders per route has fallen from ~6.5 pre-COVID to 7.0 today &mdash; the system is running more routes per rider than it used to.</p>
+      <p style="margin-top:6px"><strong style="color:var(--text)">Gifted:</strong> Route count fell from 68 (2017-18) to ~40&ndash;42 today while riders fell from 2,580 to ~1,300. The Gifted program shrank substantially post-COVID and has not recovered.</p>
+      <p style="margin-top:6px"><em>2020-21 shows a gap: the Fall report had near-zero service due to COVID. 2018-19 uses the Winter report (no Fall available). Lines break where data is unavailable.</em></p>
+    </div>
+  </div>
+
+  <div class="analysis-card" id="ac-0">
+    <div class="ac-header" onclick="toggleAC(0)">
+      <div class="ac-q"><span class="ac-num">1</span><span>Exploration: Does shrinking or expanding the walk zone increase or decrease STARS funding?</span></div>
+      <span class="ac-chevron" id="chev-0">&#9660;</span>
+    </div>
+    <div class="ac-body" id="acb-0">
+      <div style="margin-bottom:12px"><span style="display:inline-block;padding:3px 10px;border-radius:10px;font-size:.75rem;font-weight:600;background:#FFF3CD;color:#7A5200;margin-right:6px">Est. budget impact: $-7.2M to +$7.4M/yr</span><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:600;background:#FDF0EC;color:#4A1A0A;margin-left:8px">Confidence: LOW</span></div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#128270; Tentative Finding</div>
+        <div class="ac-section-body">Shrinking the walk zone (busing more students) appears to generate positive net returns because the marginal formula value per added Basic rider (~$2,650/yr at 2025-26 coefficients) substantially exceeds the marginal operating cost of adding stops to existing routes (~$51&ndash;640/student/yr). The range is wide because it depends heavily on whether new riders can be served by adding stops to existing routes or require entirely new routes. Expanding the walk zone is negative in all scenarios &mdash; formula loss per removed rider exceeds operating savings even when full route elimination is achieved ($99,925 saved vs ~$136,700 lost in formula per route eliminated).</div>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#128202; Data &amp; Methods</div>
+        <div class="ac-section-body">Formula marginal value computed analytically from 2025-26 1026A coefficients. Operating cost estimated from F-196 total expenditure &divide; routes &divide; days (~$571/route/day). Stop addition cost estimated at $40/day driver time &divide; 10 students per stop = ~$51/student/yr marginal cost. New route cost ~$1,960/student/yr.</div>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#9888; Key Assumptions</div>
+        <ul class="ac-list">
+          <li>70&ndash;90% of walk-zone-adjacent students can be served by adding stops to existing routes rather than new routes &mdash; this depends entirely on whether existing routes pass near those students, which is unknown without GIS analysis</li>
+          <li>Stop addition cost estimated at $40/day extra driver time, divided across ~10 students per stop &mdash; not verified against SPS driver contracts</li>
+          <li>Route length and timing constraints are not modeled &mdash; if existing routes are at capacity, stop additions may trigger new routes instead</li>
+          <li>Count-day consistency assumed at 80%</li>
+        </ul>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#9989; Steps to Verify</div>
+        <ul class="ac-list">
+          <li>SPS has address-level enrollment data and GIS stop locations &mdash; model which walk-zone students are near existing routes vs. would require new routes</li>
+          <li>Review current route timing windows for slack capacity to add stops</li>
+          <li>Check state minimum walk zone requirements (SPS cannot set zones below state minimums)</li>
+          <li>Review driver contract constraints on route length and shift time</li>
+        </ul>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#10067; Open Questions &amp; Possible Misinterpretations</div>
+        <ul class="ac-list">
+          <li>The entire positive result depends on existing routes passing near walk-zone students &mdash; if they don&rsquo;t, most would require new routes, reducing the net benefit substantially (though it remains positive even at 50% new routes)</li>
+          <li>Adding stops may push routes past school start/end timing windows, triggering new routes rather than stop additions</li>
+          <li>The average distance term in the formula decreases slightly as shorter-distance stops are added &mdash; this partially offsets the CBPC gain (modeled as small but not verified)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="analysis-card" id="ac-1">
+    <div class="ac-header" onclick="toggleAC(1)">
+      <div class="ac-q"><span class="ac-num">2</span><span>Exploration: What if option and HCC schools were made into neighborhood schools?</span></div>
+      <span class="ac-chevron" id="chev-1">&#9660;</span>
+    </div>
+    <div class="ac-body" id="acb-1">
+      <div style="margin-bottom:12px"><span style="display:inline-block;padding:3px 10px;border-radius:10px;font-size:.75rem;font-weight:600;background:#FDF0EC;color:#4A1A0A;margin-right:6px">Est. budget impact: &minus;$5.6M to &minus;$7.2M/yr</span><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:600;background:#FDF0EC;color:#4A1A0A;margin-left:8px">Confidence: LOW</span></div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#128270; Tentative Finding</div>
+        <div class="ac-section-body">Converting option and HCC schools to neighborhood attendance-area schools makes SPS&rsquo;s financial position worse in every scenario tested. The operating cost of building new neighborhood-scale routes (many short routes, few students each) exceeds savings from eliminating option routes. Net losses range from roughly &minus;$5.6M to &minus;$7.2M depending on walk zone absorption assumptions (25&ndash;50%). The formula effect is mixed but generally negative due to loss of Gifted CSPC riders and the dispersion of students across many short new routes.</div>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#128202; Data &amp; Methods</div>
+        <div class="ac-section-body">13 option/HCC schools, ~5,350 students total. Route counts from Fall quarterly detail pages. Operating cost at $571/route/day. Walk zone absorption modeled at 25&ndash;50% (no supporting data). New neighborhood routes assumed at 25 students/route average. Formula uses 2025-26 coefficients.</div>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#9888; Key Assumptions</div>
+        <ul class="ac-list">
+          <li>Walk zone absorption (what % of redistributed students end up within walking distance of their new neighborhood school) assumed at 25&ndash;50% &mdash; the single most consequential unknown, with no SPS address-level data to support it</li>
+          <li>New neighborhood routes average 25 students each &mdash; roughly half the current option school average &mdash; reflecting geographic dispersion after redistribution</li>
+          <li>Geographic distribution of option school families assumed roughly city-wide &mdash; HCC enrollment likely skews toward certain neighborhoods, which could significantly change walk zone absorption</li>
+          <li>Sped transport assumed unchanged (follows the student via IEP)</li>
+        </ul>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#9989; Steps to Verify</div>
+        <ul class="ac-list">
+          <li>SPS has address-level enrollment data that would allow actual walk zone calculation to each student&rsquo;s neighborhood school &mdash; this would replace the 25&ndash;50% assumption with a real number</li>
+          <li>Routing software (Versatrans) could model actual new route requirements</li>
+          <li>Review legal requirements for HCC transportation under RCW 28A.185 (state highly capable statute)</li>
+        </ul>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#10067; Open Questions &amp; Possible Misinterpretations</div>
+        <ul class="ac-list">
+          <li>Walk zone absorption dominates the result &mdash; a 10-point change in that assumption shifts the net by ~$1&ndash;2M</li>
+          <li>HCC schools are centrally located relative to a city-wide draw &mdash; students travel from across Seattle precisely because the program is not neighborhood-based. Walk zone absorption upon redistribution to neighborhood schools could be lower than the city average, since HCC families may live far from both the HCC school and their neighborhood school</li>
+          <li>Political and legal feasibility of eliminating option programs is entirely outside this analysis</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="analysis-card" id="ac-2">
+    <div class="ac-header" onclick="toggleAC(2)">
+      <div class="ac-q"><span class="ac-num">3</span><span>Exploration: Why did the 2023-24 restructuring add so many routes without proportional ridership growth?</span></div>
+      <span class="ac-chevron" id="chev-2">&#9660;</span>
+    </div>
+    <div class="ac-body" id="acb-2">
+      <div style="margin-bottom:12px"><span style="display:inline-block;padding:3px 10px;border-radius:10px;font-size:.75rem;font-weight:600;background:#FDF0EC;color:#4A1A0A;margin-right:6px">Ongoing annual cost: ~&minus;$7.2M vs. $420K formula recovery</span><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:600;background:#FFF8EC;color:#4A3A10;margin-left:8px">Confidence: MEDIUM</span></div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#128270; Tentative Finding</div>
+        <div class="ac-section-body">The 2023-24 expansion was almost entirely Special Ed routes (+76 net: 141 new, 65 dropped). Basic routes were essentially unchanged (+1 net). New Special Ed routes have longer average distances (2.49 mi vs 2.20 mi for continued routes) and lower student counts. The pattern &mdash; district-wide, shallow increases at 53+ schools, most gaining just 1&ndash;2 routes &mdash; is consistent with IEP compliance expansion. The formula recovered approximately $420K of the ~$7.6M in new route operating costs (~5 cents per dollar). Riders per sped route have fallen every year since: 8.4 &rarr; 7.7 &rarr; 7.3 &rarr; 7.0.</div>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#128202; Data &amp; Methods</div>
+        <div class="ac-section-body">Route IDs from Fall quarterly detail pages 2022-23 and 2023-24. Continuity analysis: 390 route IDs survived unchanged, 104 dropped, 182 new. New routes identified by ID not present in prior year. Distance averages from route detail distance field. Formula recovery calculated from CSPC change &times; 2025-26 coefficients.</div>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#9888; Key Assumptions</div>
+        <ul class="ac-list">
+          <li>Route ID changes treated as genuinely new routes, not renumbering &mdash; the Ingraham example shows 8 of 9 route IDs were retired and replaced even where net count changed only slightly, so this may overstate &ldquo;newness&rdquo;</li>
+          <li>The compliance interpretation is inferred from the data pattern &mdash; no SPS policy document, IEP audit, or board directive has been reviewed</li>
+          <li>Operating cost per sped route assumed at the district average ($571/day) &mdash; sped routes likely cost more due to aides and specialized vehicles</li>
+        </ul>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#9989; Steps to Verify</div>
+        <ul class="ac-list">
+          <li>Ask SPS transportation staff what drove the 2023-24 expansion &mdash; was there an IEP audit, OCR complaint, or board directive?</li>
+          <li>Review SPS board meeting minutes from 2022-23 for transportation policy changes</li>
+          <li>Check whether OCR or OSPI issued compliance correspondence related to special ed transportation</li>
+          <li>Check if the route ID system was intentionally rebuilt (explaining mass ID retirement) vs. IDs changed for operational reasons</li>
+        </ul>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#10067; Open Questions &amp; Possible Misinterpretations</div>
+        <ul class="ac-list">
+          <li>The compliance hypothesis is plausible but unverified &mdash; the expansion could reflect enrollment growth, a new contractor, building moves (Mercer TEMP CONST), or other factors</li>
+          <li>We cannot tell from route data alone whether new routes serve genuinely new transport needs or replace informal arrangements (parent reimbursement, contracted individual runs) previously off the route detail system</li>
+          <li>The mass route ID retirement at Ingraham (1 of 9 IDs survived) suggests a system-wide routing rebuild, which could mean &ldquo;new&rdquo; routes are operationally the same routes with new numbers</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="analysis-card" id="ac-3">
+    <div class="ac-header" onclick="toggleAC(3)">
+      <div class="ac-q"><span class="ac-num">4</span><span>Exploration: What happens to STARS funding when Basic riders shift to other transport categories?</span></div>
+      <span class="ac-chevron" id="chev-3">&#9660;</span>
+    </div>
+    <div class="ac-body" id="acb-3">
+      <div style="margin-bottom:12px"><span style="display:inline-block;padding:3px 10px;border-radius:10px;font-size:.75rem;font-weight:600;background:#FDF0EC;color:#4A1A0A;margin-right:6px">~&minus;$1,700 to &minus;$2,650 per shifted student/yr</span><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:600;background:#FFF8EC;color:#4A3A10;margin-left:8px">Confidence: MEDIUM</span></div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#128270; Tentative Finding</div>
+        <div class="ac-section-body">Moving a student off a Basic route always reduces STARS funding. How much depends on where they go. The Basic Program coefficient (0.665) is the dominant term in the formula. Any shift that removes a rider from the Basic CBPC count incurs a formula loss of ~$2,650/student/yr. If the student gains a count in the Special CSPC (Special Ed, Gifted, Early Ed, Homeless &mdash; all count in CSPC per OSPI instructions), approximately $948/student is recovered, for a net loss of ~$1,700/student. If the student leaves the formula entirely (transit pass, walk zone, parent transport), the full $2,650/student is lost with no recovery.</div>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#128202; Per-Category Analysis</div>
+        <div style="font-size:.83rem;line-height:1.7;margin-top:8px">
+          <table style="width:100%;font-size:.81rem;border-collapse:collapse">
+            <thead><tr>
+              <th style="text-align:left;padding:5px 8px;background:#F0ECE6;font-size:.74rem;text-transform:uppercase;color:var(--muted)">Destination category</th>
+              <th style="text-align:right;padding:5px 8px;background:#F0ECE6;font-size:.74rem;text-transform:uppercase;color:var(--muted)">CSPC gain?</th>
+              <th style="text-align:right;padding:5px 8px;background:#F0ECE6;font-size:.74rem;text-transform:uppercase;color:var(--muted)">Formula loss/student</th>
+              <th style="text-align:left;padding:5px 8px;background:#F0ECE6;font-size:.74rem;text-transform:uppercase;color:var(--muted)">Notes</th>
+            </tr></thead>
+            <tbody>
+              <tr><td style="padding:5px 8px;border-bottom:1px solid #EDE9E2">Special Ed (IEP)</td><td style="text-align:right;padding:5px 8px;border-bottom:1px solid #EDE9E2;font-family:'DM Mono',monospace">+$948</td><td style="text-align:right;padding:5px 8px;border-bottom:1px solid #EDE9E2;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$1,700</td><td style="padding:5px 8px;border-bottom:1px solid #EDE9E2;font-size:.78rem;color:var(--muted)">Counts in CSPC; route change mandatory per IEP</td></tr>
+              <tr><td style="padding:5px 8px;border-bottom:1px solid #EDE9E2">Gifted (HCC K-5)</td><td style="text-align:right;padding:5px 8px;border-bottom:1px solid #EDE9E2;font-family:'DM Mono',monospace">+$948</td><td style="text-align:right;padding:5px 8px;border-bottom:1px solid #EDE9E2;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$1,700</td><td style="padding:5px 8px;border-bottom:1px solid #EDE9E2;font-size:.78rem;color:var(--muted)">Counts in CSPC per OSPI instructions (unconfirmed on 1022E)</td></tr>
+              <tr><td style="padding:5px 8px;border-bottom:1px solid #EDE9E2">Early Education</td><td style="text-align:right;padding:5px 8px;border-bottom:1px solid #EDE9E2;font-family:'DM Mono',monospace">+$948</td><td style="text-align:right;padding:5px 8px;border-bottom:1px solid #EDE9E2;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$1,700</td><td style="padding:5px 8px;border-bottom:1px solid #EDE9E2;font-size:.78rem;color:var(--muted)">Counts in CSPC; program-driven, not a policy lever</td></tr>
+              <tr><td style="padding:5px 8px;border-bottom:1px solid #EDE9E2">Homeless (McKinney-Vento)</td><td style="text-align:right;padding:5px 8px;border-bottom:1px solid #EDE9E2;font-family:'DM Mono',monospace">+$948</td><td style="text-align:right;padding:5px 8px;border-bottom:1px solid #EDE9E2;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$1,700</td><td style="padding:5px 8px;border-bottom:1px solid #EDE9E2;font-size:.78rem;color:var(--muted)">Counts in CSPC; legally mandated, not a policy lever</td></tr>
+              <tr><td style="padding:5px 8px;border-bottom:1px solid #EDE9E2">Transit pass</td><td style="text-align:right;padding:5px 8px;border-bottom:1px solid #EDE9E2;font-family:'DM Mono',monospace">$0</td><td style="text-align:right;padding:5px 8px;border-bottom:1px solid #EDE9E2;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$2,650</td><td style="padding:5px 8px;border-bottom:1px solid #EDE9E2;font-size:.78rem;color:var(--muted)">Transit riders counted in separate column, not CBPC or CSPC</td></tr>
+              <tr><td style="padding:5px 8px">Walk zone / parent</td><td style="text-align:right;padding:5px 8px;font-family:'DM Mono',monospace">$0</td><td style="text-align:right;padding:5px 8px;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$2,650</td><td style="padding:5px 8px;font-size:.78rem;color:var(--muted)">Student leaves formula entirely</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="font-size:.82rem;color:var(--muted);margin-top:10px;line-height:1.6">
+          <p><strong style="color:var(--text)">Practical implication:</strong> There is no category shift that improves funding. Every destination category is worth less to the formula than Basic. The formula is calibrated to maximize value for students on standard Basic routes &mdash; any specialization or removal from district buses reduces the allocation.</p>
+          <p style="margin-top:6px"><strong style="color:var(--text)">Scale example:</strong> The post-COVID decline in Basic ridership from ~18,000 to ~9,200 (~8,800 fewer Basic riders) cost approximately 8,800 &times; $2,650 = ~$23.3M in formula allocation annually &mdash; roughly equal to the observed funding gap. This is not a coincidence; the ridership decline is the primary structural driver of the gap.</p>
+        </div>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#9888; Key Assumptions</div>
+        <ul class="ac-list">
+          <li>CSPC gain per student ($948) computed at current CSPC=4,256 using 2025-26 coefficients &mdash; this changes at different rider counts and in different years</li>
+          <li>Gifted, Early Ed, and Homeless riders assumed to count in CSPC per OSPI General Instructions &mdash; not independently confirmed against the 1022E submission form</li>
+          <li>The &minus;$1,700/student net figure holds only when the destination category adds to CSPC; it assumes rider counts stay in the formula-relevant range</li>
+        </ul>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#9989; Steps to Verify</div>
+        <ul class="ac-list">
+          <li>Obtain OSPI Form 1022E instructions to confirm how each program type (Gifted, Early Ed, Homeless, Bilingual) is classified in CBPC vs. CSPC</li>
+          <li>Ask SPS transportation staff how they classify riders on their 1022E submission</li>
+          <li>Cross-check the CBPC and CSPC values on the 1026A against the quarterly summary On Buses counts by category</li>
+        </ul>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#10067; Open Questions &amp; Possible Misinterpretations</div>
+        <ul class="ac-list">
+          <li>The 1022E classification of Gifted riders as CSPC is the single most consequential unverified assumption in this analysis</li>
+          <li>The formula uses annual averages (CBPC = avg of three count days) &mdash; students who ride inconsistently contribute less than a full unit to the count</li>
+          <li>The &quot;$23M gap = $23M ridership decline&quot; observation is suggestive but not causal &mdash; costs also rose substantially over the same period</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<div id="sec-downloads" class="section">
+  <h2 class="section-heading">Downloads</h2>
+  <p class="section-desc">Source documents and derived data tables for independent analysis.</p>
+  <div class="card">
+    <div class="card-title">Source Documents</div>
+    <div class="card-sub">OSPI quarterly reports and 1026A allocations, correctly dated</div>
+    <div style="margin-top:12px">
+      <a class="btn-dl primary" href="SPS_Transit_info_renamed_v2.zip" download>&#8659; SPS_Transit_info_renamed_v2.zip</a>
+      <p style="margin-top:10px;font-size:.82rem;color:var(--muted)">32 files: quarterly district detail reports (Fall/Winter/Spring, 2017-18 through 2025-26) and 1026A allocation detail (2017-18 through 2025-26). DOCX for older years, PDF for 2022-23 onward.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Derived Data Tables (CSV)</div>
+    <div class="card-sub">Generated dynamically &middot; click to download</div>
+    <div style="display:flex;flex-direction:column;gap:14px;margin-top:8px">
+      <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+        <button class="btn-dl secondary" onclick="dlCSV('alloc')">&#8659; STARS_Funding_Gap.csv</button>
+        <div style="font-size:.82rem;color:var(--muted);padding-top:3px">F-196 expenditures and revenue, STARS inputs (CBPC, CSPC), calculated and actual allocation, funding gap. 2013-14 through 2024-25.</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+        <button class="btn-dl secondary" onclick="dlCSV('quarterly')">&#8659; Quarterly_Ridership_Summary.csv</button>
+        <div style="font-size:.82rem;color:var(--muted);padding-top:3px">Quarterly &ldquo;On Buses&rdquo; counts from OSPI summary pages &mdash; Basic, Sped, Gifted, Bilingual, Homeless, Early Ed &mdash; by year and season.</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+        <button class="btn-dl secondary" onclick="dlCSV('routes')">&#8659; Route_Counts_by_Program.csv</button>
+        <div style="font-size:.82rem;color:var(--muted);padding-top:3px">Route counts by year, season, and program. One record per route per school destination. Not ridership counts.</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+        <button class="btn-dl secondary" onclick="dlCSV('schools')">&#8659; School_Routes_All_Years.csv</button>
+        <div style="font-size:.82rem;color:var(--muted);padding-top:3px">School-level route counts for 2022-23 through 2024-25, with headcount, SWD, low income, ELL, highly capable, region, type, and MS attendance area.</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+        <button class="btn-dl secondary" onclick="dlCSV('stars_coefs')">&#8659; STARS_Coefficients.csv</button>
+        <div style="font-size:.82rem;color:var(--muted);padding-top:3px">Formula coefficients for 2022-23 through 2025-26, extracted from 1026A documents and verified against published EXAL values.</div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Data Notes &amp; Limitations</div>
+    <div style="font-size:.83rem;line-height:1.8;color:var(--muted)">
+      <p style="margin-bottom:12px"><strong style="color:var(--text)">Primary data sources:</strong></p>
+      <ul style="margin-bottom:14px;padding-left:20px;line-height:1.9">
+        <li><strong style="color:var(--text)">OSPI Enrollment Reportcard</strong> &mdash; School-level headcount enrollment, SWD, low income, ELL, and highly capable counts by year.</li>
+        <li><strong style="color:var(--text)">SAFS Historical Enrollment</strong> &mdash; District-level AAFTE enrollment by school year.</li>
+        <li><strong style="color:var(--text)">STARS Reports (OSPI)</strong> &mdash; Quarterly district detail reports (route and ridership data) and 1026A allocation detail reports (formula coefficients and allocation amounts). Available at: <a href="https://ospi.k12.wa.us/policy-funding/student-transportation/student-transportation-allocation-reporting-system-stars/student-transportation-allocation-stars-reports" target="_blank" style="color:var(--accent)">ospi.k12.wa.us &rarr; STARS Reports</a></li>
+      </ul>
+      <p><strong style="color:var(--text)">Route detail vs. ridership:</strong> Route detail page counts differ from quarterly summary &ldquo;On Buses&rdquo; figures by ~6&times;. Route counts are reliable; per-route student counts are not usable as ridership figures.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">STARS coefficients:</strong> Coefficients for 2022-23 through 2025-26 are extracted from SPS 1026A documents and verified. Coefficients for 2017-18 through 2021-22 extracted from DOCX versions of the 1026A; values reproduce published EXAL to within 0.02% (rounding from 5-decimal display). 2022-23 through 2025-26 match exactly.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">Gifted program:</strong> Per OSPI General Instructions, Gifted (Type G) routes count under Special Program totals in STARS, not Basic.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">School matching:</strong> Route school names matched to OSPI domain table codes. A small number of programs (Experimental Ed Unit, Roxhill Building, Bridges @ Magnuson) could not be matched and are excluded.</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ANALYSES TAB -->
+
+</main>
+</div>
+<script>
+const _z_MAIN="H4sIAC6MA2oC/5VYTW/jRgz9LzrHAMn5InMssG3ve+ihWASO690acOLUTooGi/z3Uk5iDUceSXPbKNn3Ht8jOSP97P55WR+ft8f9693p5eFhfXztbv/82b1u18futiPAtELubrrTdn06POqjX9f7vf58vz7tNt0tUvBRf/u0/au7JXL67/vdfvf442W91wf9zz9235/Pvw0MN93fh4ftfns6dbfB33TKsn/9or9EF95upmj/2D2qypwYhQdiTpZYKCNGSYbYZcTOwzTx16ejombEGEEGYhRLjCknTi4nJsiJo7fEvEKZrBhSCBdih84Qn924EJOTnNjwepzmHRUMbAq2EWPKeaEoeIpXVgQTjYVBhsbyRNZmyhpL48WcNeasFKZZRy6jYxxcZlutFpHxcog5bzLVkuElWBHWq4VPRjB0MJBBjQmmecr6LkxhERPCcqqycZyjTzL0tIwOM7oiOsIVUd1CBr5MB3KfYcbns9QouNpsoMxQlm6miJdmQQGbHmVVxmAGMuRlMk2Tlr6yjvdQabCVZnuPPVc5XcFJK3J1b4XZL/IWYqh2j66sac7SXIE0NFAqOihnRZJ6E5VdVLKW7oof2pbAca1vEZnMrjP+JrasbkV+oneTGzY7SXUJqL8mUs4rdZCmOUt/GYbm1c0Ya30ktnfZhCo4TTq2ly8riLAgNfaisVfMVociVL+iMHGWgIehUi/FWeIyVpfMSnf5pqU51lEDRxyOsEDFdohmJ5m5iYbWOUsbVhQnZpXQD6TF1CDntYI5NgPnpHGGdFQr0nAdi9HWilk3YQCz8pmKvfTtptOCDpvr99Az3d3m/mlzvm7AO+lmt97fbU79w0BJ69+s95u7DxiHnIL0Dq83z6rn8lyP9+T7e5P26OF4t/3vqf/jJOB7/d9R4sezFNXJ/ipwfnbc/qvP2EcJia7epXKRyBKpFOmljzgXSSLopV+YhUgWh9oCVmRiTbm/82YiRfSiBj4X6V1IDDFevQJZkURpJJIFSyeD09lLI5EOok8OrMjLw0Gk3uMknKciE6m7nRX46uUiFxn541Uj06jRFmlHNev8OmAlJh0x6HtgRiEBSIr92h8U6usFBI949Zg2NoJOXymRyIOVGBwHdn7UkMrtE/adkYnUaBLrXxsbUyLG6ExDxgRJfLx62uUiBcJIo/7nwkad4RAFaKSRyWuKZI0MkLz3LtcYg8YQAYxG7XD2IV49MozG832p0Cj9wWzaMekUgpdSo+1DE68K0ntiD5RPidfM8fpyN6r0fjgaEupfAoyqGHWa+rVSDElKrn+XMuKC6FNH0WpMOuBo0lXPtQN96rfj8fDyvL3bHF4en0/LXtafjocfx/WDPvjlvK0NxviOtADmstsLKKRGpC8fq7/A8akR57f346WAidwI8/vnuVTW5RqBvr53SYlTvhfW3/rnMgPfDrQ0tQVYldyKu8oSpOvJJWgGqmbXjFQLj2TRJ4y56LAZphqca0SqxYaNONdDC6ERphZZbMSpBVa+cla+wrQKqn2KmA2+GaYWPDcCVXIn14hzPXcvjTC1vAAXfZaY8RnFN8LUxiI14lTsgUaYij1UxlX5qjBrT2iEqdnTirPMnlmY2pC2ulOzWWTR14VZm1MjTMVm5EacZTbPwiw7T+dxqlchWPRdY85mTo0wC22exanYTI0wNXsivX17+x9uK8MXoBsAAA==";let _d_MAIN=null;function _MAIN(){if(!_d_MAIN)_d_MAIN=JSON.parse(pako.inflate(Uint8Array.from(atob(_z_MAIN),(c)=>c.charCodeAt(0)),{to:"string"}));return _d_MAIN;}
+const _z_SCHOOLS_BY_YEAR="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";let _d_SCHOOLS_BY_YEAR=null;function _SCHOOLS_BY_YEAR(){if(!_d_SCHOOLS_BY_YEAR)_d_SCHOOLS_BY_YEAR=JSON.parse(pako.inflate(Uint8Array.from(atob(_z_SCHOOLS_BY_YEAR),(c)=>c.charCodeAt(0)),{to:"string"}));return _d_SCHOOLS_BY_YEAR;}
+const ENROLL_DATA={"years":["2017-18","2018-19","2019-20","2020-21","2021-22","2022-23","2023-24","2024-25"],"total_headcount":[55321,55325,56051,54021,51653,51528,50968,51204],"swd_headcount":[8271,8582,8454,8145,8019,8357,8932,9299]};
+const RIDERSHIP_DATA={"years":["2017-18","2019-20","2021-22","2022-23","2023-24","2024-25","2025-26"],"basic_onbus":[12546,11596,8085,9884,8735,10401,9214],"sped_onbus":[2236,2422,1881,1881,2290,2492,2542],"gifted_onbus":[2580,1971,1253,1065,1068,1376,1301],"total_special":[5241,4950,3333,3191,4133,4133,4182]};
+const C={orange:'#E69F00',sky:'#56B4E9',green:'#009E73',yellow:'#F0E442',blue:'#0072B2',vermil:'#D55E00',pink:'#CC79A7'};
+Chart.defaults.font={family:"'DM Sans', sans-serif",size:12};
+Chart.defaults.color='#6B6560';
+function gc(){return 'rgba(0,0,0,0.07)'}
+
+// ── Navigation ────────────────────────────────────────────────
+const built={};
+function show(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(!built[id]){build(id);built[id]=true;}
+  pushHash();
+}
+function build(id){
+  if(id==='stars')buildStars();
+  if(id==='funding')buildFunding();
+  if(id==='ridership')buildRidership();
+  if(id==='routes')buildRoutes();
+  if(id==='schools')buildSchoolTable();
+  if(id==='analyses'){setTimeout(()=>{buildTrendsChart();},0);built['analyses']=true;}
+}
+
+// ── STARS ─────────────────────────────────────────────────────
+const _z_STARS_YEARS="H4sIAD94A2oC/7XWS6vbOBQA4L9iDAMzEJvzkM6Rsist3Q3TZRcDJU3SNnDJHZKbzkC5/32OJCe23CbpXXQVLNuS/OU89K0lQO0wtMtv7fHxdFhv22WLQPKqefPX6/fN74fTvvlzdWgwLhp7Nv7R/H2yX9f8u3v6sts30AP91hweT/vNbv853VTkdtF+XB1363ZJoKB9CIv2+M92vVs9tEtPyr3wot1sj0/tEkF6bxe7dEE9xYi6aB9W+027DD7dWn8YJgN7Db1LIzbbJg0gOaI0UCaz3aDjMrAbBjymxdYfypQ2wCp51v2XdtlBz0HzA4/749Nqb++ENGuwZbb/pf0yBvXR2yurh4dH2waTveKifdOG0m2N4ASeF8kydBhvWr7dfjTHZEnwQksMUahHnli6KNrDSOkrSoFwg1IwUEWJEbimZKopXXnjIumh0A6SFMi5qaT20VPgs2T6b11EGCVDZCTmQZKFAdEVydgR/DpJIunVTyVDhDwyRqXQFJM4fes1zOAryu8ga0asFGUajDzzIx3j0DOD11GPQZwyDHoaCF3QrEfQEd7VKzlN+EI9CU5S0F3sLEG4v9A5Xxzz13IfHLh4HS7KFA7iLJnnqVyHX5wGn1JNpylDC51YjFEY5ZS8h5TRJewKY4HDjuh+2IUMRy8NO/s86KdRZ1EVc3UsXxxdTuZzyDGoXJXjyFKVQgbLnkqPAGLlxwEmCWxoKIGmiOIgTBXRtqu20BnSc/CB3VgLbQmnKFooLa802P1CSR3xDyjfvXlbJF+dPjeUIfkC+XV72H3abTff2yEEqezsb5NcDc8Zi/00YVFts1f1FFwdd3ozYWcNxFVFL9TNg5LxUPBEvMR0feZKFZJSVc2R50Gdc1y4uCN3j2vIWHffK1pxzl129JJZ36W6wqF4f6PC6ZCMY7vgUIcbCmnNRiVDL3COdUpnDS1H3wSPxfPYeZ2tKimozxXPOyVGV/gENbVuKnyuI3+LLxc8znz+J/jEh/rYYvlGdavVCg9udQfEWXuQWZ3z7Cs6irNDi0Cub5eoA9U5nRJe5JSHunvptBydT9pJzoegMQ5nFvIdyV25EnjyE3JoVaxureSlpOYVOkql+OoxJZ+0pnE3k6NZrlqAVHJ2AIm35STn+yAnVhIpLXmWU2WrPUOX9dEumeT5+X+73MtEOwsAAA==";let _d_STARS_YEARS=null;function _STARS_YEARS(){if(!_d_STARS_YEARS)_d_STARS_YEARS=JSON.parse(pako.inflate(Uint8Array.from(atob(_z_STARS_YEARS),(c)=>c.charCodeAt(0)),{to:"string"}));return _d_STARS_YEARS;}
+let currentStarsYear='2025-26';
+function setStarsYear(yr,btn){
+  currentStarsYear=yr;
+  document.querySelectorAll('#sec-stars .yr-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderStarsInputs();
+  pushHash();
+}
+function renderStarsInputs(){
+  const d=_STARS_YEARS()[currentStarsYear];
+  document.getElementById('stars-src').textContent=d.source;
+  document.getElementById('stars-coef-sub').textContent=currentStarsYear+' coefficients';
+  document.getElementById('stars-inputs-sub').textContent=currentStarsYear+' inputs from 1026A';
+  document.getElementById('f-basic-c').textContent=d.c_basic.toFixed(5);
+  document.getElementById('f-sped-c').textContent=d.c_sped.toFixed(5);
+  document.getElementById('f-dest-c').textContent=d.c_dest.toFixed(5);
+  document.getElementById('f-dist-c').textContent=d.c_dist.toFixed(5);
+  document.getElementById('f-land-c').textContent=d.c_land.toFixed(5);
+  document.getElementById('f-nh-c').textContent=(d.c_nh<0?'':'+')+d.c_nh.toFixed(5);
+  document.getElementById('f-const').textContent=d.constant.toFixed(5);
+  const fmt=v=>'$'+(v/1e6).toFixed(3)+'M';
+  document.getElementById('stars-exal').textContent=fmt(d.exal);
+  document.getElementById('stars-d2').textContent=d.d2?fmt(d.d2):'n/a';
+  document.getElementById('stars-alloc').textContent=fmt(d.alloc);
+  const rows=[
+    {label:'Basic Program Riders (CBPC)',val:d.basic.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),coef:d.c_basic,contrib:(Math.log(d.basic+1)*d.c_basic)},
+    {label:'Special Program Riders (CSPC)',val:d.special.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),coef:d.c_sped,contrib:(Math.log(d.special+1)*d.c_sped)},
+    {label:'Destinations',val:d.dest,coef:d.c_dest,contrib:d.dest*d.c_dest},
+    {label:'Avg Distance (miles)',val:d.dist.toFixed(5),coef:d.c_dist,contrib:d.dist*d.c_dist},
+    {label:'Land Area ln(sq mi)',val:d.land+' sq mi',coef:d.c_land,contrib:Math.log(d.land)*d.c_land},
+    {label:'Non-High No',val:'No',coef:d.c_nh,contrib:0},
+  ];
+  document.getElementById('stars-inputs-table').innerHTML=
+    '<div style="display:grid;grid-template-columns:1fr auto auto auto;font-size:.8rem;margin-bottom:6px">'+
+    '<div style="padding:4px 6px;background:#F0ECE6;font-weight:600;font-size:.73rem;text-transform:uppercase;color:var(--muted)">Input</div>'+
+    '<div style="padding:4px 6px;background:#F0ECE6;font-weight:600;font-size:.73rem;text-transform:uppercase;color:var(--muted);text-align:right">Value</div>'+
+    '<div style="padding:4px 6px;background:#F0ECE6;font-weight:600;font-size:.73rem;text-transform:uppercase;color:var(--muted);text-align:right">Coef</div>'+
+    '<div style="padding:4px 6px;background:#F0ECE6;font-weight:600;font-size:.73rem;text-transform:uppercase;color:var(--muted);text-align:right">Contrib</div>'+
+    rows.map(r=>`
+      <div style="padding:4px 6px;border-bottom:1px solid #EDE9E2">${r.label}</div>
+      <div style="padding:4px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;font-size:.78rem">${r.val}</div>
+      <div style="padding:4px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;font-size:.78rem">${r.coef.toFixed(5)}</div>
+      <div style="padding:4px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;font-size:.78rem">${r.contrib.toFixed(5)}</div>
+    `).join('')+'</div>';
+}
+function buildStars(){
+  renderStarsInputs();
+  new Chart(document.getElementById('ch-cbpc'),{type:'bar',data:{labels:_MAIN().alloc.map(d=>d.year),datasets:[
+    {label:'Basic CBPC',data:_MAIN().alloc.map(d=>d.basic_cbpc),backgroundColor:C.blue+'CC',borderColor:C.blue,borderWidth:1},
+    {label:'Special CSPC',data:_MAIN().alloc.map(d=>d.special_cspc),backgroundColor:C.orange+'CC',borderColor:C.orange,borderWidth:1}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{color:gc()},ticks:{color:'#6B6560'}},y:{grid:{color:gc()},ticks:{color:'#6B6560',callback:v=>v.toLocaleString()}}}}});
+}
+
+// ── Funding ───────────────────────────────────────────────────
+function buildFunding(){
+  const yrs=_MAIN().alloc.map(d=>d.year),m=v=>v?(v/1e6).toFixed(1):null;
+  const lat=_MAIN().alloc[_MAIN().alloc.length-1];
+  const worst=_MAIN().alloc.reduce((a,b)=>{const ga=a.f196_exp-(a.actual_alloc||a.calc_alloc),gb=b.f196_exp-(b.actual_alloc||b.calc_alloc);return gb>ga?b:a});
+  document.getElementById('funding-stats').innerHTML=
+    `<div class="stat"><div class="stat-val">$${m(lat.f196_exp)}M</div><div class="stat-label">2024-25 expenditure</div></div>`+
+    `<div class="stat"><div class="stat-val">$${m(lat.actual_alloc)}M</div><div class="stat-label">2024-25 allocation</div></div>`+
+    `<div class="stat"><div class="stat-val warn">-$${m(lat.f196_exp-lat.actual_alloc)}M</div><div class="stat-label">2024-25 funding gap</div></div>`+
+    `<div class="stat"><div class="stat-val warn">-$${m(worst.f196_exp-(worst.actual_alloc||worst.calc_alloc))}M</div><div class="stat-label">Worst year gap (${worst.year})</div></div>`;
+  new Chart(document.getElementById('ch-funding'),{type:'line',data:{labels:yrs,datasets:[
+    {label:'F-196 Exp',data:_MAIN().alloc.map(d=>d.f196_exp/1e6),borderColor:C.vermil,backgroundColor:'transparent',borderWidth:2.5,pointRadius:4,tension:.2},
+    {label:'F-196 Rev',data:_MAIN().alloc.map(d=>d.f196_rev/1e6),borderColor:C.blue,backgroundColor:'transparent',borderWidth:2,pointRadius:4,tension:.2},
+    {label:'STARS Calc',data:_MAIN().alloc.map(d=>d.calc_alloc/1e6),borderColor:C.green,backgroundColor:'transparent',borderWidth:2,borderDash:[6,3],pointRadius:3,tension:.2},
+    {label:'STARS Alloc',data:_MAIN().alloc.map(d=>d.actual_alloc?d.actual_alloc/1e6:null),borderColor:C.orange,backgroundColor:'transparent',borderWidth:2,borderDash:[3,3],pointRadius:3,tension:.2}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: $${c.parsed.y?.toFixed(1)}M`}}},scales:{x:{grid:{color:gc()},ticks:{color:'#6B6560'}},y:{grid:{color:gc()},ticks:{color:'#6B6560',callback:v=>'$'+v+'M'}}}}});
+  const gaps=_MAIN().alloc.map(d=>-(d.f196_exp-(d.actual_alloc||d.calc_alloc))/1e6);
+  new Chart(document.getElementById('ch-gap'),{type:'bar',data:{labels:yrs,datasets:[{label:'Gap',data:gaps,backgroundColor:gaps.map(g=>g<-25?C.vermil+'DD':g<-10?C.orange+'CC':C.yellow+'CC'),borderColor:gaps.map(g=>g<-25?C.vermil:g<-10?C.orange:'#B8A800'),borderWidth:.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`Gap: $${c.parsed.y?.toFixed(1)}M`}}},scales:{x:{grid:{color:gc()},ticks:{color:'#6B6560'}},y:{grid:{color:gc()},ticks:{color:'#6B6560',callback:v=>'$'+v+'M'}}}}});
+}
+
+// ── Ridership ─────────────────────────────────────────────────
+function buildRidership(){
+  const qs=_MAIN().quarterly_summary,labels=qs.map(d=>d.year+' '+d.season);
+  new Chart(document.getElementById('ch-basic-trend'),{type:'line',data:{labels,datasets:[{label:'Basic On Buses',data:qs.map(d=>d.basic),borderColor:C.blue,backgroundColor:C.blue+'18',borderWidth:2.5,pointRadius:4,tension:.2,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` Basic: ${c.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{display:false},ticks:{color:'#6B6560',maxRotation:45,font:{size:10}}},y:{grid:{color:gc()},ticks:{color:'#6B6560',callback:v=>v.toLocaleString()},suggestedMin:6000}}}});
+  const fall=qs.filter(d=>d.season==='Fall');
+  new Chart(document.getElementById('ch-special'),{type:'bar',data:{labels:fall.map(d=>d.year),datasets:[
+    {label:'Special Ed',data:fall.map(d=>d.sped),backgroundColor:C.blue+'CC'},
+    {label:'Gifted',data:fall.map(d=>d.gifted),backgroundColor:C.orange+'CC'},
+    {label:'Early Ed',data:fall.map(d=>d.earlyEd),backgroundColor:C.green+'CC'},
+    {label:'Homeless',data:fall.map(d=>d.homeless),backgroundColor:C.pink+'CC'},
+    {label:'Bilingual',data:fall.map(d=>d.bilingual),backgroundColor:C.vermil+'CC'},
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index'}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:'#6B6560'}},y:{stacked:true,grid:{color:gc()},ticks:{color:'#6B6560',callback:v=>v.toLocaleString()}}}}});
+}
+
+// ── Routes ────────────────────────────────────────────────────
+const SPED_GROWTH=[{"school":"Experimental Ed Unit","v1718":0,"v2526":9},{"school":"Denny International","v1718":0,"v2526":6},{"school":"Chief Sealth International","v1718":6,"v2526":11},{"school":"Dunlap","v1718":1,"v2526":5},{"school":"James Baldwin","v1718":0,"v2526":4},{"school":"Ingraham","v1718":9,"v2526":13},{"school":"Jane Addams K-8","v1718":1,"v2526":5},{"school":"Tops K-8 School","v1718":6,"v2526":10},{"school":"Rising Star","v1718":0,"v2526":4},{"school":"Thurgood Marshall","v1718":4,"v2526":8},{"school":"Rainier Beach","v1718":6,"v2526":10},{"school":"Stevens","v1718":3,"v2526":7}];
+const DIST_DATA={"years":["2017-18","2019-20","2021-22","2022-23","2023-24","2024-25","2025-26"],"Basic":[1.91,1.92,1.96,1.97,2.02,2.01,1.94],"Special":[2.47,2.41,2.35,2.14,2.34,2.36,2.42],"Gifted":[3.09,3.05,3.3,2.99,3.25,3.27,3.3],"EarlyEd":[2.19,1.43,1.75,2.73,2.3,1.14,1.16]};
+function buildRoutes(){
+  const fallRC=_MAIN().route_counts.filter(d=>d.season==='Fall');
+  const yrs=[...new Set(fallRC.map(d=>d.year))].sort();
+  const progs=['Basic','Special','Gifted','EarlyEd'];
+  const pcol={Basic:C.blue,Special:C.orange,Gifted:C.green,EarlyEd:C.pink};
+  new Chart(document.getElementById('ch-routecounts'),{type:'bar',data:{labels:yrs,datasets:progs.map(p=>({label:p,data:yrs.map(y=>{const r=fallRC.find(d=>d.year===y&&d.program===p);return r?r.route_count:0}),backgroundColor:pcol[p]+'CC',borderColor:pcol[p],borderWidth:1}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index'}},scales:{x:{grid:{display:false},ticks:{color:'#6B6560'}},y:{grid:{color:gc()},ticks:{color:'#6B6560'}}}}});
+  new Chart(document.getElementById('ch-sped-growth'),{type:'bar',data:{labels:SPED_GROWTH.map(d=>d.school),datasets:[{label:'2017-18',data:SPED_GROWTH.map(d=>d.v2223),backgroundColor:C.sky+'BB',borderColor:C.sky,borderWidth:1},{label:'2025-26',data:SPED_GROWTH.map(d=>d.v2526),backgroundColor:C.orange+'BB',borderColor:C.orange,borderWidth:1}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#6B6560',font:{size:11}}},tooltip:{mode:'index'}},scales:{x:{grid:{color:gc()},ticks:{color:'#6B6560'}},y:{grid:{display:false},ticks:{color:'#6B6560',font:{size:11}}}}}});
+  new Chart(document.getElementById('ch-dist'),{type:'line',data:{labels:DIST_DATA.years,datasets:[
+    {label:'Basic',data:DIST_DATA.Basic,borderColor:C.blue,backgroundColor:'transparent',borderWidth:2,pointRadius:4},
+    {label:'Special',data:DIST_DATA.Special,borderColor:C.orange,backgroundColor:'transparent',borderWidth:2,pointRadius:4},
+    {label:'Gifted',data:DIST_DATA.Gifted,borderColor:C.green,backgroundColor:'transparent',borderWidth:2,borderDash:[5,3],pointRadius:4},
+    {label:'Early Ed',data:DIST_DATA.EarlyEd,borderColor:C.pink,backgroundColor:'transparent',borderWidth:2,borderDash:[3,3],pointRadius:4},
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#6B6560',font:{size:11}}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y.toFixed(2)} mi`}}},scales:{x:{grid:{display:false},ticks:{color:'#6B6560'}},y:{grid:{color:gc()},ticks:{color:'#6B6560',callback:v=>v.toFixed(1)+' mi'},suggestedMin:.5,suggestedMax:4}}}});
+}
+
+// ── Schools ───────────────────────────────────────────────────
+let sortKey='total_routes',sortAsc=false,currentSchoolYear='2024-25',filteredSchools=[];
+function setSchoolYear(yr,btn){
+  currentSchoolYear=yr;
+  document.querySelectorAll('#sec-schools .yr-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  filterSchools();
+  pushHash();
+}
+function buildSchoolTable(){filteredSchools=_SCHOOLS_BY_YEAR()[currentSchoolYear]||[];filterSchools();}
+function filterSchools(){
+  const region=document.getElementById('fil-region').value;
+  const type=document.getElementById('fil-type').value;
+  const reg=document.getElementById('fil-reg').value;
+  const msarea=document.getElementById('fil-msarea').value;
+  const search=document.getElementById('fil-search').value.toLowerCase();
+  const src=_SCHOOLS_BY_YEAR()[currentSchoolYear]||[];
+  filteredSchools=src.filter(s=>{
+    if(region&&s.region!==region)return false;
+    if(type&&s.type!==type)return false;
+    if(reg!==''&&String(s.is_regular)!==reg)return false;
+    if(msarea&&!s.ms_area.includes(msarea))return false;
+    if(search&&!s.school.toLowerCase().includes(search))return false;
+    return true;
+  });
+  renderSchoolTable();
+  replaceHash();
+}
+function sortTable(k){
+  if(sortKey===k)sortAsc=!sortAsc;else{sortKey=k;sortAsc=k==='school'||k==='ms_area'||k==='region';}
+  document.querySelectorAll('th').forEach(th=>th.classList.remove('sorted'));
+  event.target.closest('th').classList.add('sorted');
+  renderSchoolTable();
+}
+function renderSchoolTable(){
+  const sorted=[...filteredSchools].sort((a,b)=>{
+    let av=a[sortKey],bv=b[sortKey];
+    if(typeof av==='string')av=av.toLowerCase();
+    if(typeof bv==='string')bv=bv.toLowerCase();
+    if(av<bv)return sortAsc?-1:1;
+    if(av>bv)return sortAsc?1:-1;
+    return 0;
+  });
+  document.getElementById('school-count').textContent=sorted.length+' schools';
+  document.getElementById('school-tbody').innerHTML=sorted.map(s=>`
+    <tr>
+      <td>${s.school}</td>
+      <td>${s.region}</td>
+      <td><span class="badge badge-type">${s.type}</span></td>
+      <td><span class="badge ${s.is_regular?'badge-nbhd':'badge-opt'}">${s.is_regular?'Neighborhood school':'Option / Other'}</span></td>
+      <td style="font-size:.79rem;color:var(--muted)">${s.ms_area==='unknown'?'—':s.ms_area.replace(' Middle School','').replace(' International Middle School','')}</td>
+      <td class="num col-route">${s.total_routes != null ? s.total_routes : '—'}</td>
+      <td class="num col-route">${s.basic_routes != null ? s.basic_routes : '—'}</td>
+      <td class="num col-route">${s.sped_routes != null ? s.sped_routes : '—'}</td>
+      <td class="num col-route">${s.gifted_routes != null ? s.gifted_routes : '—'}</td>
+      <td class="num col-route">${s.earlyEd_routes != null ? s.earlyEd_routes : '—'}</td>
+      <td class="num col-demo">${s.headcount.toLocaleString()}</td>
+      <td class="num col-demo">${s.swd.toLocaleString()}</td>
+      <td class="num col-demo">${s.low_income.toLocaleString()}</td>
+      <td class="num col-demo">${s.ell.toLocaleString()}</td>
+      <td class="num col-demo">${s.highly_capable.toLocaleString()}</td>
+    </tr>`).join('');
+}
+
+// ── CSV downloads ─────────────────────────────────────────────
+function dlCSV(type){
+  let rows=[],fn='';
+  if(type==='alloc'){
+    fn='STARS_Funding_Gap.csv';
+    rows=[['year','basic_cbpc','special_cspc','calc_alloc','actual_alloc','d2_prior_year_exp','f196_expenditure','f196_revenue','funding_gap']];
+    _MAIN().alloc.forEach(d=>{const a=d.actual_alloc||d.calc_alloc;rows.push([d.year,d.basic_cbpc,d.special_cspc,d.calc_alloc,d.actual_alloc??'',d.prior_exp??'',d.f196_exp,d.f196_rev,-(d.f196_exp-a)]);});
+  }else if(type==='quarterly'){
+    fn='Quarterly_Ridership_Summary.csv';
+    rows=[['year','season','basic_on_buses','special_ed','gifted_hcc','bilingual','homeless','early_ed','total_special']];
+    _MAIN().quarterly_summary.forEach(d=>rows.push([d.year,d.season,d.basic,d.sped,d.gifted,d.bilingual,d.homeless,d.earlyEd,d.sped+d.gifted+d.bilingual+d.homeless+d.earlyEd]));
+  }else if(type==='routes'){
+    fn='Route_Counts_by_Program.csv';
+    rows=[['year','season','program','route_count']];
+    _MAIN().route_counts.forEach(d=>rows.push([d.year,d.season,d.program,d.route_count]));
+  }else if(type==='schools'){
+    fn='School_Routes_All_Years.csv';
+    rows=[['year','school_code','school','type','is_regular','status','region','ms_attendance_area','headcount','swd','low_income','ell','highly_capable','basic_routes','sped_routes','gifted_routes','earlyEd_routes','total_routes']];
+    ['2017-18','2018-19','2019-20','2020-21','2021-22','2022-23','2023-24','2024-25'].forEach(yr=>{
+      (_SCHOOLS_BY_YEAR()[yr]||[]).forEach(s=>rows.push([yr,s.school_code,s.school,s.type,s.is_regular,s.is_regular?'Neighborhood school':'Option / Other',s.region,s.ms_area,s.headcount,s.swd,s.low_income,s.ell,s.highly_capable,s.basic_routes,s.sped_routes,s.gifted_routes,s.earlyEd_routes,s.total_routes]));
+    });
+  }else if(type==='stars_coefs'){
+    fn='STARS_Coefficients.csv';
+    rows=[['year','source','basic_cbpc','special_cspc','destinations','avg_distance','land_area_sqmi','coef_basic','coef_special','coef_dest','coef_dist','coef_land','coef_nonhigh_no','constant','expected_alloc','actual_alloc','d2_prior_exp']];
+    Object.entries(_STARS_YEARS()).forEach(([yr,d])=>rows.push([yr,d.source,d.basic,d.special,d.dest,d.dist,d.land,d.c_basic,d.c_sped,d.c_dest,d.c_dist,d.c_land,d.c_nh,d.constant,d.exal,d.alloc,d.d2]));
+  }
+  const csv=rows.map(r=>r.map(v=>{const s=String(v??'');return(s.includes(',')||s.includes('"'))?'"'+s.replace(/"/g,'""')+'"':s}).join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=fn;a.click();
+}
+
+
+// ── Trends chart ──────────────────────────────────────────────
+
+function buildTrendsChart() {
+  const RR = {
+    years:['2017-18', '2018-19', '2019-20', '2020-21', '2021-22', '2022-23', '2023-24', '2024-25', '2025-26'],
+    basic_routes:[225, 204, 219, null, 216, 194, 195, 197, 187],
+    basic_riders:[12546, 10755, 11596, 0, 8085, 9884, 8735, 10401, 9214],
+    sped_routes:[342, 329, 331, null, 301, 223, 299, 340, 362],
+    sped_riders:[2236, 2313, 2422, 0, 1881, 1881, 2290, 2492, 2542],
+    gifted_routes:[68, 70, 55, null, 49, 40, 40, 40, 42],
+    gifted_riders:[2580, 2239, 1971, 0, 1253, 1065, 1068, 1376, 1301]
+  };
+  const yrs = RR.years;
+  const rpr = (riders, routes) => riders.map((r,i) => Math.round(r / routes[i] * 10) / 10);
+
+  // Chart 1: route counts by program
+  new Chart(document.getElementById('ch-routes-riders-idx'), {
+    type: 'line',
+    data: {
+      labels: yrs,
+      datasets: [
+        {label:'Basic routes', data:RR.basic_routes, borderColor:C.blue, backgroundColor:'transparent', borderWidth:2.5, pointRadius:4, tension:.2, spanGaps:false},
+        {label:'Sped routes',  data:RR.sped_routes,  borderColor:C.orange, backgroundColor:'transparent', borderWidth:2.5, pointRadius:4, tension:.2, spanGaps:false},
+        {label:'Gifted routes',data:RR.gifted_routes,borderColor:C.green, backgroundColor:'transparent', borderWidth:2, borderDash:[4,3], pointRadius:4, tension:.2, spanGaps:false},
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y ?? 'n/a'}`}}
+      },
+      scales:{
+        x:{grid:{display:false}, ticks:{color:'#6B6560', maxRotation:45}},
+        y:{grid:{color:'rgba(0,0,0,0.07)'}, ticks:{color:'#6B6560'},
+           title:{display:true, text:'Number of Routes', color:'#6B6560', font:{size:11}}}
+      }
+    }
+  });
+
+
+  // Chart 2: riders per route
+  new Chart(document.getElementById('ch-riders-per-route'), {
+    type: 'line',
+    data: {
+      labels: yrs,
+      datasets: [
+        {label:'Basic', data:rpr(RR.basic_riders,RR.basic_routes), borderColor:C.blue, backgroundColor:'transparent', borderWidth:2.5, pointRadius:5, tension:.2, yAxisID:'yB'},
+        {label:'Sped',  data:rpr(RR.sped_riders, RR.sped_routes),  borderColor:C.orange, backgroundColor:'transparent', borderWidth:2.5, pointRadius:5, tension:.2, yAxisID:'yS'},
+        {label:'Gifted',data:rpr(RR.gifted_riders,RR.gifted_routes),borderColor:C.green, backgroundColor:'transparent', borderWidth:2, borderDash:[4,3], pointRadius:4, tension:.2, yAxisID:'yB'},
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y} riders/route`}}
+      },
+      scales:{
+        x:{grid:{display:false}, ticks:{color:'#6B6560'}},
+        yB:{type:'linear', position:'left',  grid:{color:'rgba(0,0,0,0.07)'}, ticks:{color:'#6B6560'}, title:{display:true,text:'Basic & Gifted',color:'#6B6560',font:{size:11}}},
+        yS:{type:'linear', position:'right', grid:{display:false}, ticks:{color:C.orange}, title:{display:true,text:'Sped',color:C.orange,font:{size:11}}, min:5, max:12}
+      }
+    }
+  });
+}
+
+function toggleAC(i) {
+  const body = document.getElementById('acb-' + i);
+  const chev = document.getElementById('chev-' + i);
+  if (body.style.display === 'none') {
+    body.style.display = 'block';
+    chev.innerHTML = '&#9660;';
+  } else {
+    body.style.display = 'none';
+    chev.innerHTML = '&#9654;';
+  }
+}
+
+
+// ── Deep linking via URL hash ──────────────────────────────────
+function encodeHash() {
+  const tab = document.querySelector('nav button.active')?.getAttribute('onclick')?.match(/show\('(\w+)'/)?.[1] || 'stars';
+  const parts = [tab];
+  const params = [];
+  if(tab === 'stars' && currentStarsYear !== '2025-26') params.push('year='+currentStarsYear);
+  if(tab === 'schools') {
+    if(currentSchoolYear !== '2024-25') params.push('year='+currentSchoolYear);
+    const r = document.getElementById('fil-region')?.value; if(r) params.push('region='+encodeURIComponent(r));
+    const t = document.getElementById('fil-type')?.value;   if(t) params.push('type='+encodeURIComponent(t));
+    const s = document.getElementById('fil-reg')?.value;    if(s) params.push('status='+s);
+    const m = document.getElementById('fil-msarea')?.value; if(m) params.push('msarea='+encodeURIComponent(m));
+    const q = document.getElementById('fil-search')?.value; if(q) params.push('q='+encodeURIComponent(q));
+  }
+  if(params.length) parts.push(params.join('&'));
+  return '#' + parts.join('/');
+}
+
+function pushHash() {
+  const h = encodeHash();
+  if(location.hash !== h) history.pushState(null, '', h);
+}
+
+function replaceHash() {
+  const h = encodeHash();
+  if(location.hash !== h) history.replaceState(null, '', h);
+}
+
+function applyHash(hash) {
+  if(!hash || hash === '#') return;
+  const [tabPart, paramStr] = hash.replace(/^#/,'').split('/');
+  const params = {};
+  if(paramStr) paramStr.split('&').forEach(p => {
+    const [k,v] = p.split('='); params[k] = decodeURIComponent(v||'');
+  });
+
+  // Switch to the right tab
+  const tabBtn = [...document.querySelectorAll('nav button')]
+    .find(b => b.getAttribute('onclick')?.includes("show('"+tabPart+"'"));
+  if(tabBtn) { show(tabPart, tabBtn); }
+
+  // Restore STARS year
+  if(tabPart === 'stars' && params.year) {
+    const yrBtn = [...document.querySelectorAll('#sec-stars .yr-tab')]
+      .find(b => b.getAttribute('onclick')?.includes("'"+params.year+"'"));
+    if(yrBtn) setStarsYear(params.year, yrBtn);
+  }
+
+  // Restore school filters
+  if(tabPart === 'schools') {
+    if(params.year) {
+      const yrBtn = [...document.querySelectorAll('#sec-schools .yr-tab')]
+        .find(b => b.getAttribute('onclick')?.includes("'"+params.year+"'"));
+      if(yrBtn) setSchoolYear(params.year, yrBtn);
+    }
+    if(params.region) { const el = document.getElementById('fil-region'); if(el) el.value = params.region; }
+    if(params.type)   { const el = document.getElementById('fil-type');   if(el) el.value = params.type;   }
+    if(params.status) { const el = document.getElementById('fil-reg');    if(el) el.value = params.status; }
+    if(params.msarea) { const el = document.getElementById('fil-msarea'); if(el) el.value = params.msarea; }
+    if(params.q)      { const el = document.getElementById('fil-search'); if(el) el.value = params.q;      }
+    filterSchools();
+  }
+}
+
+window.addEventListener('popstate', () => applyHash(location.hash));
+
+// ── Init ──────────────────────────────────────────────────────
+build('stars');built['stars']=true;
+if(location.hash && location.hash !== '#') { setTimeout(()=>applyHash(location.hash), 50); } else { replaceHash(); }
+</script>
+</body></html>
