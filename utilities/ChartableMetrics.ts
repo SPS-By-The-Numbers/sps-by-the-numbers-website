@@ -168,8 +168,9 @@ export function extractRawExpenditures(df: ColumnTable, facetColumn: string) {
   return data;
 }
 
-export function extractRawS275Staffing(df: ColumnTable) {
-  const data = df.groupby("class_of", "duty_root_code").rollup({
+export function extractRawS275Staffing(df: ColumnTable, facetColumn: string = "duty_root") {
+  const facetCodeColumn = `${facetColumn}_code`;
+  const data = df.groupby("class_of", facetCodeColumn).rollup({
     finalSalary: (d) => op.sum(d.c_est_total_final_salary),
     initialSalary: (d) => op.sum(d.c_est_total_initial_salary),
     fte: (d) => op.sum(d.fte),

@@ -165,12 +165,13 @@ function makeFacetedStaffingForDistrict(
   facet,
   staffingSettings,
 ) {
-  const rawData = extractRawS275Staffing(filteredS275Summary);
+  const facetCodeColumn = `${facet}_code`;
+  const rawData = extractRawS275Staffing(filteredS275Summary, facet);
 
   const formatedData = rawData
     .params({ name: METRIC_NAME })
     .groupby("class_of")
-    .pivot(["duty_root_code"], {
+    .pivot([facetCodeColumn], {
       finalSalary: (d) => op.sum(d.finalSalary),
       fte: (d, $) => op.sum(d[$.name]),
     })

@@ -15,7 +15,7 @@ import type { DutyRootFilters, PAFilters, SchoolFilters } from "utilities/Distri
 export type StaffingSettings = DatasetSettings & PAFilters & SchoolFilters & DutyRootFilters;
 export type StaffingContextSettings = CommonFacetContextSettings<Facet>;
 
-const ALL_FACETS = ["activity", "program", "school", "dutyroot"];
+const ALL_FACETS = ["activity", "program", "school", "duty_root"] as const;
 export type Facet = (typeof ALL_FACETS)[number];
 export const FACET_OPTIONS: Record<Facet, string> = {
   activity: "Activity",
