@@ -100,6 +100,7 @@ tr:hover .col-demo{background:#EBE4FF!important}
 <nav>
   <button class="active" onclick="show('stars',this)">STARS Formula</button>
   <button onclick="show('funding',this)">Funding Gap</button>
+  <button onclick="show('contracts',this)">Contract Overages</button>
   <button onclick="show('ridership',this)">Ridership Trends</button>
   <button onclick="show('routes',this)">Route Detail</button>
   <button onclick="show('schools',this)">School Explorer</button>
@@ -167,6 +168,67 @@ ALLOC = min(EXAL, D.2 Prior Year Exp)<br>
     <p class="annotation">Basic CBPC fell from ~20,000 pre-COVID to ~9,000 today. The log transform means this halving reduces the basic program&rsquo;s formula contribution by ~46% &mdash; but operational costs did not halve.</p>
   </div>
   <div class="callout info"><strong>Gifted program:</strong> Per OSPI General Instructions, Gifted Program routes (Type G) count under Special Program totals in STARS, not Basic. HCC students riding Gifted routes contribute to Special Program riders (coefficient 0.11), not the Basic coefficient (0.665).</div>
+
+  <div class="card" style="margin-top:24px">
+    <div class="card-title">Count Day Selection &amp; Revenue Impact</div>
+    <div class="card-sub">Districts choose their own three-day count period within each reporting window &mdash; this is a controllable input to the STARS formula</div>
+    <div class="callout info" style="margin-bottom:14px">
+      <strong>Per OSPI General Instructions (2022-23):</strong> &ldquo;Three consecutive school days are to be identified as the count period.&rdquo; The district selects which days to count. OSPI sets only the submission deadlines (last business day of October, first business days of February and May) and requires the count period not fall within five school days of the period&rsquo;s end. Districts may <strong>not</strong> &ldquo;promote or publicize specific count periods or distribute materials that promote ridership during the count period.&rdquo; (WAC 392-141-420(8))
+    </div>
+    <div style="font-size:.84rem;line-height:1.7;margin-bottom:16px">
+      <p>The Basic CBPC is the average of three count-day snapshots (Fall, Winter, Spring). Each snapshot captures one day&rsquo;s ridership at the school load zone. At the current marginal formula value of ~$2,650 per Basic rider, every rider absent on count day costs SPS ~$880 in annual allocation (one-third of the annual value, since CBPC averages three periods).</p>
+      <p style="margin-top:8px">This means the <em>choice</em> of which three days to count within each reporting window is a controllable revenue lever. Selecting days that happen to have structurally lower ridership &mdash; the day before a holiday, a testing week, Walk/Bike to School events, unusually bad weather &mdash; has a direct, quantifiable cost to the district.</p>
+    </div>
+    <div class="grid-2">
+      <div>
+        <div style="font-size:.82rem;font-weight:600;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Estimated allocation loss from count day variance</div>
+        <table style="width:100%;font-size:.82rem;border-collapse:collapse">
+          <thead><tr>
+            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:left">Scenario</th>
+            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">Riders absent</th>
+            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">Annual loss</th>
+          </tr></thead>
+          <tbody>
+            <tr><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2">Typical day-to-day variance</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">~200 (2%)</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">$0.53M</td></tr>
+            <tr><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2">Bad timing (pre-holiday, Monday)</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">~500 (5%)</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">$1.34M</td></tr>
+            <tr><td style="padding:4px 8px">Walk/Bike to School week or event</td><td style="padding:4px 8px;text-align:right;font-family:'DM Mono',monospace">~800 (8%)</td><td style="padding:4px 8px;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">$2.15M</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:.78rem;color:var(--muted);margin-top:6px">Loss calculated against CBPC average. If depressed count affects one of three periods, divide by 3. Actual loss per count day depends on current CBPC level.</p>
+      </div>
+      <div>
+        <div style="font-size:.82rem;font-weight:600;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Observed seasonal variation (Fall &rarr; Winter)</div>
+        <table style="width:100%;font-size:.82rem;border-collapse:collapse">
+          <thead><tr>
+            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:left">Year</th>
+            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">Fall</th>
+            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">Winter</th>
+            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">Drop</th>
+            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">CBPC cost</th>
+          </tr></thead>
+          <tbody>
+            <tr><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2">2017-18</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">12,546</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">12,198</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">&minus;348</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">$0.31M</td></tr>
+            <tr><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2">2022-23</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">9,884</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">9,072</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">&minus;812</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">$0.72M</td></tr>
+            <tr><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2">2023-24</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">8,735</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">8,011</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">&minus;724</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">$0.64M</td></tr>
+            <tr><td style="padding:4px 8px">2024-25</td><td style="padding:4px 8px;text-align:right;font-family:'DM Mono',monospace">10,401</td><td style="padding:4px 8px;text-align:right;font-family:'DM Mono',monospace">9,616</td><td style="padding:4px 8px;text-align:right;font-family:'DM Mono',monospace">&minus;785</td><td style="padding:4px 8px;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">$0.69M</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:.78rem;color:var(--muted);margin-top:6px">CBPC cost = one-third of (drop &times; $2,650), reflecting that Winter is one of three averaged periods. We do not know if this drop is behavioral (fewer riders in winter) or an artifact of count day selection.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">What SPS Can and Cannot Do About Count Days</div>
+    <div class="card-sub">The rules permit optimization but prohibit promotion</div>
+    <div style="font-size:.84rem;line-height:1.8">
+      <p style="margin-bottom:10px"><strong style="color:var(--c-green)">Permitted:</strong> SPS chooses the three consecutive school days within each reporting window. The district can avoid counting on days with known low ridership: pre-holiday Fridays, testing weeks, school event days, periods of extreme weather. This is not gaming the formula &mdash; it&rsquo;s avoiding unrepresentative snapshots of normal ridership.</p>
+      <p style="margin-bottom:10px"><strong style="color:var(--c-vermil)">Prohibited:</strong> WAC 392-141-420(8) bars districts from promoting or publicizing count periods or distributing materials that promote ridership during the count. SPS cannot send &ldquo;ride the bus this week!&rdquo; communications or run incentive programs timed to count days.</p>
+      <p style="margin-bottom:10px"><strong style="color:var(--c-blue)">Unknown:</strong> We do not know which dates SPS has selected for count periods in any year. The 1022E form documents &ldquo;the count period and the count day selected for reporting,&rdquo; but these are not in our data set. To assess whether count day selection has been optimal, you would need the actual dates from SPS Transportation and compare them to school calendars, weather records, and attendance data.</p>
+      <p><strong style="color:var(--text)">Potential upside:</strong> If the observed Fall-to-Winter Basic dip of 700&ndash;800 riders is partly due to suboptimal count day selection rather than genuine ridership decline, correcting it could recover $0.4&ndash;0.7M annually. This is modest relative to the $23M structural gap but is entirely within SPS&rsquo;s control, requires no policy changes, and costs nothing to implement.</p>
+    </div>
+  </div>
+
 </div>
 
 <!-- FUNDING -->
@@ -205,6 +267,140 @@ ALLOC = min(EXAL, D.2 Prior Year Exp)<br>
 </div>
 
 <!-- RIDERSHIP -->
+<div id="sec-contracts" class="section">
+  <h2 class="section-heading">Contract Overages</h2>
+  <p class="section-desc">NCES 519 actual spend compared to board-authorized contract ceilings. SPS does not operate its own bus fleet &mdash; virtually all transportation spending (95&ndash;97% of F-196 total) flows through NCES 519 (&ldquo;Student Transportation Services Purchased from Another&rdquo;) to outside contractors.</p>
+
+  <div class="callout warn" style="margin-bottom:16px">
+    <strong>Data limitations:</strong> NCES 519 actuals are from a district financial report (fiscal year end). Board authorization amounts are from public board meeting agendas. Actual spend exceeds located authorizations by $4.35&ndash;$9.35M annually &mdash; additional board authorizations or Superintendent-delegated procurements covering this gap have not been found. Per-route-day rates and vendor-level breakdowns are not available from public board records.
+  </div>
+
+  <div class="stat-row">
+    <div class="stat"><div class="stat-val">$40M</div><div class="stat-label">Pre-2022 baseline (First Student sole source)</div></div>
+    <div class="stat"><div class="stat-val warn">$63M</div><div class="stat-label">2022-23 peak (NCES 519 actual)</div></div>
+    <div class="stat"><div class="stat-val">$60M</div><div class="stat-label">2023-25 plateau (NCES 519 actual)</div></div>
+    <div class="stat"><div class="stat-val warn">$9.35M</div><div class="stat-label">Largest gap above authorized ceiling</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">NCES 519 Actuals vs. Board-Authorized Contract Ceilings</div>
+    <div class="card-sub">Annual contracted transportation spend and the sum of located board authorizations</div>
+    <div class="chart-wrap" style="height:300px"><canvas id="ch-contracts"></canvas></div>
+    <div class="legend" style="margin-top:10px">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-vermil)"></div>NCES 519 actual</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-blue)"></div>Bus contract ceiling (RFP022242)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-green)"></div>Alt transport ceiling (RFQ 02954 / 042339)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-orange);opacity:.4"></div>Gap above authorized</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Contract Timeline</div>
+      <div class="card-sub">Three board actions define the current contract structure</div>
+      <div style="font-size:.83rem;line-height:1.8">
+        <p style="margin-bottom:12px"><strong style="color:var(--c-blue)">Pre-2022: First Student sole source (~$40M/yr)</strong><br>
+        Single vendor contract dating to 2017, extended twice (2019, 2021). No significant alternative transport spend. This is the baseline against which all post-2022 costs compare.</p>
+
+        <p style="margin-bottom:12px"><strong style="color:var(--c-vermil)">July 6, 2022: <a href="https://www.seattleschools.org/board-meetings/july-6-2022/" target="_blank" style="color:var(--c-vermil)">RFP022242A &amp; B</a></strong><br>
+        Board awarded dual bus service contract to First Student and Z&#363;m Services. Combined value: $135.6M over 3 years (~$45.2M/yr annual NTE). This represented a 12.5% base rate increase over the prior contract &mdash; baked into the new contract structure at renewal.</p>
+
+        <p style="margin-bottom:12px"><strong style="color:var(--c-orange)">Nov 30, 2022: <a href="https://www.seattleschools.org/board-meetings/november-30-2022-regular-board-meeting/" target="_blank" style="color:var(--c-orange)">RFQ 02954 renewal</a></strong><br>
+        Board authorized one-year continuation of alternative student transportation contracts with six vendors: Beeline, MTR Western, EverDriven, First Student, HopSkipDrive, and Zum. Annual NTE: $8.45M. Term: Sept 1, 2022 &ndash; Aug 31, 2023. These are rideshare/van providers serving students who cannot be served by bus routes, primarily special ed placements.</p>
+
+        <p><strong style="color:var(--c-green)">July 6, 2023: <a href="https://www.seattleschools.org/board-meetings/july-6-2023-regular-board-meeting/" target="_blank" style="color:var(--c-green)">RFQ 042339</a></strong><br>
+        Board awarded re-competed alternative transport contracts to three vendors: EverDriven, HopSkipDrive, and Zum (Beeline and MTR Western dropped). Annual NTE: $10.45M (+24% over prior year). Term: Sept 1, 2023 &ndash; Aug 31, 2025 with two one-year extension options.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">The Cost Decomposition</div>
+      <div class="card-sub">How $40M became $60M &mdash; three structural layers</div>
+      <div style="font-size:.83rem;line-height:1.8">
+        <p style="margin-bottom:12px"><strong style="color:var(--text)">Layer 1: Base contract reset (+$5.2M/yr)</strong><br>
+        The new dual contract (First Student + Zum) authorized $45.2M/yr vs. the prior ~$40M/yr. This 12.5% increase reflects post-COVID driver wage inflation and the addition of a second contractor. This layer is permanent and baked into the current contract.</p>
+
+        <p style="margin-bottom:12px"><strong style="color:var(--text)">Layer 2: Alternative transport (+$8.5&ndash;$10.5M/yr)</strong><br>
+        A new structural cost layer: rideshare/van services (EverDriven, HopSkipDrive, etc.) for students with individualized transport needs. This did not exist at scale under the prior contract. The NTE grew from $8.45M (2022-23) to $10.45M (2023-25), suggesting demand is increasing. These services generate zero STARS formula value.</p>
+
+        <p style="margin-bottom:12px"><strong style="color:var(--text)">Layer 3: Unexplained overage (+$4.4&ndash;$9.4M/yr)</strong><br>
+        Actual NCES 519 spend exceeds the sum of located board authorizations in every year. The 2022-23 gap ($9.35M) was the largest, declining to $4.35M in 2023-24 and 2024-25. This likely reflects: mid-year contract amendments not yet located in board records, spending under the Superintendent&rsquo;s delegated procurement authority, and/or variable pricing provisions in the bus contract that allow costs above the base NTE.</p>
+
+        <div style="margin-top:14px;padding:12px 14px;background:#F0ECE6;border-radius:6px">
+          <table style="width:100%;font-size:.82rem;border-collapse:collapse">
+            <tr><td style="padding:3px 6px">Prior baseline (pre-2022)</td><td style="text-align:right;padding:3px 6px;font-family:'DM Mono',monospace">$40.0M</td></tr>
+            <tr><td style="padding:3px 6px;border-bottom:1px solid #DDD8CF">+ Base contract reset</td><td style="text-align:right;padding:3px 6px;border-bottom:1px solid #DDD8CF;font-family:'DM Mono',monospace">+$5.2M</td></tr>
+            <tr><td style="padding:3px 6px;border-bottom:1px solid #DDD8CF">+ Alt transport layer (2024-25)</td><td style="text-align:right;padding:3px 6px;border-bottom:1px solid #DDD8CF;font-family:'DM Mono',monospace">+$10.5M</td></tr>
+            <tr><td style="padding:3px 6px;border-bottom:1px solid #DDD8CF">+ Unexplained overage</td><td style="text-align:right;padding:3px 6px;border-bottom:1px solid #DDD8CF;font-family:'DM Mono',monospace">+$4.4M</td></tr>
+            <tr><td style="padding:3px 6px;font-weight:600">= Current spend (2024-25)</td><td style="text-align:right;padding:3px 6px;font-family:'DM Mono',monospace;font-weight:600;color:var(--accent2)">$60.0M</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Per-Route-Day Rates (from BAFO, April 2022)</div>
+    <div class="card-sub">Best and Final Offer pricing from RFP022242, obtained via public records request. These rates govern the awarded contracts.</div>
+    <div class="callout info" style="margin-bottom:14px">
+      <strong>Key insight:</strong> The bus contract is a <em>rate schedule</em>, not a fixed annual fee. SPS pays per route per day at volume-tiered rates. The $45.2M NTE in the board authorization reflects projected route counts &mdash; actual costs fluctuate with the number of routes deployed. This explains why NCES 519 actuals can exceed the NTE without requiring a formal contract amendment.
+    </div>
+    <div class="grid-2" style="margin-bottom:16px">
+      <div>
+        <div style="font-size:.82rem;font-weight:600;color:var(--muted);margin-bottom:6px">FIRST STUDENT &mdash; Type C (72+ Passenger), 6-Hour Daily Rate</div>
+        <table style="width:100%;font-size:.82rem;border-collapse:collapse">
+          <thead><tr><th style="padding:4px 6px;background:#F0ECE6;font-size:.72rem">Routes</th><th style="padding:4px 6px;background:#F0ECE6;text-align:right;font-size:.72rem">Daily Rate</th><th style="padding:4px 6px;background:#F0ECE6;text-align:right;font-size:.72rem">Excess Hourly</th></tr></thead>
+          <tbody>
+            <tr><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2">1&ndash;25</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$886.42</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$62.50</td></tr>
+            <tr><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2">26&ndash;50</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$759.55</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$62.50</td></tr>
+            <tr><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2">51&ndash;75</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$690.80</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$62.50</td></tr>
+            <tr><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2">76&ndash;100</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$647.51</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$62.50</td></tr>
+            <tr><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2">101&ndash;125</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$592.63</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$62.50</td></tr>
+            <tr style="background:#EEF5FC"><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2"><strong>151&ndash;175</strong></td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace"><strong>$584.55</strong></td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$62.50</td></tr>
+            <tr><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2">176&ndash;200</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$578.70</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$62.50</td></tr>
+            <tr><td style="padding:3px 6px">Over 225</td><td style="padding:3px 6px;text-align:right;font-family:'DM Mono',monospace">$567.18</td><td style="padding:3px 6px;text-align:right;font-family:'DM Mono',monospace">$62.50</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:.78rem;color:var(--muted);margin-top:6px">Also: Mileage $4.00/mi &middot; Bus Assistant $47.25/hr</p>
+      </div>
+      <div>
+        <div style="font-size:.82rem;font-weight:600;color:var(--muted);margin-bottom:6px">Z&#362;M &mdash; Type C (72+ Passenger), 6-Hour Daily Rate</div>
+        <table style="width:100%;font-size:.82rem;border-collapse:collapse">
+          <thead><tr><th style="padding:4px 6px;background:#F0ECE6;font-size:.72rem">Routes</th><th style="padding:4px 6px;background:#F0ECE6;text-align:right;font-size:.72rem">Daily Rate</th><th style="padding:4px 6px;background:#F0ECE6;text-align:right;font-size:.72rem">Excess Hourly</th></tr></thead>
+          <tbody>
+            <tr><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2">1&ndash;25</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$831.30</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$60.55</td></tr>
+            <tr><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2">26&ndash;50</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$779.44</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$60.55</td></tr>
+            <tr><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2">51&ndash;75</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$712.95</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$60.55</td></tr>
+            <tr><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2">76&ndash;100</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$653.91</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$60.55</td></tr>
+            <tr><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2">101&ndash;125</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$640.61</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$60.55</td></tr>
+            <tr style="background:#EEF5FC"><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2"><strong>151&ndash;175</strong></td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace"><strong>$572.88</strong></td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$60.55</td></tr>
+            <tr><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2">176&ndash;200</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$572.80</td><td style="padding:3px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$60.55</td></tr>
+            <tr><td style="padding:3px 6px">Over 225</td><td style="padding:3px 6px;text-align:right;font-family:'DM Mono',monospace">$572.80</td><td style="padding:3px 6px;text-align:right;font-family:'DM Mono',monospace">$60.55</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:.78rem;color:var(--muted);margin-top:6px">Also: Mileage $3.56/mi &middot; Bus Assistant $52.06/hr</p>
+      </div>
+    </div>
+    <div style="font-size:.82rem;color:var(--muted);line-height:1.7">
+      <p>At SPS operational volumes (~200 Type A + ~150 Type C), both vendors converge to ~$575/route/day. Rates are within 1&ndash;3% of each other. The implied base bus cost: ~380 buses &times; $575/day &times; 175 service days = ~$38.3M. With excess hours, field trips, mileage, and bus assistants, the total reaches ~$43&ndash;45M &mdash; consistent with the $45.2M NTE.</p>
+      <p style="margin-top:6px"><strong style="color:var(--text)">Source:</strong> First Student and Zum Best and Final Offers, RFP022242, April 20, 2022 (obtained via public records request).</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Remaining Gaps &amp; Data Limitations</div>
+    <div class="card-sub">What we know, what we searched, and what&rsquo;s still missing</div>
+    <div style="font-size:.83rem;line-height:1.8;color:var(--muted)">
+      <p style="margin-bottom:10px"><strong style="color:var(--c-green)">&#9989; Resolved: Per-route-day rates.</strong> The BAFO rate schedules confirm volume-tiered pricing at ~$575/route/day at SPS volumes. The contract is a rate schedule, not a fixed fee. This explains how actual costs can exceed the $45.2M NTE projection when SPS deploys more routes than anticipated.</p>
+      <p style="margin-bottom:10px"><strong style="color:var(--c-green)">&#9989; Resolved: Contract variable pricing.</strong> The BAFO confirms the pricing model &mdash; costs scale with route count at tiered rates, plus excess hours, mileage, and field trips as variable add-ons. No separate amendment is needed when costs exceed the NTE; the rate schedule governs.</p>
+      <p style="margin-bottom:10px"><strong style="color:var(--c-orange)">&#10060; Searched, not found: Missing board authorizations.</strong> Searched all SPS board meeting agendas from January&ndash;June 2023 (10 meetings). No transportation contract amendments, rate adjustments, or additional NTE authorizations were found. Board Policy 6220 delegates procurement authority to the Superintendent for amendments up to $500,000, but the $4.35&ndash;$9.35M gaps far exceed this threshold. The overages likely flow through the variable rate schedule rather than requiring separate board action.</p>
+      <p style="margin-bottom:10px"><strong style="color:var(--c-vermil)">&#10060; Not available: NCES 519 actuals pre-2019.</strong> No NCES 519 data exists prior to FY 2020 in our data sources.</p>
+      <p><strong style="color:var(--c-vermil)">&#10060; Not available: Vendor-level NCES 519 breakdown.</strong> We cannot determine how much of the $60&ndash;63M goes to First Student vs. Zum vs. the alternative transport providers. This would require accounts payable detail from a public records request.</p>
+    </div>
+  </div>
+
+</div>
+
+
 <div id="sec-ridership" class="section">
   <h2 class="section-heading">Ridership Trends</h2>
   <p class="section-desc">Student counts from OSPI quarterly district detail report summary pages &mdash; the authoritative &ldquo;On Buses&rdquo; figures that feed the STARS formula.</p>
@@ -643,6 +839,7 @@ ALLOC = min(EXAL, D.2 Prior Year Exp)<br>
 </div>
 
 
+
 <div id="sec-downloads" class="section">
   <h2 class="section-heading">Downloads</h2>
   <p class="section-desc">Source documents and derived data tables for independent analysis.</p>
@@ -729,6 +926,7 @@ function build(id){
   if(id==='routes')buildRoutes();
   if(id==='schools')buildSchoolTable();
   if(id==='analyses'){setTimeout(()=>{buildTrendsChart();},0);built['analyses']=true;}
+  if(id==='contracts'){setTimeout(()=>{buildContractsChart();},0);built['contracts']=true;}
 }
 
 // ── STARS ─────────────────────────────────────────────────────
@@ -1078,6 +1276,55 @@ function applyHash(hash) {
 }
 
 window.addEventListener('popstate', () => applyHash(location.hash));
+
+
+// ── Contracts chart ───────────────────────────────────────────
+function buildContractsChart() {
+  const yrs = ['2019-20','2020-21','2021-22','2022-23','2023-24','2024-25'];
+  const nces519 =  [40, 18, 45, 63, 60, 60];
+  const busCeil =  [40, 40, 40, 45.2, 45.2, 45.2];
+  const altCeil =  [0,  0,  0,  8.45, 10.45, 10.45];
+  const totalCeil = busCeil.map((b,i) => b + altCeil[i]);
+  const gap = nces519.map((n,i) => Math.max(0, n - totalCeil[i]));
+
+  new Chart(document.getElementById('ch-contracts'), {
+    type: 'bar',
+    data: {
+      labels: yrs,
+      datasets: [
+        {label:'Bus contract ceiling',data:busCeil,backgroundColor:C.blue+'CC',stack:'ceil',order:2},
+        {label:'Alt transport ceiling',data:altCeil,backgroundColor:C.green+'CC',stack:'ceil',order:2},
+        {label:'Gap above authorized',data:gap,backgroundColor:C.orange+'55',borderColor:C.orange,borderWidth:1,stack:'ceil',order:2},
+        {label:'NCES 519 actual',data:nces519,type:'line',borderColor:C.vermil,backgroundColor:'transparent',borderWidth:3,pointRadius:5,pointBackgroundColor:C.vermil,order:1,yAxisID:'y'}
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          mode:'index',
+          callbacks:{
+            label:c => {
+              if(c.parsed.y === 0) return null;
+              return ` ${c.dataset.label}: $${c.parsed.y.toFixed(1)}M`;
+            }
+          }
+        }
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{color:'#6B6560'}},
+        y:{
+          stacked:true,
+          grid:{color:'rgba(0,0,0,0.07)'},
+          ticks:{color:'#6B6560',callback:v=>'$'+v+'M'},
+          max:70,
+          title:{display:true,text:'Millions',color:'#6B6560',font:{size:11}}
+        }
+      }
+    }
+  });
+}
 
 // ── Init ──────────────────────────────────────────────────────
 build('stars');built['stars']=true;
