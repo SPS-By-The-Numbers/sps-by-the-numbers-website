@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WA State School Bussing — STARS transportation data for 315 districts — School Transportation Finance, 2013–2025</title>
+<title>🚸 WA State School Bussing 🚌 — STARS transportation data for 315 districts — School Transportation Finance, 2013–2025</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">
@@ -83,6 +83,7 @@
     line-height: 1.0;
     letter-spacing: -0.02em;
     color: var(--ink);
+    text-align: center;
     margin: 8px 0 20px;
   }
   .masthead h1 em {
@@ -147,13 +148,17 @@
     font-family: Georgia, serif;
     font-style: italic;
     font-size: 14px;
-    padding: 14px 20px;
+    padding: 10px 12px;
     background: transparent;
     color: var(--ink);
     border: none;
     border-right: 1px solid var(--rule-soft);
     cursor: pointer;
     transition: background 0.12s, color 0.12s;
+    flex: 1 1 0;
+    text-align: center;
+    white-space: normal;
+    line-height: 1.3;
     flex: 1 1 auto;
     text-align: center;
     min-width: 140px;
@@ -984,7 +989,7 @@
       <span class="masthead-eyebrow">a self-explore dashboard · OSPI SAFS F-196 + F-195 + STARS reports · 315 Washington districts</span>
       <span class="masthead-eyebrow-right">2013-14 through 2024-25</span>
     </div>
-    <h1>WA State <em>School Bussing</em></h1>
+    <h1>🚸 WA State <em>School Bussing</em> 🚌</h1>
   </div>
 </header>
 
@@ -993,7 +998,7 @@
 <!-- ============== TAB NAVIGATION ============== -->
 <nav class="tab-nav" id="tabNav">
   <button class="tab-btn active" data-tab="shape">Funding gap</button>
-  <button class="tab-btn" data-tab="scatter">Revenue vs. expenditure</button>
+  <button class="tab-btn" data-tab="scatter">Rev v. Exp</button>
   <button class="tab-btn" data-tab="explorer">District explorer</button>
   <button class="tab-btn" data-tab="seattle">Seattle deep-dive</button>
   <button class="tab-btn" data-tab="methodology">Methodology</button>
@@ -1095,15 +1100,15 @@
       <div class="control-group">
         <span class="control-label">View</span>
         <div class="toggle" id="scaleToggle">
-          <button data-val="abs" class="active">Absolute $</button>
-          <button data-val="pp">Per pupil</button>
+          <button data-val="pp" class="active">Per pupil</button>
+          <button data-val="abs">Absolute $</button>
         </div>
       </div>
       <div class="control-group">
         <span class="control-label">Axis</span>
         <div class="toggle" id="scaleTypeToggle">
-          <button data-val="log">Log</button>
           <button data-val="linear" class="active">Linear</button>
+          <button data-val="log">Log</button>
         </div>
       </div>
       <div class="control-group">
@@ -1192,15 +1197,15 @@
       <div class="control-group">
         <span class="control-label">View</span>
         <div class="toggle" id="prePostScaleToggle">
-          <button data-val="abs" class="active">Absolute $</button>
-          <button data-val="pp">Per pupil</button>
+          <button data-val="pp" class="active">Per pupil</button>
+          <button data-val="abs">Absolute $</button>
         </div>
       </div>
       <div class="control-group">
         <span class="control-label">Axis</span>
         <div class="toggle" id="prePostScaleTypeToggle">
-          <button data-val="log">Log</button>
           <button data-val="linear" class="active">Linear</button>
+          <button data-val="log">Log</button>
         </div>
       </div>
       <div class="control-group">
@@ -1258,8 +1263,14 @@
       <details class="legend-collapsible" style="margin-top:16px;">
         <summary>Reading the chart</summary>
         <div class="legend-body">
-          <p><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ffffff;vertical-align:middle;border:1px solid var(--ink);"></span> Pre-COVID average</p>
-          <p><span style="display:inline-block;width:10px;height:10px;background:#888888;opacity:0.6;vertical-align:middle;border:1px solid #555555;"></span> Post-COVID average</p>
+          <p><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#888;opacity:0.5;vertical-align:middle;"></span> Pre-COVID (circle, faded)</p>
+          <p><span style="display:inline-block;width:12px;height:12px;background:#c0392b;opacity:0.7;vertical-align:middle;transform:rotate(45deg);margin:0 -1px;"></span> Post-COVID (diamond, vivid)</p>
+          <p style="margin-top:8px;"><strong>Color = enrollment (Plasma scale):</strong></p>
+          <p><span style="display:inline-block;width:10px;height:10px;background:#6a00a8;vertical-align:middle;border-radius:2px;"></span> &lt;500 &nbsp;
+             <span style="display:inline-block;width:10px;height:10px;background:#b52f8c;vertical-align:middle;border-radius:2px;"></span> 500–3K &nbsp;
+             <span style="display:inline-block;width:10px;height:10px;background:#ed7953;vertical-align:middle;border-radius:2px;"></span> 3K–10K &nbsp;
+             <span style="display:inline-block;width:10px;height:10px;background:#f5e61f;vertical-align:middle;border-radius:2px;"></span> 10K+</p>
+          <p style="margin-top:6px;">Highlighted district gains a thick dark border.</p>
           <p><span style="display:inline-block;width:24px;height:2px;background:var(--oi-vermilion);vertical-align:middle;"></span> Gap widened</p>
           <p><span style="display:inline-block;width:24px;height:2px;background:var(--oi-green);vertical-align:middle;"></span> Gap closed</p>
           <p>Bubble size scales with avg enrollment.</p>
@@ -1464,18 +1475,18 @@ function niceTicks(min, max, targetCount = 6) {
 // Okabe-Ito sequential mapping for years (12 years, mapped through palette)
 // 12-step year ramp on the editorial palette — navy → teal → olive → gold → red → plum → ink
 const YEAR_COLORS = [
-  '#1f3a5f',  // 2013-14 navy
-  '#345e8a',  // blue
-  '#5b8fb5',  // light blue
-  '#2d6e6e',  // teal
-  '#7c8a3f',  // olive
-  '#b8893f',  // gold
-  '#d97e2a',  // orange (the surplus year — calls attention)
-  '#c0392b',  // red
-  '#a04550',  // red-plum
-  '#6b3a5c',  // plum
-  '#4a2e4a',  // dark plum
-  '#1a1814',  // 2024-25 ink
+  '#2a0593',  // 2013-14
+  '#4903a0',  // 2014-15
+  '#6800a8',  // 2015-16
+  '#8706a5',  // 2016-17
+  '#a31d98',  // 2017-18
+  '#bb3886',  // 2018-19
+  '#cf5073',  // 2019-20
+  '#e06a5e',  // 2020-21
+  '#ed844c',  // 2021-22
+  '#f7a13b',  // 2022-23
+  '#fcbf2c',  // 2023-24
+  '#f5e61f',  // 2024-25
 ];
 
 const SPS_DATA = {"districts":{"sps":{"label":"Seattle","color":"#c0392b","years":[{"year":"2013-2014","rev":24928963.44,"exp_act":32626834.18,"fte":48528.75,"ride_basic":null,"ride_special":null,"routes_total":null,"buses_total":null,"buses_basic":null,"buses_special":null},{"year":"2014-2015","rev":35059943.25,"exp_act":29537462.51,"fte":49676.81,"ride_basic":null,"ride_special":null,"routes_total":null,"buses_total":null,"buses_basic":null,"buses_special":null,"kpi_basic_riders_per_bus":42.91,"kpi_sped_riders_per_bus":7.49,"kpi_cost_per_rider":2186.79},{"year":"2015-2016","rev":32167134.34,"exp_act":31658076.08,"fte":50333.77,"ride_basic":null,"ride_special":null,"routes_total":null,"buses_total":null,"buses_basic":null,"buses_special":null,"kpi_basic_riders_per_bus":45.31,"kpi_sped_riders_per_bus":6.43,"kpi_cost_per_rider":2385.96},{"year":"2016-2017","rev":33941257.9,"exp_act":33069501.71,"fte":52401.31999999999,"ride_basic":null,"ride_special":null,"routes_total":null,"buses_total":null,"buses_basic":null,"buses_special":null,"kpi_basic_riders_per_bus":46.62,"kpi_sped_riders_per_bus":5.9,"kpi_cost_per_rider":2435.9},{"year":"2017-2018","rev":38469572.25,"exp_act":37625486.45,"fte":52494.84,"stars_alloc":32387498.25,"stars_initial":31875954.56,"stars_prior_yr_exp":31790460.0,"ride_basic":20619.333333,"ride_special":5134.333333,"routes_total":709.0,"buses_total":377.0,"buses_basic":145.0,"buses_special":197.0,"cost_per_rider":2921.951809,"basic_per_bus":71.10114942528735,"total_riders":25753.666666,"buses_other":35.0,"ride_sped":2247.333333,"ride_bilingual":248.333333,"ride_gifted":2316.666667,"ride_homeless":42.333333,"ride_early_ed":279.666667,"routes_basic":225.0,"routes_special":344.0,"routes_bilingual":12.0,"routes_gifted":68.0,"routes_homeless":13.0,"routes_early_ed":47.0,"buses_bilingual":12.0,"buses_gifted":62.0,"buses_homeless":13.0,"buses_early_ed":36.0,"avg_distance":2.27,"kpi_basic_riders_per_bus":41.6,"kpi_sped_riders_per_bus":5.71,"kpi_cost_per_rider":2617.26,"rer":100.0,"cost_per_mile":11689.072},{"year":"2018-2019","rev":43578066.02,"exp_act":39908004.15,"fte":52193.3,"stars_alloc":38931232.63,"stars_initial":29914910.38,"stars_prior_yr_exp":33630114.24,"ride_basic":17725.5,"ride_special":4950.5,"routes_total":655.0,"buses_total":355.5,"buses_basic":138.5,"buses_special":185.0,"cost_per_rider":3519.845136,"basic_per_bus":63.99097472924188,"total_riders":22676.0,"buses_other":32.0,"ride_sped":2264.5,"ride_bilingual":188.0,"ride_gifted":2156.0,"ride_homeless":1.0,"ride_early_ed":341.0,"routes_basic":204.5,"routes_special":332.5,"routes_bilingual":12.0,"routes_gifted":70.0,"routes_homeless":1.5,"routes_early_ed":34.5,"buses_bilingual":12.0,"buses_gifted":64.0,"buses_homeless":1.5,"buses_early_ed":34.0,"avg_distance":2.255,"kpi_basic_riders_per_bus":39.17,"kpi_sped_riders_per_bus":6.06,"kpi_cost_per_rider":3306.8,"rer":100.0,"cost_per_mile":13509.5899},{"year":"2019-2020","rev":41748153.37,"exp_act":42295616.44,"fte":52730.100000000006,"stars_alloc":33064730.14,"stars_initial":31533057.15,"stars_prior_yr_exp":37821486.68,"ride_basic":18521.0,"ride_special":4938.0,"routes_total":656.666667,"buses_total":369.666667,"buses_basic":137.0,"buses_special":200.0,"cost_per_rider":3605.918107,"basic_per_bus":67.5948905109489,"total_riders":23459.0,"buses_other":32.666667,"ride_sped":2398.0,"ride_bilingual":302.666667,"ride_gifted":1894.333333,"ride_homeless":6.666667,"ride_early_ed":336.333333,"routes_basic":219.0,"routes_special":332.0,"routes_bilingual":13.0,"routes_gifted":55.0,"routes_homeless":6.666667,"routes_early_ed":31.0,"buses_bilingual":13.0,"buses_gifted":54.0,"buses_homeless":6.666667,"buses_early_ed":31.0,"avg_distance":2.2,"kpi_basic_riders_per_bus":39.17,"kpi_sped_riders_per_bus":6.06,"kpi_cost_per_rider":3306.8,"rer":100.0,"cost_per_mile":14638.5382},{"year":"2020-2021","rev":22805410.96,"exp_act":20097637.66,"fte":51223.75,"stars_alloc":7255055.03,"stars_initial":6233286.57,"stars_prior_yr_exp":33064730.14,"ride_basic":1900.0,"ride_special":321.0,"routes_total":69.666667,"buses_total":63.666667,"buses_basic":2.666667,"buses_special":46.666667,"basic_per_bus":29.827316,"cost_per_rider":18097.827699,"total_riders":2221.0,"ride_sped":240.333333,"ride_bilingual":0.0,"ride_gifted":0.0,"ride_homeless":26.333333,"ride_early_ed":54.333333,"routes_basic":2.666667,"routes_special":49.333333,"routes_bilingual":0.0,"routes_gifted":0.0,"routes_homeless":9.333333,"routes_early_ed":8.333333,"buses_bilingual":0.0,"buses_gifted":0.0,"buses_homeless":7.333333,"buses_early_ed":8.333333,"avg_distance":3.98,"buses_other":14.333333,"kpi_basic_riders_per_bus":41.73,"kpi_sped_riders_per_bus":5.99,"kpi_cost_per_rider":2827.1,"cost_per_mile":36241.5623},{"year":"2021-2022","rev":36707946.42,"exp_act":47728163.07,"fte":49552.03,"stars_alloc":20047166.61,"stars_initial":53858344.89,"stars_prior_yr_exp":18278833.9,"ride_basic":14211.333333,"ride_special":3045.666667,"routes_total":598.0,"buses_total":349.0,"buses_basic":140.0,"buses_special":188.0,"cost_per_rider":5531.455418,"basic_per_bus":50.75476190476191,"total_riders":17257.0,"buses_other":21.0,"ride_sped":1877.333333,"ride_bilingual":8.666667,"ride_gifted":920.0,"ride_homeless":3.333333,"ride_early_ed":236.333333,"routes_basic":216.0,"routes_special":302.0,"routes_bilingual":8.0,"routes_gifted":49.0,"routes_homeless":0.0,"routes_early_ed":23.0,"buses_bilingual":8.0,"buses_gifted":47.0,"buses_homeless":0.0,"buses_early_ed":21.0,"avg_distance":2.24,"kpi_basic_riders_per_bus":28.43,"kpi_sped_riders_per_bus":4.99,"kpi_cost_per_rider":4078.54,"cost_per_mile":17815.3977},{"year":"2022-2023","rev":34918456.41,"exp_act":65328599.66,"fte":49346.92999999999,"stars_alloc":28244221.82,"stars_initial":26656902.14,"stars_prior_yr_exp":35074443.39,"ride_basic":9142.333333,"ride_special":3275.0,"routes_total":550.0,"buses_total":357.333333,"buses_basic":134.666667,"buses_special":150.333333,"cost_per_rider":10522.162514,"basic_per_bus":33.944306930693074,"total_riders":12417.333333,"buses_other":72.333333,"ride_sped":1887.0,"ride_bilingual":2.666667,"ride_gifted":1125.333333,"ride_homeless":15.333333,"ride_early_ed":244.666667,"routes_basic":216.333333,"routes_special":254.0,"routes_bilingual":0.0,"routes_gifted":41.0,"routes_homeless":0.333333,"routes_early_ed":38.333333,"buses_bilingual":0.0,"buses_gifted":41.0,"buses_homeless":0.333333,"buses_early_ed":31.0,"avg_distance":2.156667,"kpi_basic_riders_per_bus":34.88,"kpi_sped_riders_per_bus":6.23,"kpi_cost_per_rider":9981.85,"rer":100.0,"cost_per_mile":27537.6941},{"year":"2023-2024","rev":43409715.23,"exp_act":60008531.77,"fte":48576.08,"stars_alloc":35472313.73,"stars_initial":34670600.99,"stars_prior_yr_exp":61787631.6,"ride_basic":8541.0,"ride_special":3574.333333,"routes_total":580.0,"buses_total":382.0,"buses_basic":122.0,"buses_special":182.0,"cost_per_rider":9906.212255,"basic_per_bus":35.00409836065574,"total_riders":12115.333333,"buses_other":78.0,"ride_sped":2140.666667,"ride_bilingual":0.666667,"ride_gifted":1046.333333,"ride_homeless":85.666667,"ride_early_ed":301.0,"routes_basic":200.0,"routes_special":301.0,"routes_bilingual":0.0,"routes_gifted":40.0,"routes_homeless":4.0,"routes_early_ed":35.0,"buses_bilingual":0.0,"buses_gifted":40.0,"buses_homeless":4.0,"buses_early_ed":34.0,"avg_distance":2.153333,"kpi_basic_riders_per_bus":37.5,"kpi_sped_riders_per_bus":6.11,"kpi_cost_per_rider":9155.45,"rer":100.0,"cost_per_mile":24023.9168},{"year":"2024-2025","rev":44254146.78,"exp_act":60737813.34,"fte":48570.10999999999,"stars_alloc":38394529.25,"stars_initial":37384049.11,"stars_prior_yr_exp":58879960.1,"ride_basic":9912.0,"ride_special":4117.0,"routes_total":608.5,"buses_total":383.0,"buses_basic":123.0,"buses_special":204.5,"cost_per_rider":8658.894196,"basic_per_bus":40.292682926829265,"total_riders":14029.0,"buses_other":55.5,"ride_sped":2506.0,"ride_bilingual":24.5,"ride_gifted":1315.5,"ride_homeless":52.0,"ride_early_ed":219.0,"routes_basic":202.0,"routes_special":347.0,"routes_bilingual":0.0,"routes_gifted":40.0,"routes_homeless":1.5,"routes_early_ed":18.0,"buses_bilingual":0.0,"buses_gifted":39.0,"buses_homeless":1.5,"buses_early_ed":15.0,"avg_distance":2.155,"kpi_basic_riders_per_bus":39.5,"kpi_sped_riders_per_bus":6.09,"kpi_cost_per_rider":8652.38,"rer":100.0,"cost_per_mile":23159.0798},{"year":"2025-2026","stars_alloc":37731080.26,"stars_initial":36682298.35,"stars_prior_yr_exp":59773326.13,"ride_basic":9010.5,"ride_special":4334.0,"routes_total":621.0,"buses_total":380.0,"buses_basic":117.0,"buses_special":207.0,"basic_per_bus":38.506410256410255,"total_riders":13344.5,"buses_other":56.0,"ride_sped":2601.0,"ride_bilingual":15.0,"ride_gifted":1400.5,"ride_homeless":70.0,"ride_early_ed":247.5,"routes_basic":192.0,"routes_special":369.0,"routes_bilingual":0.0,"routes_gifted":42.0,"routes_homeless":0.0,"routes_early_ed":18.0,"buses_bilingual":0.0,"buses_gifted":42.0,"buses_homeless":0.0,"buses_early_ed":14.0,"avg_distance":2.16,"rer":100.0}],"kpi":{"basic_riders_per_basic_bus":{"2022-2023":34.88,"2023-2024":37.5,"2024-2025":39.5},"sped_riders_per_sped_bus":{"2022-2023":6.23,"2023-2024":6.11,"2024-2025":6.09},"cost_per_rider":{"2022-2023":9981.85,"2023-2024":9155.45,"2024-2025":8652.38},"cohort_basic_riders_per_bus":[{"rank_change":10.0,"district":"FEDERAL WAY","total_riders":7480.9,"metric":127.2},{"rank_change":9.0,"district":"PUYALLUP","total_riders":8008.3,"metric":117.7},{"rank_change":8.0,"district":"EDMONDS","total_riders":6964.5,"metric":117.5},{"rank_change":7.0,"district":"AUBURN","total_riders":7227.9,"metric":114.1},{"rank_change":6.0,"district":"MUKILTEO","total_riders":5543.9,"metric":103.4},{"rank_change":5.0,"district":"EVERETT","total_riders":8196.9,"metric":103.2},{"rank_change":4.0,"district":"RENTON","total_riders":5162.6,"metric":102.9},{"rank_change":3.0,"district":"LAKE WASHINGTON","total_riders":7846.6,"metric":100.5},{"rank_change":2.0,"district":"BETHEL","total_riders":8840.6,"metric":99.7},{"rank_change":1.0,"district":"KENT","total_riders":8251.8,"metric":93.2},{"rank_change":null,"district":"LAKE STEVENS","total_riders":4786.1,"metric":90.9},{"rank_change":-1.0,"district":"ISSAQUAH","total_riders":7263.0,"metric":81.7},{"rank_change":-2.0,"district":"VANCOUVER","total_riders":6856.9,"metric":79.4},{"rank_change":-3.0,"district":"NORTH THURSTON","total_riders":5231.1,"metric":78.6},{"rank_change":-4.0,"district":"KENNEWICK","total_riders":5103.6,"metric":66.7},{"rank_change":-5.0,"district":"TACOMA","total_riders":5367.1,"metric":62.3},{"rank_change":-6.0,"district":"PASCO","total_riders":4549.8,"metric":61.0},{"rank_change":-7.0,"district":"EVERGREEN (CLARK)","total_riders":8475.3,"metric":60.8},{"rank_change":-8.0,"district":"BATTLE GROUND","total_riders":5426.6,"metric":54.3},{"rank_change":-9.0,"district":"SPOKANE","total_riders":4555.8,"metric":48.0},{"rank_change":-10.0,"district":"SEATTLE PUBLIC SCHOOLS","total_riders":6908.3,"metric":39.5},{"rank_change":10.0,"district":"KENT","total_riders":8251.8,"metric":12.8},{"rank_change":9.0,"district":"RENTON","total_riders":5162.6,"metric":12.2},{"rank_change":8.0,"district":"AUBURN","total_riders":7227.9,"metric":11.9},{"rank_change":7.0,"district":"PUYALLUP","total_riders":8008.3,"metric":11.4},{"rank_change":6.0,"district":"FEDERAL WAY","total_riders":7480.9,"metric":11.1},{"rank_change":5.0,"district":"MUKILTEO","total_riders":5543.9,"metric":10.9},{"rank_change":4.0,"district":"TACOMA","total_riders":5367.1,"metric":10.9}],"cohort_sped_per_bus":[{"rank_change":10.0,"district":"KENT","total_riders":8251.8,"metric":12.8},{"rank_change":9.0,"district":"RENTON","total_riders":5162.6,"metric":12.2},{"rank_change":8.0,"district":"AUBURN","total_riders":7227.9,"metric":11.9},{"rank_change":7.0,"district":"PUYALLUP","total_riders":8008.3,"metric":11.4},{"rank_change":6.0,"district":"FEDERAL WAY","total_riders":7480.9,"metric":11.1},{"rank_change":5.0,"district":"MUKILTEO","total_riders":5543.9,"metric":10.9},{"rank_change":4.0,"district":"TACOMA","total_riders":5367.1,"metric":10.9},{"rank_change":3.0,"district":"PASCO","total_riders":4549.8,"metric":10.4},{"rank_change":2.0,"district":"LAKE STEVENS","total_riders":4786.1,"metric":10.2},{"rank_change":1.0,"district":"KENNEWICK","total_riders":5103.6,"metric":10.2},{"rank_change":null,"district":"EVERGREEN (CLARK)","total_riders":8475.3,"metric":9.7},{"rank_change":-1.0,"district":"BETHEL","total_riders":8840.6,"metric":9.2},{"rank_change":-2.0,"district":"NORTH THURSTON","total_riders":5231.1,"metric":8.9},{"rank_change":-3.0,"district":"LAKE WASHINGTON","total_riders":7846.6,"metric":7.9},{"rank_change":-4.0,"district":"EVERETT","total_riders":8196.9,"metric":7.6},{"rank_change":-5.0,"district":"VANCOUVER","total_riders":6856.9,"metric":7.2},{"rank_change":-6.0,"district":"EDMONDS","total_riders":6964.5,"metric":6.8},{"rank_change":-7.0,"district":"BATTLE GROUND","total_riders":5426.6,"metric":6.1},{"rank_change":-8.0,"district":"SEATTLE PUBLIC SCHOOLS","total_riders":6908.3,"metric":6.1},{"rank_change":-9.0,"district":"SPOKANE","total_riders":4555.8,"metric":5.5},{"rank_change":-10.0,"district":"ISSAQUAH","total_riders":7263.0,"metric":4.5},{"rank_change":10.0,"district":"LAKE STEVENS","total_riders":4786.1,"metric":1565.01},{"rank_change":9.0,"district":"AUBURN","total_riders":7227.9,"metric":1722.18},{"rank_change":8.0,"district":"EVERETT","total_riders":8196.9,"metric":1978.14},{"rank_change":7.0,"district":"ISSAQUAH","total_riders":7263.0,"metric":2039.68}],"cohort_cost_per_rider":[{"rank_change":10.0,"district":"LAKE STEVENS","total_riders":4786.1,"metric":1565.01},{"rank_change":9.0,"district":"AUBURN","total_riders":7227.9,"metric":1722.18},{"rank_change":8.0,"district":"EVERETT","total_riders":8196.9,"metric":1978.14},{"rank_change":7.0,"district":"ISSAQUAH","total_riders":7263.0,"metric":2039.68},{"rank_change":6.0,"district":"KENNEWICK","total_riders":5103.6,"metric":2138.1},{"rank_change":5.0,"district":"VANCOUVER","total_riders":6856.9,"metric":2217.75},{"rank_change":4.0,"district":"EVERGREEN (CLARK)","total_riders":8475.3,"metric":2219.69},{"rank_change":3.0,"district":"BETHEL","total_riders":8840.6,"metric":2255.07},{"rank_change":2.0,"district":"NORTH THURSTON","total_riders":5231.1,"metric":2321.6},{"rank_change":1.0,"district":"PUYALLUP","total_riders":8008.3,"metric":2357.24},{"rank_change":null,"district":"MUKILTEO","total_riders":5543.9,"metric":2404.41},{"rank_change":-1.0,"district":"KENT","total_riders":8251.8,"metric":2411.51},{"rank_change":-2.0,"district":"LAKE WASHINGTON","total_riders":7846.6,"metric":2412.19},{"rank_change":-3.0,"district":"BATTLE GROUND","total_riders":5426.6,"metric":2436.72},{"rank_change":-4.0,"district":"PASCO","total_riders":4549.8,"metric":2576.14},{"rank_change":-5.0,"district":"RENTON","total_riders":5162.6,"metric":2703.72},{"rank_change":-6.0,"district":"EDMONDS","total_riders":6964.5,"metric":2786.17},{"rank_change":-7.0,"district":"FEDERAL WAY","total_riders":7480.9,"metric":2834.52},{"rank_change":-8.0,"district":"SPOKANE","total_riders":4555.8,"metric":3267.26},{"rank_change":-9.0,"district":"TACOMA","total_riders":5367.1,"metric":3554.47},{"rank_change":-10.0,"district":"SEATTLE PUBLIC SCHOOLS","total_riders":6908.3,"metric":8652.38}]},"efficiency":{"rows":[{"name":"Seattle","is_self":false,"weight_pct":null,"prior_yr_exp":59773326.13,"buses":339.0,"basic_riders":9717.0,"special_riders":4099.0,"avg_distance":2.16,"destinations":106.0,"land_area":85.4,"K_rte":0.0,"rd_miles_per_sq_mile":23.86,"students_per_rd_mile":6.77},{"name":"Seattle Public Schools","is_self":true,"weight_pct":100.0,"prior_yr_exp":59773326.13,"buses":339.0,"basic_riders":9717.0,"special_riders":4099.0,"avg_distance":2.16,"destinations":106.0,"land_area":85.4,"K_rte":0.0,"rd_miles_per_sq_mile":23.86,"students_per_rd_mile":6.77},{"name":"Seattle Target","is_self":false,"weight_pct":100.0,"prior_yr_exp":59773326.13,"buses":339.0}],"efficiency_rating_pct":100.0}},"fw":{"label":"Federal Way","color":"#1f3a5f","years":[{"year":"2013-2014","rev":5544420.38,"exp_act":7592234.32,"fte":21066.36,"ride_basic":null,"ride_special":null,"routes_total":null,"buses_total":null,"buses_basic":null,"buses_special":null},{"year":"2014-2015","rev":7892201.56,"exp_act":7462170.77,"fte":21044.79,"ride_basic":null,"ride_special":null,"routes_total":null,"buses_total":null,"buses_basic":null,"buses_special":null,"kpi_basic_riders_per_bus":126.5,"kpi_sped_riders_per_bus":8.45,"kpi_cost_per_rider":1013.87},{"year":"2015-2016","rev":7892074.82,"exp_act":8163520.2,"fte":21586.65,"ride_basic":null,"ride_special":null,"routes_total":null,"buses_total":null,"buses_basic":null,"buses_special":null,"kpi_basic_riders_per_bus":132.79,"kpi_sped_riders_per_bus":9.0,"kpi_cost_per_rider":1085.58},{"year":"2016-2017","rev":7457585.61,"exp_act":8835543.69,"fte":21549.35,"ride_basic":null,"ride_special":null,"routes_total":null,"buses_total":null,"buses_basic":null,"buses_special":null,"kpi_basic_riders_per_bus":111.32,"kpi_sped_riders_per_bus":8.89,"kpi_cost_per_rider":1148.3},{"year":"2017-2018","rev":9349387.01,"exp_act":10962268.66,"fte":21457.24,"ride_basic":14851.333333,"ride_special":1092.333333,"routes_total":333.333333,"buses_total":110.0,"buses_basic":55.0,"buses_special":54.0,"basic_per_bus":135.011818,"cost_per_rider":1375.125169,"total_riders":15943.666666,"ride_sped":1044.0,"ride_bilingual":0.0,"ride_gifted":0.0,"ride_homeless":48.333333,"ride_early_ed":0.0,"routes_basic":181.0,"routes_special":148.0,"routes_bilingual":0.0,"routes_gifted":0.0,"routes_homeless":4.333333,"routes_early_ed":0.0,"buses_bilingual":0.0,"buses_gifted":0.0,"buses_homeless":4.0,"buses_early_ed":0.0,"avg_distance":2.37,"buses_other":1.0,"stars_alloc":9343513.11,"kpi_basic_riders_per_bus":134.25,"kpi_sped_riders_per_bus":9.69,"kpi_cost_per_rider":1418.87,"rer":84.53,"cost_per_mile":6938.1447},{"year":"2018-2019","rev":13585267.09,"exp_act":12050770.92,"fte":21326.14,"ride_basic":14691.666667,"ride_special":1119.666667,"routes_total":366.0,"buses_total":107.666667,"buses_basic":52.0,"buses_special":52.333333,"basic_per_bus":136.413185,"cost_per_rider":1524.320646,"total_riders":15811.333334,"ride_sped":950.0,"ride_bilingual":0.0,"ride_gifted":0.0,"ride_homeless":169.666667,"ride_early_ed":0.0,"routes_basic":181.0,"routes_special":158.333333,"routes_bilingual":0.0,"routes_gifted":0.0,"routes_homeless":26.666667,"routes_early_ed":0.0,"buses_bilingual":0.0,"buses_gifted":0.0,"buses_homeless":13.333333,"buses_early_ed":0.0,"avg_distance":2.833333,"buses_other":3.333334,"stars_alloc":13500034.55,"kpi_basic_riders_per_bus":140.11,"kpi_sped_riders_per_bus":8.97,"kpi_cost_per_rider":1598.96,"rer":98.06,"cost_per_mile":5810.4013},{"year":"2019-2020","rev":13076702.96,"exp_act":11738418.37,"fte":21182.04,"stars_alloc":13445131.84,"stars_initial":14146248.62,"stars_prior_yr_exp":12560114.72,"ride_basic":14768.0,"ride_special":1088.0,"routes_total":354.333333,"buses_total":111.333333,"buses_basic":52.0,"buses_special":54.0,"cost_per_rider":1480.627948,"basic_per_bus":142.0,"total_riders":15856.0,"buses_other":5.333333,"ride_sped":916.333333,"ride_bilingual":0.0,"ride_gifted":0.0,"ride_homeless":171.666667,"ride_early_ed":0.0,"routes_basic":180.0,"routes_special":165.0,"routes_bilingual":0.0,"routes_gifted":0.0,"routes_homeless":9.333333,"routes_early_ed":0.0,"buses_bilingual":0.0,"buses_gifted":0.0,"buses_homeless":8.0,"buses_early_ed":0.0,"avg_distance":2.603333,"kpi_basic_riders_per_bus":140.11,"kpi_sped_riders_per_bus":8.97,"kpi_cost_per_rider":1598.96,"rer":100.0,"cost_per_mile":6362.6474},{"year":"2020-2021","rev":9667444.04,"exp_act":8429244.67,"fte":20084.28,"stars_alloc":5793597.72,"stars_initial":5650265.67,"stars_prior_yr_exp":12507615.78,"ride_basic":1401.333333,"ride_special":190.333333,"routes_total":88.666667,"buses_total":40.666667,"buses_basic":19.0,"buses_special":22.0,"cost_per_rider":10591.721056,"basic_per_bus":36.87719298245614,"total_riders":1591.666666,"buses_other":0.0,"ride_sped":179.0,"ride_bilingual":0.0,"ride_gifted":0.0,"ride_homeless":11.333333,"ride_early_ed":0.0,"routes_basic":44.666667,"routes_special":43.0,"routes_bilingual":0.0,"routes_gifted":0.0,"routes_homeless":1.0,"routes_early_ed":0.0,"buses_bilingual":0.0,"buses_gifted":0.0,"buses_homeless":0.666667,"buses_early_ed":0.0,"avg_distance":11.44,"kpi_basic_riders_per_bus":141.25,"kpi_sped_riders_per_bus":8.47,"kpi_cost_per_rider":1583.84,"cost_per_mile":4155.0118},{"year":"2021-2022","rev":14026219.43,"exp_act":12836004.07,"fte":19739.06,"stars_alloc":9430063.35,"stars_initial":13509914.29,"stars_prior_yr_exp":8982278.95,"ride_basic":12136.333333,"ride_special":824.333333,"routes_total":284.333333,"buses_total":88.666667,"buses_basic":50.0,"buses_special":38.666667,"cost_per_rider":1980.762935,"basic_per_bus":121.36333333333334,"total_riders":12960.666666,"buses_other":0.0,"ride_sped":764.333333,"ride_bilingual":0.0,"ride_gifted":0.0,"ride_homeless":60.0,"ride_early_ed":0.0,"routes_basic":173.0,"routes_special":111.333333,"routes_bilingual":0.0,"routes_gifted":0.0,"routes_homeless":0.0,"routes_early_ed":0.0,"buses_bilingual":0.0,"buses_gifted":0.0,"buses_homeless":0.0,"buses_early_ed":0.0,"avg_distance":2.24,"kpi_basic_riders_per_bus":121.74,"kpi_sped_riders_per_bus":9.97,"kpi_cost_per_rider":1930.88,"cost_per_mile":10076.8329},{"year":"2022-2023","rev":12044033.52,"exp_act":14121443.67,"fte":20022.65,"stars_alloc":11502067.15,"stars_initial":11075818.77,"stars_prior_yr_exp":12561829.95,"ride_basic":12857.666667,"ride_special":821.666667,"routes_total":304.666667,"buses_total":89.333333,"buses_basic":50.0,"buses_special":39.333333,"cost_per_rider":2064.639164,"basic_per_bus":128.57666666666665,"total_riders":13679.333334,"buses_other":0.0,"ride_sped":740.0,"ride_bilingual":0.0,"ride_gifted":0.0,"ride_homeless":81.666667,"ride_early_ed":0.0,"routes_basic":178.0,"routes_special":126.666667,"routes_bilingual":0.0,"routes_gifted":0.0,"routes_homeless":0.0,"routes_early_ed":0.0,"buses_bilingual":0.0,"buses_gifted":0.0,"buses_homeless":0.0,"buses_early_ed":0.0,"avg_distance":2.193333,"kpi_basic_riders_per_bus":128.06,"kpi_sped_riders_per_bus":9.66,"kpi_cost_per_rider":2136.44,"rer":96.6,"cost_per_mile":10566.2185},{"year":"2023-2024","rev":15030367.4,"exp_act":17634400.83,"fte":19989.730000000003,"stars_alloc":14589647.77,"stars_initial":14291797.6,"stars_prior_yr_exp":14589615.39,"ride_basic":13288.0,"ride_special":941.333333,"routes_total":337.0,"buses_total":108.666667,"buses_basic":57.0,"buses_special":46.333333,"cost_per_rider":2478.598318,"basic_per_bus":116.56140350877193,"total_riders":14229.333333,"buses_other":5.333334,"ride_sped":864.0,"ride_bilingual":0.0,"ride_gifted":0.0,"ride_homeless":77.333333,"ride_early_ed":0.0,"routes_basic":176.0,"routes_special":154.333333,"routes_bilingual":0.0,"routes_gifted":0.0,"routes_homeless":6.666667,"routes_early_ed":0.0,"buses_bilingual":0.0,"buses_gifted":0.0,"buses_homeless":5.333333,"buses_early_ed":0.0,"avg_distance":2.403333,"kpi_basic_riders_per_bus":116.05,"kpi_sped_riders_per_bus":9.33,"kpi_cost_per_rider":2615.55,"rer":100.0,"cost_per_mile":10886.4645},{"year":"2024-2025","rev":17794851.59,"exp_act":20238381.85,"fte":20306.47,"stars_alloc":16868261.41,"stars_initial":16526909.41,"stars_prior_yr_exp":18537366.36,"ride_basic":14043.0,"ride_special":1242.5,"routes_total":337.5,"buses_total":107.0,"buses_basic":54.0,"buses_special":49.0,"cost_per_rider":2648.049701,"basic_per_bus":130.02777777777777,"total_riders":15285.5,"buses_other":4.0,"ride_sped":1088.0,"ride_bilingual":0.0,"ride_gifted":0.0,"ride_homeless":154.5,"ride_early_ed":0.0,"routes_basic":178.0,"routes_special":155.0,"routes_bilingual":0.0,"routes_gifted":0.0,"routes_homeless":4.5,"routes_early_ed":0.0,"buses_bilingual":0.0,"buses_gifted":0.0,"buses_homeless":4.0,"buses_early_ed":0.0,"avg_distance":2.35,"kpi_basic_riders_per_bus":127.24,"kpi_sped_riders_per_bus":11.08,"kpi_cost_per_rider":2834.52,"rer":95.88,"cost_per_mile":12758.6332},{"year":"2025-2026","stars_alloc":18994248.95,"stars_initial":18631455.42,"stars_prior_yr_exp":21204846.86,"ride_basic":14219.5,"ride_special":1158.0,"routes_total":353.0,"buses_total":121.5,"buses_basic":53.0,"buses_special":51.0,"basic_per_bus":134.14622641509433,"total_riders":15377.5,"buses_other":17.5,"ride_sped":1005.0,"ride_bilingual":0.0,"ride_gifted":0.0,"ride_homeless":153.0,"ride_early_ed":0.0,"routes_basic":186.0,"routes_special":146.0,"routes_bilingual":0.0,"routes_gifted":0.0,"routes_homeless":21.0,"routes_early_ed":0.0,"buses_bilingual":0.0,"buses_gifted":0.0,"buses_homeless":17.5,"buses_early_ed":0.0,"avg_distance":2.44,"rer":97.63}],"kpi":{"basic_riders_per_basic_bus":{"2022-2023":128.06,"2023-2024":116.05,"2024-2025":127.24},"sped_riders_per_sped_bus":{"2022-2023":9.66,"2023-2024":9.33,"2024-2025":11.08},"cost_per_rider":{"2022-2023":2136.44,"2023-2024":2615.55,"2024-2025":2834.52},"cohort_basic_riders_per_bus":[{"rank_change":10.0,"district":"FEDERAL WAY","total_riders":7480.9,"metric":127.2},{"rank_change":9.0,"district":"PUYALLUP","total_riders":8008.3,"metric":117.7},{"rank_change":8.0,"district":"EDMONDS","total_riders":6964.5,"metric":117.5},{"rank_change":7.0,"district":"AUBURN","total_riders":7227.9,"metric":114.1},{"rank_change":6.0,"district":"MUKILTEO","total_riders":5543.9,"metric":103.4},{"rank_change":5.0,"district":"EVERETT","total_riders":8196.9,"metric":103.2},{"rank_change":4.0,"district":"RENTON","total_riders":5162.6,"metric":102.9},{"rank_change":3.0,"district":"NORTHSHORE","total_riders":8926.1,"metric":101.8},{"rank_change":2.0,"district":"LAKE WASHINGTON","total_riders":7846.6,"metric":100.5},{"rank_change":1.0,"district":"BETHEL","total_riders":8840.6,"metric":99.7},{"rank_change":null,"district":"KENT","total_riders":8251.8,"metric":93.2},{"rank_change":-1.0,"district":"LAKE STEVENS","total_riders":4786.1,"metric":90.9},{"rank_change":-2.0,"district":"ISSAQUAH","total_riders":7263.0,"metric":81.7},{"rank_change":-3.0,"district":"VANCOUVER","total_riders":6856.9,"metric":79.4},{"rank_change":-4.0,"district":"NORTH THURSTON","total_riders":5231.1,"metric":78.6},{"rank_change":-5.0,"district":"KENNEWICK","total_riders":5103.6,"metric":66.7},{"rank_change":-6.0,"district":"TACOMA","total_riders":5367.1,"metric":62.3},{"rank_change":-7.0,"district":"EVERGREEN (CLARK)","total_riders":8475.3,"metric":60.8},{"rank_change":-8.0,"district":"BATTLE GROUND","total_riders":5426.6,"metric":54.3},{"rank_change":-9.0,"district":"SPOKANE","total_riders":4555.8,"metric":48.0},{"rank_change":-10.0,"district":"SEATTLE PUBLIC SCHOOLS","total_riders":6908.3,"metric":39.5},{"rank_change":10.0,"district":"KENT","total_riders":8251.8,"metric":12.8},{"rank_change":9.0,"district":"RENTON","total_riders":5162.6,"metric":12.2},{"rank_change":8.0,"district":"AUBURN","total_riders":7227.9,"metric":11.9},{"rank_change":7.0,"district":"PUYALLUP","total_riders":8008.3,"metric":11.4},{"rank_change":6.0,"district":"FEDERAL WAY","total_riders":7480.9,"metric":11.1},{"rank_change":5.0,"district":"MUKILTEO","total_riders":5543.9,"metric":10.9},{"rank_change":4.0,"district":"TACOMA","total_riders":5367.1,"metric":10.9}],"cohort_sped_per_bus":[{"rank_change":10.0,"district":"KENT","total_riders":8251.8,"metric":12.8},{"rank_change":9.0,"district":"RENTON","total_riders":5162.6,"metric":12.2},{"rank_change":8.0,"district":"AUBURN","total_riders":7227.9,"metric":11.9},{"rank_change":7.0,"district":"PUYALLUP","total_riders":8008.3,"metric":11.4},{"rank_change":6.0,"district":"FEDERAL WAY","total_riders":7480.9,"metric":11.1},{"rank_change":5.0,"district":"MUKILTEO","total_riders":5543.9,"metric":10.9},{"rank_change":4.0,"district":"TACOMA","total_riders":5367.1,"metric":10.9},{"rank_change":3.0,"district":"LAKE STEVENS","total_riders":4786.1,"metric":10.2},{"rank_change":2.0,"district":"KENNEWICK","total_riders":5103.6,"metric":10.2},{"rank_change":1.0,"district":"EVERGREEN (CLARK)","total_riders":8475.3,"metric":9.7},{"rank_change":null,"district":"BETHEL","total_riders":8840.6,"metric":9.2},{"rank_change":-1.0,"district":"NORTH THURSTON","total_riders":5231.1,"metric":8.9},{"rank_change":-2.0,"district":"NORTHSHORE","total_riders":8926.1,"metric":8.0},{"rank_change":-3.0,"district":"LAKE WASHINGTON","total_riders":7846.6,"metric":7.9},{"rank_change":-4.0,"district":"EVERETT","total_riders":8196.9,"metric":7.6},{"rank_change":-5.0,"district":"VANCOUVER","total_riders":6856.9,"metric":7.2},{"rank_change":-6.0,"district":"EDMONDS","total_riders":6964.5,"metric":6.8},{"rank_change":-7.0,"district":"BATTLE GROUND","total_riders":5426.6,"metric":6.1},{"rank_change":-8.0,"district":"SEATTLE PUBLIC SCHOOLS","total_riders":6908.3,"metric":6.1},{"rank_change":-9.0,"district":"SPOKANE","total_riders":4555.8,"metric":5.5},{"rank_change":-10.0,"district":"ISSAQUAH","total_riders":7263.0,"metric":4.5},{"rank_change":10.0,"district":"LAKE STEVENS","total_riders":4786.1,"metric":1565.01},{"rank_change":9.0,"district":"NORTHSHORE","total_riders":8926.1,"metric":1605.43},{"rank_change":8.0,"district":"AUBURN","total_riders":7227.9,"metric":1722.18},{"rank_change":7.0,"district":"EVERETT","total_riders":8196.9,"metric":1978.14}],"cohort_cost_per_rider":[{"rank_change":10.0,"district":"LAKE STEVENS","total_riders":4786.1,"metric":1565.01},{"rank_change":9.0,"district":"NORTHSHORE","total_riders":8926.1,"metric":1605.43},{"rank_change":8.0,"district":"AUBURN","total_riders":7227.9,"metric":1722.18},{"rank_change":7.0,"district":"EVERETT","total_riders":8196.9,"metric":1978.14},{"rank_change":6.0,"district":"ISSAQUAH","total_riders":7263.0,"metric":2039.68},{"rank_change":5.0,"district":"KENNEWICK","total_riders":5103.6,"metric":2138.1},{"rank_change":4.0,"district":"VANCOUVER","total_riders":6856.9,"metric":2217.75},{"rank_change":3.0,"district":"EVERGREEN (CLARK)","total_riders":8475.3,"metric":2219.69},{"rank_change":2.0,"district":"BETHEL","total_riders":8840.6,"metric":2255.07},{"rank_change":1.0,"district":"NORTH THURSTON","total_riders":5231.1,"metric":2321.6},{"rank_change":null,"district":"PUYALLUP","total_riders":8008.3,"metric":2357.24},{"rank_change":-1.0,"district":"MUKILTEO","total_riders":5543.9,"metric":2404.41},{"rank_change":-2.0,"district":"KENT","total_riders":8251.8,"metric":2411.51},{"rank_change":-3.0,"district":"LAKE WASHINGTON","total_riders":7846.6,"metric":2412.19},{"rank_change":-4.0,"district":"BATTLE GROUND","total_riders":5426.6,"metric":2436.72},{"rank_change":-5.0,"district":"RENTON","total_riders":5162.6,"metric":2703.72},{"rank_change":-6.0,"district":"EDMONDS","total_riders":6964.5,"metric":2786.17},{"rank_change":-7.0,"district":"FEDERAL WAY","total_riders":7480.9,"metric":2834.52},{"rank_change":-8.0,"district":"SPOKANE","total_riders":4555.8,"metric":3267.26},{"rank_change":-9.0,"district":"TACOMA","total_riders":5367.1,"metric":3554.47},{"rank_change":-10.0,"district":"SEATTLE PUBLIC SCHOOLS","total_riders":6908.3,"metric":8652.38}]},"efficiency":{"rows":[{"name":"Federal Way","is_self":true,"weight_pct":null,"prior_yr_exp":21204846.86,"buses":106.0,"basic_riders":13742.0,"special_riders":1219.0,"avg_distance":2.34,"destinations":48.0,"land_area":35.7,"K_rte":0.0,"rd_miles_per_sq_mile":14.8,"students_per_rd_mile":28.28},{"name":"Edmonds","is_self":false,"weight_pct":2.8,"prior_yr_exp":19404304.6,"buses":130.0,"basic_riders":12072.0,"special_riders":1856.0,"avg_distance":3.42,"destinations":78.0,"land_area":36.3,"K_rte":0.0,"rd_miles_per_sq_mile":15.44,"students_per_rd_mile":24.78},{"name":"Everett","is_self":false,"weight_pct":0.7,"prior_yr_exp":16214704.12,"buses":153.0,"basic_riders":15072.0,"special_riders":1321.0,"avg_distance":3.47,"destinations":106.0,"land_area":38.1,"K_rte":0.0,"rd_miles_per_sq_mile":13.68,"students_per_rd_mile":31.41},{"name":"Lake Washington","is_self":false,"weight_pct":87.7,"prior_yr_exp":18927431.22,"buses":109.0,"basic_riders":14425.0,"special_riders":1267.0,"avg_distance":3.09,"destinations":49.0,"land_area":68.9,"K_rte":0.0,"rd_miles_per_sq_mile":12.48,"students_per_rd_mile":18.23},{"name":"South Kitsap","is_self":false,"weight_pct":8.9,"prior_yr_exp":9338078.97,"buses":39.0,"basic_riders":7400.0,"special_riders":543.0,"avg_distance":5.09,"destinations":19.0,"land_area":132.4,"K_rte":0.0,"rd_miles_per_sq_mile":4.7,"students_per_rd_mile":12.75},{"name":"Federal Way Target","is_self":true,"weight_pct":100.0,"prior_yr_exp":18071367.52,"buses":104.0}],"efficiency_rating_pct":97.63}},"tac":{"label":"Tacoma","color":"#7c8a3f","years":[{"year":"2013-2014","rev":7899055.05,"exp_act":10956980.28,"fte":27439.76000000001,"ride_basic":null,"ride_special":null,"routes_total":null,"buses_total":null,"buses_basic":null,"buses_special":null},{"year":"2014-2015","rev":11515010.68,"exp_act":10715595.98,"fte":27674.4,"ride_basic":null,"ride_special":null,"routes_total":null,"buses_total":null,"buses_basic":null,"buses_special":null,"kpi_basic_riders_per_bus":72.51,"kpi_sped_riders_per_bus":8.66,"kpi_cost_per_rider":1348.63},{"year":"2015-2016","rev":11481509.94,"exp_act":10855539.7,"fte":27757.700000000004,"ride_basic":null,"ride_special":null,"routes_total":null,"buses_total":null,"buses_basic":null,"buses_special":null,"kpi_basic_riders_per_bus":70.55,"kpi_sped_riders_per_bus":8.35,"kpi_cost_per_rider":1351.73},{"year":"2016-2017","rev":11208503.2,"exp_act":11546152.98,"fte":27711.84,"ride_basic":null,"ride_special":null,"routes_total":null,"buses_total":null,"buses_basic":null,"buses_special":null,"kpi_basic_riders_per_bus":67.08,"kpi_sped_riders_per_bus":9.38,"kpi_cost_per_rider":1458.47},{"year":"2017-2018","rev":12273936.43,"exp_act":12336405.45,"fte":27685.83,"ride_basic":13174.666667,"ride_special":1749.666667,"routes_total":334.0,"buses_total":150.0,"buses_basic":81.0,"buses_special":72.0,"basic_per_bus":87.831333,"cost_per_rider":1653.193503,"total_riders":14924.333334,"ride_sped":1300.666667,"ride_bilingual":177.666667,"ride_gifted":121.0,"ride_homeless":110.0,"ride_early_ed":40.333333,"routes_basic":165.0,"routes_special":138.0,"routes_bilingual":4.0,"routes_gifted":6.0,"routes_homeless":21.0,"routes_early_ed":0.0,"buses_bilingual":4.0,"buses_gifted":6.0,"buses_homeless":18.0,"buses_early_ed":0.0,"avg_distance":2.74,"buses_other":0.0,"stars_alloc":11617480.94,"kpi_basic_riders_per_bus":66.38,"kpi_sped_riders_per_bus":9.05,"kpi_cost_per_rider":1592.0,"rer":100.0,"cost_per_mile":6740.0266},{"year":"2018-2019","rev":15690149.69,"exp_act":14429612.43,"fte":27592.829999999994,"ride_basic":13972.0,"ride_special":1712.5,"routes_total":341.0,"buses_total":149.0,"buses_basic":85.0,"buses_special":70.0,"basic_per_bus":93.771812,"cost_per_rider":1839.983733,"total_riders":15684.5,"ride_sped":996.5,"ride_bilingual":173.0,"ride_gifted":168.0,"ride_homeless":113.5,"ride_early_ed":261.5,"routes_basic":167.0,"routes_special":133.0,"routes_bilingual":4.0,"routes_gifted":7.0,"routes_homeless":28.0,"routes_early_ed":2.0,"buses_bilingual":4.0,"buses_gifted":7.0,"buses_homeless":25.0,"buses_early_ed":2.0,"avg_distance":2.59,"buses_other":0.0,"stars_alloc":15104221.66,"kpi_basic_riders_per_bus":62.65,"kpi_sped_riders_per_bus":7.46,"kpi_cost_per_rider":1819.66,"rer":99.55,"cost_per_mile":8169.0307},{"year":"2019-2020","rev":15529746.9,"exp_act":15530260.79,"fte":27677.76,"stars_alloc":13366428.31,"stars_initial":12728200.51,"stars_prior_yr_exp":14034251.48,"ride_basic":12777.0,"ride_special":1618.0,"routes_total":339.0,"buses_total":152.0,"buses_basic":83.0,"buses_special":69.0,"cost_per_rider":2157.729877,"basic_per_bus":76.96987951807229,"total_riders":14395.0,"buses_other":0.0,"ride_sped":1076.333333,"ride_bilingual":91.666667,"ride_gifted":118.333333,"ride_homeless":101.0,"ride_early_ed":230.666667,"routes_basic":168.0,"routes_special":123.0,"routes_bilingual":2.0,"routes_gifted":9.0,"routes_homeless":33.0,"routes_early_ed":4.0,"buses_bilingual":2.0,"buses_gifted":9.0,"buses_homeless":29.0,"buses_early_ed":4.0,"avg_distance":2.77,"kpi_basic_riders_per_bus":62.65,"kpi_sped_riders_per_bus":7.46,"kpi_cost_per_rider":1819.66,"rer":100.0,"cost_per_mile":8269.3102},{"year":"2020-2021","rev":10149178.96,"exp_act":9271806.93,"fte":26423.56,"stars_alloc":5088033.6,"stars_initial":4721779.15,"stars_prior_yr_exp":12873424.85,"ride_basic":1260.0,"ride_special":555.666667,"routes_total":203.0,"buses_total":100.333333,"buses_basic":48.0,"buses_special":47.333333,"cost_per_rider":10213.115765,"basic_per_bus":13.125,"total_riders":1815.666667,"buses_other":5.0,"ride_sped":420.0,"ride_bilingual":18.0,"ride_gifted":7.0,"ride_homeless":57.666667,"ride_early_ed":53.0,"routes_basic":74.0,"routes_special":106.0,"routes_bilingual":0.666667,"routes_gifted":0.0,"routes_homeless":22.333333,"routes_early_ed":0.0,"buses_bilingual":0.666667,"buses_gifted":0.0,"buses_homeless":17.666667,"buses_early_ed":0.0,"avg_distance":2.913333,"kpi_basic_riders_per_bus":62.62,"kpi_sped_riders_per_bus":7.83,"kpi_cost_per_rider":1798.15,"cost_per_mile":7838.7753},{"year":"2021-2022","rev":14288376.31,"exp_act":15574287.13,"fte":26441.39,"stars_alloc":9591348.34,"stars_initial":20213763.4,"stars_prior_yr_exp":8929165.25,"ride_basic":7895.0,"ride_special":1097.333333,"routes_total":275.0,"buses_total":135.0,"buses_basic":76.0,"buses_special":52.0,"cost_per_rider":3463.903428,"basic_per_bus":51.94078947368421,"total_riders":8992.333333,"buses_other":7.0,"ride_sped":717.0,"ride_bilingual":16.0,"ride_gifted":97.0,"ride_homeless":177.666667,"ride_early_ed":89.666667,"routes_basic":145.0,"routes_special":95.0,"routes_bilingual":1.0,"routes_gifted":7.0,"routes_homeless":27.0,"routes_early_ed":0.0,"buses_bilingual":1.0,"buses_gifted":7.0,"buses_homeless":25.0,"buses_early_ed":0.0,"avg_distance":2.99,"kpi_basic_riders_per_bus":51.65,"kpi_sped_riders_per_bus":6.85,"kpi_cost_per_rider":3077.53,"cost_per_mile":9470.5303},{"year":"2022-2023","rev":14955270.97,"exp_act":17647003.21,"fte":26131.210000000003,"stars_alloc":13853821.41,"stars_initial":13215979.8,"stars_prior_yr_exp":13772920.98,"ride_basic":9391.0,"ride_special":1393.333333,"routes_total":293.0,"buses_total":162.0,"buses_basic":77.0,"buses_special":57.0,"cost_per_rider":3272.711009,"basic_per_bus":60.98051948051948,"total_riders":10784.333333,"buses_other":28.0,"ride_sped":937.333333,"ride_bilingual":32.333333,"ride_gifted":173.666667,"ride_homeless":209.666667,"ride_early_ed":40.333333,"routes_basic":153.0,"routes_special":109.0,"routes_bilingual":2.0,"routes_gifted":7.0,"routes_homeless":22.0,"routes_early_ed":0.0,"buses_bilingual":2.0,"buses_gifted":7.0,"buses_homeless":19.0,"buses_early_ed":0.0,"avg_distance":3.03,"kpi_basic_riders_per_bus":60.85,"kpi_sped_riders_per_bus":8.22,"kpi_cost_per_rider":3269.49,"rer":82.26,"cost_per_mile":9938.7261},{"year":"2023-2024","rev":19636906.94,"exp_act":19033338.11,"fte":26075.28,"stars_alloc":16809171.4,"stars_initial":16415504.36,"stars_prior_yr_exp":17614561.2,"ride_basic":9015.333333,"ride_special":1411.666667,"routes_total":322.333333,"buses_total":175.333333,"buses_basic":79.333333,"buses_special":53.0,"cost_per_rider":3650.779344,"basic_per_bus":56.81932773109244,"total_riders":10427.0,"buses_other":43.0,"ride_sped":1005.333333,"ride_bilingual":11.666667,"ride_gifted":153.666667,"ride_homeless":178.666667,"ride_early_ed":62.333333,"routes_basic":154.666667,"routes_special":115.0,"routes_bilingual":2.0,"routes_gifted":8.0,"routes_homeless":42.666667,"routes_early_ed":0.0,"buses_bilingual":2.0,"buses_gifted":8.0,"buses_homeless":33.0,"buses_early_ed":0.0,"avg_distance":3.03,"kpi_basic_riders_per_bus":56.62,"kpi_sped_riders_per_bus":9.46,"kpi_cost_per_rider":3746.35,"rer":100.0,"cost_per_mile":9743.9965},{"year":"2024-2025","rev":18368452.92,"exp_act":19264934.09,"fte":26272.81,"stars_alloc":15848199.58,"stars_initial":15378891.36,"stars_prior_yr_exp":19470227.07,"ride_basic":9466.5,"ride_special":1472.5,"routes_total":277.5,"buses_total":155.0,"buses_basic":74.0,"buses_special":48.0,"cost_per_rider":3522.247754,"basic_per_bus":63.96283783783784,"total_riders":10939.0,"buses_other":33.0,"ride_sped":1064.5,"ride_bilingual":1.0,"ride_gifted":141.5,"ride_homeless":220.5,"ride_early_ed":45.0,"routes_basic":145.0,"routes_special":94.0,"routes_bilingual":1.0,"routes_gifted":8.0,"routes_homeless":29.5,"routes_early_ed":0.0,"buses_bilingual":1.0,"buses_gifted":8.0,"buses_homeless":24.0,"buses_early_ed":0.0,"avg_distance":2.69,"kpi_basic_riders_per_bus":62.27,"kpi_sped_riders_per_bus":10.86,"kpi_cost_per_rider":3554.47,"rer":100.0,"cost_per_mile":12903.9379},{"year":"2025-2026","stars_alloc":18835205.65,"stars_initial":18393810.42,"stars_prior_yr_exp":19077271.96,"ride_basic":9088.0,"ride_special":1496.0,"routes_total":313.0,"buses_total":181.0,"buses_basic":74.0,"buses_special":55.0,"basic_per_bus":61.4054054054054,"total_riders":10584.0,"buses_other":52.0,"ride_sped":1139.0,"ride_bilingual":5.0,"ride_gifted":91.0,"ride_homeless":183.0,"ride_early_ed":78.0,"routes_basic":149.0,"routes_special":97.5,"routes_bilingual":0.0,"routes_gifted":8.0,"routes_homeless":58.5,"routes_early_ed":0.0,"buses_bilingual":0.0,"buses_gifted":8.0,"buses_homeless":44.0,"buses_early_ed":0.0,"avg_distance":3.015,"rer":100.0}],"kpi":{"basic_riders_per_basic_bus":{"2022-2023":60.85,"2023-2024":56.62,"2024-2025":62.27},"sped_riders_per_sped_bus":{"2022-2023":8.22,"2023-2024":9.46,"2024-2025":10.86},"cost_per_rider":{"2022-2023":3269.49,"2023-2024":3746.35,"2024-2025":3554.47},"cohort_basic_riders_per_bus":[{"rank_change":10.0,"district":"FEDERAL WAY","total_riders":7480.9,"metric":127.2},{"rank_change":9.0,"district":"PUYALLUP","total_riders":8008.3,"metric":117.7},{"rank_change":8.0,"district":"EDMONDS","total_riders":6964.5,"metric":117.5},{"rank_change":7.0,"district":"AUBURN","total_riders":7227.9,"metric":114.1},{"rank_change":6.0,"district":"MUKILTEO","total_riders":5543.9,"metric":103.4},{"rank_change":5.0,"district":"RENTON","total_riders":5162.6,"metric":102.9},{"rank_change":4.0,"district":"LAKE WASHINGTON","total_riders":7846.6,"metric":100.5},{"rank_change":3.0,"district":"LAKE STEVENS","total_riders":4786.1,"metric":90.9},{"rank_change":2.0,"district":"TAHOMA","total_riders":4250.0,"metric":87.7},{"rank_change":1.0,"district":"CLOVER PARK","total_riders":4387.9,"metric":87.3},{"rank_change":null,"district":"HIGHLINE","total_riders":4195.7,"metric":82.0},{"rank_change":-1.0,"district":"ISSAQUAH","total_riders":7263.0,"metric":81.7},{"rank_change":-2.0,"district":"VANCOUVER","total_riders":6856.9,"metric":79.4},{"rank_change":-3.0,"district":"NORTH THURSTON","total_riders":5231.1,"metric":78.6},{"rank_change":-4.0,"district":"KENNEWICK","total_riders":5103.6,"metric":66.7},{"rank_change":-5.0,"district":"WOODLAND","total_riders":4376.9,"metric":63.8},{"rank_change":-6.0,"district":"TACOMA","total_riders":5367.1,"metric":62.3},{"rank_change":-7.0,"district":"PASCO","total_riders":4549.8,"metric":61.0},{"rank_change":-8.0,"district":"BATTLE GROUND","total_riders":5426.6,"metric":54.3},{"rank_change":-9.0,"district":"SPOKANE","total_riders":4555.8,"metric":48.0},{"rank_change":-10.0,"district":"SEATTLE PUBLIC SCHOOLS","total_riders":6908.3,"metric":39.5},{"rank_change":10.0,"district":"CLOVER PARK","total_riders":4387.9,"metric":12.6},{"rank_change":9.0,"district":"RENTON","total_riders":5162.6,"metric":12.2},{"rank_change":8.0,"district":"AUBURN","total_riders":7227.9,"metric":11.9},{"rank_change":7.0,"district":"PUYALLUP","total_riders":8008.3,"metric":11.4},{"rank_change":6.0,"district":"FEDERAL WAY","total_riders":7480.9,"metric":11.1},{"rank_change":5.0,"district":"HIGHLINE","total_riders":4195.7,"metric":11.0},{"rank_change":4.0,"district":"MUKILTEO","total_riders":5543.9,"metric":10.9}],"cohort_sped_per_bus":[{"rank_change":10.0,"district":"CLOVER PARK","total_riders":4387.9,"metric":12.6},{"rank_change":9.0,"district":"RENTON","total_riders":5162.6,"metric":12.2},{"rank_change":8.0,"district":"AUBURN","total_riders":7227.9,"metric":11.9},{"rank_change":7.0,"district":"PUYALLUP","total_riders":8008.3,"metric":11.4},{"rank_change":6.0,"district":"FEDERAL WAY","total_riders":7480.9,"metric":11.1},{"rank_change":5.0,"district":"HIGHLINE","total_riders":4195.7,"metric":11.0},{"rank_change":4.0,"district":"MUKILTEO","total_riders":5543.9,"metric":10.9},{"rank_change":3.0,"district":"TACOMA","total_riders":5367.1,"metric":10.9},{"rank_change":2.0,"district":"TAHOMA","total_riders":4250.0,"metric":10.6},{"rank_change":1.0,"district":"PASCO","total_riders":4549.8,"metric":10.4},{"rank_change":null,"district":"LAKE STEVENS","total_riders":4786.1,"metric":10.2},{"rank_change":-1.0,"district":"KENNEWICK","total_riders":5103.6,"metric":10.2},{"rank_change":-2.0,"district":"NORTH THURSTON","total_riders":5231.1,"metric":8.9},{"rank_change":-3.0,"district":"WOODLAND","total_riders":4376.9,"metric":8.4},{"rank_change":-4.0,"district":"LAKE WASHINGTON","total_riders":7846.6,"metric":7.9},{"rank_change":-5.0,"district":"VANCOUVER","total_riders":6856.9,"metric":7.2},{"rank_change":-6.0,"district":"EDMONDS","total_riders":6964.5,"metric":6.8},{"rank_change":-7.0,"district":"BATTLE GROUND","total_riders":5426.6,"metric":6.1},{"rank_change":-8.0,"district":"SEATTLE PUBLIC SCHOOLS","total_riders":6908.3,"metric":6.1},{"rank_change":-9.0,"district":"SPOKANE","total_riders":4555.8,"metric":5.5},{"rank_change":-10.0,"district":"ISSAQUAH","total_riders":7263.0,"metric":4.5},{"rank_change":10.0,"district":"TAHOMA","total_riders":4250.0,"metric":1546.73},{"rank_change":9.0,"district":"LAKE STEVENS","total_riders":4786.1,"metric":1565.01},{"rank_change":8.0,"district":"AUBURN","total_riders":7227.9,"metric":1722.18},{"rank_change":7.0,"district":"ISSAQUAH","total_riders":7263.0,"metric":2039.68}],"cohort_cost_per_rider":[{"rank_change":10.0,"district":"TAHOMA","total_riders":4250.0,"metric":1546.73},{"rank_change":9.0,"district":"LAKE STEVENS","total_riders":4786.1,"metric":1565.01},{"rank_change":8.0,"district":"AUBURN","total_riders":7227.9,"metric":1722.18},{"rank_change":7.0,"district":"ISSAQUAH","total_riders":7263.0,"metric":2039.68},{"rank_change":6.0,"district":"WOODLAND","total_riders":4376.9,"metric":2066.94},{"rank_change":5.0,"district":"KENNEWICK","total_riders":5103.6,"metric":2138.1},{"rank_change":4.0,"district":"VANCOUVER","total_riders":6856.9,"metric":2217.75},{"rank_change":3.0,"district":"CLOVER PARK","total_riders":4387.9,"metric":2257.39},{"rank_change":2.0,"district":"NORTH THURSTON","total_riders":5231.1,"metric":2321.6},{"rank_change":1.0,"district":"PUYALLUP","total_riders":8008.3,"metric":2357.24},{"rank_change":null,"district":"MUKILTEO","total_riders":5543.9,"metric":2404.41},{"rank_change":-1.0,"district":"LAKE WASHINGTON","total_riders":7846.6,"metric":2412.19},{"rank_change":-2.0,"district":"BATTLE GROUND","total_riders":5426.6,"metric":2436.72},{"rank_change":-3.0,"district":"PASCO","total_riders":4549.8,"metric":2576.14},{"rank_change":-4.0,"district":"RENTON","total_riders":5162.6,"metric":2703.72},{"rank_change":-5.0,"district":"EDMONDS","total_riders":6964.5,"metric":2786.17},{"rank_change":-6.0,"district":"HIGHLINE","total_riders":4195.7,"metric":2829.39},{"rank_change":-7.0,"district":"FEDERAL WAY","total_riders":7480.9,"metric":2834.52},{"rank_change":-8.0,"district":"SPOKANE","total_riders":4555.8,"metric":3267.26},{"rank_change":-9.0,"district":"TACOMA","total_riders":5367.1,"metric":3554.47},{"rank_change":-10.0,"district":"SEATTLE PUBLIC SCHOOLS","total_riders":6908.3,"metric":8652.38}]},"efficiency":{"rows":[{"name":"Tacoma","is_self":true,"weight_pct":null,"prior_yr_exp":19077271.96,"buses":143.0,"basic_riders":9215.0,"special_riders":1518.0,"avg_distance":2.8,"destinations":59.0,"land_area":52.0,"K_rte":0.0,"rd_miles_per_sq_mile":19.06,"students_per_rd_mile":10.83},{"name":"Tacoma","is_self":true,"weight_pct":100.0,"prior_yr_exp":19077271.96,"buses":143.0,"basic_riders":9215.0,"special_riders":1518.0,"avg_distance":2.8,"destinations":59.0,"land_area":52.0,"K_rte":0.0,"rd_miles_per_sq_mile":19.06,"students_per_rd_mile":10.83},{"name":"Tacoma Target","is_self":true,"weight_pct":100.0,"prior_yr_exp":19077271.96,"buses":143.0}],"efficiency_rating_pct":100.0}}},"cohort_cost_per_rider_2024_25":[{"rank_change":10.0,"district":"LAKE STEVENS","total_riders":4786.1,"metric":1565.01},{"rank_change":9.0,"district":"AUBURN","total_riders":7227.9,"metric":1722.18},{"rank_change":8.0,"district":"EVERETT","total_riders":8196.9,"metric":1978.14},{"rank_change":7.0,"district":"ISSAQUAH","total_riders":7263.0,"metric":2039.68},{"rank_change":6.0,"district":"KENNEWICK","total_riders":5103.6,"metric":2138.1},{"rank_change":5.0,"district":"VANCOUVER","total_riders":6856.9,"metric":2217.75},{"rank_change":4.0,"district":"EVERGREEN (CLARK)","total_riders":8475.3,"metric":2219.69},{"rank_change":3.0,"district":"BETHEL","total_riders":8840.6,"metric":2255.07},{"rank_change":2.0,"district":"NORTH THURSTON","total_riders":5231.1,"metric":2321.6},{"rank_change":1.0,"district":"PUYALLUP","total_riders":8008.3,"metric":2357.24},{"rank_change":null,"district":"MUKILTEO","total_riders":5543.9,"metric":2404.41},{"rank_change":-1.0,"district":"KENT","total_riders":8251.8,"metric":2411.51},{"rank_change":-2.0,"district":"LAKE WASHINGTON","total_riders":7846.6,"metric":2412.19},{"rank_change":-3.0,"district":"BATTLE GROUND","total_riders":5426.6,"metric":2436.72},{"rank_change":-4.0,"district":"PASCO","total_riders":4549.8,"metric":2576.14},{"rank_change":-5.0,"district":"RENTON","total_riders":5162.6,"metric":2703.72},{"rank_change":-6.0,"district":"EDMONDS","total_riders":6964.5,"metric":2786.17},{"rank_change":-7.0,"district":"FEDERAL WAY","total_riders":7480.9,"metric":2834.52},{"rank_change":-8.0,"district":"SPOKANE","total_riders":4555.8,"metric":3267.26},{"rank_change":-9.0,"district":"TACOMA","total_riders":5367.1,"metric":3554.47},{"rank_change":-10.0,"district":"SEATTLE PUBLIC SCHOOLS","total_riders":6908.3,"metric":8652.38}],"cohort_basic_riders_per_bus_2024_25":[{"rank_change":10.0,"district":"FEDERAL WAY","total_riders":7480.9,"metric":127.2},{"rank_change":9.0,"district":"PUYALLUP","total_riders":8008.3,"metric":117.7},{"rank_change":8.0,"district":"EDMONDS","total_riders":6964.5,"metric":117.5},{"rank_change":7.0,"district":"AUBURN","total_riders":7227.9,"metric":114.1},{"rank_change":6.0,"district":"MUKILTEO","total_riders":5543.9,"metric":103.4},{"rank_change":5.0,"district":"EVERETT","total_riders":8196.9,"metric":103.2},{"rank_change":4.0,"district":"RENTON","total_riders":5162.6,"metric":102.9},{"rank_change":3.0,"district":"LAKE WASHINGTON","total_riders":7846.6,"metric":100.5},{"rank_change":2.0,"district":"BETHEL","total_riders":8840.6,"metric":99.7},{"rank_change":1.0,"district":"KENT","total_riders":8251.8,"metric":93.2},{"rank_change":null,"district":"LAKE STEVENS","total_riders":4786.1,"metric":90.9},{"rank_change":-1.0,"district":"ISSAQUAH","total_riders":7263.0,"metric":81.7},{"rank_change":-2.0,"district":"VANCOUVER","total_riders":6856.9,"metric":79.4},{"rank_change":-3.0,"district":"NORTH THURSTON","total_riders":5231.1,"metric":78.6},{"rank_change":-4.0,"district":"KENNEWICK","total_riders":5103.6,"metric":66.7},{"rank_change":-5.0,"district":"TACOMA","total_riders":5367.1,"metric":62.3},{"rank_change":-6.0,"district":"PASCO","total_riders":4549.8,"metric":61.0},{"rank_change":-7.0,"district":"EVERGREEN (CLARK)","total_riders":8475.3,"metric":60.8},{"rank_change":-8.0,"district":"BATTLE GROUND","total_riders":5426.6,"metric":54.3},{"rank_change":-9.0,"district":"SPOKANE","total_riders":4555.8,"metric":48.0},{"rank_change":-10.0,"district":"SEATTLE PUBLIC SCHOOLS","total_riders":6908.3,"metric":39.5},{"rank_change":10.0,"district":"KENT","total_riders":8251.8,"metric":12.8},{"rank_change":9.0,"district":"RENTON","total_riders":5162.6,"metric":12.2},{"rank_change":8.0,"district":"AUBURN","total_riders":7227.9,"metric":11.9},{"rank_change":7.0,"district":"PUYALLUP","total_riders":8008.3,"metric":11.4},{"rank_change":6.0,"district":"FEDERAL WAY","total_riders":7480.9,"metric":11.1},{"rank_change":5.0,"district":"MUKILTEO","total_riders":5543.9,"metric":10.9},{"rank_change":4.0,"district":"TACOMA","total_riders":5367.1,"metric":10.9}]};
@@ -1483,7 +1494,7 @@ const STARS_DATA = {"1109":{"2017-2018":{"basic_students_total":38.3333,"special
 
 // =========== STATE ===========
 const state = {
-  scale: 'abs',           // abs | pp (main scatter)
+  scale: 'pp',           // abs | pp (main scatter)
   scaleType: 'linear',     // log | linear (main scatter axis scale)
   dt: 0,                  // 0=actuals 1=budget (main scatter)
   expDef: 'act',          // act | prog (main scatter + rankings + detail)
@@ -1500,7 +1511,7 @@ const state = {
   maxSize: 30000,
   searchQ: '',
   // Pre/post scatter
-  prePostScale: 'abs',    // abs | pp
+  prePostScale: 'pp',    // abs | pp
   prePostScaleType: 'linear', // log | linear
   prePostExpDef: 'act',   // act | prog
   prePostMinSize: 0,
@@ -1918,7 +1929,6 @@ function renderScatter() {
 
   // Group points by year for color-coding, plus a separate selected-district series
   const yearBuckets = {};
-  const selectedPts = [];
 
   rows.forEach(r => {
     const expRaw = state.expDef === 'act' ? r.expA : r.expP;
@@ -1928,12 +1938,12 @@ function renderScatter() {
     const isSel = DATA.districts[r.di] && DATA.districts[r.di].c === state.selectedDist;
     const pt = { x, y, n: DATA.districts[r.di]?.n || '', yr: DATA.years[r.yi], di: r.di };
 
+    if (!yearBuckets[r.yi]) yearBuckets[r.yi] = [];
     if (isSel) {
-      selectedPts.push(pt);
-    } else {
-      if (!yearBuckets[r.yi]) yearBuckets[r.yi] = [];
-      yearBuckets[r.yi].push(pt);
+      pt.marker = { symbol: 'diamond', radius: 10, lineWidth: 3, lineColor: '#1a1814' };
+      pt.zIndex = 10;
     }
+    yearBuckets[r.yi].push(pt);
   });
 
   // Build one series per year
@@ -1947,17 +1957,7 @@ function renderScatter() {
       marker: { radius: 4, symbol: 'circle' },
     }));
 
-  // Selected district on top (larger, bright red)
-  if (selectedPts.length) {
-    const selName = DATA.districts.find(d => d.c === state.selectedDist)?.n || 'Selected';
-    yearSeries.push({
-      name:   selName,
-      color:  '#c0392b',
-      data:   selectedPts,
-      marker: { radius: 10, symbol: 'diamond', lineWidth: 3, lineColor: '#1a1814' },
-      zIndex: 10,
-    });
-  }
+
 
   hcRender('scatterChart', {
     chart:  { type: 'scatter', height: 380, zoomType: 'xy' },
@@ -2035,8 +2035,9 @@ function renderScatter() {
 // ── renderPrePostScatter ────────────────────────────────────────────────────────
 function renderPrePostScatter() {
   hcDestroy('prePostScatter');
-  let data = buildPrePostData();
-  data = data.filter(d => {
+  const allData = buildPrePostData();
+  const maxFTE = Math.max(...allData.map(d => d.avgFTE), 1);
+  let data = allData.filter(d => {
     if (state.prePostMinSize > 0 && d.avgFTE < state.prePostMinSize) return false;
     if (state.prePostMaxSize < 30000 && d.avgFTE > state.prePostMaxSize) return false;
     return true;
@@ -2046,34 +2047,70 @@ function renderPrePostScatter() {
   const fmt    = isPP ? v => '$' + Math.round(v) : v => '$' + (v / 1e6).toFixed(1) + 'M';
   const useLog = state.prePostScaleType === 'log';
 
-  const maxFTE = Math.max(...data.map(d => d.avgFTE), 1);
-  const radius = fte => Math.max(3, Math.min(18, Math.sqrt(fte / maxFTE) * 18));
+  // Plasma color scale by district enrollment (6 buckets)
+  const SIZE_BUCKETS = [
+    { max:   500, color: '#6a00a8', label: '<500' },
+    { max:  3000, color: '#b52f8c', label: '500–3K' },
+    { max: 10000, color: '#ed7953', label: '3K–10K' },
+    { max: Infinity, color: '#f5e61f', label: '10K+' },
+  ];
+  function sizeBucket(fte) {
+    for (let i = 0; i < SIZE_BUCKETS.length; i++) {
+      if (fte < SIZE_BUCKETS[i].max) return i;
+    }
+    return SIZE_BUCKETS.length - 1;
+  }
+  function sizeColor(fte) { return SIZE_BUCKETS[sizeBucket(fte)].color; }
 
   function pt(rec, side) {
     const vals = isPP
       ? { x: rec[side].expPP, y: rec[side].revPP }
       : { x: rec[side].exp,   y: rec[side].rev };
     return { ...vals,
-      marker: { radius: radius(rec.avgFTE) },
       name: rec.district?.n || '',
       di: rec.di,
-      isSel: rec.district?.c === state.selectedDist };
+      isSel: rec.district?.c === state.selectedDist,
+      fte: rec.avgFTE };
   }
 
   const prePts  = state.prePostShowPre  ? data.map(d => pt(d, 'pre'))  : [];
   const postPts = state.prePostShowPost ? data.map(d => pt(d, 'post')) : [];
 
-  // Connector lines between pre and post for each district
+  // Pre-COVID: circle, color from plasma scale, partial opacity
+  const preData = prePts.map(p => ({
+    x: p.x, y: p.y, name: p.name, di: p.di, isSel: p.isSel,
+    color: sizeColor(p.fte),
+    marker: {
+      symbol: 'circle', radius: 5,
+      fillOpacity: 0.40,
+      lineWidth: p.isSel ? 3 : 0.5,
+      lineColor: p.isSel ? '#1a1814' : 'rgba(0,0,0,0.15)',
+    },
+  }));
+
+  // Post-COVID: diamond, same color scale, higher opacity
+  const postData = postPts.map(p => ({
+    x: p.x, y: p.y, name: p.name, di: p.di, isSel: p.isSel,
+    color: sizeColor(p.fte),
+    marker: {
+      symbol: 'diamond', radius: 5.5,
+      fillOpacity: 0.60,
+      lineWidth: p.isSel ? 3 : 0.5,
+      lineColor: p.isSel ? '#1a1814' : 'rgba(0,0,0,0.2)',
+    },
+  }));
+
+  // Connector lines
   const connectors = [];
   if (state.prePostShowPre && state.prePostShowPost) {
-    data.forEach(d => {
-      const pre  = pt(d, 'pre');
-      const post = pt(d, 'post');
+    data.forEach((d, i) => {
+      const pre = prePts[i], post = postPts[i];
+      if (!pre || !post) return;
       const gapPre  = pre.y  - pre.x;
       const gapPost = post.y - post.x;
       connectors.push({
         type: 'line', enableMouseTracking: false, showInLegend: false,
-        color: (gapPost < gapPre) ? 'rgba(192,57,43,0.25)' : 'rgba(60,140,80,0.25)',
+        color: (gapPost < gapPre) ? 'rgba(192,57,43,0.15)' : 'rgba(100,160,130,0.15)',
         lineWidth: 1, marker: { enabled: false },
         requireSorting: false,
         data: [{ x: pre.x, y: pre.y }, { x: post.x, y: post.y }],
@@ -2085,55 +2122,47 @@ function renderPrePostScatter() {
     chart:  { type: 'scatter', height: 380, zoomType: 'xy' },
     title:  { text: null },
     xAxis:  { type: useLog ? 'logarithmic' : 'linear',
+              min: useLog ? 10000 : null,
               title: { text: isPP ? 'Expenditure per pupil' : 'Expenditure (total)' },
               labels: { formatter() { return fmt(this.value); } } },
     yAxis:  { type: useLog ? 'logarithmic' : 'linear',
+              min: useLog ? 10000 : null,
               title: { text: isPP ? 'Revenue per pupil' : 'Revenue (total)' },
               labels: { formatter() { return fmt(this.value); } } },
     tooltip: { formatter() {
       if (!this.point.name) return false;
       return '<b>' + this.point.name + '</b><br>Exp: ' + fmt(this.x) + '<br>Rev: ' + fmt(this.y);
     }},
+    plotOptions: { scatter: { turboThreshold: 0 } },
     series: [
       ...connectors,
-      { name: 'Pre-COVID',  type: 'scatter', color: 'rgba(31,58,95,0.45)',  data: prePts.filter(p => !p.isSel) },
-      { name: 'Post-COVID', type: 'scatter', color: 'rgba(192,57,43,0.45)', data: postPts.filter(p => !p.isSel) },
-      ...(prePts.filter(p=>p.isSel).length ? [{
-        name: (DATA.districts.find(d=>d.c===state.selectedDist)?.n||'Selected') + ' (pre)',
-        type: 'scatter', color: '#1f3a5f',
-        marker: { radius: 11, symbol: 'diamond', lineWidth: 3, lineColor: '#1a1814' },
-        zIndex: 10, data: prePts.filter(p=>p.isSel)
-      }] : []),
-      ...(postPts.filter(p=>p.isSel).length ? [{
-        name: (DATA.districts.find(d=>d.c===state.selectedDist)?.n||'Selected') + ' (post)',
-        type: 'scatter', color: '#c0392b',
-        marker: { radius: 11, symbol: 'diamond', lineWidth: 3, lineColor: '#1a1814' },
-        zIndex: 10, data: postPts.filter(p=>p.isSel)
-      }] : []),
+      { name: 'Pre-COVID (○)',  type: 'scatter', data: preData,  showInLegend: true,
+        color: '#888', marker: { symbol: 'circle', radius: 5 } },
+      { name: 'Post-COVID (◆)', type: 'scatter', data: postData, showInLegend: true,
+        color: '#c0392b', marker: { symbol: 'diamond', radius: 5.5 } },
     ],
-    plotOptions: { scatter: { turboThreshold: 0, marker: { symbol: 'circle' } } },
     legend: { enabled: true },
   });
 
   // Break-even line
-  const ppChart = document.getElementById('prePostScatter')?._hcChart;
-  if (ppChart) {
+  const ppChart = document.getElementById('prePostScatter');
+  if (ppChart && ppChart._hcChart) {
+    const chart = ppChart._hcChart;
     const allPts = prePts.concat(postPts).filter(p => p.x && p.y);
     if (allPts.length) {
       const lo = Math.min(...allPts.map(p=>p.x)), hi = Math.max(...allPts.map(p=>p.x));
-      const old = ppChart.series.find(s => s.name === '__breakeven__');
+      const old = chart.series.find(s => s.name === '__breakeven__');
       if (old) old.remove(false);
-      ppChart.addSeries({
-        name: '__breakeven__', type: 'line', color: '#888',
-        dashStyle: 'Dash', lineWidth: 1.5, enableMouseTracking: false,
-        showInLegend: false, marker: { enabled: false },
+      chart.addSeries({
+        name: '__breakeven__', type: 'line', color: '#888', dashStyle: 'Dash',
+        lineWidth: 1.5, enableMouseTracking: false, showInLegend: false,
+        marker: { enabled: false }, requireSorting: false,
         data: [[lo, lo], [hi, hi]],
       }, true);
     }
+  }
 
-    }
-
-  // Wire zoom sliders unconditionally (outside if-chart block)
+  // Zoom sliders
   const _ppRange = (() => {
     const ap = prePts.concat(postPts).filter(p => p.x && p.y);
     return {
@@ -2260,7 +2289,7 @@ function explorerTimeChart(opts) {
     dashStyle: s.dash ? 'ShortDash' : 'Solid',
     lineWidth: s.lineWidth || 2,
     data:      s.values.map(v => (v != null && isFinite(v)) ? v : null),
-    marker:    { enabled: true, radius: s.lineWidth ? 3.5 : 2.5 },
+    marker:    { enabled: true, radius: 4 },
     showInLegend: !!s.label,
   }));
 
@@ -2270,7 +2299,7 @@ function explorerTimeChart(opts) {
     if (el._hcChart) el._hcChart.destroy();
     if (typeof Highcharts === 'undefined') return;
     el._hcChart = Highcharts.chart(uid, {
-      chart:   { type: 'line', height: 220 },
+      chart:   { type: 'line', height: 220, spacing: [8, 8, 8, 8] },
       title:   { text: opts.title, style:{fontSize:'11px',fontStyle:'italic',fontWeight:'normal'} },
       xAxis:   { categories: cats, labels:{style:{fontSize:'9px'}, step: 2} },
       yAxis:   { min: opts.yMin != null ? opts.yMin : undefined, title:{text:null},
@@ -2889,6 +2918,7 @@ bindSizeRange('prePostMinSize', 'prePostMinSize', 'prePostMaxSize', renderPrePos
   const origSelect = window.selectDistrict;
   window.selectDistrict = function(ccddd) {
     origSelect(ccddd);
+    if (typeof syncHash === 'function') syncHash();
     const dist = DATA.districts.find(d => d.c === ccddd);
     if (input && dist) input.value = dist.n;
     // Re-render both scatter charts with the new highlight
@@ -3242,83 +3272,53 @@ window.selectDistrict = function(ccddd) {
 // ── Explorer deep-dive charts (STARS data, single district) ──────────────────
 
 
-function renderExplorerStarsCharts(ccddd, distName, f196rows) {
-  const container = $('#explorerStarsCharts');
+function renderExplorerStarsCharts(ccddd, distName, rowsAct) {
+  const container = document.getElementById('explorerStarsCharts');
   if (!container) return;
 
-  const distStars = STARS_DATA[ccddd];
-  if (!distStars || Object.keys(distStars).length === 0) {
-    container.innerHTML = '';
-    return;
-  }
+  const d = STARS_DATA[ccddd];
+  if (!d) { container.innerHTML = '<p style="color:var(--ink-soft);font-family:Georgia,serif;font-size:13px;">No STARS data for this district.</p>'; return; }
 
-  // Build year-indexed series from STARS_DATA
-  const years = Object.keys(distStars).sort();
+  const COLOR = '#555555';
+  const BASIC_C = '#0072B2', SPED_C = '#E69F00', OTHER_C = '#009E73', TOTAL_C = '#888888';
 
-  function series(key) {
-    return years.map(yr => {
-      const v = distStars[yr]?.[key];
-      return (v != null && isFinite(v)) ? v : null;
-    });
-  }
-
-  // F-196 cost_per_rider (from statewide DATA)
-  // Build year→{exp, riders} map from f196rows
-  const f196map = {};
-  f196rows.forEach(r => {
-    const yr = DATA.years[r.yi];
-    const exp = r.expA;
-    f196map[yr] = exp;
+  // STARS_DATA is keyed by year: d['2017-2018'] = { ride_basic: X, ... }
+  const years = Object.keys(d).filter(k => /^\d{4}/.test(k)).sort();
+  const series = key => years.map(y => {
+    const v = d[y] && d[y][key];
+    return (v != null && isFinite(v)) ? v : null;
   });
 
-  const cprVals = years.map(yr => {
-    const rb = distStars[yr]?.basic_students_total;
-    const rs = distStars[yr]?.special_students_total;
-    const exp = f196map[yr];
-    if (!rb || !rs || !exp) return null;
-    const denom = (rb + rs) / 2;
-    return denom > 0 ? exp / denom : null;
-  });
-
-  const cpmVals = years.map(yr => {
-    const rt = distStars[yr]?.routes_total;
-    const ad = distStars[yr]?.route_summary_average_distance;
-    const exp = f196map[yr];
-    if (!rt || !ad || !exp || rt === 0 || ad === 0) return null;
-    return exp / (rt * ad * 2);
-  });
-
-  const COLOR = '#4a6fa5';  // neutral blue for non-deep-dive districts
-
-  // Rider series split by program tier
   const rideBasicVals  = series('basic_students_total');
-  const rideSpedVals   = series('special_students_total');  // all special programs
-  const rideOtherVals  = years.map(yr => {
-    const total   = distStars[yr]?.total_riders;
-    const basic   = distStars[yr]?.basic_students_total;
-    const special = distStars[yr]?.special_students_total;
-    if (total == null || basic == null || special == null) return null;
-    return Math.max(0, total - basic - special);  // should be 0; guard for rounding
-  });
-
-  // Route series split
+  const rideSpedVals   = series('special_students_total');
   const routeBasicVals = series('routes_basic');
   const routeSpedVals  = series('routes_special');
-  const routeOtherVals = years.map(yr => {
-    const total   = distStars[yr]?.routes_total;
-    const basic   = distStars[yr]?.routes_basic;
-    const sped    = distStars[yr]?.routes_special;
-    if (total == null || basic == null || sped == null) return null;
-    return Math.max(0, total - basic - sped);
+  const routeOtherVals = (d.routes_bilingual || d.routes_homeless || d.routes_early_ed)
+    ? years.map((_, i) => {
+        let sum = 0, any = false;
+        for (const k of ['routes_bilingual','routes_gifted','routes_homeless','routes_early_ed']) {
+          const v = (d[k] || [])[i];
+          if (v != null) { sum += v; any = true; }
+        }
+        return any ? sum : null;
+      })
+    : series('routes_other');
+
+  const totalRidersArr = series('total_riders');
+  const f196ByYear = {};
+  rowsAct.forEach(r => { f196ByYear[DATA.years[r.yi]] = r; });
+  const cprVals = years.map((yr, i) => {
+    const r = f196ByYear[yr], riders = totalRidersArr[i];
+    return (r && r.expA && riders) ? r.expA / riders : null;
+  });
+  const avgDistArr = series('route_summary_average_distance');
+  const routesTotalArr = series('routes_total');
+  const cpmVals = years.map((yr, i) => {
+    const r = f196ByYear[yr], dist = avgDistArr[i], routes = routesTotalArr[i];
+    return (r && r.expA && dist && routes) ? r.expA / (dist * routes * 180) : null;
   });
 
-  const BASIC_C = '#0072B2';  // blue  — Basic (colorblind-safe)
-  const SPED_C  = '#E69F00';  // orange — SpEd (colorblind-safe)
-  const OTHER_C = '#009E73';  // teal  — Other (colorblind-safe)
-  const TOTAL_C = '#888888';  // grey  — Total
-
   const charts = [
-    // Row 1: Riders (3 series) | Routes (3 series)
     { title: 'Riders by program',
       yFormat: v => v>=1000?(v/1000).toFixed(1)+'K':Math.round(v)+'', yMin: 0,
       series: [
@@ -3328,7 +3328,6 @@ function renderExplorerStarsCharts(ccddd, distName, f196rows) {
           const b = rideBasicVals[i], sp = rideSpedVals[i];
           return (t!=null && b!=null && sp!=null) ? Math.max(0, t-b-sp) : null;
         }),                                color: OTHER_C, label: 'Other'},
-        {values: series('total_riders'),   color: TOTAL_C, label: 'Total', dash: '6 4', lineWidth: 1.5},
       ]},
     { title: 'Routes by program',
       yFormat: v => Math.round(v)+'', yMin: 0,
@@ -3336,51 +3335,90 @@ function renderExplorerStarsCharts(ccddd, distName, f196rows) {
         {values: routeBasicVals,  color: BASIC_C, label: 'Basic'},
         {values: routeSpedVals,   color: SPED_C,  label: 'SpEd'},
         {values: routeOtherVals,  color: OTHER_C, label: 'Other'},
-        {values: series('routes_total'), color: TOTAL_C, label: 'Total', dash: '6 4', lineWidth: 1.5},
       ]},
-    // Row 2: Buses by tier | Cost per rider
     { title: 'Buses by program',
       yFormat: v => Math.round(v)+'', yMin: 0,
       series: [
         {values: series('buses_basic'),   color: BASIC_C, label: 'Basic'},
         {values: series('buses_special'), color: SPED_C,  label: 'SpEd'},
         {values: series('buses_other'),   color: OTHER_C, label: 'Other'},
-        {values: series('bus_summary_total_buses'), color: TOTAL_C, label: 'Total', dash: '6 4', lineWidth: 1.5},
       ]},
+
+    { title: 'Total riders, routes & buses', _dualAxis: true,
+      _riders: series('total_riders'),
+      _routes: series('routes_total'),
+      _buses:  series('bus_summary_total_buses'),
+      _years:  years },
     { title: 'Cost per rider (F-196 current-yr)',
       values: cprVals,
       yFormat: v => '$'+(v/1000).toFixed(1)+'K', yMin: 0, color: COLOR },
-    // Row 3: OSPI KPI | Cost per mile
     { title: 'OSPI cost per rider (KPI)',
       values: series('kpi_cost_per_rider'),
       yFormat: v => '$'+(v/1000).toFixed(1)+'K', yMin: 0, color: COLOR },
     { title: 'Cost per route-mile',
       values: cpmVals,
       yFormat: v => '$'+(v/1000).toFixed(1)+'K', yMin: 0, color: COLOR },
-    // Row 4: STARS allocation
     { title: 'STARS allocation (D.8 actual)',
       values: series('stars_alloc'),
       yFormat: v => '$'+(v/1e6).toFixed(1)+'M', yMin: 0, color: COLOR },
-  ].filter(c => (c.series
-    ? c.series.some(s => s.values.some(v => v != null))
-    : c.values.some(v => v != null)));
+  ];
 
-  if (charts.length === 0) { container.innerHTML = ''; return; }
+  let h = '<div><div style="font-family:\'Playfair Display\',Georgia,serif;font-size:18px;font-weight:700;margin-bottom:4px;">STARS operational detail</div><div style="font-family:Georgia,serif;font-size:13px;color:var(--ink-soft);margin-bottom:16px;">Quarterly-average data from OSPI STARS reports, 2017-18 onward.</div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">';
 
-  let html = `
-    <div style="border-top:1.5px solid var(--rule);padding-top:20px;margin-top:4px;">
-      <div style="font-family:'Playfair Display',Georgia,serif;font-size:18px;font-weight:700;margin-bottom:4px;">STARS operational detail</div>
-      <div style="font-family:Georgia,serif;font-size:13px;color:var(--ink-soft);margin-bottom:16px;">Quarterly-average data from OSPI STARS reports, 2017-18 onward.</div>
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
-  `;
-  charts.forEach(c => {
-    html += `<div style="background:var(--bg-card);border:1px solid var(--rule-soft);padding:12px 14px;">`;
-    html += explorerTimeChart({years, ...c});
-    html += `</div>`;
+  charts.forEach((c, idx) => {
+    if (c._dualAxis) {
+      const divId = 'explorer-dual-' + idx + '-' + Date.now();
+      h += '<div style="background:var(--bg-card);border:1px solid var(--rule-soft);padding:0;overflow:hidden;">';
+      // title rendered by Highcharts below
+      h += '<div id="' + divId + '" style="width:100%;height:220px;"></div>';
+      h += '</div>';
+      setTimeout(() => {
+        if (typeof Highcharts === 'undefined') return;
+        const el = document.getElementById(divId);
+        if (!el) return;
+        const cats = c._years.map(y => y.replace('20',"\'").replace('-20',"-\'"));
+        Highcharts.chart(divId, {
+          chart: { height: 220, backgroundColor: '#f0ead8', style: { fontFamily: 'Georgia, serif' }, spacing: [8, 8, 8, 8] },
+          title: { text: c.title, style: { fontSize: '11px', fontStyle: 'italic', fontWeight: 'normal' } },
+          xAxis: { categories: cats, labels: { style: { fontSize: '9px', color: '#4a4339', fontFamily: 'Georgia, serif' }, step: 2 },
+                   lineColor: '#c8bfa8', tickColor: '#c8bfa8' },
+          yAxis: [
+            { title: { text: 'Riders', style: { color: '#333333', fontSize: '9px' } },
+              labels: { style: { color: '#333333', fontSize: '9px' },
+                formatter() { return this.value >= 1000 ? (this.value/1000).toFixed(0)+'K' : this.value; } },
+              gridLineColor: '#e8e2d5', min: 0 },
+            { title: { text: 'Routes / Buses', style: { color: '#888', fontSize: '9px' } },
+              labels: { style: { color: '#888', fontSize: '9px' },
+                formatter() { return Math.round(this.value); } },
+              gridLineColor: '#e8e2d5', min: 0, opposite: true },
+          ],
+          tooltip: { shared: true, backgroundColor: '#f6f1e7', borderColor: '#c8bfa8',
+                     style: { color: '#1a1814', fontFamily: 'Georgia, serif', fontSize: '11px' } },
+          series: [
+            { name: 'Riders', data: c._riders.map(v => v != null && isFinite(v) ? v : null),
+              color: '#333333', yAxis: 0, marker: { radius: 3, symbol: 'circle' },
+              dashStyle: 'Solid', lineWidth: 2 },
+            { name: 'Routes', data: c._routes.map(v => v != null && isFinite(v) ? v : null),
+              color: '#888888', yAxis: 1, marker: { radius: 4, symbol: 'diamond' },
+              dashStyle: 'Dash', lineWidth: 2 },
+            { name: 'Buses',  data: c._buses.map(v => v != null && isFinite(v) ? v : null),
+              color: '#aaaaaa', yAxis: 1, marker: { radius: 3, symbol: 'square' },
+              dashStyle: 'Dot', lineWidth: 2 },
+          ],
+          legend: { enabled: true, itemStyle: { fontSize: '11px', fontFamily: 'Georgia, serif', fontWeight: 'normal', color: '#1a1814' } },
+          credits: { enabled: false },
+          exporting: { enabled: false },
+        });
+      }, 0);
+    } else {
+      h += '<div style="background:var(--bg-card);border:1px solid var(--rule-soft);padding:0;overflow:hidden;">';
+      h += explorerTimeChart({years, ...c});
+      h += '</div>';
+    }
   });
-  html += `</div></div>`;
+  h += '</div></div>';
 
-  container.innerHTML = html;
+  container.innerHTML = h;
 }
 
 // ============================================================
