@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "build": "next build",
+    "prebuild": "npm run dashboards:sync",
+    "dashboards:sync": "node scripts/sync-dashboards.mjs",
     "dev": "next dev --turbopack",
     "tsc:watch": "tsc --watch",
     "dev:watch": "run-p tsc:watch dev test:watch",
