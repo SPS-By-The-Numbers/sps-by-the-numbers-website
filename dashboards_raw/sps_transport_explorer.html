@@ -15,8 +15,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 header{background:var(--nav-bg);color:var(--nav-text);padding:20px 32px 18px;border-bottom:3px solid var(--c-orange)}
 header h1{font-family:'DM Serif Display',serif;font-size:1.7rem;font-weight:400;letter-spacing:-.01em}
 header p{color:#B0A898;font-size:.85rem;margin-top:3px}
-nav{background:var(--nav-bg);display:flex;gap:2px;padding:0 32px;border-bottom:1px solid #333;overflow-x:auto}
-nav button{background:none;border:none;color:#B0A898;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;letter-spacing:.04em;text-transform:uppercase;padding:10px 14px;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s}
+nav{background:var(--nav-bg);display:flex;flex-wrap:wrap;gap:0;padding:0 24px;border-bottom:1px solid #333}
+nav button{background:none;border:none;color:#B0A898;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;letter-spacing:.04em;text-transform:uppercase;padding:10px 14px;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:color .15s,border-color .15s;border-right:1px solid #444}
+nav button:last-child{border-right:none}
 nav button:hover{color:var(--nav-text)}
 nav button.active{color:var(--c-orange);border-bottom-color:var(--c-orange)}
 main{flex:1;padding:28px 32px;max-width:1200px;width:100%;margin:0 auto}
@@ -98,8 +99,8 @@ tr:hover .col-demo{background:#EBE4FF!important}
   <p>STARS formula inputs, F-196 actuals, and route detail data &middot; 2013&ndash;2026 &middot; Data: OSPI quarterly reports, 1026A allocations, SPS enrollment</p>
 </header>
 <nav>
-  <button class="active" onclick="show('stars',this)">STARS Formula</button>
-  <button onclick="show('funding',this)">Funding Gap</button>
+  <button class="active" onclick="show('funding',this)">Funding Gap</button>
+  <button onclick="show('stars',this)">STARS Formula</button>
   <button onclick="show('contracts',this)">Contract Overages</button>
   <button onclick="show('ridership',this)">Ridership Trends</button>
   <button onclick="show('routes',this)">Route Detail</button>
@@ -110,7 +111,7 @@ tr:hover .col-demo{background:#EBE4FF!important}
 <main>
 
 <!-- STARS -->
-<div id="sec-stars" class="section active">
+<div id="sec-stars" class="section">
   <h2 class="section-heading">The STARS Formula</h2>
   <p class="section-desc">Washington funds school transportation through STARS &mdash; a log-linear model recalibrated annually. Coefficients for 2022-23 through 2025-26 are extracted from SPS&rsquo;s 1026A allocation documents and verified to reproduce the published expected allocations. Coefficients for 2017-18 through 2021-22 extracted from DOCX versions of the 1026A; values reproduce published EXAL to within 0.02% (rounding from 5-decimal display). 2022-23 through 2025-26 match exactly.</p>
   <div class="filter-row" style="margin-bottom:8px">
@@ -232,9 +233,96 @@ ALLOC = min(EXAL, D.2 Prior Year Exp)<br>
 </div>
 
 <!-- FUNDING -->
-<div id="sec-funding" class="section">
-  <h2 class="section-heading">Funding Gap: F-196 vs. STARS Allocations</h2>
-  <p class="section-desc">F-196 data shows what SPS actually spent and received. STARS allocations show what the formula paid. The gap is what SPS self-funded from the general fund.</p>
+<div id="sec-funding" class="section active">
+  <h2 class="section-heading">Funding Gap</h2>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow);margin-bottom:20px">
+    <div style="font-size:.82rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px">Key Takeaways</div>
+    <ul style="font-size:.88rem;line-height:1.8;padding-left:20px;margin:0;color:var(--text)">
+      <li>SPS self-funded <strong>$23M</strong> of transportation in 2024-25 &mdash; the STARS formula covered 62 cents of every dollar spent. <a href="#" onclick="event.preventDefault();document.getElementById('funding-stats').scrollIntoView({behavior:'smooth'})" style="color:var(--accent);font-size:.8rem">&darr;&nbsp;F-196 detail</a></li>
+      <li>Basic ridership fell <strong>27% post-COVID</strong> and has not recovered, costing ~$8&ndash;9M/year in lost formula value. <a href="#" onclick="event.preventDefault();document.getElementById('ch-prog-riders').scrollIntoView({behavior:'smooth'})" style="color:var(--accent);font-size:.8rem">&darr;&nbsp;Riders by program</a></li>
+      <li>Special Ed now accounts for <strong>59% of all routes</strong> (up from 49%), but the formula values sped riders at 1/6th the rate of Basic. <a href="#" onclick="event.preventDefault();document.getElementById('ch-prog-pct').scrollIntoView({behavior:'smooth'})" style="color:var(--accent);font-size:.8rem">&darr;&nbsp;Composition shift</a></li>
+      <li>Contracted costs jumped <strong>50% from $40M to $60M</strong> in three years and have not come back down. <a href="#" onclick="event.preventDefault();show('contracts',document.querySelectorAll('nav button')[2])" style="color:var(--accent);font-size:.8rem">&rarr;&nbsp;Contract Overages tab</a></li>
+      <li>The D.2 prior-year cap created a <strong>&ldquo;cap trap&rdquo;</strong> in 2021-22 that suppressed the allocation by $34M in a single year. <a href="#" onclick="event.preventDefault();document.getElementById('ch-gap').scrollIntoView({behavior:'smooth'})" style="color:var(--accent);font-size:.8rem">&darr;&nbsp;Key inflection points</a></li>
+      <li>Common proposals for savings (eliminating option school routes, converting HCC to neighborhood schools, growing walk zones) show <strong>little or negative net benefit</strong> in Shaky AI modeling once formula penalties and redistribution costs are accounted for. <a href="#" onclick="event.preventDefault();show('analyses',document.querySelectorAll('nav button')[6])" style="color:var(--accent);font-size:.8rem">&rarr;&nbsp;Shaky AI Analyses tab</a></li>
+    </ul>
+  </div>
+
+  <div style="margin-top:16px;margin-bottom:22px">
+    <h3 style="font-family:'DM Serif Display',serif;font-size:1.3rem;font-weight:400;margin-bottom:8px">The Structural Shift: Where the Money Goes</h3>
+    <div style="font-size:.88rem;line-height:1.7;color:var(--text);max-width:800px">
+      <p>The charts below show three views of the same structural transformation: SPS&rsquo;s transportation system has shifted from a Basic-dominated operation to a Special Ed-dominated one, without a corresponding reduction in total cost. This is the operational engine behind the funding gap.</p>
+    </div>
+    <div class="grid-2" style="margin-top:16px;margin-bottom:16px">
+      <div class="card" style="margin-bottom:0">
+        <div style="font-size:.85rem;line-height:1.7">
+          <p style="margin-bottom:10px"><strong style="color:var(--c-blue)">Basic program &mdash; shrinking on every dimension.</strong> Riders fell from 12,546 (2017-18) to 9,214 (2025-26), a 27% decline. Routes fell from 225 to 192. Buses fell from 145 to 117. Pre-COVID, Basic riders outnumbered Special Ed riders 5.6-to-1; today the ratio is 3.6-to-1. This collapse is the primary driver of the STARS formula gap: the Basic Program coefficient (0.665) is the dominant term, and losing ~3,300 Basic riders reduced the expected allocation by approximately $8&ndash;9M annually.</p>
+          <p style="margin-bottom:10px"><strong style="color:var(--c-orange)">Special Ed &mdash; growing in routes and buses, flat in riders.</strong> Sped riders have been remarkably stable: 2,236 in 2017-18, 2,542 in 2025-26 (+14%). But sped routes grew from 344 to 369 and sped buses from 197 to 207, both crossing above Basic in recent years. The story is not more students needing transport &mdash; it is each student requiring more individualized routing. Riders per sped route fell from 6.5 to 6.9, and each new route costs ~$100K/year to operate while recovering only ~$440 in STARS formula value.</p>
+          <p><strong style="color:var(--c-green)">Other programs &mdash; collapsing.</strong> The Gifted (HCC), Early Ed, Homeless, and Bilingual programs collectively dropped from 3,005 riders and 140 routes in 2017-18 to 1,640 riders and 60 routes today. Most of this is the Gifted program shrinking from 2,580 to 1,301 riders post-COVID. These riders count in the Special CSPC at the low 0.11 coefficient &mdash; their loss has minimal formula impact but reflects a broader enrollment and program contraction.</p>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div style="font-size:.85rem;line-height:1.7">
+          <p style="margin-bottom:10px"><strong style="color:var(--text)">Why this matters for costs:</strong> Total buses in the fleet have barely changed &mdash; 465 in 2017-18 vs. 380 today. But the <em>mix</em> has shifted: Basic buses (which carry 50+ students each at ~$575/day) shrank, while Sped buses (which carry ~7 students each at a similar or higher daily rate) grew. The fleet is running at lower utilization with higher per-student costs.</p>
+          <p style="margin-bottom:10px"><strong style="color:var(--text)">Why this matters for funding:</strong> The STARS formula rewards Basic ridership at 6&times; the rate of Special Ed ridership. Every structural shift from Basic toward Sped &mdash; whether driven by enrollment, IEP compliance, or program changes &mdash; simultaneously <em>raises</em> operating costs and <em>reduces</em> formula recovery. SPS is spending more per student while the formula pays less per student.</p>
+          <p><strong style="color:var(--text)">The $23M gap in one sentence:</strong> SPS lost ~3,300 Basic riders (costing ~$8.7M in formula value), gained ~300 Sped riders (recovering ~$0.3M), added ~25 net Sped routes (costing ~$2.5M to operate), and saw its contracted rate increase ~50% post-COVID (adding ~$15M in base costs). The formula captured almost none of the cost increase.</p>
+        </div>
+      </div>
+    </div>
+  
+  <div class="grid-2" style="margin-bottom:0">
+    <div class="card">
+      <div class="card-title">Riders by Program</div>
+      <div class="card-sub">Fall &ldquo;On Buses&rdquo; from quarterly summary</div>
+      <div class="chart-wrap" style="height:240px"><canvas id="ch-prog-riders"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Routes by Program</div>
+      <div class="card-sub">Fall route counts from quarterly detail</div>
+      <div class="chart-wrap" style="height:240px"><canvas id="ch-prog-routes"></canvas></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Buses by Program</div>
+      <div class="card-sub">Fall bus counts from bus summary</div>
+      <div class="chart-wrap" style="height:240px"><canvas id="ch-prog-buses"></canvas></div>
+      <div class="legend" style="margin-top:8px">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-blue)"></div>Basic</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-orange)"></div>Special Ed</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-green)"></div>Other (Gifted + EarlyEd + Homeless + Bilingual)</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Composition Shift</div>
+      <div class="card-sub">Share of total routes by program grouping</div>
+      <div class="chart-wrap" style="height:240px"><canvas id="ch-prog-pct"></canvas></div>
+      <div class="legend" style="margin-top:8px">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-blue)"></div>Basic %</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-orange)"></div>Special Ed %</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-green)"></div>Other %</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Ridership by All Programs, Stacked</div>
+    <div class="card-sub">Detailed program breakdown &mdash; Fall &ldquo;On Buses&rdquo; counts</div>
+    <div class="chart-wrap" style="height:280px"><canvas id="ch-prog-riders-stack"></canvas></div>
+    <div class="legend" style="margin-top:8px">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-blue)"></div>Basic</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-orange)"></div>Special Ed</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-green)"></div>Gifted</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-pink)"></div>Early Ed</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-yellow);border:1px solid #999"></div>Homeless</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-sky)"></div>Bilingual</div>
+    </div>
+  </div>
+
+  <p style="font-size:.82rem;color:var(--muted);margin-bottom:18px">Programs grouped as Basic, Special Ed, and Other (Gifted + Early Ed + Homeless + Bilingual). 2018-19 uses Winter data (no Fall report). 2020-21 near-zero due to COVID. Source: OSPI STARS quarterly district reports via <a href="https://www.sps-by-the-numbers.com/analyses/yellow_bus_ledger.html" target="_blank" style="color:var(--accent)">sps-by-the-numbers.com</a>.</p>
+  </div>
+  <h3 style="font-family:'DM Serif Display',serif;font-size:1.15rem;font-weight:400;margin-top:28px;margin-bottom:4px">F-196 vs. STARS Allocations</h3>
+  <p style="font-size:.84rem;color:var(--muted);margin-bottom:16px">F-196 data shows what SPS actually spent and received. STARS allocations show what the formula paid. The gap is what SPS self-funded from the general fund.</p>
   <div class="stat-row" id="funding-stats"></div>
   <div class="card">
     <div class="card-title">Expenditures, Revenue, and STARS Allocations</div>
@@ -264,6 +352,8 @@ ALLOC = min(EXAL, D.2 Prior Year Exp)<br>
       </div>
     </div>
   </div>
+
+
 </div>
 
 <!-- RIDERSHIP -->
@@ -921,7 +1011,7 @@ function show(id,btn){
 }
 function build(id){
   if(id==='stars')buildStars();
-  if(id==='funding')buildFunding();
+  if(id==='funding'){buildFunding();buildByProgram();}
   if(id==='ridership')buildRidership();
   if(id==='routes')buildRoutes();
   if(id==='schools')buildSchoolTable();
@@ -1326,8 +1416,74 @@ function buildContractsChart() {
   });
 }
 
+
+// ── By-program charts (Funding Gap tab) ──────────────────────
+function buildByProgram() {
+  const PD = {"years":["2017-18","2018-19","2019-20","2020-21","2021-22","2022-23","2023-24","2024-25","2025-26"],"riders":{"basic":[12546,10755,11596,0,8085,9884,8735,10401,9214],"sped":[2236,2313,2422,0,1881,1881,2290,2492,2542],"gifted":[2580,2239,1971,0,1253,1065,1068,1376,1301],"earlyEd":[135,341,325,0,195,231,307,205,263],"homeless":[54,0,6,42,0,10,81,37,58],"bilingual":[236,198,226,0,4,4,0,23,18],"other":[3005,2778,2528,42,1452,1310,1456,1641,1640]},"routes":{"basic":[225,204,219,0,216,215,200,202,192],"sped":[344,330,332,0,302,235,301,346,369],"other":[140,116,105,7,80,78,78,59,60]},"buses":{"basic":[145,138,137,0,140,133,122,123,117],"sped":[197,184,200,0,188,141,182,204,207],"other":[123,110,104,7,76,71,77,55,56]}};
+  const yrs = PD.years;
+  const n = (v) => v === 0 ? null : v;
+
+  function progLineChart(canvasId, datasets, yLabel, stacked) {
+    new Chart(document.getElementById(canvasId), {
+      type: stacked ? 'bar' : 'line',
+      data: { labels: yrs, datasets: datasets },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{mode:'index',callbacks:{label:c=>c.parsed.y!=null?' '+c.dataset.label+': '+c.parsed.y.toLocaleString():null}} },
+        scales:{
+          x:{ stacked:!!stacked, grid:{display:false}, ticks:{color:'#6B6560',maxRotation:45} },
+          y:{ stacked:!!stacked, grid:{color:'rgba(0,0,0,0.07)'}, ticks:{color:'#6B6560',callback:v=>v.toLocaleString()}, title:yLabel?{display:true,text:yLabel,color:'#6B6560',font:{size:11}}:undefined }
+        }
+      }
+    });
+  }
+
+  const mkL = (label, data, color, dash) => ({
+    label, data: data.map(n), borderColor:color, backgroundColor:'transparent',
+    borderWidth:2.5, pointRadius:4, tension:.2, spanGaps:false, borderDash:dash||[]
+  });
+  const mkB = (label, data, color) => ({
+    label, data, backgroundColor:color+'CC', stack:'s'
+  });
+
+  progLineChart('ch-prog-riders', [
+    mkL('Basic', PD.riders.basic, C.blue),
+    mkL('Special Ed', PD.riders.sped, C.orange),
+    mkL('Other', PD.riders.other, C.green, [4,3]),
+  ], 'Riders');
+
+  progLineChart('ch-prog-routes', [
+    mkL('Basic', PD.routes.basic, C.blue),
+    mkL('Special Ed', PD.routes.sped, C.orange),
+    mkL('Other', PD.routes.other, C.green, [4,3]),
+  ], 'Routes');
+
+  progLineChart('ch-prog-buses', [
+    mkL('Basic', PD.buses.basic, C.blue),
+    mkL('Special Ed', PD.buses.sped, C.orange),
+    mkL('Other', PD.buses.other, C.green, [4,3]),
+  ], 'Buses');
+
+  const rtTot = yrs.map((_,i) => PD.routes.basic[i]+PD.routes.sped[i]+PD.routes.other[i]);
+  const pct = (arr) => arr.map((v,i) => rtTot[i]>0 ? Math.round(v/rtTot[i]*1000)/10 : null);
+  progLineChart('ch-prog-pct', [
+    mkL('Basic %', pct(PD.routes.basic), C.blue),
+    mkL('Special Ed %', pct(PD.routes.sped), C.orange),
+    mkL('Other %', pct(PD.routes.other), C.green, [4,3]),
+  ], '% of routes');
+
+  progLineChart('ch-prog-riders-stack', [
+    mkB('Basic', PD.riders.basic, C.blue),
+    mkB('Special Ed', PD.riders.sped, C.orange),
+    mkB('Gifted', PD.riders.gifted, C.green),
+    mkB('Early Ed', PD.riders.earlyEd, C.pink),
+    mkB('Homeless', PD.riders.homeless, '#F0E442'),
+    mkB('Bilingual', PD.riders.bilingual, C.sky),
+  ], 'Riders', true);
+}
+
 // ── Init ──────────────────────────────────────────────────────
-build('stars');built['stars']=true;
+build('funding');built['funding']=true;
 if(location.hash && location.hash !== '#') { setTimeout(()=>applyHash(location.hash), 50); } else { replaceHash(); }
 </script>
 </body></html>
