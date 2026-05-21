@@ -32,7 +32,7 @@ export default function Page() {
     >
       <Typography component="h4" variant="h4">What is this?</Typography>
       <p>
-        This is a list of analyses and articles that are data driven and interesting. Some come from folks who participate in this site and others are just interesting. If you find something work listing or what your thing listed here, email us at sps.by.the.number [at] gmail.com.
+        This is a list of analyses and articles that are data driven and interesting. Some come from folks who participate in this site and others are just interesting. Items tagged <strong>AI</strong> are dashboards generated with the help of Claude (Anthropic) from public OSPI/SPS data &mdash; verify before citing. If you find something work listing or what your thing listed here, email us at sps.by.the.number [at] gmail.com.
       </p>
 
       <Stack>
@@ -83,9 +83,6 @@ export default function Page() {
             </Box>
           </li>
         </ul>
-        <Typography variant="caption" sx={{ color: 'text.secondary', mt: -1, mb: 1, display: 'block' }}>
-          Items tagged <strong>AI</strong> are dashboards generated with the help of Claude (Anthropic) from public OSPI/SPS data. Verify before citing.
-        </Typography>
 
         <Typography component="h4" variant="h4">Well-Resource School Fiasco</Typography>
         <ul>
