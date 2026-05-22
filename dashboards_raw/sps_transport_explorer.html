@@ -238,11 +238,12 @@ ALLOC = min(EXAL, D.2 Prior Year Exp)<br>
 
   <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;box-shadow:var(--shadow);margin-bottom:20px">
     <div style="font-size:.82rem;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px">Key Takeaways</div>
-    <ul style="font-size:.88rem;line-height:1.8;padding-left:20px;margin:0;color:var(--text)">
+        <ul style="font-size:.88rem;line-height:1.8;padding-left:20px;margin:0;color:var(--text)">
+      <li>Transportation costs <strong>blew past budget by $10.8M in 2022-23</strong> and no changes have been made since then to bring costs down &mdash; the $12.9M overrun in 2023-24 alone equaled the entire general fund deficit that year. <a href="#" onclick="event.preventDefault();document.getElementById('ch-budget-vs-actual').scrollIntoView({behavior:'smooth'})" style="color:var(--accent);font-size:.8rem">&darr;&nbsp;Budget vs. Actual</a></li>
+      <li>Contracted costs jumped <strong>50% from $40M to $60M</strong> between 2019-20 and 2022-23 and have not come back down. <a href="#" onclick="event.preventDefault();show('contracts',document.querySelectorAll('nav button')[2])" style="color:var(--accent);font-size:.8rem">&rarr;&nbsp;Contract Overages tab</a></li>
       <li>SPS self-funded <strong>$23M</strong> of transportation in 2024-25 &mdash; the STARS formula covered 62 cents of every dollar spent. <a href="#" onclick="event.preventDefault();document.getElementById('funding-stats').scrollIntoView({behavior:'smooth'})" style="color:var(--accent);font-size:.8rem">&darr;&nbsp;F-196 detail</a></li>
       <li>Basic ridership fell <strong>27% post-COVID</strong> and has not recovered, costing ~$8&ndash;9M/year in lost formula value. <a href="#" onclick="event.preventDefault();document.getElementById('ch-prog-riders').scrollIntoView({behavior:'smooth'})" style="color:var(--accent);font-size:.8rem">&darr;&nbsp;Riders by program</a></li>
       <li>Special Ed now accounts for <strong>59% of all routes</strong> (up from 49%), but the formula values sped riders at 1/6th the rate of Basic. <a href="#" onclick="event.preventDefault();document.getElementById('ch-prog-pct').scrollIntoView({behavior:'smooth'})" style="color:var(--accent);font-size:.8rem">&darr;&nbsp;Composition shift</a></li>
-      <li>Contracted costs jumped <strong>50% from $40M to $60M</strong> in three years and have not come back down. <a href="#" onclick="event.preventDefault();show('contracts',document.querySelectorAll('nav button')[2])" style="color:var(--accent);font-size:.8rem">&rarr;&nbsp;Contract Overages tab</a></li>
       <li>The D.2 prior-year cap created a <strong>&ldquo;cap trap&rdquo;</strong> in 2021-22 that suppressed the allocation by $34M in a single year. <a href="#" onclick="event.preventDefault();document.getElementById('ch-gap').scrollIntoView({behavior:'smooth'})" style="color:var(--accent);font-size:.8rem">&darr;&nbsp;Key inflection points</a></li>
       <li>Common proposals for savings (eliminating option school routes, converting HCC to neighborhood schools, growing walk zones) show <strong>little or negative net benefit</strong> in Shaky AI modeling once formula penalties and redistribution costs are accounted for. <a href="#" onclick="event.preventDefault();show('analyses',document.querySelectorAll('nav button')[6])" style="color:var(--accent);font-size:.8rem">&rarr;&nbsp;Shaky AI Analyses tab</a></li>
     </ul>
@@ -338,8 +339,21 @@ ALLOC = min(EXAL, D.2 Prior Year Exp)<br>
   <div class="grid-2">
     <div class="card">
       <div class="card-title">Annual Funding Gap</div>
-      <div class="card-sub">Allocation minus expenditure &mdash; negative = SPS self-funded this amount</div>
+      <div class="card-sub">Transport allocation minus expenditure (bars) overlaid with district-wide general fund cash flow (dashed line)</div>
       <div class="chart-wrap" style="height:240px"><canvas id="ch-gap"></canvas></div>
+      <div class="legend" style="margin-top:8px">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-orange)"></div>Transport funding gap</div>
+        <div class="legend-item"><div class="legend-line" style="background:#1A1714;border-top:2px dashed #1A1714;height:0"></div>General Fund Gain/Loss</div>
+      </div>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+        <div style="font-size:.9rem;font-weight:500;margin-bottom:2px">Transportation Budget vs. Actual Spend</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-bottom:12px">Adopted transportation budget vs. year-end F-196 actuals (activity codes 51&ndash;59 excl. 58). Dots red when over budget, green when under. The 2022-23 overrun of +$10.8M and 2023-24 overrun of +$12.9M are the largest on record.</div>
+        <div class="chart-wrap" style="height:220px"><canvas id="ch-budget-vs-actual"></canvas></div>
+        <div class="legend" style="margin-top:8px">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-blue)"></div>Budget (adopted)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--c-vermil)"></div>Actual (F-196)</div>
+        </div>
+      </div>
     </div>
     <div class="card">
       <div class="card-title">Key Inflection Points</div>
@@ -348,6 +362,7 @@ ALLOC = min(EXAL, D.2 Prior Year Exp)<br>
         <p style="margin-bottom:10px"><strong style="color:var(--c-vermil)">2022-23 Worst Year (&minus;$37.1M):</strong> SPS spent $65.3M while D.2 used 2021-22&rsquo;s partial-recovery figure as ceiling. SPS self-funded 57 cents of every transportation dollar.</p>
         <p style="margin-bottom:10px"><strong style="color:var(--c-pink)">2023-24 Route Restructuring (+76 net sped routes):</strong> SPS added 141 new Special Ed routes and dropped 65, a near-complete rebuild of the sped routing system. Special Ed routes grew from 223 to 299 (+34%) while sped riders grew from 1,881 to 2,290 (+22%). Riders per sped route fell from 8.4 to 7.7 and has declined every year since. The formula recovered approximately $420K of the ~$7.6M in new route operating costs &mdash; about 5 cents per dollar.</p>
         <p style="margin-bottom:10px"><strong style="color:var(--c-blue)">2024-25 Partial Recovery (&minus;$23.0M):</strong> D.2 now reflects real expenditures. The cap is no longer artificially low. The remaining gap is structural: Basic ridership has not recovered to pre-COVID levels (~9,200 vs ~18,000 in 2019-20), costing approximately $23M in formula allocation annually.</p>
+        <p style="margin-bottom:10px"><strong style="color:var(--c-sky)">2022-25 Budget Disconnect (+$27.3M cumulative overrun):</strong> Independent of the STARS funding gap, SPS&rsquo;s own transportation budget stopped tracking reality. In 2022-23, the adopted budget was $54.5M against $65.3M actual (+$10.8M over). Rather than correcting upward, the 2023-24 budget was <em>cut</em> to $47.2M &mdash; while actual spend hit $60.0M (+$12.9M over, the largest single-year overrun on record). By 2024-25 the budget partially corrected to $57.1M but still fell $3.6M short. Over three years the district spent $27.3M more than it budgeted for transportation &mdash; an amount roughly equal to the entire 2024-25 general fund deficit of $23.7M. This occurred while contracted costs were rising above board-authorized ceilings, Basic ridership was declining 27%, and the route structure was being rebuilt. The budget was not adjusted to reflect any of these known changes. The result was that the general fund absorbed $27.3M in unplanned transportation costs over three years with no corresponding budget authority, revenue offset, or service reduction to compensate.</p>
         <p><strong>The D.2 Lag:</strong> STARS uses prior-year F-196 actuals as the expenditure cap. When costs jump sharply, D.2 understates what SPS spent &mdash; tightening the cap at the worst moment. The restructuring in 2023-24 raised the cost base that D.2 will reflect in future years, partially closing the lag.</p>
       </div>
     </div>
@@ -1011,7 +1026,7 @@ function show(id,btn){
 }
 function build(id){
   if(id==='stars')buildStars();
-  if(id==='funding'){buildFunding();buildByProgram();}
+  if(id==='funding'){buildFunding();buildByProgram();buildBudgetVsActual();}
   if(id==='ridership')buildRidership();
   if(id==='routes')buildRoutes();
   if(id==='schools')buildSchoolTable();
@@ -1091,7 +1106,12 @@ function buildFunding(){
     {label:'STARS Alloc',data:_MAIN().alloc.map(d=>d.actual_alloc?d.actual_alloc/1e6:null),borderColor:C.orange,backgroundColor:'transparent',borderWidth:2,borderDash:[3,3],pointRadius:3,tension:.2}
   ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: $${c.parsed.y?.toFixed(1)}M`}}},scales:{x:{grid:{color:gc()},ticks:{color:'#6B6560'}},y:{grid:{color:gc()},ticks:{color:'#6B6560',callback:v=>'$'+v+'M'}}}}});
   const gaps=_MAIN().alloc.map(d=>-(d.f196_exp-(d.actual_alloc||d.calc_alloc))/1e6);
-  new Chart(document.getElementById('ch-gap'),{type:'bar',data:{labels:yrs,datasets:[{label:'Gap',data:gaps,backgroundColor:gaps.map(g=>g<-25?C.vermil+'DD':g<-10?C.orange+'CC':C.yellow+'CC'),borderColor:gaps.map(g=>g<-25?C.vermil:g<-10?C.orange:'#B8A800'),borderWidth:.5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`Gap: $${c.parsed.y?.toFixed(1)}M`}}},scales:{x:{grid:{color:gc()},ticks:{color:'#6B6560'}},y:{grid:{color:gc()},ticks:{color:'#6B6560',callback:v=>'$'+v+'M'}}}}});
+  const gfActuals={'2017-18':20.6,'2018-19':38.1,'2019-20':-3.9,'2020-21':37.4,'2021-22':-10.4,'2022-23':-41.6,'2023-24':-13.0,'2024-25':-23.7};
+  const gfLine=yrs.map(y=>gfActuals[y]!=null?gfActuals[y]:null);
+  new Chart(document.getElementById('ch-gap'),{type:'bar',data:{labels:yrs,datasets:[
+    {label:'Transport funding gap',data:gaps,backgroundColor:gaps.map(g=>g<-25?C.vermil+'DD':g<-10?C.orange+'CC':C.yellow+'CC'),borderColor:gaps.map(g=>g<-25?C.vermil:g<-10?C.orange:'#B8A800'),borderWidth:.5,order:2},
+    {label:'General Fund Gain/Loss',data:gfLine,type:'line',borderColor:'#1A1714',backgroundColor:'transparent',borderWidth:2.5,borderDash:[5,3],pointRadius:4,pointBackgroundColor:gfLine.map(v=>v!=null&&v<0?C.vermil:'#009E73'),tension:.2,order:1,spanGaps:false}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',callbacks:{label:c=>c.parsed.y!=null?` ${c.dataset.label}: $${c.parsed.y?.toFixed(1)}M`:null}}},scales:{x:{grid:{color:gc()},ticks:{color:'#6B6560'}},y:{grid:{color:gc()},ticks:{color:'#6B6560',callback:v=>'$'+v+'M'}}}}});
 }
 
 // ── Ridership ─────────────────────────────────────────────────
@@ -1480,6 +1500,46 @@ function buildByProgram() {
     mkB('Homeless', PD.riders.homeless, '#F0E442'),
     mkB('Bilingual', PD.riders.bilingual, C.sky),
   ], 'Riders', true);
+}
+
+
+
+
+
+// ── Budget vs Actual transport chart ──────────────────────────
+function buildBudgetVsActual() {
+  const yrs = ['2017-18','2018-19','2019-20','2020-21','2021-22','2022-23','2023-24','2024-25'];
+  const budget =  [36.1, 37.7, 43.5, 48.8, 53.0, 54.5, 47.2, 57.1];
+  const actuals = [37.6, 39.9, 42.3, 17.2, 47.7, 65.3, 60.0, 60.7];
+  new Chart(document.getElementById('ch-budget-vs-actual'), {
+    type: 'line',
+    data: {
+      labels: yrs,
+      datasets: [
+        {label:'Budget (adopted)',data:budget,borderColor:C.blue,backgroundColor:'transparent',borderWidth:2.5,pointRadius:5,tension:.2,borderDash:[5,3]},
+        {label:'Actual spend (F-196)',data:actuals,borderColor:C.vermil,backgroundColor:'transparent',borderWidth:2.5,pointRadius:5,pointBackgroundColor:actuals.map((a,i)=>a>budget[i]?C.vermil:C.green),tension:.2},
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend:{display:false},
+        tooltip:{mode:'index',callbacks:{
+          label:c=>' '+c.dataset.label+': $'+c.parsed.y.toFixed(1)+'M',
+          afterBody:function(items){
+            if(items.length>=2){
+              const diff=items[1].parsed.y-items[0].parsed.y;
+              return diff>0?'  Over budget: +$'+diff.toFixed(1)+'M':'  Under budget: $'+diff.toFixed(1)+'M';
+            }
+          }
+        }}
+      },
+      scales: {
+        x:{grid:{display:false},ticks:{color:'#6B6560'}},
+        y:{grid:{color:'rgba(0,0,0,0.07)'},ticks:{color:'#6B6560',callback:v=>'$'+v+'M'},suggestedMin:0}
+      }
+    }
+  });
 }
 
 // ── Init ──────────────────────────────────────────────────────
