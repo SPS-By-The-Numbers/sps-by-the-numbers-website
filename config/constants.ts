@@ -13,8 +13,8 @@ export const APP_TITLE = "SPS By The Numbers -- Data analysis apps";
 //  https://foo.com/category/v/AB/ABCD123 becomes https://foo.com/category/v/ABCD123
 export const LEGACY_PREFIX_REDIRECT = true;
 
-// Google analytics ID.
-export const GA_MEASUREMENT_ID = "GTM-WLJHZHL";
+// Google Analytics 4 measurement ID.
+export const GA_MEASUREMENT_ID = "G-WKM5FTSSLL";
 
 // GCP region cloud functions and other things run in.
 export const GCP_REGION = "us-west1";

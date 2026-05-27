@@ -34,7 +34,7 @@ export default function RootLayout({
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
 
-            gtag('config', 'GA_MEASUREMENT_ID');
+            gtag('config', '${Constants.GA_MEASUREMENT_ID}');
           `}
         </Script>
         <MuiProviders>

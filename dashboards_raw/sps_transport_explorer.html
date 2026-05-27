@@ -253,9 +253,10 @@ tr:hover .col-demo{background:#EBE4FF!important}
 <div id="sec-contracts" class="section">
   <h2 class="section-heading">Contract Overages</h2>
   <p class="section-desc">NCES 519 actual spend compared to board-authorized contract ceilings. SPS does not operate its own bus fleet &mdash; virtually all transportation spending (95&ndash;97% of F-196 total) flows through NCES 519 (&ldquo;Student Transportation Services Purchased from Another&rdquo;) to outside contractors.</p>
+  <div class="callout info" style="margin-bottom:16px"><strong>Why NCES 519 rather than Activity/Program codes?</strong> NCES 519 isolates the pure contracted-services spend &mdash; payments to First Student, Zum, EverDriven, and other outside vendors &mdash; which is directly comparable to board-authorized contract ceilings. Activity codes 51&ndash;59 (excl. 58) capture total transportation expenditure including internal SPS costs (admin salaries, supplies), which run $0&ndash;$2.7M above NCES 519 and are not subject to the same contract authorization process. For the question &ldquo;did SPS spend more than the board authorized on contracted services?&rdquo; NCES 519 is the correct numerator. <strong>Data availability:</strong> NCES 519 actuals are only available from FY 2019-20 onward. The longer expenditure history in the Funding Gap tab (back to 2017-18) uses Activity 51&ndash;59.</div>
 
   <div class="callout warn" style="margin-bottom:16px">
-    <strong>Data limitations:</strong> NCES 519 actuals are from a district financial report (fiscal year end). Board authorization amounts are from public board meeting agendas. Actual spend exceeds located authorizations by $4.35&ndash;$9.35M annually &mdash; additional board authorizations or Superintendent-delegated procurements covering this gap have not been found. Per-route-day rates and vendor-level breakdowns are not available from public board records.
+    <strong>Data limitations:</strong> NCES 519 actuals are from a district financial report (fiscal year end). Board authorization amounts are from public board meeting agendas. We do not know how much of the alternative transport NTE ($8.45M&ndash;$10.45M) was actually utilized &mdash; actual spend could be anywhere from $0 to the ceiling. The &ldquo;gap above ceiling&rdquo; figures assume the full NTE was spent; if alt transport was only partially utilized, the gap above the bus-only contract ceiling would be larger, and the split between the two contract types is unknown. Per-route-day rates and vendor-level breakdowns are not available from public board records.
   </div>
 
   <div class="stat-row">
@@ -302,8 +303,8 @@ tr:hover .col-demo{background:#EBE4FF!important}
         <p style="margin-bottom:12px"><strong style="color:var(--text)">Layer 1: Base contract reset (+$5.2M/yr)</strong><br>
         The new dual contract (First Student + Zum) authorized $45.2M/yr vs. the prior ~$40M/yr. This 12.5% increase reflects post-COVID driver wage inflation and the addition of a second contractor. This layer is permanent and baked into the current contract.</p>
 
-        <p style="margin-bottom:12px"><strong style="color:var(--text)">Layer 2: Alternative transport (+$8.5&ndash;$10.5M/yr)</strong><br>
-        A new structural cost layer: rideshare/van services (EverDriven, HopSkipDrive, etc.) for students with individualized transport needs. This did not exist at scale under the prior contract. The NTE grew from $8.45M (2022-23) to $10.45M (2023-25), suggesting demand is increasing. These services generate zero STARS formula value.</p>
+        <p style="margin-bottom:12px"><strong style="color:var(--text)">Layer 2: Alternative transport ($0&ndash;$10.5M/yr &mdash; actual spend unknown)</strong><br>
+        A new contract layer for rideshare/van services (EverDriven, HopSkipDrive, etc.) for students with individualized transport needs. The NTE grew from $8.45M (2022-23) to $10.45M (2023-25). <strong>We do not know what was actually spent</strong> within these ceilings — actual utilization could be anywhere from minimal to the full NTE. Without vendor-level NCES 519 data, the true spend is unverifiable from public records. These services generate zero STARS formula value.</p>
 
         <p style="margin-bottom:12px"><strong style="color:var(--text)">Layer 3: Unexplained overage (+$4.4&ndash;$9.4M/yr)</strong><br>
         Actual NCES 519 spend exceeds the sum of located board authorizations in every year. The 2022-23 gap ($9.35M) was the largest, declining to $4.35M in 2023-24 and 2024-25. This likely reflects: mid-year contract amendments not yet located in board records, spending under the Superintendent&rsquo;s delegated procurement authority, and/or variable pricing provisions in the bus contract that allow costs above the base NTE.</p>
@@ -311,9 +312,10 @@ tr:hover .col-demo{background:#EBE4FF!important}
         <div style="margin-top:14px;padding:12px 14px;background:#F0ECE6;border-radius:6px">
           <table style="width:100%;font-size:.82rem;border-collapse:collapse">
             <tr><td style="padding:3px 6px">Prior baseline (pre-2022)</td><td style="text-align:right;padding:3px 6px;font-family:'DM Mono',monospace">$40.0M</td></tr>
-            <tr><td style="padding:3px 6px;border-bottom:1px solid #DDD8CF">+ Base contract reset</td><td style="text-align:right;padding:3px 6px;border-bottom:1px solid #DDD8CF;font-family:'DM Mono',monospace">+$5.2M</td></tr>
-            <tr><td style="padding:3px 6px;border-bottom:1px solid #DDD8CF">+ Alt transport layer (2024-25)</td><td style="text-align:right;padding:3px 6px;border-bottom:1px solid #DDD8CF;font-family:'DM Mono',monospace">+$10.5M</td></tr>
-            <tr><td style="padding:3px 6px;border-bottom:1px solid #DDD8CF">+ Unexplained overage</td><td style="text-align:right;padding:3px 6px;border-bottom:1px solid #DDD8CF;font-family:'DM Mono',monospace">+$4.4M</td></tr>
+            <tr><td style="padding:3px 6px;border-bottom:1px solid #DDD8CF">+ Base contract reset (RFP022242)</td><td style="text-align:right;padding:3px 6px;border-bottom:1px solid #DDD8CF;font-family:'DM Mono',monospace">+$5.2M</td></tr>
+            <tr style="background:#F5F5F5"><td colspan="2" style="padding:3px 8px;border-bottom:1px solid #DDD8CF;font-size:.78rem;color:var(--muted)">The remaining $14.8M above the $45.2M bus contract splits between alt transport and unexplained overage &mdash; the exact split is unknown:</td></tr>
+            <tr><td style="padding:3px 6px;padding-left:20px;border-bottom:1px solid #EDE9E2;font-size:.82rem">&rsaquo; Alt transport (RFQ 042339, NTE)</td><td style="text-align:right;padding:3px 6px;border-bottom:1px solid #EDE9E2;font-family:'DM Mono',monospace">$0&ndash;$10.45M</td></tr>
+            <tr><td style="padding:3px 6px;padding-left:20px;border-bottom:1px solid #DDD8CF;font-size:.82rem">&rsaquo; Unexplained overage (NTE gap + variable costs)</td><td style="text-align:right;padding:3px 6px;border-bottom:1px solid #DDD8CF;font-family:'DM Mono',monospace">$4.35&ndash;$14.8M</td></tr>
             <tr><td style="padding:3px 6px;font-weight:600">= Current spend (2024-25)</td><td style="text-align:right;padding:3px 6px;font-family:'DM Mono',monospace;font-weight:600;color:var(--accent2)">$60.0M</td></tr>
           </table>
         </div>
@@ -688,10 +690,12 @@ tr:hover .col-demo{background:#EBE4FF!important}
     <strong>Do not cite these figures without independent verification.</strong>
   </div>
 
-  <div class="card">
+    <h3 style="font-family:'DM Serif Display',serif;font-size:1.15rem;font-weight:400;margin-top:20px;margin-bottom:12px">Background</h3>
+
+<div class="card">
     <div class="card-title">Global Assumptions Underlying All Analyses</div>
     <div class="card-sub">These assumptions apply across multiple questions below. Each represents a potential source of error.</div>
-    <ul class="ac-list" style="margin-top:8px"><li>Operating cost per route assumed uniform across all types (~$571/day). Special Ed routes with aides or specialized vehicles almost certainly cost more.</li><li>Per-route ridership derived from quarterly summary On Buses ÷ route count (~51.5 riders/route for Basic). This assumes ridership is uniformly distributed across routes, which is unlikely.</li><li>Walk zone absorption rates (what share of students live close enough to their new school to not need a bus) are estimated at 25–75% with no supporting address-level data.</li><li>New neighborhood routes assumed to average ~25 students each — roughly half the current option school average — reflecting geographic dispersion. Actual routing would depend on address data.</li><li>Transit pass cost assumed at $900/student/year. Actual SPS transit pass cost not verified.</li><li>Geographic distribution of option and HCC school students assumed roughly city-wide. In reality, HCC enrollment likely skews toward certain neighborhoods.</li><li>Formula calculations use 2025-26 coefficients throughout. Coefficients change annually — results would differ in other years.</li><li>Gifted route riders assumed to count in Special Program CSPC per OSPI General Instructions. This has not been independently confirmed against the 1022E form itself.</li><li>Count-day consistency assumed at ~80% (students present on count day). Actual SPS attendance data not reviewed.</li><li>Route length and operational scheduling constraints (driver hours, school start windows) are not modeled except where noted.</li></ul>
+    <ul class="ac-list" style="margin-top:8px"><li>Operating cost per route: ~$571/day from F-196 average, consistent with BAFO contracted rates of ~$575/day at SPS volume. Special Ed routes with aides or specialized vehicles almost certainly cost more. Alt transport (EverDriven, HopSkipDrive) costs are separate and not included in per-route estimates.</li><li>Per-route ridership derived from quarterly summary On Buses ÷ route count (~51.5 riders/route for Basic). This assumes ridership is uniformly distributed across routes, which is unlikely.</li><li>Walk zone absorption rates (what share of students live close enough to their new school to not need a bus) are estimated at 25–75% with no supporting address-level data.</li><li>New neighborhood routes assumed to average ~25 students each — roughly half the current option school average — reflecting geographic dispersion. Actual routing would depend on address data.</li><li>Transit pass cost assumed at $900 (not verified against current SPS transit pass agreements)/student/year. Actual SPS transit pass cost not verified.</li><li>Geographic distribution of option and HCC school students assumed roughly city-wide. In reality, HCC enrollment likely skews toward certain neighborhoods.</li><li>Formula calculations use 2025-26 coefficients throughout. Coefficients change annually — results would differ in other years.</li><li>Gifted route riders assumed to count in Special Program CSPC per OSPI General Instructions. This has not been independently confirmed against the 1022E form itself.</li><li>Count-day consistency assumed at ~80% (students present on count day). Actual SPS attendance data not reviewed.</li><li>Route length and operational scheduling constraints (driver hours, school start windows) are not modeled except where noted.</li></ul>
   </div>
 
   <div class="card">
@@ -768,7 +772,10 @@ tr:hover .col-demo{background:#EBE4FF!important}
     </div>
   </div>
 
-  <div class="analysis-card" id="ac-0">
+    <h3 style="font-family:'DM Serif Display',serif;font-size:1.15rem;font-weight:400;margin-top:28px;margin-bottom:4px">Analyses</h3>
+  <p style="font-size:.84rem;color:var(--muted);margin-bottom:16px">Six explorations of commonly proposed changes and their estimated budget impact. Sorted by largest absolute impact. Each includes data sources, assumptions, verification steps, and open questions.</p>
+
+<div class="analysis-card" id="ac-0">
     <div class="ac-header" onclick="toggleAC(0)">
       <div class="ac-q"><span class="ac-num">1</span><span>Exploration: Does shrinking or expanding the walk zone increase or decrease STARS funding?</span></div>
       <span class="ac-chevron" id="chev-0">&#9660;</span>
@@ -777,11 +784,11 @@ tr:hover .col-demo{background:#EBE4FF!important}
       <div style="margin-bottom:12px"><span style="display:inline-block;padding:3px 10px;border-radius:10px;font-size:.75rem;font-weight:600;background:#FFF3CD;color:#7A5200;margin-right:6px">Est. budget impact: $-7.2M to +$7.4M/yr</span><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:600;background:#FDF0EC;color:#4A1A0A;margin-left:8px">Confidence: LOW</span></div>
       <div class="ac-section">
         <div class="ac-section-head">&#128270; Tentative Finding</div>
-        <div class="ac-section-body">Shrinking the walk zone (busing more students) appears to generate positive net returns because the marginal formula value per added Basic rider (~$2,650/yr at 2025-26 coefficients) substantially exceeds the marginal operating cost of adding stops to existing routes (~$51&ndash;640/student/yr). The range is wide because it depends heavily on whether new riders can be served by adding stops to existing routes or require entirely new routes. Expanding the walk zone is negative in all scenarios &mdash; formula loss per removed rider exceeds operating savings even when full route elimination is achieved ($99,925 saved vs ~$136,700 lost in formula per route eliminated).</div>
+        <div class="ac-section-body">Shrinking the walk zone (busing more students) appears to generate positive net returns because the marginal formula value per added Basic rider (~$2,650/yr at 2025-26 coefficients) substantially exceeds the marginal operating cost of adding stops to existing routes (~$51&ndash;640/student/yr). The range is wide because it depends heavily on whether new riders can be served by adding stops to existing routes or require entirely new routes. Expanding the walk zone is negative in all scenarios &mdash; formula loss per removed rider exceeds operating savings even when full route elimination is achieved ($99,925 saved vs ~$127,000 lost in formula per route eliminated (48 riders/route &times; $2,650)).</div>
       </div>
       <div class="ac-section">
         <div class="ac-section-head">&#128202; Data &amp; Methods</div>
-        <div class="ac-section-body">Formula marginal value computed analytically from 2025-26 1026A coefficients. Operating cost estimated from F-196 total expenditure &divide; routes &divide; days (~$571/route/day). Stop addition cost estimated at $40/day driver time &divide; 10 students per stop = ~$51/student/yr marginal cost. New route cost ~$1,960/student/yr.</div>
+        <div class="ac-section-body">Formula marginal value computed analytically from 2025-26 1026A coefficients. Operating cost estimated from F-196 total expenditure &divide; routes &divide; days (~$571/route/day). BAFO contracted rate at SPS volume is ~$575/route/day, consistent with this estimate. Stop addition cost estimated at $40/day driver time &divide; 10 students per stop = ~$51/student/yr marginal cost. New route cost ~$1,960/student/yr.</div>
       </div>
       <div class="ac-section">
         <div class="ac-section-head">&#9888; Key Assumptions</div>
@@ -825,7 +832,7 @@ tr:hover .col-demo{background:#EBE4FF!important}
       </div>
       <div class="ac-section">
         <div class="ac-section-head">&#128202; Data &amp; Methods</div>
-        <div class="ac-section-body">13 option/HCC schools, ~5,350 students total. Route counts from Fall quarterly detail pages. Operating cost at $571/route/day. Walk zone absorption modeled at 25&ndash;50% (no supporting data). New neighborhood routes assumed at 25 students/route average. Formula uses 2025-26 coefficients.</div>
+        <div class="ac-section-body">13 option/HCC schools, ~5,350 students total. Route counts from Fall quarterly detail pages. Operating cost at $571/route/day. Walk zone absorption modeled at 25&ndash;50% of the ~5,350 redistributed option/HCC students: meaning we assume 25&ndash;50% would end up within walking distance of their assigned neighborhood school and not need a bus. This range was chosen arbitrarily as a plausible mid-range; it is not derived from address-level data or any prior SPS study. New neighborhood routes assumed at 25 students/route average. Formula uses 2025-26 coefficients.</div>
       </div>
       <div class="ac-section">
         <div class="ac-section-head">&#9888; Key Assumptions</div>
@@ -847,7 +854,7 @@ tr:hover .col-demo{background:#EBE4FF!important}
       <div class="ac-section">
         <div class="ac-section-head">&#10067; Open Questions &amp; Possible Misinterpretations</div>
         <ul class="ac-list">
-          <li>Walk zone absorption dominates the result &mdash; a 10-point change in that assumption shifts the net by ~$1&ndash;2M</li>
+          <li>Walk zone absorption dominates the result &mdash; shifting the assumption by 10 percentage points (e.g. from 35% to 45% of redistributed students living within walking distance of their new school) shifts the net impact by ~$1&ndash;2M</li>
           <li>HCC schools are centrally located relative to a city-wide draw &mdash; students travel from across Seattle precisely because the program is not neighborhood-based. Walk zone absorption upon redistribution to neighborhood schools could be lower than the city average, since HCC families may live far from both the HCC school and their neighborhood school</li>
           <li>Political and legal feasibility of eliminating option programs is entirely outside this analysis</li>
         </ul>
@@ -864,7 +871,7 @@ tr:hover .col-demo{background:#EBE4FF!important}
       <div style="margin-bottom:12px"><span style="display:inline-block;padding:3px 10px;border-radius:10px;font-size:.75rem;font-weight:600;background:#FDF0EC;color:#4A1A0A;margin-right:6px">Ongoing annual cost: ~&minus;$7.2M vs. $420K formula recovery</span><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:600;background:#FFF8EC;color:#4A3A10;margin-left:8px">Confidence: MEDIUM</span></div>
       <div class="ac-section">
         <div class="ac-section-head">&#128270; Tentative Finding</div>
-        <div class="ac-section-body">The 2023-24 expansion was almost entirely Special Ed routes (+76 net: 141 new, 65 dropped). Basic routes were essentially unchanged (+1 net). New Special Ed routes have longer average distances (2.49 mi vs 2.20 mi for continued routes) and lower student counts. The pattern &mdash; district-wide, shallow increases at 53+ schools, most gaining just 1&ndash;2 routes &mdash; is consistent with IEP compliance expansion. The formula recovered approximately $420K of the ~$7.6M in new route operating costs (~5 cents per dollar). Riders per sped route have fallen every year since: 8.4 &rarr; 7.7 &rarr; 7.3 &rarr; 7.0.</div>
+        <div class="ac-section-body">The 2023-24 expansion was almost entirely Special Ed routes (+76 net: 141 new, 65 dropped). Basic routes were essentially unchanged (+1 net). New Special Ed routes have longer average distances (2.49 mi vs 2.20 mi for continued routes) and lower student counts. The pattern &mdash; district-wide, shallow increases at 53+ schools, most gaining just 1&ndash;2 routes &mdash; is what IEP compliance expansion would look like, but no board record, OCR correspondence, or policy directive has been found to confirm this hypothesis. The formula recovered approximately $420K of the ~$7.6M in new route operating costs (~5 cents per dollar). Riders per sped route have fallen every year since: 8.4 &rarr; 7.7 &rarr; 7.3 &rarr; 7.0.</div>
       </div>
       <div class="ac-section">
         <div class="ac-section-head">&#128202; Data &amp; Methods</div>
@@ -931,7 +938,7 @@ tr:hover .col-demo{background:#EBE4FF!important}
         </div>
         <div style="font-size:.82rem;color:var(--muted);margin-top:10px;line-height:1.6">
           <p><strong style="color:var(--text)">Practical implication:</strong> There is no category shift that improves funding. Every destination category is worth less to the formula than Basic. The formula is calibrated to maximize value for students on standard Basic routes &mdash; any specialization or removal from district buses reduces the allocation.</p>
-          <p style="margin-top:6px"><strong style="color:var(--text)">Scale example:</strong> The post-COVID decline in Basic ridership from ~18,000 to ~9,200 (~8,800 fewer Basic riders) cost approximately 8,800 &times; $2,650 = ~$23.3M in formula allocation annually &mdash; roughly equal to the observed funding gap. This is not a coincidence; the ridership decline is the primary structural driver of the gap.</p>
+          <p style="margin-top:6px"><strong style="color:var(--text)">Scale example:</strong> Basic &ldquo;On Buses&rdquo; ridership declined from 12,546 (2017-18) to 9,214 (2025-26) &mdash; a loss of ~3,300 riders. At the marginal formula value of ~$2,650/rider, this costs approximately $8&ndash;9M annually. Meanwhile, the CBPC formula input declined even more steeply (20,708 &rarr; 9,195), reflecting broader enrollment and program changes beyond just On Buses counts. The full CBPC-driven formula loss is ~$27M, which is the dominant driver of the $23M funding gap.</p>
         </div>
       </div>
       <div class="ac-section">
@@ -955,11 +962,147 @@ tr:hover .col-demo{background:#EBE4FF!important}
         <ul class="ac-list">
           <li>The 1022E classification of Gifted riders as CSPC is the single most consequential unverified assumption in this analysis</li>
           <li>The formula uses annual averages (CBPC = avg of three count days) &mdash; students who ride inconsistently contribute less than a full unit to the count</li>
-          <li>The &quot;$23M gap = $23M ridership decline&quot; observation is suggestive but not causal &mdash; costs also rose substantially over the same period</li>
+          <li>The $8&ndash;9M &ldquo;On Buses&rdquo; estimate uses linearized marginal values. The actual CBPC-driven formula loss (~$27M) is much larger because CBPC declined more steeply than On Buses counts and the log transformation amplifies large declines. The $23M gap reflects both the formula decline and the partial recovery from other inputs.</li>
         </ul>
       </div>
     </div>
   </div>
+  <div class="analysis-card" id="ac-4">
+    <div class="ac-header" onclick="toggleAC(4)">
+      <div class="ac-q"><span class="ac-num">5</span><span>Exploration: What happens to transportation costs and funding if SPS consolidates half its schools?</span></div>
+      <span class="ac-chevron" id="chev-4">&#9660;</span>
+    </div>
+    <div class="ac-body" id="acb-4">
+      <div style="margin-bottom:12px"><span style="display:inline-block;padding:3px 10px;border-radius:10px;font-size:.75rem;font-weight:600;background:#FDF0EC;color:#4A1A0A;margin-right:6px">Est. budget impact: &minus;$14M to &minus;$22M/yr</span><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:600;background:#FDF0EC;color:#4A1A0A;margin-left:8px">Confidence: LOW</span></div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#128270; Tentative Finding</div>
+        <div class="ac-section-body">Consolidating ~107 schools to ~53 makes the transportation funding picture <strong>significantly worse</strong> in every scenario tested. The STARS formula drops by $12&ndash;17M because the &ldquo;destinations&rdquo; input (number of school sites served) is halved. Ridership <em>increases</em> by 4,900&ndash;7,000 Basic riders (displaced walkers who now need a bus), partially offsetting the destinations loss, but not enough. Operating costs do not improve &mdash; fewer routes but longer routes roughly cancel out, and in aggressive scenarios the longer-route cost actually exceeds the route-elimination savings.</div>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#128202; Data &amp; Methods</div>
+        <div class="ac-section-body">
+          <p style="margin-bottom:8px"><strong>Formula modeling:</strong> EXAL calculated with 2025-26 coefficients. Destinations reduced from 105.75 to 53&ndash;58. Average distance increased from 2.16 to 2.8&ndash;3.3 miles (based on doubling the service area per school, distance scales ~&radic;2). CBPC increased by 15&ndash;25% reflecting displaced walkers becoming riders.</p>
+          <p style="margin-bottom:8px"><strong>Ridership modeling:</strong> ~25,600 students displaced from closed schools. Of those, ~8,200 estimated current walkers (32% walk rate). 60&ndash;85% of displaced walkers assumed to need a bus at their new, farther school. 5&ndash;15% of existing riders assumed to opt out due to longer ride times. Net CBPC change: +4,700 to +6,300 riders.</p>
+          <p><strong>Operating cost modeling:</strong> Route count reduced by basic route ratio (~destinations/106) with 1.2&times; multiplier for longer routes. Sped routes reduced only 10&ndash;20% (IEP mandates follow students). Per-route cost scaled linearly with average distance increase.</p>
+        </div>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#128202; The Three Competing Effects</div>
+        <div style="margin-top:8px">
+          <table style="width:100%;font-size:.82rem;border-collapse:collapse">
+            <thead><tr>
+              <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:left">Effect</th>
+              <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">Formula impact</th>
+              <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">Operating impact</th>
+              <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:left">Direction</th>
+            </tr></thead>
+            <tbody>
+              <tr><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2"><strong>Destinations halved</strong> (106 &rarr; 53&ndash;58)</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$17M</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right">n/a</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;color:var(--c-vermil)">Strongly negative</td></tr>
+              <tr><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2"><strong>CBPC increases</strong> (+4,700&ndash;6,300 riders from walk zone loss)</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-green)">+$3&ndash;5M</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">+cost</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2">Mixed &mdash; formula gain but costs more to serve</td></tr>
+              <tr><td style="padding:4px 8px"><strong>Fewer but longer routes</strong></td><td style="padding:4px 8px;text-align:right;font-family:'DM Mono',monospace">~$0</td><td style="padding:4px 8px;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$2 to &minus;$8M</td><td style="padding:4px 8px;color:var(--c-vermil)">Negative &mdash; savings from route elimination offset by longer remaining routes</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#9888; Key Assumptions</div>
+        <ul class="ac-list">
+          <li>Walk rate assumed at 32% across closed schools &mdash; actual walk rate varies enormously by school (0% at option schools, 40%+ at some neighborhood elementaries). A school-by-school closure plan would change this significantly.</li>
+          <li>Average distance increase modeled as ~&radic;2 (&times;1.3&ndash;1.5) based on doubling the service area per school. Actual increase depends entirely on <em>which</em> schools close and the resulting attendance boundaries.</li>
+          <li>Sped routes assumed to decrease only 10&ndash;20% because IEP mandates follow the student. In practice, consolidation could <em>increase</em> sped routes if students are now farther from their placement school.</li>
+          <li>Per-route cost scaled linearly with distance &mdash; a simplification; actual cost depends on driver hours, not just miles.</li>
+          <li>No transition costs modeled (temporary busing during moves, building modifications, etc.).</li>
+          <li>Enrollment assumed constant &mdash; consolidation may accelerate enrollment loss to private/charter schools, worsening ridership.</li>
+        </ul>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#9989; Steps to Verify</div>
+        <ul class="ac-list">
+          <li>Model specific closure scenarios (not just &ldquo;half the schools&rdquo;) with actual attendance boundary redrawing and student address data</li>
+          <li>Use routing software to estimate actual route changes for each scenario</li>
+
+          <li>Check whether a 3-tier bell schedule (feasible with fewer schools) could offset the formula loss through fleet reduction</li>
+          <li>Review the 2009 SPS school closure experience for actual transportation cost impacts</li>
+        </ul>
+      </div>
+      <div class="ac-section">
+        <div class="ac-section-head">&#10067; Open Questions &amp; Possible Misinterpretations</div>
+        <ul class="ac-list">
+          <li>&ldquo;Destinations&rdquo; in the STARS formula counts unique school sites by OSPI school code, not route endpoints. Co-located schools with separate codes count as separate destinations (OSPI General Reporting Instructions, p. 3: &ldquo;The STARS GIS system provides separate destination numbers for co-located schools based on assigned school codes.&rdquo;). SPS destinations = 105.75 (2024-25), consistent with ~107 school sites. This means halving the number of schools would roughly halve the destinations input, confirming the &minus;$17M formula penalty estimate.</li>
+          <li>If consolidation enables a <strong>3-tier bell schedule</strong>, the $10&ndash;15M in bus fleet savings could partially or fully offset the formula loss &mdash; but that is a separate policy decision, not an inherent effect of consolidation</li>
+          <li>The model assumes all displaced students attend SPS &mdash; if consolidation drives enrollment to private schools, both ridership and per-pupil funding decline further</li>
+          <li>School consolidation savings on building operations and staffing are <strong>substantially smaller than commonly assumed</strong>. Our own analysis using OSPI F-196 and S275 data estimates $630K&ndash;$678K per year per school in savings, against which closure-related transition costs of $282K&ndash;$322K/yr reduce the net to roughly $308K&ndash;$396K/yr per school for the first two years &mdash; compared to an SPS estimate of $1.5M/school (<a href="https://medium.com/@awongawong/recalculated-fab-4-school-closure-savings-its-small-e7d9e8b1d188" target="_blank" style="color:var(--accent)">see our analysis</a>). At those figures, building savings would be comparable to, not larger than, the transportation effects modeled here.</li>
+          <li>The STARS formula is recalibrated annually &mdash; a mass consolidation affecting the statewide regression could change the coefficients themselves, making any projection unreliable beyond 1&ndash;2 years</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="analysis-card" id="ac-5">
+    <div class="ac-header" onclick="toggleAC(5)">
+      <div class="ac-q"><span class="ac-num">6</span><span>Variation: Transportation impact of closing 17&ndash;21 schools (the &ldquo;FAB 4&rdquo; and similar near-term closure scenarios)</span></div>
+      <span class="ac-chevron" id="chev-5">&#9660;</span>
+    </div>
+    <div class="ac-body" id="acb-5">
+      <div style="margin-bottom:12px"><span style="display:inline-block;padding:3px 10px;border-radius:10px;font-size:.75rem;font-weight:600;background:#FDF0EC;color:#4A1A0A;margin-right:6px">Est. transportation impact: &minus;$5.1M to &minus;$7.7M/yr</span><span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:600;background:#FDF0EC;color:#4A1A0A;margin-left:8px">Confidence: LOW</span></div>
+
+      <div class="ac-section">
+        <div class="ac-section-head">&#128270; Summary</div>
+        <div class="ac-section-body">A near-term closure of 17&ndash;21 schools (107 &rarr; 86&ndash;90) produces a <strong>net transportation loss of $5.1M&ndash;$7.7M/yr</strong>. The same dynamics as Card 5 apply at smaller scale: destinations drop by 16&ndash;20, suppressing the STARS allocation by $3.6&ndash;5.6M, while operating savings are small or negative (longer routes offset route reductions). The ridership gain from displaced walkers (+1,500&ndash;2,400 new Basic riders) partially offsets the destinations loss but does not overcome it. Combined with building operations savings of $308K&ndash;$396K/yr per school from <a href="https://medium.com/@awongawong/recalculated-fab-4-school-closure-savings-its-small-e7d9e8b1d188" target="_blank" style="color:var(--accent)">our own analysis</a>, closing 17&ndash;21 schools nets $5.2M&ndash;$6.7M in building savings against $5.1M&ndash;$7.7M in transportation losses &mdash; a near-wash or net negative for the combined budget.</div>
+      </div>
+
+      <div class="ac-section">
+        <div class="ac-section-head">&#128202; Scenario Results</div>
+        <div style="margin-top:8px">
+          <table style="width:100%;font-size:.82rem;border-collapse:collapse">
+            <thead><tr>
+              <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:left">Scenario</th>
+              <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">Schools remaining</th>
+              <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">STARS formula change</th>
+              <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">Operating savings</th>
+              <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right;color:var(--c-vermil)">Net transport impact</th>
+            </tr></thead>
+            <tbody>
+              <tr><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2">Close 17 &mdash; conservative</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right">90</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$4.5M</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$0.6M</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$5.1M</td></tr>
+              <tr><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2">Close 17 &mdash; aggressive</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right">90</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$3.6M</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$2.4M</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$6.0M</td></tr>
+              <tr><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2">Close 21 &mdash; conservative</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right">86</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$5.6M</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$0.6M</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$6.2M</td></tr>
+              <tr><td style="padding:4px 8px">Close 21 &mdash; aggressive</td><td style="padding:4px 8px;text-align:right">86</td><td style="padding:4px 8px;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$4.5M</td><td style="padding:4px 8px;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$3.2M</td><td style="padding:4px 8px;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$7.7M</td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:.78rem;color:var(--muted);margin-top:8px">Conservative = shorter distance increase, more new riders. Aggressive = longer distance increase, fewer new riders. All scenarios negative. STARS formula change and operating savings computed separately; both drive the net loss.</p>
+        </div>
+      </div>
+
+      <div class="ac-section">
+        <div class="ac-section-head">&#128202; Combined with Building Savings</div>
+        <div style="margin-top:8px">
+          <table style="width:100%;font-size:.82rem;border-collapse:collapse">
+            <thead><tr>
+              <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:left">Scenario</th>
+              <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">Building savings</th>
+              <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">Transport loss</th>
+              <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">Net combined</th>
+            </tr></thead>
+            <tbody>
+              <tr><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2">Close 17 (our estimate: $308K&ndash;$396K/school/yr)</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-green)">+$5.2&ndash;$6.7M</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$5.1 to &minus;$6.0M</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">&minus;$0.8M to +$1.6M</td></tr>
+              <tr><td style="padding:4px 8px">Close 21 (our estimate)</td><td style="padding:4px 8px;text-align:right;font-family:'DM Mono',monospace;color:var(--c-green)">+$6.5&ndash;$8.3M</td><td style="padding:4px 8px;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">&minus;$6.2 to &minus;$7.7M</td><td style="padding:4px 8px;text-align:right;font-family:'DM Mono',monospace">&minus;$1.2M to +$2.1M</td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:.78rem;color:var(--muted);margin-top:8px">Building savings from <a href="https://medium.com/@awongawong/recalculated-fab-4-school-closure-savings-its-small-e7d9e8b1d188" target="_blank" style="color:var(--accent)">our own analysis</a> using OSPI F-196 and S275 data. The combined net is near-zero across all scenarios &mdash; transportation losses roughly cancel building savings.</p>
+        </div>
+      </div>
+
+      <div class="ac-section">
+        <div class="ac-section-head">&#9888; Key Assumptions (inherited from Card 5)</div>
+        <ul class="ac-list">
+          <li>Same structural assumptions as Card 5 apply here at smaller scale. The most consequential: distance increase (modeled as ~10&ndash;15%), walk zone loss rate (~32% of displaced students were walking), and rider conversion rate (~70% of displaced walkers become bus riders).</li>
+          <li>Building savings use the net post-transition figure ($308K&ndash;$396K/school/yr for first two years). In later years, savings rise to $630K&ndash;$678K/school/yr as transition costs end.</li>
+          <li>Which specific schools close matters enormously. Option schools (currently generating Basic routes for city-wide draw) produce larger destination and route losses than neighborhood schools. This analysis assumes a representative mix.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+
 
 </div>
 
