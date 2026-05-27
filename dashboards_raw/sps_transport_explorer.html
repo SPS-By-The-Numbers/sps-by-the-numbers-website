@@ -100,8 +100,8 @@ tr:hover .col-demo{background:#EBE4FF!important}
 </header>
 <nav>
   <button class="active" onclick="show('funding',this)">Funding Gap</button>
-  <button onclick="show('stars',this)">STARS Formula</button>
   <button onclick="show('contracts',this)">Contract Overages</button>
+  <button onclick="show('comparisons',this)">Comparison Districts</button>
   <button onclick="show('ridership',this)">Ridership Trends</button>
   <button onclick="show('routes',this)">Route Detail</button>
   <button onclick="show('schools',this)">School Explorer</button>
@@ -111,128 +111,6 @@ tr:hover .col-demo{background:#EBE4FF!important}
 <main>
 
 <!-- STARS -->
-<div id="sec-stars" class="section">
-  <h2 class="section-heading">The STARS Formula</h2>
-  <p class="section-desc">Washington funds school transportation through STARS &mdash; a log-linear model recalibrated annually. Coefficients for 2022-23 through 2025-26 are extracted from SPS&rsquo;s 1026A allocation documents and verified to reproduce the published expected allocations. Coefficients for 2017-18 through 2021-22 extracted from DOCX versions of the 1026A; values reproduce published EXAL to within 0.02% (rounding from 5-decimal display). 2022-23 through 2025-26 match exactly.</p>
-  <div class="filter-row" style="margin-bottom:8px">
-    <label>School year:</label>
-    <div class="yr-tabs">
-      <button class="yr-tab active" onclick="setStarsYear('2025-26',this)">2025-26</button>
-      <button class="yr-tab" onclick="setStarsYear('2024-25',this)">2024-25</button>
-      <button class="yr-tab" onclick="setStarsYear('2023-24',this)">2023-24</button>
-      <button class="yr-tab" onclick="setStarsYear('2022-23',this)">2022-23</button>
-      <button class="yr-tab" onclick="setStarsYear('2021-22',this)">2021-22</button>
-      <button class="yr-tab" onclick="setStarsYear('2020-21',this)">2020-21</button>
-      <button class="yr-tab" onclick="setStarsYear('2019-20',this)">2019-20</button>
-      <button class="yr-tab" onclick="setStarsYear('2018-19',this)">2018-19</button>
-      <button class="yr-tab" onclick="setStarsYear('2017-18',this)">2017-18</button>
-    </div>
-    <span id="stars-src" style="font-size:.77rem;color:var(--c-green);margin-left:6px"></span>
-  </div>
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">Formula Structure</div>
-      <div class="card-sub" id="stars-coef-sub"></div>
-      <div class="formula-box">
-EXAL = exp(<br>
-&nbsp;&nbsp;ln(<span class="hi">BasicRiders</span> + 1) &times; <span class="hi" id="f-basic-c"></span><br>
-&nbsp;&nbsp;+ ln(<span class="hi2">SpecialRiders</span> + 1) &times; <span class="hi2" id="f-sped-c"></span><br>
-&nbsp;&nbsp;+ Destinations &times; <span id="f-dest-c"></span><br>
-&nbsp;&nbsp;+ AvgDistance &times; <span id="f-dist-c"></span><br>
-&nbsp;&nbsp;+ ln(LandArea) &times; <span id="f-land-c"></span><br>
-&nbsp;&nbsp;+ NonHighNo &times; (<span id="f-nh-c"></span>)<br>
-&nbsp;&nbsp;+ <strong id="f-const"></strong> &#8592; statewide constant<br>
-)<br><br>
-ALLOC = min(EXAL, D.2 Prior Year Exp)<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ Legislative Salary Adj
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">SPS Formula Inputs</div>
-      <div class="card-sub" id="stars-inputs-sub"></div>
-      <div id="stars-inputs-table"></div>
-      <div style="margin-top:12px;font-size:.83rem">
-        <div style="display:flex;justify-content:space-between;padding:5px 8px;background:#F0ECE6;border-radius:4px;font-weight:600"><span>Expected Allocation (EXAL)</span><span id="stars-exal" style="font-family:'DM Mono',monospace;color:var(--accent)"></span></div>
-        <div style="display:flex;justify-content:space-between;padding:5px 8px;margin-top:4px"><span>D.2 Prior Year Exp Cap</span><span id="stars-d2" style="font-family:'DM Mono',monospace;color:var(--muted)"></span></div>
-        <div style="display:flex;justify-content:space-between;padding:5px 8px;background:#EEF5FC;border-radius:4px;font-weight:600;margin-top:4px"><span>Actual Allocation</span><span id="stars-alloc" style="font-family:'DM Mono',monospace;color:var(--accent2)"></span></div>
-      </div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title">Basic Rider Count Over Time (CBPC)</div>
-    <div class="card-sub">Combined Basic Program Count averaged across three reporting periods &mdash; used directly in the formula</div>
-    <div class="chart-wrap" style="height:240px"><canvas id="ch-cbpc"></canvas></div>
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot" style="background:var(--c-blue)"></div>Basic CBPC</div>
-      <div class="legend-item"><div class="legend-dot" style="background:var(--c-orange)"></div>Special CSPC</div>
-    </div>
-    <p class="annotation">Basic CBPC fell from ~20,000 pre-COVID to ~9,000 today. The log transform means this halving reduces the basic program&rsquo;s formula contribution by ~46% &mdash; but operational costs did not halve.</p>
-  </div>
-  <div class="callout info"><strong>Gifted program:</strong> Per OSPI General Instructions, Gifted Program routes (Type G) count under Special Program totals in STARS, not Basic. HCC students riding Gifted routes contribute to Special Program riders (coefficient 0.11), not the Basic coefficient (0.665).</div>
-
-  <div class="card" style="margin-top:24px">
-    <div class="card-title">Count Day Selection &amp; Revenue Impact</div>
-    <div class="card-sub">Districts choose their own three-day count period within each reporting window &mdash; this is a controllable input to the STARS formula</div>
-    <div class="callout info" style="margin-bottom:14px">
-      <strong>Per OSPI General Instructions (2022-23):</strong> &ldquo;Three consecutive school days are to be identified as the count period.&rdquo; The district selects which days to count. OSPI sets only the submission deadlines (last business day of October, first business days of February and May) and requires the count period not fall within five school days of the period&rsquo;s end. Districts may <strong>not</strong> &ldquo;promote or publicize specific count periods or distribute materials that promote ridership during the count period.&rdquo; (WAC 392-141-420(8))
-    </div>
-    <div style="font-size:.84rem;line-height:1.7;margin-bottom:16px">
-      <p>The Basic CBPC is the average of three count-day snapshots (Fall, Winter, Spring). Each snapshot captures one day&rsquo;s ridership at the school load zone. At the current marginal formula value of ~$2,650 per Basic rider, every rider absent on count day costs SPS ~$880 in annual allocation (one-third of the annual value, since CBPC averages three periods).</p>
-      <p style="margin-top:8px">This means the <em>choice</em> of which three days to count within each reporting window is a controllable revenue lever. Selecting days that happen to have structurally lower ridership &mdash; the day before a holiday, a testing week, Walk/Bike to School events, unusually bad weather &mdash; has a direct, quantifiable cost to the district.</p>
-    </div>
-    <div class="grid-2">
-      <div>
-        <div style="font-size:.82rem;font-weight:600;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Estimated allocation loss from count day variance</div>
-        <table style="width:100%;font-size:.82rem;border-collapse:collapse">
-          <thead><tr>
-            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:left">Scenario</th>
-            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">Riders absent</th>
-            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">Annual loss</th>
-          </tr></thead>
-          <tbody>
-            <tr><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2">Typical day-to-day variance</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">~200 (2%)</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">$0.53M</td></tr>
-            <tr><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2">Bad timing (pre-holiday, Monday)</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">~500 (5%)</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">$1.34M</td></tr>
-            <tr><td style="padding:4px 8px">Walk/Bike to School week or event</td><td style="padding:4px 8px;text-align:right;font-family:'DM Mono',monospace">~800 (8%)</td><td style="padding:4px 8px;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">$2.15M</td></tr>
-          </tbody>
-        </table>
-        <p style="font-size:.78rem;color:var(--muted);margin-top:6px">Loss calculated against CBPC average. If depressed count affects one of three periods, divide by 3. Actual loss per count day depends on current CBPC level.</p>
-      </div>
-      <div>
-        <div style="font-size:.82rem;font-weight:600;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Observed seasonal variation (Fall &rarr; Winter)</div>
-        <table style="width:100%;font-size:.82rem;border-collapse:collapse">
-          <thead><tr>
-            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:left">Year</th>
-            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">Fall</th>
-            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">Winter</th>
-            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">Drop</th>
-            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">CBPC cost</th>
-          </tr></thead>
-          <tbody>
-            <tr><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2">2017-18</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">12,546</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">12,198</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">&minus;348</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">$0.31M</td></tr>
-            <tr><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2">2022-23</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">9,884</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">9,072</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">&minus;812</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">$0.72M</td></tr>
-            <tr><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2">2023-24</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">8,735</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">8,011</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">&minus;724</td><td style="padding:4px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">$0.64M</td></tr>
-            <tr><td style="padding:4px 8px">2024-25</td><td style="padding:4px 8px;text-align:right;font-family:'DM Mono',monospace">10,401</td><td style="padding:4px 8px;text-align:right;font-family:'DM Mono',monospace">9,616</td><td style="padding:4px 8px;text-align:right;font-family:'DM Mono',monospace">&minus;785</td><td style="padding:4px 8px;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">$0.69M</td></tr>
-          </tbody>
-        </table>
-        <p style="font-size:.78rem;color:var(--muted);margin-top:6px">CBPC cost = one-third of (drop &times; $2,650), reflecting that Winter is one of three averaged periods. We do not know if this drop is behavioral (fewer riders in winter) or an artifact of count day selection.</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">What SPS Can and Cannot Do About Count Days</div>
-    <div class="card-sub">The rules permit optimization but prohibit promotion</div>
-    <div style="font-size:.84rem;line-height:1.8">
-      <p style="margin-bottom:10px"><strong style="color:var(--c-green)">Permitted:</strong> SPS chooses the three consecutive school days within each reporting window. The district can avoid counting on days with known low ridership: pre-holiday Fridays, testing weeks, school event days, periods of extreme weather. This is not gaming the formula &mdash; it&rsquo;s avoiding unrepresentative snapshots of normal ridership.</p>
-      <p style="margin-bottom:10px"><strong style="color:var(--c-vermil)">Prohibited:</strong> WAC 392-141-420(8) bars districts from promoting or publicizing count periods or distributing materials that promote ridership during the count. SPS cannot send &ldquo;ride the bus this week!&rdquo; communications or run incentive programs timed to count days.</p>
-      <p style="margin-bottom:10px"><strong style="color:var(--c-blue)">Unknown:</strong> We do not know which dates SPS has selected for count periods in any year. The 1022E form documents &ldquo;the count period and the count day selected for reporting,&rdquo; but these are not in our data set. To assess whether count day selection has been optimal, you would need the actual dates from SPS Transportation and compare them to school calendars, weather records, and attendance data.</p>
-      <p><strong style="color:var(--text)">Potential upside:</strong> If the observed Fall-to-Winter Basic dip of 700&ndash;800 riders is partly due to suboptimal count day selection rather than genuine ridership decline, correcting it could recover $0.4&ndash;0.7M annually. This is modest relative to the $23M structural gap but is entirely within SPS&rsquo;s control, requires no policy changes, and costs nothing to implement.</p>
-    </div>
-  </div>
-
-</div>
-
-<!-- FUNDING -->
 <div id="sec-funding" class="section active">
   <h2 class="section-heading">Funding Gap</h2>
 
@@ -492,6 +370,67 @@ ALLOC = min(EXAL, D.2 Prior Year Exp)<br>
   </div>
 
   <div class="card">
+    <div class="card-title">What Drove the $20M Cost Increase?</div>
+    <div class="card-sub">Decomposing the $42.3M (2019-20) &rarr; $60.7M (2024-25) increase into operational factors</div>
+    <div class="callout info" style="margin-bottom:14px">
+      <strong>The key finding:</strong> SPS runs <em>fewer</em> routes, <em>fewer</em> buses, and carries <em>far fewer</em> riders than pre-COVID &mdash; yet spends 44% more. The entire cost increase is in the <strong>per-route rate</strong>, not in the volume of service. Per-route cost jumped from $64,410 to $99,816 (+55%). No operational input variable (routes, buses, riders, distance) increased enough to explain the spending growth.
+    </div>
+    <div class="grid-2" style="margin-bottom:16px">
+      <div>
+        <div style="font-size:.82rem;font-weight:600;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Operational inputs: 2019-20 vs 2024-25</div>
+        <table style="width:100%;font-size:.82rem;border-collapse:collapse">
+          <thead><tr>
+            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:left">Metric</th>
+            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">2019-20</th>
+            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">2024-25</th>
+            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">Change</th>
+          </tr></thead>
+          <tbody>
+            <tr><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2"><strong>F-196 Expenditure</strong></td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$42.3M</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">$60.7M</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">+43.6%</td></tr>
+            <tr><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2">Total Routes</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">657</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">608</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-green)">&minus;7.3%</td></tr>
+            <tr><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2">Total Buses</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">370</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">383</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">+3.6%</td></tr>
+            <tr><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2">Total Riders</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">23,459</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">14,029</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-green)">&minus;40.2%</td></tr>
+            <tr><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2">Avg Distance (mi)</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">2.20</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">2.15</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-green)">&minus;2.0%</td></tr>
+            <tr><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2">Annual Route-Miles</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">505,633</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">458,961</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-green)">&minus;9.2%</td></tr>
+            <tr><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2">Basic Routes</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">219</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">202</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-green)">&minus;7.8%</td></tr>
+            <tr><td style="padding:3px 8px">Special Ed Routes</td><td style="padding:3px 8px;text-align:right;font-family:'DM Mono',monospace">332</td><td style="padding:3px 8px;text-align:right;font-family:'DM Mono',monospace">347</td><td style="padding:3px 8px;text-align:right;font-family:'DM Mono',monospace">+4.5%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div style="font-size:.82rem;font-weight:600;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Unit cost trends</div>
+        <table style="width:100%;font-size:.82rem;border-collapse:collapse">
+          <thead><tr>
+            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:left">Metric</th>
+            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">2019-20</th>
+            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">2024-25</th>
+            <th style="padding:4px 8px;background:#F0ECE6;font-size:.72rem;text-align:right">Change</th>
+          </tr></thead>
+          <tbody>
+            <tr style="background:#FDF0EC"><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2"><strong>Cost per Route</strong></td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$64,410</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">$99,816</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)"><strong>+55.0%</strong></td></tr>
+            <tr style="background:#FDF0EC"><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2"><strong>Cost per Bus</strong></td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$114,416</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">$158,584</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)"><strong>+38.6%</strong></td></tr>
+            <tr style="background:#FDF0EC"><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2"><strong>Cost per Route-Mile</strong></td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$83.65</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">$132.34</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)"><strong>+58.2%</strong></td></tr>
+            <tr><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2">Cost per Rider</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">$1,803</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">$4,329</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-vermil)">+140.1%</td></tr>
+            <tr><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2">Riders per Route</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">35.7</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace">23.1</td><td style="padding:3px 8px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;color:var(--c-green)">&minus;35.5%</td></tr>
+            <tr><td style="padding:3px 8px">Basic Riders per Route</td><td style="padding:3px 8px;text-align:right;font-family:'DM Mono',monospace">84.6</td><td style="padding:3px 8px;text-align:right;font-family:'DM Mono',monospace">49.1</td><td style="padding:3px 8px;text-align:right;font-family:'DM Mono',monospace;color:var(--c-green)">&minus;42.0%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="chart-wrap" style="height:260px"><canvas id="ch-cost-decomp"></canvas></div>
+    <div class="legend" style="margin-top:8px">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-vermil)"></div>Cost per Route ($K)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-blue)"></div>Total Routes</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--c-green)"></div>Total Riders (K)</div>
+    </div>
+    <div style="font-size:.84rem;line-height:1.7;margin-top:14px">
+      <p style="margin-bottom:10px"><strong style="color:var(--text)">The decomposition:</strong> The entire $18.4M increase decomposes into two factors. Route count <em>fell</em> by 48, which at the old per-route cost should have <em>saved</em> $3.1M. Instead, the per-route rate jumped from $64,410 to $99,816, adding $21.5M. Net: +$18.4M. There is no volume increase to explain the spending growth &mdash; fewer routes, fewer riders, fewer miles, roughly the same bus count, shorter distances.</p>
+      <p style="margin-bottom:10px"><strong style="color:var(--text)">What changed &mdash; four identifiable factors:</strong> (1) The BAFO rate increase from ~$500 to ~$575/route-day (+15% on the $42.3M base = <strong>+$6.3M</strong>). (2) The alternative transport layer (EverDriven, HopSkipDrive, Zum rideshare) that did not exist pre-COVID, authorized at up to $10.45M/yr (<strong>$0&ndash;10.5M</strong> &mdash; we have no data on actual utilization of these contracts; the authorization exists but actual spend could be minimal or near the ceiling). (3) The route mix shift toward sped (+15 sped routes, &minus;17 basic) with sped routes costing more per route due to aides and smaller vehicles (<strong>+$0.8M</strong>). (4) Growth in &ldquo;Other&rdquo; program buses (Gifted, Homeless, Early Ed, Bilingual: 33 &rarr; 56) at ~$100K/yr each (<strong>+$2.3M</strong>). The BAFO rate increase, route mix shift, and Other bus growth are grounded in data and account for $9.4M. The alt transport layer could account for the remaining $9M &mdash; or it could be much less, with the balance sitting in bus contract overages or excess-hour charges. Without vendor-level NCES 519 data, the split is unknown. The per-route rate looks like a 55% jump, but it is not a single cause; it is the sum of a modest contract rate increase, a large new service layer, and a fleet mix shift.</p>
+      <p><strong style="color:var(--text)">The uncomfortable comparison:</strong> SPS is running 9% fewer route-miles and carrying 40% fewer riders while paying 44% more. The service is objectively smaller; only the price is larger.</p>
+    </div>
+  </div>
+
+  <div class="card">
     <div class="card-title">Remaining Gaps &amp; Data Limitations</div>
     <div class="card-sub">What we know, what we searched, and what&rsquo;s still missing</div>
     <div style="font-size:.83rem;line-height:1.8;color:var(--muted)">
@@ -503,6 +442,87 @@ ALLOC = min(EXAL, D.2 Prior Year Exp)<br>
     </div>
   </div>
 
+</div>
+
+
+<div id="sec-comparisons" class="section">
+  <h2 class="section-heading">Comparison Districts</h2>
+  <p class="section-desc">Seattle compared to two peer districts from OSPI&rsquo;s 21-district KPI cohort: <strong>Tacoma</strong> (next-worst on cost-per-rider) and <strong>Federal Way</strong> (cohort efficiency leader). Data from OSPI STARS quarterly reports and KPI Technical Assistance papers.</p>
+
+  <div class="callout warn" style="margin-bottom:16px">
+    <strong>The cleanest framing:</strong> Tacoma&rsquo;s basic ridership collapsed across COVID at almost exactly Seattle&rsquo;s rate, but Tacoma transports its remaining riders at $3,554 each while Seattle pays $8,652. Federal Way lost almost no riders and runs near the cohort floor. Whatever caused Seattle&rsquo;s cost explosion, it is not just &ldquo;Seattle lost riders.&rdquo;
+  </div>
+
+  <div class="stat-row">
+    <div class="stat"><div class="stat-val warn">$8,652</div><div class="stat-label">Seattle cost/rider (2024-25)</div></div>
+    <div class="stat"><div class="stat-val">$3,554</div><div class="stat-label">Tacoma cost/rider</div></div>
+    <div class="stat"><div class="stat-val">$2,835</div><div class="stat-label">Federal Way cost/rider</div></div>
+    <div class="stat"><div class="stat-val warn">39.5</div><div class="stat-label">Seattle basic riders/bus (last in cohort)</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Cost per Rider, 2024-25 &mdash; vs. the 21-District KPI Cohort</div>
+    <div class="card-sub">From the April 2026 OSPI KPI Technical Assistance paper. Seattle is 2.4&times; Tacoma and 3.1&times; Federal Way.</div>
+    <div class="chart-wrap" style="height:520px"><canvas id="ch-comp-cohort-cpr"></canvas></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Basic Riders per Basic Bus, 2024-25 &mdash; vs. the KPI Cohort</div>
+    <div class="card-sub">The operational counterpart. Federal Way leads at 127; Seattle is last at 39.5.</div>
+    <div class="chart-wrap" style="height:700px"><canvas id="ch-comp-cohort-brpb"></canvas></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Cost per Rider, Year by Year</div>
+      <div class="card-sub">OSPI KPI: prior-year F-196 expenditure &divide; average quarterly ridership</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="ch-comp-cpr"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Cost per Route-Mile</div>
+      <div class="card-sub">F-196 expenditure &divide; annual route-miles. Supply-side efficiency independent of ridership.</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="ch-comp-cpm"></canvas></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Total Ridership (Basic + Special)</div>
+      <div class="card-sub">Average across Fall/Winter/Spring quarterly reports</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="ch-comp-riders"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">F-196 Expenditure vs. STARS Allocation</div>
+      <div class="card-sub">Solid = expenditure, dashed = STARS allocation. Seattle is the only one with a persistent gap.</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="ch-comp-exp-alloc"></canvas></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">Basic Riders per Basic Bus</div>
+      <div class="card-sub">OSPI KPI: bus utilization over time</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="ch-comp-brpb"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Bus Fleet by Type</div>
+      <div class="card-sub">Basic (solid) vs Special Ed (dashed) bus counts</div>
+      <div class="chart-wrap" style="height:260px"><canvas id="ch-comp-fleet"></canvas></div>
+      <div class="legend" style="margin-top:8px">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-blue)"></div>Seattle</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-orange)"></div>Tacoma</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--c-green)"></div>Federal Way</div>
+        <span style="font-size:.78rem;color:var(--muted);margin-left:8px">Solid = Basic buses &middot; Dashed = Sped buses</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">What the Comparison Shows</div>
+    <div style="font-size:.85rem;line-height:1.7">
+      <p style="margin-bottom:10px"><strong style="color:var(--c-blue)">Seattle</strong> places dead last on every operational efficiency measure in OSPI&rsquo;s 21-district cohort. The cost-per-rider gap is not marginal &mdash; Seattle&rsquo;s $8,652 is 2.4&times; Tacoma&rsquo;s and 3.1&times; Federal Way&rsquo;s. The cost-per-route-mile chart shows this is a supply-side problem: Seattle&rsquo;s network costs more to operate per mile driven, regardless of ridership.</p>
+      <p style="margin-bottom:10px"><strong style="color:var(--c-orange)">Tacoma</strong> is the most revealing comparison. Both districts are urban, both have school choice, and both lost ~30% of basic riders across COVID. But Tacoma tracks its STARS allocation closely while Seattle&rsquo;s expenditure runs $20&ndash;30M above. The gap between them is not geography or COVID.</p>
+      <p><strong style="color:var(--c-green)">Federal Way</strong> provides the efficiency benchmark. It barely lost riders, runs 127 basic riders per bus, and keeps cost per rider at $2,835. Federal Way is suburban, so direct comparison is imperfect &mdash; but it demonstrates what&rsquo;s achievable within the same STARS formula.</p>
+    </div>
+  </div>
 </div>
 
 
@@ -945,6 +965,8 @@ ALLOC = min(EXAL, D.2 Prior Year Exp)<br>
 
 
 
+
+
 <div id="sec-downloads" class="section">
   <h2 class="section-heading">Downloads</h2>
   <p class="section-desc">Source documents and derived data tables for independent analysis.</p>
@@ -953,7 +975,7 @@ ALLOC = min(EXAL, D.2 Prior Year Exp)<br>
     <div class="card-sub">OSPI quarterly reports and 1026A allocations, correctly dated</div>
     <div style="margin-top:12px">
       <a class="btn-dl primary" href="SPS_Transit_info_renamed_v2.zip" download>&#8659; SPS_Transit_info_renamed_v2.zip</a>
-      <p style="margin-top:10px;font-size:.82rem;color:var(--muted)">32 files: quarterly district detail reports (Fall/Winter/Spring, 2017-18 through 2025-26) and 1026A allocation detail (2017-18 through 2025-26). DOCX for older years, PDF for 2022-23 onward.</p>
+      <p style="margin-top:10px;font-size:.82rem;color:var(--muted)">35 files: quarterly district detail reports (Fall/Winter/Spring, 2017-18 through 2025-26) and 1026A allocation detail (2017-18 through 2025-26). DOCX for older years, PDF for 2022-23 onward.</p>
     </div>
   </div>
   <div class="card">
@@ -974,11 +996,23 @@ ALLOC = min(EXAL, D.2 Prior Year Exp)<br>
       </div>
       <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
         <button class="btn-dl secondary" onclick="dlCSV('schools')">&#8659; School_Routes_All_Years.csv</button>
-        <div style="font-size:.82rem;color:var(--muted);padding-top:3px">School-level route counts for 2022-23 through 2024-25, with headcount, SWD, low income, ELL, highly capable, region, type, and MS attendance area.</div>
+        <div style="font-size:.82rem;color:var(--muted);padding-top:3px">School-level route counts and demographics for 2017-18 through 2024-25. Route data available for all years except 2018-19 (uses Winter). Includes headcount, SWD, low income, ELL, highly capable, region, type, and MS attendance area.</div>
       </div>
       <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
         <button class="btn-dl secondary" onclick="dlCSV('stars_coefs')">&#8659; STARS_Coefficients.csv</button>
-        <div style="font-size:.82rem;color:var(--muted);padding-top:3px">Formula coefficients for 2022-23 through 2025-26, extracted from 1026A documents and verified against published EXAL values.</div>
+        <div style="font-size:.82rem;color:var(--muted);padding-top:3px">Formula coefficients for all 9 years (2017-18 through 2025-26), extracted from 1026A documents. 2022-23 onward verified exactly; earlier years within 0.02% rounding.</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+        <button class="btn-dl secondary" onclick="dlCSV('budget')">&#8659; Transport_Budget_vs_Actual.csv</button>
+        <div style="font-size:.82rem;color:var(--muted);padding-top:3px">Adopted transportation budget vs. year-end F-196 actuals (activity codes 51&ndash;59 excl. 58). 2017-18 through 2024-25.</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+        <button class="btn-dl secondary" onclick="dlCSV('comparisons')">&#8659; Comparison_Districts.csv</button>
+        <div style="font-size:.82rem;color:var(--muted);padding-top:3px">Seattle, Tacoma, and Federal Way: cost per rider, basic riders per bus, sped riders per bus, total ridership, F-196 expenditure, STARS allocation, bus fleet, and route-miles. 2017-18 through 2025-26.</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+        <button class="btn-dl secondary" onclick="dlCSV('contracts')">&#8659; Contract_Authorizations.csv</button>
+        <div style="font-size:.82rem;color:var(--muted);padding-top:3px">Board-authorized contract ceilings (RFP022242, RFQ 02954, RFQ 042339), NCES 519 actuals, and gap above ceiling by school year.</div>
       </div>
     </div>
   </div>
@@ -995,6 +1029,9 @@ ALLOC = min(EXAL, D.2 Prior Year Exp)<br>
       <p style="margin-top:8px"><strong style="color:var(--text)">STARS coefficients:</strong> Coefficients for 2022-23 through 2025-26 are extracted from SPS 1026A documents and verified. Coefficients for 2017-18 through 2021-22 extracted from DOCX versions of the 1026A; values reproduce published EXAL to within 0.02% (rounding from 5-decimal display). 2022-23 through 2025-26 match exactly.</p>
       <p style="margin-top:8px"><strong style="color:var(--text)">Gifted program:</strong> Per OSPI General Instructions, Gifted (Type G) routes count under Special Program totals in STARS, not Basic.</p>
       <p style="margin-top:8px"><strong style="color:var(--text)">School matching:</strong> Route school names matched to OSPI domain table codes. A small number of programs (Experimental Ed Unit, Roxhill Building, Bridges @ Magnuson) could not be matched and are excluded.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">Transportation budget:</strong> Adopted budget from SAFS F-195; actuals from F-196. Transportation defined as activity codes 51&ndash;59 excluding 58.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">Contract data:</strong> Board authorization amounts from public meeting agendas (July 6, 2022; Nov 30, 2022; July 6, 2023). NCES 519 actuals from district financial reports. BAFO per-route-day rates from public records request.</p>
+      <p style="margin-top:8px"><strong style="color:var(--text)">Comparison districts:</strong> Tacoma (ccddd 27010) and Federal Way (ccddd 17210) selected from OSPI&rsquo;s 21-district KPI cohort. KPI metrics from OSPI Technical Assistance papers. Operational data from STARS quarterly district reports.</p>
     </div>
   </div>
 </div>
@@ -1031,63 +1068,10 @@ function build(id){
   if(id==='routes')buildRoutes();
   if(id==='schools')buildSchoolTable();
   if(id==='analyses'){setTimeout(()=>{buildTrendsChart();},0);built['analyses']=true;}
-  if(id==='contracts'){setTimeout(()=>{buildContractsChart();},0);built['contracts']=true;}
+  if(id==='comparisons'){setTimeout(()=>{buildComparisons();},0);built['comparisons']=true;}
+  if(id==='contracts'){setTimeout(()=>{buildContractsChart();buildCostDecomp();},0);built['contracts']=true;}
 }
 
-// ── STARS ─────────────────────────────────────────────────────
-const _z_STARS_YEARS="H4sIAD94A2oC/7XWS6vbOBQA4L9iDAMzEJvzkM6Rsist3Q3TZRcDJU3SNnDJHZKbzkC5/32OJCe23CbpXXQVLNuS/OU89K0lQO0wtMtv7fHxdFhv22WLQPKqefPX6/fN74fTvvlzdWgwLhp7Nv7R/H2yX9f8u3v6sts30AP91hweT/vNbv853VTkdtF+XB1363ZJoKB9CIv2+M92vVs9tEtPyr3wot1sj0/tEkF6bxe7dEE9xYi6aB9W+027DD7dWn8YJgN7Db1LIzbbJg0gOaI0UCaz3aDjMrAbBjymxdYfypQ2wCp51v2XdtlBz0HzA4/749Nqb++ENGuwZbb/pf0yBvXR2yurh4dH2waTveKifdOG0m2N4ASeF8kydBhvWr7dfjTHZEnwQksMUahHnli6KNrDSOkrSoFwg1IwUEWJEbimZKopXXnjIumh0A6SFMi5qaT20VPgs2T6b11EGCVDZCTmQZKFAdEVydgR/DpJIunVTyVDhDwyRqXQFJM4fes1zOAryu8ga0asFGUajDzzIx3j0DOD11GPQZwyDHoaCF3QrEfQEd7VKzlN+EI9CU5S0F3sLEG4v9A5Xxzz13IfHLh4HS7KFA7iLJnnqVyHX5wGn1JNpylDC51YjFEY5ZS8h5TRJewKY4HDjuh+2IUMRy8NO/s86KdRZ1EVc3UsXxxdTuZzyDGoXJXjyFKVQgbLnkqPAGLlxwEmCWxoKIGmiOIgTBXRtqu20BnSc/CB3VgLbQmnKFooLa802P1CSR3xDyjfvXlbJF+dPjeUIfkC+XV72H3abTff2yEEqezsb5NcDc8Zi/00YVFts1f1FFwdd3ozYWcNxFVFL9TNg5LxUPBEvMR0feZKFZJSVc2R50Gdc1y4uCN3j2vIWHffK1pxzl129JJZ36W6wqF4f6PC6ZCMY7vgUIcbCmnNRiVDL3COdUpnDS1H3wSPxfPYeZ2tKimozxXPOyVGV/gENbVuKnyuI3+LLxc8znz+J/jEh/rYYvlGdavVCg9udQfEWXuQWZ3z7Cs6irNDi0Cub5eoA9U5nRJe5JSHunvptBydT9pJzoegMQ5nFvIdyV25EnjyE3JoVaxureSlpOYVOkql+OoxJZ+0pnE3k6NZrlqAVHJ2AIm35STn+yAnVhIpLXmWU2WrPUOX9dEumeT5+X+73MtEOwsAAA==";let _d_STARS_YEARS=null;function _STARS_YEARS(){if(!_d_STARS_YEARS)_d_STARS_YEARS=JSON.parse(pako.inflate(Uint8Array.from(atob(_z_STARS_YEARS),(c)=>c.charCodeAt(0)),{to:"string"}));return _d_STARS_YEARS;}
-let currentStarsYear='2025-26';
-function setStarsYear(yr,btn){
-  currentStarsYear=yr;
-  document.querySelectorAll('#sec-stars .yr-tab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderStarsInputs();
-  pushHash();
-}
-function renderStarsInputs(){
-  const d=_STARS_YEARS()[currentStarsYear];
-  document.getElementById('stars-src').textContent=d.source;
-  document.getElementById('stars-coef-sub').textContent=currentStarsYear+' coefficients';
-  document.getElementById('stars-inputs-sub').textContent=currentStarsYear+' inputs from 1026A';
-  document.getElementById('f-basic-c').textContent=d.c_basic.toFixed(5);
-  document.getElementById('f-sped-c').textContent=d.c_sped.toFixed(5);
-  document.getElementById('f-dest-c').textContent=d.c_dest.toFixed(5);
-  document.getElementById('f-dist-c').textContent=d.c_dist.toFixed(5);
-  document.getElementById('f-land-c').textContent=d.c_land.toFixed(5);
-  document.getElementById('f-nh-c').textContent=(d.c_nh<0?'':'+')+d.c_nh.toFixed(5);
-  document.getElementById('f-const').textContent=d.constant.toFixed(5);
-  const fmt=v=>'$'+(v/1e6).toFixed(3)+'M';
-  document.getElementById('stars-exal').textContent=fmt(d.exal);
-  document.getElementById('stars-d2').textContent=d.d2?fmt(d.d2):'n/a';
-  document.getElementById('stars-alloc').textContent=fmt(d.alloc);
-  const rows=[
-    {label:'Basic Program Riders (CBPC)',val:d.basic.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),coef:d.c_basic,contrib:(Math.log(d.basic+1)*d.c_basic)},
-    {label:'Special Program Riders (CSPC)',val:d.special.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),coef:d.c_sped,contrib:(Math.log(d.special+1)*d.c_sped)},
-    {label:'Destinations',val:d.dest,coef:d.c_dest,contrib:d.dest*d.c_dest},
-    {label:'Avg Distance (miles)',val:d.dist.toFixed(5),coef:d.c_dist,contrib:d.dist*d.c_dist},
-    {label:'Land Area ln(sq mi)',val:d.land+' sq mi',coef:d.c_land,contrib:Math.log(d.land)*d.c_land},
-    {label:'Non-High No',val:'No',coef:d.c_nh,contrib:0},
-  ];
-  document.getElementById('stars-inputs-table').innerHTML=
-    '<div style="display:grid;grid-template-columns:1fr auto auto auto;font-size:.8rem;margin-bottom:6px">'+
-    '<div style="padding:4px 6px;background:#F0ECE6;font-weight:600;font-size:.73rem;text-transform:uppercase;color:var(--muted)">Input</div>'+
-    '<div style="padding:4px 6px;background:#F0ECE6;font-weight:600;font-size:.73rem;text-transform:uppercase;color:var(--muted);text-align:right">Value</div>'+
-    '<div style="padding:4px 6px;background:#F0ECE6;font-weight:600;font-size:.73rem;text-transform:uppercase;color:var(--muted);text-align:right">Coef</div>'+
-    '<div style="padding:4px 6px;background:#F0ECE6;font-weight:600;font-size:.73rem;text-transform:uppercase;color:var(--muted);text-align:right">Contrib</div>'+
-    rows.map(r=>`
-      <div style="padding:4px 6px;border-bottom:1px solid #EDE9E2">${r.label}</div>
-      <div style="padding:4px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;font-size:.78rem">${r.val}</div>
-      <div style="padding:4px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;font-size:.78rem">${r.coef.toFixed(5)}</div>
-      <div style="padding:4px 6px;border-bottom:1px solid #EDE9E2;text-align:right;font-family:'DM Mono',monospace;font-size:.78rem">${r.contrib.toFixed(5)}</div>
-    `).join('')+'</div>';
-}
-function buildStars(){
-  renderStarsInputs();
-  new Chart(document.getElementById('ch-cbpc'),{type:'bar',data:{labels:_MAIN().alloc.map(d=>d.year),datasets:[
-    {label:'Basic CBPC',data:_MAIN().alloc.map(d=>d.basic_cbpc),backgroundColor:C.blue+'CC',borderColor:C.blue,borderWidth:1},
-    {label:'Special CSPC',data:_MAIN().alloc.map(d=>d.special_cspc),backgroundColor:C.orange+'CC',borderColor:C.orange,borderWidth:1}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{color:gc()},ticks:{color:'#6B6560'}},y:{grid:{color:gc()},ticks:{color:'#6B6560',callback:v=>v.toLocaleString()}}}}});
-}
 
 // ── Funding ───────────────────────────────────────────────────
 function buildFunding(){
@@ -1235,6 +1219,29 @@ function dlCSV(type){
     fn='STARS_Coefficients.csv';
     rows=[['year','source','basic_cbpc','special_cspc','destinations','avg_distance','land_area_sqmi','coef_basic','coef_special','coef_dest','coef_dist','coef_land','coef_nonhigh_no','constant','expected_alloc','actual_alloc','d2_prior_exp']];
     Object.entries(_STARS_YEARS()).forEach(([yr,d])=>rows.push([yr,d.source,d.basic,d.special,d.dest,d.dist,d.land,d.c_basic,d.c_sped,d.c_dest,d.c_dist,d.c_land,d.c_nh,d.constant,d.exal,d.alloc,d.d2]));
+  }else if(type==='budget'){
+    fn='Transport_Budget_vs_Actual.csv';
+    const byrs=['2017-18','2018-19','2019-20','2020-21','2021-22','2022-23','2023-24','2024-25'];
+    const bgt=[36.1,37.7,43.5,48.8,53.0,54.5,47.2,57.1];
+    const act=[37.6,39.9,42.3,17.2,47.7,65.3,60.0,60.7];
+    rows=[['year','budget_millions','actual_millions','over_under_millions']];
+    byrs.forEach((y,i)=>rows.push([y,bgt[i],act[i],Math.round((act[i]-bgt[i])*10)/10]));
+  }else if(type==='comparisons'){
+    fn='Comparison_Districts.csv';
+    const DD=_DD();
+    rows=[['district','year','f196_rev','f196_exp','stars_alloc','total_riders','ride_basic','ride_special','routes_total','buses_total','buses_basic','buses_special','avg_distance','cost_per_rider','basic_riders_per_bus','sped_riders_per_bus','cost_per_mile']];
+    ['sps','tac','fw'].forEach(k=>{
+      const d=DD.districts[k];
+      d.years.forEach(y=>{
+        rows.push([d.label,y.year,y.rev,y.exp_act,y.stars_alloc||'',y.total_riders||'',y.ride_basic||'',y.ride_special||'',y.routes_total||'',y.buses_total||'',y.buses_basic||'',y.buses_special||'',y.avg_distance||'',y.kpi_cost_per_rider||y.cost_per_rider||'',y.kpi_basic_riders_per_bus||y.basic_per_bus||'',y.kpi_sped_riders_per_bus||'',y.cost_per_mile||'']);
+      });
+    });
+  }else if(type==='contracts'){
+    fn='Contract_Authorizations.csv';
+    rows=[['school_year','bus_contract_rfp022242','alt_transport_rfq','total_authorized','nces_519_actual','gap_above_ceiling']];
+    rows.push(['2022-23',45.2,8.45,53.65,63.0,9.35]);
+    rows.push(['2023-24',45.2,10.45,55.65,60.0,4.35]);
+    rows.push(['2024-25',45.2,10.45,55.65,60.0,4.35]);
   }
   const csv=rows.map(r=>r.map(v=>{const s=String(v??'');return(s.includes(',')||s.includes('"'))?'"'+s.replace(/"/g,'""')+'"':s}).join(',')).join('\n');
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=fn;a.click();
@@ -1537,6 +1544,183 @@ function buildBudgetVsActual() {
       scales: {
         x:{grid:{display:false},ticks:{color:'#6B6560'}},
         y:{grid:{color:'rgba(0,0,0,0.07)'},ticks:{color:'#6B6560',callback:v=>'$'+v+'M'},suggestedMin:0}
+      }
+    }
+  });
+}
+
+
+// ── District Comparisons charts ───────────────────────────────
+const _z_DD="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";
+let _d_DD=null;
+function _DD(){if(!_d_DD)_d_DD=JSON.parse(pako.inflate(Uint8Array.from(atob(_z_DD),(c)=>c.charCodeAt(0)),{to:"string"}));return _d_DD;}
+
+function buildComparisons() {
+  const DD = _DD();
+  const sps=DD.districts.sps, tac=DD.districts.tac, fw=DD.districts.fw;
+  const colors={sps:C.blue, tac:C.orange, fw:C.green};
+
+  // Helper: extract year array from district data, filtering nulls
+  function getYears(dist, minYear) {
+    return dist.years.filter(y => !minYear || y.year >= minYear).map(y => y.year.replace('20','').replace('-20','-'));
+  }
+  function getField(dist, field, minYear) {
+    return dist.years.filter(y => !minYear || y.year >= minYear).map(y => y[field]);
+  }
+  function shortYr(y) { return y.replace('20','').replace('-20','-'); }
+
+  // 1. Cohort cost per rider bar chart
+  const cohortCPR = DD.cohort_cost_per_rider_2024_25.sort((a,b) => b.metric - a.metric);
+  new Chart(document.getElementById('ch-comp-cohort-cpr'), {
+    type:'bar',
+    data:{
+      labels: cohortCPR.map(d => d.district),
+      datasets:[{
+        data: cohortCPR.map(d => Math.round(d.metric)),
+        backgroundColor: cohortCPR.map(d => {
+          const n = d.district.toUpperCase();
+          if(n.includes('SEATTLE')) return C.blue+'DD';
+          if(n.includes('TACOMA')) return C.orange+'DD';
+          if(n.includes('FEDERAL')) return C.green+'DD';
+          return '#B0A898AA';
+        }),
+        borderWidth: 0
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' $'+c.parsed.x.toLocaleString()}}},
+      scales:{x:{grid:{color:'rgba(0,0,0,0.07)'},ticks:{color:'#6B6560',callback:v=>'$'+v.toLocaleString()}},
+              y:{grid:{display:false},ticks:{color:'#6B6560',font:{size:10}}}}}
+  });
+
+  // 2. Cohort basic riders per bus bar chart
+  const cohortBR = DD.cohort_basic_riders_per_bus_2024_25.sort((a,b) => a.metric - b.metric);
+  new Chart(document.getElementById('ch-comp-cohort-brpb'), {
+    type:'bar',
+    data:{
+      labels: cohortBR.map(d => d.district),
+      datasets:[{
+        data: cohortBR.map(d => Math.round(d.metric*10)/10),
+        backgroundColor: cohortBR.map(d => {
+          const n = d.district.toUpperCase();
+          if(n.includes('SEATTLE')) return C.blue+'DD';
+          if(n.includes('TACOMA')) return C.orange+'DD';
+          if(n.includes('FEDERAL')) return C.green+'DD';
+          return '#B0A898AA';
+        }),
+        borderWidth: 0
+      }]
+    },
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+c.parsed.x+' riders/bus'}}},
+      scales:{x:{grid:{color:'rgba(0,0,0,0.07)'},ticks:{color:'#6B6560'}},
+              y:{grid:{display:false},ticks:{color:'#6B6560',font:{size:10}}}}}
+  });
+
+  // Common years for line charts (2017-18 onward where we have STARS data)
+  const minYr = '2017-2018';
+  const yrs = getYears(sps, minYr);
+  const mkL=(label,data,color,dash)=>({label,data,borderColor:color,backgroundColor:'transparent',borderWidth:2.5,pointRadius:4,tension:.2,borderDash:dash||[],spanGaps:true});
+
+  function compLine(id, datasets, yCallback) {
+    new Chart(document.getElementById(id), {
+      type:'line', data:{labels:yrs, datasets},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{mode:'index',callbacks:{label:c=>c.parsed.y!=null?' '+c.dataset.label+': '+(yCallback?yCallback(c.parsed.y):c.parsed.y):null}}},
+        scales:{x:{grid:{display:false},ticks:{color:'#6B6560',maxRotation:45}},
+                y:{grid:{color:'rgba(0,0,0,0.07)'},ticks:{color:'#6B6560',callback:yCallback||function(v){return v}}}}}
+    });
+  }
+
+  // 3. Cost per rider
+  compLine('ch-comp-cpr', [
+    mkL('Seattle',getField(sps,'kpi_cost_per_rider',minYr),C.blue),
+    mkL('Tacoma',getField(tac,'kpi_cost_per_rider',minYr),C.orange),
+    mkL('Federal Way',getField(fw,'kpi_cost_per_rider',minYr),C.green),
+  ], v=>'$'+Math.round(v).toLocaleString());
+
+  // 4. Cost per route-mile
+  compLine('ch-comp-cpm', [
+    mkL('Seattle',getField(sps,'cost_per_mile',minYr),C.blue),
+    mkL('Tacoma',getField(tac,'cost_per_mile',minYr),C.orange),
+    mkL('Federal Way',getField(fw,'cost_per_mile',minYr),C.green),
+  ], v=>'$'+Math.round(v).toLocaleString());
+
+  // 5. Total ridership
+  compLine('ch-comp-riders', [
+    mkL('Seattle',getField(sps,'total_riders',minYr),C.blue),
+    mkL('Tacoma',getField(tac,'total_riders',minYr),C.orange),
+    mkL('Federal Way',getField(fw,'total_riders',minYr),C.green),
+  ], v=>Math.round(v).toLocaleString());
+
+  // 6. F-196 exp vs STARS allocation
+  new Chart(document.getElementById('ch-comp-exp-alloc'), {
+    type:'line', data:{labels:yrs, datasets:[
+      mkL('Seattle exp',getField(sps,'exp_act',minYr).map(v=>v?v/1e6:null),C.blue),
+      mkL('Seattle STARS',getField(sps,'stars_alloc',minYr).map(v=>v?v/1e6:null),C.blue,[5,3]),
+      mkL('Tacoma exp',getField(tac,'exp_act',minYr).map(v=>v?v/1e6:null),C.orange),
+      mkL('Tacoma STARS',getField(tac,'stars_alloc',minYr).map(v=>v?v/1e6:null),C.orange,[5,3]),
+      mkL('Federal Way exp',getField(fw,'exp_act',minYr).map(v=>v?v/1e6:null),C.green),
+      mkL('Federal Way STARS',getField(fw,'stars_alloc',minYr).map(v=>v?v/1e6:null),C.green,[5,3]),
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{mode:'index',callbacks:{label:c=>c.parsed.y!=null?' '+c.dataset.label+': $'+c.parsed.y.toFixed(1)+'M':null}}},
+      scales:{x:{grid:{display:false},ticks:{color:'#6B6560',maxRotation:45}},
+              y:{grid:{color:'rgba(0,0,0,0.07)'},ticks:{color:'#6B6560',callback:v=>'$'+v+'M'}}}}
+  });
+
+  // 7. Basic riders per bus
+  compLine('ch-comp-brpb', [
+    mkL('Seattle',getField(sps,'kpi_basic_riders_per_bus',minYr),C.blue),
+    mkL('Tacoma',getField(tac,'kpi_basic_riders_per_bus',minYr),C.orange),
+    mkL('Federal Way',getField(fw,'kpi_basic_riders_per_bus',minYr),C.green),
+  ]);
+
+  // 8. Bus fleet by type
+  new Chart(document.getElementById('ch-comp-fleet'), {
+    type:'line', data:{labels:yrs, datasets:[
+      mkL('Seattle Basic',getField(sps,'buses_basic',minYr),C.blue),
+      mkL('Seattle SpEd',getField(sps,'buses_special',minYr),C.blue,[5,3]),
+      mkL('Tacoma Basic',getField(tac,'buses_basic',minYr),C.orange),
+      mkL('Tacoma SpEd',getField(tac,'buses_special',minYr),C.orange,[5,3]),
+      mkL('FW Basic',getField(fw,'buses_basic',minYr),C.green),
+      mkL('FW SpEd',getField(fw,'buses_special',minYr),C.green,[5,3]),
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{mode:'index',callbacks:{label:c=>c.parsed.y!=null?' '+c.dataset.label+': '+Math.round(c.parsed.y):null}}},
+      scales:{x:{grid:{display:false},ticks:{color:'#6B6560',maxRotation:45}},
+              y:{grid:{color:'rgba(0,0,0,0.07)'},ticks:{color:'#6B6560'}}}}
+  });
+}
+
+
+// ── Cost decomposition chart ──────────────────────────────────
+function buildCostDecomp() {
+  const yrs = ['17-18','18-19','19-20','20-21','21-22','22-23','23-24','24-25'];
+  const costPerRoute = [53.1,60.9,64.4,288.5,79.8,118.8,103.5,99.8]; // $K
+  const routes =       [709,655,657,70,598,550,580,608];
+  const riders =       [25.8,22.7,23.5,2.2,17.3,12.4,12.1,14.0]; // K
+
+  new Chart(document.getElementById('ch-cost-decomp'), {
+    type:'line',
+    data:{labels:yrs, datasets:[
+      {label:'Cost per Route ($K)',data:costPerRoute.map((v,i)=>i===3?null:v),borderColor:C.vermil,backgroundColor:'transparent',borderWidth:2.5,pointRadius:5,tension:.2,yAxisID:'yL',spanGaps:false},
+      {label:'Total Routes',data:routes.map((v,i)=>i===3?null:v),borderColor:C.blue,backgroundColor:'transparent',borderWidth:2,borderDash:[5,3],pointRadius:4,tension:.2,yAxisID:'yR',spanGaps:false},
+      {label:'Total Riders (K)',data:riders.map((v,i)=>i===3?null:v),borderColor:C.green,backgroundColor:'transparent',borderWidth:2,borderDash:[3,3],pointRadius:4,tension:.2,yAxisID:'yR',spanGaps:false},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{mode:'index',callbacks:{
+        label:c=>{
+          if(c.parsed.y==null)return null;
+          if(c.datasetIndex===0)return ' Cost/Route: $'+c.parsed.y.toFixed(1)+'K';
+          if(c.datasetIndex===1)return ' Routes: '+c.parsed.y;
+          return ' Riders: '+c.parsed.y.toFixed(1)+'K';
+        }
+      }}},
+      scales:{
+        x:{grid:{display:false},ticks:{color:'#6B6560'}},
+        yL:{type:'linear',position:'left',grid:{color:'rgba(0,0,0,0.07)'},ticks:{color:C.vermil,callback:v=>'$'+v+'K'},title:{display:true,text:'Cost per Route ($K)',color:C.vermil,font:{size:11}}},
+        yR:{type:'linear',position:'right',grid:{display:false},ticks:{color:'#6B6560'},title:{display:true,text:'Routes / Riders (K)',color:'#6B6560',font:{size:11}},min:0}
       }
     }
   });

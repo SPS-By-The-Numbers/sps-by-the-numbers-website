@@ -57,20 +57,6 @@ export default function Page() {
           <li>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Link
-                href="/analyses/sps_transport_explorer.html"
-                target="_blank"
-                rel="noopener"
-              >
-                <Typography component="span">
-                  Seattle Public Schools — Transportation Funding Analysis
-                </Typography>
-              </Link>
-              <AiChip />
-            </Box>
-          </li>
-          <li>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Link
                 href="/analyses/yellow_bus_ledger.html"
                 target="_blank"
                 rel="noopener"
