@@ -1009,15 +1009,15 @@
 
 <!-- ============== TAB NAVIGATION ============== -->
 <nav class="tab-nav" id="tabNav">
-  <button class="tab-btn active" data-tab="shape">Funding gap</button>
-  <button class="tab-btn" data-tab="starsfunding">STARS funding</button>
+  <button class="tab-btn active" data-tab="starsfunding">STARS funding</button>
+  <button class="tab-btn" data-tab="shape">Funding gap</button>
   <button class="tab-btn" data-tab="scatter">Scatter plots</button>
   <button class="tab-btn" data-tab="explorer">District explorer</button>
   <button class="tab-btn" data-tab="methodology">Methodology</button>
 </nav>
 
 <!-- ============== SECTION 1: STATEWIDE TOTALS ============== -->
-<section class="tab-panel active" data-panel="shape">
+<section class="tab-panel" data-panel="shape">
 <h2 class="section-title">Statewide transportation funding gap, 2013–2025</h2>
   <p class="section-lede">Revenue and expenditure are from OSPI SAFS F-196 annual financial reports (2013-14 through 2024-25), Activity codes 51–59 (to-and-from student transportation). Across the past twelve school years, the statewide weighted gap between transportation revenue and expenditure (<strong>actuals</strong>) has had a median of <strong>−$42 per pupil</strong> (see Mean ± σ in the KPI cards above), with a typical range (IQR) of <strong>−$49 to −$26 per pupil</strong>. The worst year was <strong>2013-14 at −$106</strong>; the best was <strong>2018-19 at +$41</strong>, the year after the McCleary funding ramp began. Per-pupil spending has roughly <strong>doubled</strong> over the period, from $432 to $808 per K-12 FTE.</p>
   <p class="section-lede">Revenue here is what districts <em>received</em> — a combination of the STARS allocation (the state formula), legislative add-ons, and other local/federal sources. The STARS allocation alone (visible as the striped column in the chart) typically covers 60–80% of what districts actually spend. The gap between the solid revenue bar and the red expenditure bar is the funding shortfall that districts must absorb from their general fund or reserves. The <a href="#" onclick="showTab('starsfunding');return false;">STARS funding tab</a> shows the formula behind the allocation for any district.</p>
@@ -1312,7 +1312,7 @@
 
 
 <!-- ============== METHODOLOGY PANEL ============== -->
-<section class="tab-panel" data-panel="starsfunding">
+<section class="tab-panel active" data-panel="starsfunding">
   <h2 class="section-title">STARS funding by district</h2>
   <p class="section-lede">STARS formula inputs, allocation history, count-day analysis, and funding formula legal framework. Select a district to explore its STARS profile over all available years (2017-18 onward). Operational charts (riders, routes, buses, cost per rider, etc.) are in the District Explorer tab.</p>
 
@@ -1481,6 +1481,7 @@
       <li><a href="https://ospi.k12.wa.us/sites/default/files/2023-08/january2020washingtonstatestudenttransportationrcwsandwacs.pdf" target="_blank" rel="noopener">OSPI RCW/WAC Reference Compilation</a> — January 2020 compilation of all student transportation statutes and rules.</li>
     </ol>
   </div>
+
 
 </section>
 
@@ -1980,7 +1981,7 @@ function renderStatewide() {
   const isPP = state.scale === 'pp';
   const revData = d.map(r => isPP ? (r.rev_pp   || null) : (r.total_rev || null));
   const expData = d.map(r => isPP ? (r.exp_pp   || null) : (r.total_exp || null));
-  const fmt = isPP ? v => '$' + Math.round(v) : v => '$' + (v / 1e6).toFixed(0) + 'M';
+  const fmt = isPP ? v => '$' + Math.round(v).toLocaleString() : v => '$' + (v / 1e6).toFixed(0) + 'M';
   hcRender('statewideChart', {
     chart:   { type: 'column', height: 380 },
     title:   { text: null },
@@ -2006,7 +2007,7 @@ function renderStatewide() {
 function renderPrePost() {
   hcDestroy('prePostChart');
   const isPP  = state.prePostScale === 'pp';
-  const fmt   = isPP ? v => '$' + Math.round(v) : v => '$' + (v / 1e6).toFixed(0) + 'M';
+  const fmt   = isPP ? v => '$' + Math.round(v).toLocaleString().toLocaleString() : v => '$' + (v / 1e6).toFixed(1) + 'M';
   const cats  = DATA.yearly.map(r => shortYr(r.y));
   const revData = DATA.yearly.map(r => isPP ? (r.rev_pp   || null) : (r.total_rev || null));
   const expData = DATA.yearly.map(r => isPP ? (r.exp_pp   || null) : (r.total_exp || null));
@@ -2052,7 +2053,7 @@ function renderScatter() {
   });
 
   const isPP   = state.scale === 'pp';
-  const fmt    = isPP ? v => '$' + Math.round(v) : v => '$' + (v / 1e6).toFixed(1) + 'M';
+  const fmt    = isPP ? v => '$' + Math.round(v).toLocaleString().toLocaleString() : v => '$' + (v / 1e6).toFixed(1) + 'M';
   const useLog = state.scaleType === 'log';
 
   // Group points by year for color-coding, plus a separate selected-district series
@@ -2172,7 +2173,7 @@ function renderPrePostScatter() {
   });
 
   const isPP   = state.prePostScale === 'pp';
-  const fmt    = isPP ? v => '$' + Math.round(v) : v => '$' + (v / 1e6).toFixed(1) + 'M';
+  const fmt    = isPP ? v => '$' + Math.round(v).toLocaleString().toLocaleString() : v => '$' + (v / 1e6).toFixed(1) + 'M';
   const useLog = state.prePostScaleType === 'log';
 
   // Plasma color scale by district enrollment (6 buckets)
@@ -2338,7 +2339,12 @@ function drawDistrictChart(rows) {
     tooltip:{ shared: true, formatter() {
       let s = '<b>' + this.x + '</b>';
       this.points.forEach(p => {
-        s += '<br>' + p.series.name + ': $' + (p.y/1e6).toFixed(2) + 'M';
+        if (p.y == null) return;
+        const abs = Math.abs(p.y);
+        const val = abs >= 1e6 ? '$' + (p.y/1e6).toFixed(2) + 'M'
+                  : abs >= 1e3 ? '$' + Math.round(p.y).toLocaleString()
+                  : '$' + p.y.toFixed(0);
+        s += '<br>' + p.series.name + ': ' + val;
       });
       return s;
     }},
@@ -2366,7 +2372,7 @@ function renderSpsCohortChart() {
     title:  { text: null },
     xAxis:  { categories: sorted.map(r => r.district), labels:{style:{fontSize:'11px'}} },
     yAxis:  { min: 0, title:{text:null}, labels:{formatter(){return '$'+(this.value/1000).toFixed(0)+'K';}}},
-    tooltip:{ formatter() { return `<b>${this.x}</b><br>$${Math.round(this.y).toLocaleString()}`; }},
+    tooltip:{ formatter() { return '<b>' + this.x + '</b><br>$' + Math.round(this.y).toLocaleString(); }},
     plotOptions:{ bar:{ colorByPoint: true, colors: sorted.map(r => r.is_subject ? '#c0392b' : '#7c8a9a') }},
     series: [{ name: 'Cost per rider', data: sorted.map(r=>r.metric), showInLegend:false }],
   })
@@ -3338,7 +3344,7 @@ function renderSpsCohortRidersChart() {
     xAxis:  { categories: sorted.map(r => r.district), labels: { style: { fontSize: '11px' } } },
     yAxis:  { min: 0, title: { text: null },
               labels: { formatter() { return Math.round(this.value).toString(); } } },
-    tooltip: { formatter() { return '<b>' + this.x + '</b><br>' + this.y.toFixed(1) + ' riders per bus'; } },
+    tooltip: { formatter() { return '<b>' + this.x + '</b><br>' + this.y.toLocaleString(undefined,{maximumFractionDigits:1}) + ' riders per bus'; } },
     plotOptions: { bar: { colorByPoint: true,
       colors: sorted.map(r =>
         isSPS(r) ? '#c0392b' :
@@ -3690,7 +3696,7 @@ function applyHash() {
   const p = hashGet();
 
   // ── tab ──────────────────────────────────────────────────────────────────
-  const validTabs = ['shape','scatter','explorer','starsfunding','methodology'];
+  const validTabs = ['starsfunding','shape','scatter','explorer','methodology'];
   if (p.tab && validTabs.includes(p.tab)) {
     showTab(p.tab);
   }
@@ -3804,7 +3810,7 @@ document.addEventListener('click', e => {
 let _starsFundingDist = 17001;
 
 
-function renderFormulaBody(fy, yearLabel, distName) {
+function renderFormulaBody(fy, yearLabel, distName, fdYears) {
   const g   = (key, sub) => (fy[key] && fy[key][sub] != null) ? fy[key][sub] : null;
   const gf  = (key, sub, dec) => { const v = g(key, sub); return v == null ? '---' : Number(v).toFixed(dec); };
   const fmt  = v => v == null ? '---' : '$' + Number(v).toLocaleString(undefined, {maximumFractionDigits:0});
@@ -3812,109 +3818,133 @@ function renderFormulaBody(fy, yearLabel, distName) {
   const blueCoeff = v => v == null ? '---' : '<span style="color:#0072B2;font-family:monospace;">' + Number(v).toFixed(5) + '</span>';
 
   let s = '<div style="font-family:Georgia,serif;font-size:13px;line-height:1.7;">';
-  s += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;">';
-
-  // ── LEFT: Formula structure ───────────────────────────────────────────────
-  s += '<div>';
-  s += '<div style="font-family:\'Playfair Display\',Georgia,serif;font-size:15px;font-weight:700;margin-bottom:8px;">Formula structure</div>';
-  s += '<div style="background:var(--bg-paper);padding:12px 16px;border-radius:4px;font-family:monospace;font-size:12px;line-height:2.4;">';
-  s += '<span style="font-size:14px;font-weight:700;letter-spacing:0.02em;">ALLOC</span>';
-  s += ' = <span style="color:#009E73;font-weight:600;">min</span>(<span style="font-weight:600;">EXAL</span>, D.2 prior-yr exp)<br>';
-  s += '<span style="color:var(--ink-soft);padding-left:52px;">+ Legislative salary adj</span><br><br>';
-  s += '<span style="font-weight:600;">EXAL</span> = <span style="color:#009E73;font-weight:600;">exp</span>(<br>';
-  s += '&nbsp;&nbsp;<span style="color:#009E73;font-weight:600;">ln</span>(BasicRiders + 1) &times; ' + blueCoeff(g('bp','c')) + '<br>';
-  s += '&nbsp;&nbsp;+ <span style="color:#009E73;font-weight:600;">ln</span>(SpecialRiders + 1) &times; ' + blueCoeff(g('sp','c')) + '<br>';
-  s += '&nbsp;&nbsp;+ Destinations &times; ' + blueCoeff(g('de','c')) + '<br>';
-  s += '&nbsp;&nbsp;+ AvgDistance &times; ' + blueCoeff(g('ad','c')) + '<br>';
-  s += '&nbsp;&nbsp;+ <span style="color:#009E73;font-weight:600;">ln</span>(LandArea) &times; ' + blueCoeff(g('la','c')) + '<br>';
   const nnc = g('nn','c'), nyc = g('ny','c');
-  if (nnc != null && nnc !== 0)
-    s += '&nbsp;&nbsp;+ NonHighDist &times; ' + blueCoeff(nnc) + '<br>';
-  else if (nyc != null && nyc !== 0)
-    s += '&nbsp;&nbsp;+ NonHighDist &times; ' + blueCoeff(nyc) + '<br>';
-  s += '&nbsp;&nbsp;+ ' + blueCoeff(g('k','x'));
-  s += '<span style="color:var(--ink-soft);font-size:10px;"> ← constant</span><br>';
-  s += ')';
-  s += '</div>';
+  // Row 1: School year selector
+  if (fdYears && fdYears.length) {
+    s += '<div style="margin-bottom:12px;display:flex;align-items:center;gap:12px;">';
+    s += '<span style="font-family:Georgia,serif;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-soft);">School year</span>';
+    s += '<div class="toggle" id="sfFormulaYearToggle">';
+    fdYears.slice().reverse().forEach(yr => {
+      const shortYr = yr.replace('20',"'").replace('-20',"-'");
+      s += '<button data-val="' + yr + '"' + (yr === yearLabel ? ' class="active"' : '') + '>' + shortYr + '</button>';
+    });
+    s += '</div></div>';
+  }
 
-  s += '<div style="font-family:\'Playfair Display\',Georgia,serif;font-size:15px;font-weight:700;margin:14px 0 8px;">Current values</div>';
-  s += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:4px;">';
-  s += '<div style="border-left:3px solid #0072B2;padding-left:8px;"><div style="font-size:9px;text-transform:uppercase;color:var(--ink-soft);letter-spacing:0.05em;">EXAL</div><div style="font-size:15px;">' + fmtM(g('exal','a')) + '</div></div>';
-  s += '<div style="border-left:3px solid var(--rule);padding-left:8px;"><div style="font-size:9px;text-transform:uppercase;color:var(--ink-soft);letter-spacing:0.05em;">D.2 cap</div><div style="font-size:15px;">' + fmtM(g('d2','a')) + '</div></div>';
-  s += '<div style="border-left:3px solid var(--positive);padding-left:8px;"><div style="font-size:9px;text-transform:uppercase;color:var(--ink-soft);letter-spacing:0.05em;font-weight:700;">ALLOC (D.8)</div><div style="font-size:15px;font-weight:700;">' + fmtM(g('d8','a')) + '</div></div>';
+  // Row 2: Calculated values
+  s += '<div style="font-family:\'Playfair Display\',Georgia,serif;font-size:15px;font-weight:700;margin-bottom:8px;">Calculated values <span id="sf-modified-cv" style="display:none;font-size:10px;color:#f89540;font-family:Georgia,serif;font-style:italic;font-weight:400;">(modified)</span></div>';
+  s += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px;">';
+  s += '<div style="border-left:3px solid var(--positive);padding-left:8px;"><div style="font-size:9px;text-transform:uppercase;color:var(--ink-soft);letter-spacing:0.05em;font-weight:700;">ALLOC (D.8)</div><div class="sf-kpi-alloc" style="font-size:15px;font-weight:700;color:#7b9e87;">' + fmtM(g('d8','a')) + '</div></div>';
+  s += '<div style="border-left:3px solid #0072B2;padding-left:8px;"><div style="font-size:9px;text-transform:uppercase;color:var(--ink-soft);letter-spacing:0.05em;">EXAL</div><div class="sf-kpi-exal" style="font-size:15px;color:#7b9e87;">' + fmtM(g('exal','a')) + '</div></div>';
+  s += '<div style="border-left:3px solid var(--rule);padding-left:8px;"><div style="font-size:9px;text-transform:uppercase;color:var(--ink-soft);letter-spacing:0.05em;">D.2 cap</div><div style="font-size:15px;color:#0072B2;">' + fmtM(g('d2','a')) + '</div></div>';
   s += '</div>';
-  s += '</div>';
-
-  // ── RIGHT: Inputs table ───────────────────────────────────────────────────
+  s += '<hr style="border:none;border-top:1px solid var(--rule-soft);margin:12px 0 16px;">';
+  s += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;">';
+  // ── LEFT: Inputs table with editable values ──────────────────────────────
   s += '<div>';
-  s += '<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-soft);margin-bottom:8px;">' + distName + ' inputs</div>';
+  s += '<div style="font-family:\'Playfair Display\',Georgia,serif;font-size:15px;font-weight:700;margin-bottom:8px;">' + distName + ' inputs <span id="sf-modified-in" style="display:none;font-size:10px;color:#f89540;font-family:Georgia,serif;font-style:italic;font-weight:400;">(modified)</span></div>';
   s += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
   s += '<thead><tr style="border-bottom:2px solid var(--rule);">';
   s += '<th style="text-align:left;padding:5px 8px;font-weight:600;">Input</th>';
   s += '<th style="text-align:right;padding:5px 8px;font-weight:400;color:var(--ink-soft);">Value</th>';
   s += '<th style="text-align:right;padding:5px 8px;color:#0072B2;">Coeff</th>';
-  s += '<th style="text-align:right;padding:5px 8px;font-weight:400;color:var(--ink-soft);">Contribution</th>';
-  s += '</tr></thead><tbody>';
+  s += '<th style="text-align:right;padding:5px 8px;font-weight:400;color:#7b9e87;">Contribution</th>';
+  s += '</tr></thead><tbody id="sfFormulaInputRows">';
 
   const inputs = [
-    ['Basic Program (ln)', 'bp'],
-    ['Special Program (ln)', 'sp'],
-    ['Destinations', 'de'],
-    ['Avg Distance', 'ad'],
-    ['Land Area (ln)', 'la'],
+    ['Basic Program (ln)',  'bp', 'bp'],
+    ['Special Program (ln)','sp', 'sp'],
+    ['Destinations',        'de', 'de'],
+    ['Avg Distance',        'ad', 'ad'],
+    ['Land Area (ln)',      'la', 'la'],
   ];
   const nhKey = (nnc != null && nnc !== 0) ? 'nn' : (nyc != null && nyc !== 0) ? 'ny' : null;
-  if (nhKey) inputs.push(['NonHighDist', nhKey]);
+  if (nhKey) inputs.push(['NonHighDist', nhKey, nhKey]);
 
-  inputs.forEach(([label, key]) => {
-    const val  = gf(key, 'v', 2);
+  inputs.forEach(([label, key, dataKey]) => {
+    const val  = g(key, 'v');
     const co   = g(key, 'c');
     const calc = g(key, 'x');
     s += '<tr style="border-bottom:1px solid var(--rule-soft);">';
     s += '<td style="padding:5px 8px;">' + label + '</td>';
-    s += '<td style="padding:5px 8px;text-align:right;font-family:monospace;color:var(--ink);">' + val + '</td>';
+    s += '<td style="padding:5px 8px;text-align:right;">';
+    s += '<input type="number" class="sf-formula-input" data-key="' + dataKey + '" ';
+    s += 'value="' + (val != null ? Number(val).toFixed(2) : '') + '" ';
+    s += 'step="any" style="width:80px;text-align:right;font-family:monospace;font-size:12px;';
+    s += 'border:none;border-bottom:1.5px solid var(--rule-soft);background:transparent;color:var(--ink);padding:2px 4px;">';
+    s += '</td>';
     s += '<td style="padding:5px 8px;text-align:right;font-family:monospace;color:#0072B2;">' + (co != null ? Number(co).toFixed(5) : '---') + '</td>';
-    s += '<td style="padding:5px 8px;text-align:right;font-family:monospace;color:var(--ink-soft);">' + (calc != null ? Number(calc).toFixed(5) : '---') + '</td>';
+    s += '<td style="padding:5px 8px;text-align:right;font-family:monospace;color:#7b9e87;" data-contrib="' + dataKey + '">' + (calc != null ? Number(calc).toFixed(5) : '---') + '</td>';
     s += '</tr>';
   });
 
-  // Constant row
+  // Constant row (not editable — it's statewide)
   const kv = g('k', 'x');
   s += '<tr style="border-bottom:1px solid var(--rule-soft);">';
   s += '<td style="padding:5px 8px;">Constant</td>';
   s += '<td style="padding:5px 8px;text-align:right;font-family:monospace;color:var(--ink-soft);">---</td>';
   s += '<td style="padding:5px 8px;text-align:right;font-family:monospace;color:#0072B2;">' + (kv != null ? Number(kv).toFixed(5) : '---') + '</td>';
-  s += '<td style="padding:5px 8px;text-align:right;font-family:monospace;color:var(--ink-soft);">' + (kv != null ? Number(kv).toFixed(5) : '---') + '</td>';
+  s += '<td style="padding:5px 8px;text-align:right;font-family:monospace;color:#7b9e87;" data-contrib="k">' + (kv != null ? Number(kv).toFixed(5) : '---') + '</td>';
   s += '</tr>';
 
-  // Divider before allocation rows
+  // Allocation constraints divider
   s += '<tr><td colspan="4" style="padding:6px 8px 2px;font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-soft);border-top:2px solid var(--rule);">Allocation constraints</td></tr>';
 
-  // D.2 prior-year expenditure cap
   const d2v = g('d2', 'a');
   s += '<tr style="border-bottom:1px solid var(--rule-soft);">';
   s += '<td style="padding:5px 8px;">D.2 prior-yr expenditure cap</td>';
-  s += '<td style="padding:5px 8px;text-align:right;font-family:monospace;color:var(--ink);">' + fmtM(d2v) + '</td>';
+  s += '<td style="padding:5px 8px;text-align:right;font-family:monospace;color:#0072B2;">' + fmtM(d2v) + '</td>';
   s += '<td style="padding:5px 8px;text-align:right;color:var(--ink-soft);">---</td>';
   s += '<td style="padding:5px 8px;text-align:right;font-family:monospace;color:var(--ink-soft);">min with EXAL</td>';
   s += '</tr>';
 
-  // Legislative salary adjustment
   const d6v = g('d6', 'a'), d7v = g('d7', 'a');
   const legAdj = (d6v || 0) + (d7v || 0);
   if (legAdj) {
     s += '<tr style="border-bottom:1px solid var(--rule-soft);">';
     s += '<td style="padding:5px 8px;">Legislative salary adj</td>';
-    s += '<td style="padding:5px 8px;text-align:right;font-family:monospace;color:var(--ink);">' + fmt(legAdj) + '</td>';
+    s += '<td style="padding:5px 8px;text-align:right;font-family:monospace;color:#0072B2;">' + fmt(legAdj) + '</td>';
     s += '<td style="padding:5px 8px;text-align:right;color:var(--ink-soft);">---</td>';
     s += '<td style="padding:5px 8px;text-align:right;font-family:monospace;color:var(--ink-soft);">added to ALLOC</td>';
     s += '</tr>';
   }
 
   s += '</tbody></table>';
+  s += '<div style="font-size:12px;color:#f89540;font-family:Georgia,serif;font-style:italic;margin-top:8px;">Edit values to see realtime recalculation.</div>';
+  s += '</div>';
+
+
+  // ── RIGHT: Current Values header + KPIs + Formula structure ───────────────
+  s += '<div>';
+
+  // Current Values header + KPI grid FIRST
+  // Formula structure header + box BELOW
+  s += '<div style="font-family:\'Playfair Display\',Georgia,serif;font-size:15px;font-weight:700;margin-bottom:8px;">Formula structure <span id="sf-modified-fs" style="display:none;font-size:10px;color:#f89540;font-family:Georgia,serif;font-style:italic;font-weight:400;">(modified)</span></div>';
+  s += '<div style="background:var(--bg-paper);padding:12px 16px;border-radius:4px;font-family:monospace;font-size:12px;line-height:2.4;">';
+  s += '<span style="font-size:14px;font-weight:700;letter-spacing:0.02em;">ALLOC</span>';
+  s += ' = <span style="color:var(--ink-soft);font-size:10px;font-family:Georgia,serif;">[ = <span id="sf-formula-alloc-result" style="color:#7b9e87;font-family:monospace;">' + fmtM(g('d8','a')) + '</span> ]</span><br>';
+  s += '&nbsp;&nbsp;<span style="color:#009E73;font-weight:600;">min</span>(<span style="font-weight:600;">EXAL</span>, <span style="color:#0072B2;font-family:monospace;">' + fmtM(g('d2','a')) + '</span>)<span style="color:var(--ink-soft);font-size:10px;"> ← D.2 cap</span><br>';
+  s += '&nbsp;+ <span style="color:#0072B2;font-family:monospace;">' + fmt((g('d6','a')||0) + (g('d7','a')||0)) + '</span><span style="color:var(--ink-soft);font-size:10px;"> ← leg. salary adj</span><br><br>';
+  const termSpan = (id, val) => '&nbsp;<span style="color:var(--ink-soft);font-family:Georgia,serif;font-size:10px;"> [ = <span id="sf-term-' + id + '" style="color:#7b9e87;font-family:monospace;font-size:10px;">' + (val != null ? Number(val).toFixed(3) : '---') + '</span> ]</span>';
+  s += '<span style="font-weight:600;">EXAL</span> = <span style="color:#009E73;font-weight:600;">exp</span>( &nbsp;<span style="color:var(--ink-soft);font-size:10px;font-family:Georgia,serif;">[ = <span id="sf-formula-exal-result" style="color:#7b9e87;font-family:monospace;">' + fmtM(g('exal','a')) + '</span> ]</span><br>';
+  s += '&nbsp;&nbsp;<span style="color:#009E73;font-weight:600;">ln</span>(BasicRiders + 1) &times; ' + blueCoeff(g('bp','c')) + termSpan('bp', g('bp','x')) + '<br>';
+  s += '&nbsp;&nbsp;+ <span style="color:#009E73;font-weight:600;">ln</span>(SpecialRiders + 1) &times; ' + blueCoeff(g('sp','c')) + termSpan('sp', g('sp','x')) + '<br>';
+  s += '&nbsp;&nbsp;+ Destinations &times; ' + blueCoeff(g('de','c')) + termSpan('de', g('de','x')) + '<br>';
+  s += '&nbsp;&nbsp;+ AvgDistance &times; ' + blueCoeff(g('ad','c')) + termSpan('ad', g('ad','x')) + '<br>';
+  s += '&nbsp;&nbsp;+ <span style="color:#009E73;font-weight:600;">ln</span>(LandArea) &times; ' + blueCoeff(g('la','c')) + termSpan('la', g('la','x')) + '<br>';
+  if (nnc != null && nnc !== 0)
+    s += '&nbsp;&nbsp;+ NonHighDist &times; ' + blueCoeff(nnc) + termSpan('nn', g('nn','x')) + '<br>';
+  else if (nyc != null && nyc !== 0)
+    s += '&nbsp;&nbsp;+ NonHighDist &times; ' + blueCoeff(nyc) + termSpan('ny', g('ny','x')) + '<br>';
+  s += '&nbsp;&nbsp;+ ' + blueCoeff(g('k','x'));
+  s += '<span style="color:var(--ink-soft);font-size:10px;"> ← constant</span><br>';
+  s += ')';
+  s += '</div>';
   s += '</div>';
 
   s += '</div>'; // end grid
+
+
   s += '</div>'; // end outer
   return s;
 }
@@ -3980,8 +4010,6 @@ function renderStarsFunding() {
   h += '</div>';
 
   // Charts in 2-column grid
-  h += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">';
-  
   const chartDivs = [];
   // Additional derived metrics
   const basicRiders = series('basic_students_total');
@@ -4013,29 +4041,6 @@ function renderStarsFunding() {
 
   const avgDist = series('route_summary_average_distance');
 
-  const chartConfigs = [
-
-
-
-
-
-
-
-
-
-
-
-
-  ];
-
-  chartConfigs.forEach(cfg => {
-    const divId = cfg.id + '-' + Date.now();
-    h += '<div style="background:var(--bg-card);border:1px solid var(--rule-soft);padding:0;overflow:hidden;">';
-    h += '<div id="' + divId + '" style="width:100%;height:240px;"></div></div>';
-    chartDivs.push({ divId, cfg });
-  });
-  h += '</div>';
-
   // ── STARS Formula Explorer ───────────────────────────────────────────────
   h += '<div style="margin-top:36px;padding-top:24px;border-top:2px solid var(--rule);">';
   h += '<h3 style="font-family:\'Playfair Display\',Georgia,serif;font-size:20px;margin-bottom:8px;">The STARS Formula</h3>';
@@ -4054,23 +4059,14 @@ function renderStarsFunding() {
     };
     const fmt = v => v === '—' ? '—' : '$' + Number(v).toLocaleString(undefined, {maximumFractionDigits:0});
 
-    // Year selector buttons
-    h += '<div class="controls" style="margin-bottom:12px;"><div class="control-group">';
-    h += '<span class="control-label">School year</span>';
-    h += '<div class="toggle" id="sfFormulaYearToggle">';
-    fdYears.slice().reverse().forEach(yr => {
-      const shortYr = yr.replace('20',"'").replace('-20',"-'");
-      h += '<button data-val="' + yr + '"' + (yr === latestFY ? ' class="active"' : '') + '>' + shortYr + '</button>';
-    });
-    h += '</div></div></div>';
-
     // Formula equation
     h += '<div id="sfFormulaBody" style="background:var(--bg-card);border:1px solid var(--rule-soft);padding:16px 20px;margin-bottom:16px;">';
-    h += renderFormulaBody(fy, latestFY, distName);
+    h += renderFormulaBody(fy, latestFY, distName, fdYears);
     h += '</div>';
 
     // Formula inputs over time chart
-    h += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:16px;">';
+    h += '<div style="margin-top:16px;">';
+    h += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px;">';
     const basicProgramOverTime = fdYears.map(yr => fd[yr]?.bp?.v || null);
     const specialProgramOverTime = fdYears.map(yr => fd[yr]?.sp?.v || null);
     const exalOverTime = fdYears.map(yr => fd[yr]?.exal?.a || null);
@@ -4080,6 +4076,8 @@ function renderStarsFunding() {
 
     h += '<div style="background:var(--bg-card);border:1px solid var(--rule-soft);padding:0;overflow:hidden;"><div id="sfInputsChart" style="width:100%;height:240px;"></div></div>';
     h += '<div style="background:var(--bg-card);border:1px solid var(--rule-soft);padding:0;overflow:hidden;"><div id="sfAllocChart" style="width:100%;height:240px;"></div></div>';
+    h += '</div>';
+    h += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">';
     h += '<div style="background:var(--bg-card);border:1px solid var(--rule-soft);padding:0;overflow:hidden;"><div id="sfQuarterlyChart" style="width:100%;height:240px;"></div></div>';
     h += '<div style="background:var(--bg-card);border:1px solid var(--rule-soft);padding:0;overflow:hidden;"><div id="sfSpecialQuarterlyChart" style="width:100%;height:240px;"></div></div>';
     h += '</div>';
@@ -4088,7 +4086,9 @@ function renderStarsFunding() {
   }
   h += '</div>';
 
-  // ── Count Day Selection & Revenue Impact ──────────────────────────────────
+
+  // ── STARS Formula Explorer ───────────────────────────────────────────────
+    // ── Count Day Selection & Revenue Impact ──────────────────────────────────
   h += '<div style="margin-top:36px;padding-top:24px;border-top:2px solid var(--rule);">';
   h += '<h3 style="font-family:\'Playfair Display\',Georgia,serif;font-size:20px;margin-bottom:8px;">Count Day Selection & Revenue Impact</h3>';
   h += '<p style="font-family:Georgia,serif;font-size:13px;color:var(--ink-soft);margin-bottom:16px;">Districts choose their own three consecutive school days as the count period within each reporting window (Fall, Winter, Spring). Per <a href="https://ospi.k12.wa.us/sites/default/files/2023-08/starsdetailedguidance.pdf" target="_blank" rel="noopener">OSPI STARS Detailed Guidance</a>: <em>"student counts by program from the day with the middle value are submitted"</em> — i.e. the <strong>median</strong> of the three count days is reported for each period. The three period values (Fall, Winter, Spring) are then averaged to produce the CBPC that feeds the STARS formula. The <strong>$/rider</strong> column shows the marginal formula value of one additional Basic rider (EXAL × basic_coefficient / (BasicRiders+1)). <strong>Est. loss</strong> estimates the annual cost of the worst seasonal drop, assuming it affects one of three averaged periods.</p>';
@@ -4159,26 +4159,130 @@ function renderStarsFunding() {
   }
   h += '</div>';
 
-  container.innerHTML = h;
 
   container.innerHTML = h;
 
-  // Wire formula year selector buttons
-  const fyToggle = document.getElementById('sfFormulaYearToggle');
-  if (fyToggle) {
-    fyToggle.querySelectorAll('button').forEach(btn => {
-      btn.addEventListener('click', () => {
-        fyToggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const yr = btn.getAttribute('data-val');
+  container.innerHTML = h;
+
+  // Wire formula input editors for live recalculation
+  function wireFormulaInputs(ccddd) {
+    document.querySelectorAll('.sf-formula-input').forEach(inp => {
+      inp.addEventListener('input', () => {
         const fd2 = FORMULA_DATA[ccddd];
-        if (fd2 && fd2[yr]) {
-          const body = document.getElementById('sfFormulaBody');
-          if (body) body.innerHTML = renderFormulaBody(fd2[yr], yr, distName);
+        if (!fd2) return;
+        const fyToggle2 = document.getElementById('sfFormulaYearToggle');
+        const activeBtn = fyToggle2 ? fyToggle2.querySelector('button.active') : null;
+        const yr2 = activeBtn ? activeBtn.getAttribute('data-val') : null;
+        const fy2 = yr2 && fd2[yr2] ? fd2[yr2] : null;
+        if (!fy2) return;
+
+        // Read current input values
+        const getVal = key => {
+          const el = document.querySelector('.sf-formula-input[data-key="' + key + '"]');
+          return el ? parseFloat(el.value) : (fy2[key] && fy2[key].v != null ? fy2[key].v : 0);
+        };
+        const g2 = (key, sub) => (fy2[key] && fy2[key][sub] != null) ? fy2[key][sub] : 0;
+
+        const bp_v = getVal('bp'), sp_v = getVal('sp'), de_v = getVal('de');
+        const ad_v = getVal('ad'), la_v = getVal('la');
+        const nn_v = getVal('nn') || getVal('ny') || 0;
+
+        const bp_c = g2('bp','c'), sp_c = g2('sp','c'), de_c = g2('de','c');
+        const ad_c = g2('ad','c'), la_c = g2('la','c');
+        const nn_c = (fy2.nn && fy2.nn.c) || (fy2.ny && fy2.ny.c) || 0;
+        const k = g2('k','x');
+
+        let ln_exal = 0;
+        const contribs = {};
+        if (bp_v > 0)  { const c = Math.log(bp_v+1)*bp_c; ln_exal += c; contribs.bp = c; }
+        if (sp_v > 0)  { const c = Math.log(sp_v+1)*sp_c; ln_exal += c; contribs.sp = c; }
+        de_v && (ln_exal += de_v*de_c, contribs.de = de_v*de_c);
+        ad_v && (ln_exal += ad_v*ad_c, contribs.ad = ad_v*ad_c);
+        if (la_v > 0)  { const c = Math.log(la_v)*la_c; ln_exal += c; contribs.la = c; }
+        if (nn_v)      { ln_exal += nn_v*nn_c; contribs.nn = nn_v*nn_c; }
+        ln_exal += k; contribs.k = k;
+
+        const exal_new = Math.exp(ln_exal);
+        const d2 = g2('d2','a'), d6 = g2('d6','a'), d7 = g2('d7','a');
+        const legAdj = (d6||0) + (d7||0);
+        const alloc_new = Math.min(exal_new, d2) + legAdj;
+        const exal_orig = fy2.exal && fy2.exal.a;
+        const alloc_orig = fy2.d8 && fy2.d8.a;
+
+        const fmtM2 = v => '$' + (v/1e6).toFixed(2) + 'M';
+        const delta = v => (v >= 0 ? '+' : '') + fmtM2(v);
+
+        // Update contribution cells
+        for (const [key, val] of Object.entries(contribs)) {
+          const el = document.querySelector('[data-contrib="' + key + '"]');
+          if (el) el.textContent = val.toFixed(5);
+        }
+
+        // Update "Current values" KPI strip with simulated values
+        const exalEl  = document.querySelector('#sfFormulaBody .sf-kpi-exal');
+        const allocEl = document.querySelector('#sfFormulaBody .sf-kpi-alloc');
+        if (exalEl)  exalEl.textContent = fmtM2(exal_new);
+        if (allocEl) allocEl.textContent = fmtM2(alloc_new);
+
+        // Update formula box ALLOC result
+        const allocResultEl = document.getElementById('sf-formula-alloc-result');
+        if (allocResultEl) allocResultEl.textContent = fmtM2(alloc_new);
+
+        // Update formula equation term spans
+        for (const [key, val] of Object.entries(contribs)) {
+          const termEl = document.getElementById('sf-term-' + key);
+          if (termEl) termEl.textContent = Number(val).toFixed(3);
+        }
+
+        // Show (modified) on all three headers
+        ['sf-modified-cv','sf-modified-fs','sf-modified-in'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.style.display = 'inline';
+        });
+
+        // Update formula box EXAL result line
+        const exalResultEl = document.getElementById('sf-formula-exal-result');
+        if (exalResultEl) exalResultEl.textContent = fmtM2(exal_new);
+
+        // Add (modified) under the active year button
+        const fyToggleEl = document.getElementById('sfFormulaYearToggle');
+        if (fyToggleEl) {
+          const activeBtn = fyToggleEl.querySelector('button.active');
+          if (activeBtn && !activeBtn.querySelector('.sf-modified-tag')) {
+            const tag = document.createElement('div');
+            tag.className = 'sf-modified-tag';
+            tag.style.cssText = 'font-size:9px;color:#f89540;font-family:Georgia,serif;font-style:italic;line-height:1;margin-top:2px;';
+            tag.textContent = '(modified)';
+            activeBtn.appendChild(tag);
+          }
         }
       });
     });
   }
+  wireFormulaInputs(ccddd);
+
+  // Wire formula year selector buttons
+  function wireFormulaYearToggle() {
+    const fyToggle = document.getElementById('sfFormulaYearToggle');
+    if (!fyToggle) return;
+    fyToggle.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const yr = btn.getAttribute('data-val');
+        const fd2 = FORMULA_DATA[ccddd];
+        if (fd2 && fd2[yr]) {
+          const body = document.getElementById('sfFormulaBody');
+          if (body) {
+            body.innerHTML = renderFormulaBody(fd2[yr], yr, distName, fdYears);
+            // Clear any (modified) tags
+            document.querySelectorAll('.sf-modified-tag').forEach(t => t.remove());
+            // Re-attach listeners — including year toggle on new buttons
+            setTimeout(() => { wireFormulaInputs(ccddd); wireFormulaYearToggle(); }, 50);
+          }
+        }
+      });
+    });
+  }
+  wireFormulaYearToggle();
 
   // Render Highcharts after DOM update
   setTimeout(() => {
@@ -4417,6 +4521,7 @@ applyHash();
   loadHC(function() {
     // Apply theme now that HC is available
     Highcharts.setOptions({
+      lang: { thousandsSep: ',', decimalPoint: '.' },
       chart: { backgroundColor: '#f0ead8', style: { fontFamily: 'Georgia, serif' }, animation: false },
       colors: ['#c0392b','#7c8a3f','#1f3a5f','#b05a2f','#4a6fa5','#888'],
       title:    { style: { color: '#1a1814', fontFamily: '"Playfair Display", Georgia, serif', fontWeight: '700', fontSize: '14px' } },
@@ -4434,7 +4539,8 @@ applyHash();
     var active = document.querySelector('.tab-panel.active');
     if (active) {
       var panel = active.getAttribute('data-panel');
-      if (panel === 'shape')    { renderStatewide(); renderRankings(); }
+      if (panel === 'starsfunding') renderStarsFunding();
+    if (panel === 'shape')    { renderStatewide(); renderRankings(); }
       if (panel === 'scatter')  { renderScatter(); renderPrePostScatter(); }
       if (panel === 'rankings') renderRankings();
       if (panel === 'explorer') renderDistrictDetail();
