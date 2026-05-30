@@ -4231,7 +4231,7 @@ function renderExplorerStarsCharts(ccddd, distName, rowsAct) {
         return [
           {values: rideBasicVals, color: BASIC_C, label: 'Basic'},
           {values: spedSeries,    color: SPED_C,  label: 'SpEd'},
-          {values: otherVals,     color: OTHER_C, label: 'Other'},
+          {values: otherVals,     color: OTHER_C, label: 'Other (Gifted, Homeless, Bilingual, Early Ed)'},
         ];
       })()},
     { title: 'Routes by program',
@@ -4239,14 +4239,14 @@ function renderExplorerStarsCharts(ccddd, distName, rowsAct) {
       series: [
         {values: routeBasicVals,  color: BASIC_C, label: 'Basic'},
         {values: routeSpedVals,   color: SPED_C,  label: 'SpEd'},
-        {values: routeOtherVals,  color: OTHER_C, label: 'Other'},
+        {values: routeOtherVals,  color: OTHER_C, label: 'Other (Gifted, Homeless, Bilingual, Early Ed)'},
       ]},
     { title: 'Buses by program',
       yFormat: v => Math.round(v)+'', yMin: 0,
       series: [
         {values: series('buses_basic'),   color: BASIC_C, label: 'Basic'},
         {values: series('buses_special'), color: SPED_C,  label: 'SpEd'},
-        {values: series('buses_other'),   color: OTHER_C, label: 'Other'},
+        {values: series('buses_other'),   color: OTHER_C, label: 'Other (Gifted, Homeless, Bilingual, Early Ed)'},
       ]},
 
     { title: 'Total riders, routes & buses', _dualAxis: true,
@@ -4269,7 +4269,7 @@ function renderExplorerStarsCharts(ccddd, distName, rowsAct) {
         return [
           {values: years.map((_,i) => (basicRiders[i] && routeBasicVals[i]) ? basicRiders[i]/routeBasicVals[i] : null), color: BASIC_C, label: 'Basic'},
           {values: years.map((_,i) => (spedRiders[i] && routeSpedVals[i]) ? spedRiders[i]/routeSpedVals[i] : null),  color: SPED_C,  label: 'SpEd'},
-          {values: years.map((_,i) => (otherRiders[i] && otherRoutes[i]) ? otherRiders[i]/otherRoutes[i] : null),      color: OTHER_C, label: 'Other'},
+          {values: years.map((_,i) => (otherRiders[i] && otherRoutes[i]) ? otherRiders[i]/otherRoutes[i] : null),      color: OTHER_C, label: 'Other (Gifted, Homeless, Bilingual, Early Ed)'},
         ];
       })()},
     { title: 'Riders per bus',
@@ -4284,7 +4284,7 @@ function renderExplorerStarsCharts(ccddd, distName, rowsAct) {
         return [
           {values: years.map((_,i) => (basicRiders[i] && series('buses_basic')[i]) ? basicRiders[i]/series('buses_basic')[i] : null), color: BASIC_C, label: 'Basic'},
           {values: years.map((_,i) => (spedRiders[i] && series('buses_special')[i]) ? spedRiders[i]/series('buses_special')[i] : null), color: SPED_C, label: 'SpEd'},
-          {values: years.map((_,i) => (otherRiders[i] && series('buses_other')[i]) ? otherRiders[i]/series('buses_other')[i] : null), color: OTHER_C, label: 'Other'},
+          {values: years.map((_,i) => (otherRiders[i] && series('buses_other')[i]) ? otherRiders[i]/series('buses_other')[i] : null), color: OTHER_C, label: 'Other (Gifted, Homeless, Bilingual, Early Ed)'},
         ];
       })()},
     { title: 'Average route distance (mi)',
@@ -4314,7 +4314,7 @@ function renderExplorerStarsCharts(ccddd, distName, rowsAct) {
       series: [
         {values: years.map((_,i) => routeBasicVals[i] || 0), color: BASIC_C, label: 'Basic'},
         {values: years.map((_,i) => routeSpedVals[i] || 0), color: SPED_C, label: 'SpEd'},
-        {values: years.map((_,i) => routeOtherVals[i] || 0), color: OTHER_C, label: 'Other'},
+        {values: years.map((_,i) => routeOtherVals[i] || 0), color: OTHER_C, label: 'Other (Gifted, Homeless, Bilingual, Early Ed)'},
       ]},
     { title: 'Cost per route-mile',
       values: cpmVals,
