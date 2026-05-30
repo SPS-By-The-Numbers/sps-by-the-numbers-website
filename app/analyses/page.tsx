@@ -68,6 +68,20 @@ export default function Page() {
               <AiChip />
             </Box>
           </li>
+          <li>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Link
+                href="/analyses/stars-exploiter.html"
+                target="_blank"
+                rel="noopener"
+              >
+                <Typography component="span">
+                  STARS Exploiter — Washington Transit Funding Tycoon
+                </Typography>
+              </Link>
+              <AiChip />
+            </Box>
+          </li>
         </ul>
 
         <Typography component="h4" variant="h4">Well-Resource School Fiasco</Typography>
