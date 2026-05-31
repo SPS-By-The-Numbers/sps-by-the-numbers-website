@@ -82,6 +82,40 @@ export default function Page() {
         </ActionAreaCard>
 
         <ActionAreaCard
+          imageUrl="/assets/transportation-app.png"
+          href="/analyses/yellow_bus_ledger.html"
+          altText="Link to the WA State Transportation Dashboard">
+          <>
+            <Typography gutterBottom variant="h4" component="div">
+              WA State Transportation Dashboard
+            </Typography>
+            <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+              Interactive comparison of pupil transportation funding and
+              spending across all 315 Washington school districts. Explore
+              STARS allotments, contract overages, and ridership trends.
+            </Typography>
+          </>
+        </ActionAreaCard>
+
+        <ActionAreaCard
+          imageUrl="/assets/stars-exploiter-app.png"
+          href="/analyses/stars-exploiter.html"
+          altText="Link to the STARS Exploiter dashboard">
+          <>
+            <Typography gutterBottom variant="h4" component="div">
+              STARS Exploiter
+            </Typography>
+            <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+              An interactive tool for understanding the inputs to
+              Washington&apos;s STARS pupil transportation funding formula
+              and which changes actually move district revenue. Tweak
+              ridership, routes, and route characteristics to see how each
+              lever feeds the allotment math.
+            </Typography>
+          </>
+        </ActionAreaCard>
+
+        <ActionAreaCard
           imageUrl="/assets/analyses-app.png"
           href="/analyses"
           altText="Links to major analyses and insteresting articles">
