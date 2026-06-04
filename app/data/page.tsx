@@ -1,119 +1,123 @@
-import Container from '@mui/material/Container';
-import Link from '@mui/material/Link';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 
-const PATH_ROOT="https://storage.googleapis.com/sps-btn-data-all-data/raw/sps/budget";
+import SectionCard from "./_widgets/SectionCard";
+import counts from "./_manifest/counts.json";
 
-const FILES = [
-  "2002-2003-operating-budget.pdf",
-  "2003-2004-capital-budget.pdf",
-  "2003-2004-operating-budget.pdf",
-  "2004-2005-operating-budget.pdf",
-  "2005-2006-operating-budget.pdf",
-  "2006-2007-operating-budget.pdf",
-  "2007-2008-capital-budget.pdf",
-  "2007-2008-operating-budget.pdf",
-  "2008-2009-capital-budget.pdf",
-  "2008-2009-operating-budget.pdf",
-  "2009-2010-capital-budget.pdf",
-  "2009-2010-operating-budget.pdf",
-  "2010-2011-budget-book.pdf",
-  "2011-2012-budget-book.pdf",
-  "2012-2013-budget-book.pdf",
-  "2012-2013-budgetdata.xlsx",
-  "2013-2014-budget-book.pdf",
-  "2013-2014-budgetdata.xlsx",
-  "2014-2015-adopted-budget.pdf",
-  "2014-2015-purple-book.pdf",
-  "2015-2016-budget-book.pdf",
-  "2015-2016-purple-book.pdf",
-  "2016-2017-adopted-budget.pdf",
-  "2016-2017-budget-f195-format.pdf",
-  "2016-2017-legislative-to-district-classsize-crosswalk.pdf",
-  "2016-2017-purple-book.pdf",
-  "2017-2018-budget-book.pdf",
-  "2017-2018-purple-book.pdf",
-  "2018-2019-adopted-budget.pdf",
-  "2018-2019-purple-book.pdf",
-  "2019-2020-adopted-budget.pdf",
-  "2019-2020-equity-tier-calculation-for-2020-2021-budget.pdf",
-  "2019-2020-purple-book.pdf",
-  "2019-2020-wss-model.pdf",
-  "2020-2021-adopted-budget.pdf",
-  "2020-2021-purple-book.pdf",
-  "2020-2021-wss-model.pdf",
-  "2021-2022-adopted-budget.pdf",
-  "2022-2023-adopted-budget.pdf",
-  "2023-2024-adopted-budget.pdf",
-  "2023-2024-adopted-budget.txt",
-  "2024-2025-purple-book.pdf",
-  "2024-2025-recommended-budget.pdf",
-  "2025-2026-purple-book-2-26.pdf",
+type Section = {
+  href: string;
+  title: string;
+  blurb: string;
+  count: number;
+};
+
+const SECTIONS: Section[] = [
+  {
+    href: "/data/finance",
+    title: "Finance",
+    blurb:
+      "SPS budget books, state F-195 budgets, F-196 actuals, OSPI domain/lookup tables, and the joined cross-year financial datasets that feed the Finance Dashboard.",
+    count:
+      counts.sps_budgets +
+      counts.f195_raw +
+      counts.f196_raw +
+      counts.f195_processed +
+      counts.f196_processed +
+      counts.domains,
+  },
+  {
+    href: "/data/enrollment",
+    title: "Enrollment (P-223)",
+    blurb:
+      "Monthly P-223 enrollment counts — SPS PDFs, OSPI statewide PDFs, processed monthly CSVs, and the SAFS historical enrollment workbooks.",
+    count:
+      counts.sps_p223_pdf + counts.ospi_p223_pdf + counts.processed_monthly_csv,
+  },
+  {
+    href: "/data/staffing",
+    title: "Staffing (S-275)",
+    blurb:
+      "Per-year S-275 personnel databases from OSPI plus normalized AVRO tables (assignments, employees, reports).",
+    count: counts.s275_years + 5,
+  },
+  {
+    href: "/data/assessment",
+    title: "Assessment",
+    blurb:
+      "Report Card assessment data plus per-school joined CSVs covering 2015–2025.",
+    count: 4,
+  },
+  {
+    href: "/data/transportation",
+    title: "Transportation (STARS)",
+    blurb: `STARS pupil transportation reports — Key Performance Indicators, Quarterly District Detail, Efficiency, Efficiency Review, and Operations Allocation — for ${counts.stars_districts} districts across 9 school years. Use the district chooser to drill in.`,
+    count: counts.stars_total,
+  },
+  {
+    href: "/data/odata",
+    title: "OSPI OData (Socrata mirror)",
+    blurb:
+      "Snapshot of OSPI's public Socrata datasets as AVRO + schema pairs. Useful when you need fields that don't fit into the curated sections above.",
+    count: counts.odata,
+  },
+  {
+    href: "/data/sqss",
+    title: "School Quality Status System (SQSS)",
+    blurb:
+      "Multi-year SQSS AVRO files covering school accountability indicators across Washington.",
+    count: counts.sqss,
+  },
+  {
+    href: "/data/public-records",
+    title: "Public Records Requests",
+    blurb:
+      "Documents released through Public Records Requests — primarily the SOFG (Seattle Operations + Finance Group) installments and accompanying redaction logs.",
+    count: counts.public_records,
+  },
 ];
 
-function BudgetBookList() {
-  const children = new Array<React.ReactNode>;
-  for (const f of FILES) {
-    children.push(
-      <li><Link key={f} href={`${PATH_ROOT}/${f}`}>{f}</Link></li>
-    );
-  }
-
-  return (
-    <ul>
-      {children}
-    </ul>
-  );
-}
-
 export default function Page() {
+  const total = Object.values(counts).reduce((s, n) => s + n, 0);
   return (
     <Container
       maxWidth="lg"
       component="main"
-      sx={{ display: 'flex', flexDirection: 'column', my: 2, gap: 4 }}
+      sx={{ display: "flex", flexDirection: "column", my: 2, gap: 4 }}
     >
-      <Typography component="h1" variant="h2">Data Archive</Typography>
-      <Stack>
-      <Typography component="h4" variant="h4">Budget Books since 2019 and lots of Purple Books</Typography>
-        <BudgetBookList />
-
-      <Typography component="h4" variant="h4">How to find these docs</Typography>
-      <p>
-      These documents were scraped off of archive.org. The trick is the URL for the budget changes over the years.
-      </p>
-      <ul>
-        <li>
-          from 2019-now, the budgets were posted at https://www.seattleschools.org/departments/finance/budget/.
-        </li>
-        <li>
-          from 2016-2018, the budget was at http://seattleschools.org/cms/One.aspx?portalId=627&pageId=4236325
-        </li>
-        <li>
-          for 2015, the budget was at.  http://sps.ss8.sharpschool.com/cms/one.aspx?portalId=627&pageId=14984
-        </li>
-        <li>
-          2014-2015 is a broken link for part of the crawl. Look at different months until you find it.
-        </li>
-        <li>
-          from 2007-2014 the budget is all findable at
-          http://seattleschools.org/modules/cms/pages.phtml?sessionid=&pageid=225568
-        </li>
-        <li>
-          for 2004-2005, the budget is at
-          There is no purple book. The have a "blue book" instead with one PDF per
-          school:
-
-          https://web.archive.org/web/20051003213015/http://www.seattleschools.org/area/finance/navsubs.nav?index=5
-        </li>
-        <li>
-          for 2002-2003 the budget is at
-
-          http://www.seattleschools.org/area/finance/budget/index.html
-        </li>
-      </ul>
+      <Stack spacing={2}>
+        <Typography component="h1" variant="h2">Data Archive</Typography>
+        <Typography variant="body1" sx={{ color: "text.secondary" }}>
+          A mirror of publicly available data about Seattle Public Schools and
+          Washington education in general &mdash; about{" "}
+          <strong>{total.toLocaleString()}</strong> files in total, hosted in
+          Google Cloud Storage. Everything below is downloadable directly; the
+          curated dashboards on this site are built on top of it.
+        </Typography>
       </Stack>
+
+      <Stack spacing={2}>
+        {SECTIONS.map((s) => (
+          <SectionCard key={s.href} {...s} />
+        ))}
+      </Stack>
+
+      <Box>
+        <Typography component="h2" variant="h5" sx={{ mb: 1 }}>
+          About this archive
+        </Typography>
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
+          Files live in the public Cloud Storage bucket{" "}
+          <code>gs://sps-btn-data-all-data</code>. Raw artifacts (PDFs, Word
+          docs, Access databases, AVRO from Socrata) are under <code>raw/</code>;
+          cleaned and joined outputs sit under <code>processed/</code>. The
+          listing on each subpage is generated at build time from a snapshot
+          (<code>all_data.txt</code>) of the bucket. If something is missing or
+          stale, run <code>gsutil ls -r</code> against the bucket and refresh
+          that file.
+        </Typography>
+      </Box>
     </Container>
   );
 }
