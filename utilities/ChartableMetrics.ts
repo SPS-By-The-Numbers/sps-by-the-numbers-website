@@ -150,9 +150,20 @@ export function toChartableDataset(
 
   // Pivot in the budget/actuals.
   // Do not collapse the two getDataColumnNames() calls as data is modifieid.
+  //
+  // The _pivot_name_hack_ dummy value column forces arquero to emit
+  // value-prefixed column names (`<col>_budget`) even when only a single
+  // value column is present. Without it, a lone value column (e.g. a
+  // single selected activity/program facet) pivots to bare
+  // `budget`/`actuals` columns, which the chart's
+  // `<metricColumn>_<facet>_<key>` lookup can't find, so the chart
+  // renders empty. The hack columns are stripped immediately after.
+  const valueColumns = getDataColumnNames(prefixedData);
   const data = prefixedData
+    .derive({ _pivot_name_hack_: () => 0 })
     .groupby("class_of")
-    .pivot("data_type", getDataColumnNames(prefixedData))
+    .pivot("data_type", [...valueColumns, "_pivot_name_hack_"])
+    .select(aq.not(aq.startswith("_pivot_name_hack_")))
     .orderby("class_of");
 
   return data;
