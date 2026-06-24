@@ -47,6 +47,20 @@ export default function Page() {
           <li><Link href="https://medium.com/@awongawong/cracking-the-budget-1-chronic-underspend-7d6098cc2fbc">
             <Typography>Cracking the Budget #1: Chronic Underspend</Typography>
           </Link></li>
+          <li>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Link
+                href="/analyses/seattle_purchased_services_review.html"
+                target="_blank"
+                rel="noopener"
+              >
+                <Typography component="span">
+                  SPS Purchased Services, MSOC &amp; Staffing: Budget vs Actual
+                </Typography>
+              </Link>
+              <AiChip />
+            </Box>
+          </li>
         </ul>
 
         <Typography component="h4" variant="h4">Transportation</Typography>
@@ -77,6 +91,20 @@ export default function Page() {
               >
                 <Typography component="span">
                   STARS Exploiter — Washington Transit Funding Tycoon
+                </Typography>
+              </Link>
+              <AiChip />
+            </Box>
+          </li>
+          <li>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Link
+                href="/analyses/stars_transit_analysis.html"
+                target="_blank"
+                rel="noopener"
+              >
+                <Typography component="span">
+                  STARS Bus-Ridership Analysis
                 </Typography>
               </Link>
               <AiChip />
@@ -125,6 +153,20 @@ export default function Page() {
             <Link href="https://medium.com/@rebekah.binns/ill-say-it-louder-for-the-folks-in-the-back-sps-your-enrollment-and-staffing-policies-are-46ea1807ac21">
               <Typography>I’ll say it louder for the folks in the back: SPS — your enrollment and staffing policies are racist!</Typography>
             </Link>
+          </li>
+          <li>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Link
+                href="/analyses/seattle_teacher_pay_gap.html"
+                target="_blank"
+                rel="noopener"
+              >
+                <Typography component="span">
+                  SPS Teacher Pay — The Widening Gap &amp; Raise Redistribution
+                </Typography>
+              </Link>
+              <AiChip />
+            </Box>
           </li>
 
         </ul>
