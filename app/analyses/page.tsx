@@ -157,12 +157,12 @@ export default function Page() {
           <li>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Link
-                href="/analyses/seattle_teacher_pay_gap.html"
+                href="/analyses/seattle_sea_pay_gap.html"
                 target="_blank"
                 rel="noopener"
               >
                 <Typography component="span">
-                  SPS Teacher Pay — The Widening Gap &amp; Raise Redistribution
+                  SEA-Represented Staff Pay — The Widening Gap &amp; Raise Redistribution
                 </Typography>
               </Link>
               <AiChip />
