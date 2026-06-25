@@ -47,20 +47,6 @@ export default function Page() {
           <li><Link href="https://medium.com/@awongawong/cracking-the-budget-1-chronic-underspend-7d6098cc2fbc">
             <Typography>Cracking the Budget #1: Chronic Underspend</Typography>
           </Link></li>
-          <li>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Link
-                href="/analyses/seattle_purchased_services_review.html"
-                target="_blank"
-                rel="noopener"
-              >
-                <Typography component="span">
-                  SPS Purchased Services, MSOC &amp; Staffing: Budget vs Actual
-                </Typography>
-              </Link>
-              <AiChip />
-            </Box>
-          </li>
         </ul>
 
         <Typography component="h4" variant="h4">Transportation</Typography>
