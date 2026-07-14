@@ -57,6 +57,7 @@ h1{font-size:22px;margin:0 0 4px;letter-spacing:-.01em}
 .seg button{border:0;background:transparent;color:var(--muted);padding:10px 16px;font-size:13px;cursor:pointer;white-space:nowrap}
 .seg button+button{border-left:1px solid var(--line)}
 .seg button.on{background:var(--accent);color:#fff;font-weight:600}
+.seg button:disabled{opacity:.4;cursor:not-allowed}
 .meas-note{font-size:12px;color:var(--faint)}
 .meas-note b{color:var(--muted)}
 .enroll-tog{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px}
@@ -746,6 +747,7 @@ const PMETRICS=[
   {key:'varTfs',label:'Variance final $ (Act−Bud)',      type:'money',variance:true,actField:'tfs',budField:'sal'},
 ];
 let ptMetric='budFte', ptMode='delta', ptSort={col:DATA.years[DATA.years.length-1],dir:-1};
+let ptFixedYear=DATA.years[0]; // base year for "Δ vs fixed year" mode
 const YEAR_IDX=new Map(DATA.years.map((y,i)=>[y,i]));
 
 // the table obeys the same Program / Object / Activity filters as the charts
@@ -777,12 +779,16 @@ function pivotRows(m){ // one row per (program, activity, obj, duty) for metric 
 function cellDelta(row,y){const i=YEAR_IDX.get(y); if(i<=0)return null;
   const cur=row.by[y],prv=row.by[DATA.years[i-1]];
   return (cur!=null&&prv!=null)?cur-prv:null;}
+function cellFixed(row,y){const cur=row.by[y],base=row.by[ptFixedYear];
+  return (cur!=null&&base!=null)?cur-base:null;}
+function cellMode(row,y){return ptMode==='delta'?cellDelta(row,y):(ptMode==='fixed'?cellFixed(row,y):null);}
 function fmtCell(v,type){return type==='money'?fmtMoney(v):v.toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1});}
 function deltaSpan(v,type){const mag=type==='money'?fmtMoney(Math.abs(v)):Math.abs(v).toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1});
   return `<span class="${v>0?'dpos':'dneg'}">${v>0?'+':'−'}${mag}</span>`;}
 
 function renderDataTable(){
   const m=PMETRICS.find(x=>x.key===ptMetric);
+  if(m.variance)ptMode='raw'; // year-over-year delta of a variance is nonsensical
   const rows=pivotRows(m),c=ptSort.col,dir=ptSort.dir;
   const keyval=(r)=>{
     if(c==='program')return PROG_LABEL.get(r.program)||('zzz'+r.program);
@@ -790,7 +796,7 @@ function renderDataTable(){
     if(c==='obj')return r.obj;
     if(c==='duty')return dutyLabel(r.duty);
     if(c==='mean'){const n=Object.keys(r.by).length;return n?r.total/n:0;} // mean over years present
-    return ptMode==='delta'?cellDelta(r,c):(r.by[c]!=null?r.by[c]:null); // a year
+    return ptMode==='raw'?(r.by[c]!=null?r.by[c]:null):cellMode(r,c); // a year
   };
   rows.sort((a,b)=>{let av=keyval(a),bv=keyval(b);
     if(av==null&&bv==null)return 0; if(av==null)return 1; if(bv==null)return -1;
@@ -800,7 +806,8 @@ function renderDataTable(){
   let h=`<div class="tbl-ctrls">
       <label style="font-size:12px;color:var(--muted)">Cell metric
         <select id="ptMetric" style="margin-left:6px">${PMETRICS.map(x=>`<option value="${x.key}"${x.key===ptMetric?' selected':''}>${x.label}</option>`).join('')}</select></label>
-      <div class="seg small" id="ptModeSeg"><button data-tm="raw" class="${ptMode==='raw'?'on':''}">Raw</button><button data-tm="delta" class="${ptMode==='delta'?'on':''}">Δ vs prior yr</button></div>
+      <div class="seg small" id="ptModeSeg"><button data-tm="raw" class="${ptMode==='raw'?'on':''}">Raw</button><button data-tm="delta"${m.variance?' disabled title="Not available for variance metrics"':''} class="${ptMode==='delta'?'on':''}">Δ vs prior yr</button><button data-tm="fixed"${m.variance?' disabled title="Not available for variance metrics"':''} class="${ptMode==='fixed'?'on':''}">Δ vs fixed year</button></div>
+      ${ptMode==='fixed'?`<label style="font-size:12px;color:var(--muted)">base <select id="ptFixedSel" style="margin-left:4px">${DATA.years.map(y=>`<option value="${y}"${y===ptFixedYear?' selected':''}>${shortYr(y)}</option>`).join('')}</select></label>`:''}
       <button class="mini" id="dlCsv">⤓ Download CSV (long)</button>
     </div>
     <p style="font-size:11.5px;color:var(--faint);margin:0 2px 8px">One row per <b>Program × Activity × Object × Duty</b> line item; columns are school years. Values are the selected metric (${m.label}); <b>respects the Program / Object / Activity / Duty filters above</b>. Click any header to sort. ${rows.length} rows.</p>
@@ -817,14 +824,15 @@ function renderDataTable(){
        `<td class="objc">${r.obj==='cert'?'Cert':'Class'}</td>`+
        `<td class="dutyc">${dutyLabel(r.duty)}</td>`;
     DATA.years.forEach(y=>{let cell='';
-      if(ptMode==='delta'){const d=cellDelta(r,y); if(d)cell=deltaSpan(d,m.type);}
-      else{const v=r.by[y]; if(v)cell=fmtCell(v,m.type);}
+      if(ptMode==='raw'){const v=r.by[y]; if(v)cell=fmtCell(v,m.type);}
+      else{const d=cellMode(r,y); if(d)cell=deltaSpan(d,m.type);}
       h+=`<td class="num">${cell}</td>`;});
     const nyr=Object.keys(r.by).length;h+=`<td class="num tot">${fmtCell(nyr?r.total/nyr:0,m.type)}</td></tr>`;});
   h+=`</tbody></table></div>`;
   $('#tblwrap').innerHTML=h;
   $('#ptMetric').onchange=e=>{ptMetric=e.target.value;renderDataTable();};
   $('#ptModeSeg').querySelectorAll('button').forEach(bt=>bt.onclick=()=>{ptMode=bt.dataset.tm;renderDataTable();});
+  if($('#ptFixedSel'))$('#ptFixedSel').onchange=e=>{ptFixedYear=e.target.value;renderDataTable();};
   $('#dlCsv').onclick=downloadCsvLong;
   $('#tblwrap').querySelectorAll('th.sortable').forEach(th=>th.onclick=()=>{
     const col=th.dataset.col; if(ptSort.col===col)ptSort.dir*=-1; else{ptSort.col=col;ptSort.dir=(col==='program'||col==='activity'||col==='obj')?1:-1;} renderDataTable();});
