@@ -154,6 +154,20 @@ export default function Page() {
               <AiChip />
             </Box>
           </li>
+          <li>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Link
+                href="/analyses/sps_budget_vs_actual_staffing.html"
+                target="_blank"
+                rel="noopener"
+              >
+                <Typography component="span">
+                  Budgeted vs Actual Staffing &amp; Salary — F-195 vs S-275
+                </Typography>
+              </Link>
+              <AiChip />
+            </Box>
+          </li>
 
         </ul>
       </Stack>
