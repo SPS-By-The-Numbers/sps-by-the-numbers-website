@@ -106,12 +106,22 @@ h1{font-size:22px;margin:0 0 4px;letter-spacing:-.01em}
 .k-val.pos{color:var(--over)} .k-val.neg{color:var(--under)}
 
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 18px 10px;margin-top:6px}
-#enrollCard{position:sticky;top:6px;z-index:5}
-#enrollCard.collapsed{padding-bottom:14px}
-.enroll-body{overflow:hidden;max-height:300px;opacity:1;transition:max-height .32s ease,opacity .22s ease}
-#enrollCard.collapsed .enroll-body{max-height:0;opacity:0}
+/* collapsible bodies (JS manages max-height for a clean variable-height animation) */
+.coll-body{overflow:hidden;opacity:1;transition:max-height .32s ease,opacity .22s ease}
+.collapsed .coll-body{opacity:0}
 .collapse-btn{background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:11px;padding:0;margin-right:7px;vertical-align:1px}
 .collapse-btn:hover{color:var(--ink)}
+/* Filters + Enrollment share one sticky zone and stack like an accordion */
+#stickyZone{position:sticky;top:6px;z-index:7;background:var(--bg)}
+#filterCard{background:var(--bg)}
+#enrollCard{margin-top:8px}
+.coll-head{display:flex;align-items:center;gap:2px;padding:2px 2px 8px;border-bottom:1px solid transparent}
+.coll-head .coll-title{font-size:14px;font-weight:650}
+.coll-head .filter-sum{font-size:11.5px;color:var(--muted);margin-left:auto;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:10px}
+/* denser when compact (collapsed) */
+#filterCard.collapsed .coll-head{padding-bottom:2px;border-bottom-color:var(--line)}
+.card.collapsed{padding:7px 16px}
+.card.collapsed .chead{margin-bottom:0}
 .card h2{font-size:14px;margin:0;font-weight:650}
 .card .chead{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:6px}
 .legend{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
@@ -184,26 +194,35 @@ table.pt td.f0,table.pt td.f1{color:var(--ink)}
     <div class="meas-note">$ = <b>salary only</b> (Object&nbsp;2+3), <b>not total compensation</b> — excludes benefits (Object&nbsp;4), insurance &amp; other pay.</div>
   </div>
 
-  <div class="trees" id="trees"></div>
+  <div id="stickyZone">
+    <div id="filterCard">
+      <div class="coll-head">
+        <button class="collapse-btn" id="filterCollapse">▼</button>
+        <span class="coll-title">Filters</span>
+        <span class="filter-sum" id="filterSum"></span>
+      </div>
+      <div class="coll-body"><div class="trees" id="trees"></div></div>
+    </div>
+
+    <div class="card" id="enrollCard">
+      <div class="chead">
+        <h2><button class="collapse-btn" id="enrollCollapse" aria-label="Collapse enrollment">▼</button>Enrollment</h2>
+        <div class="legend">
+          <span><span class="sw" style="background:var(--e-gen)"></span>General ed (headcount)</span>
+          <span><span class="sw" style="background:var(--e-sped)"></span>Special ed (headcount)</span>
+          <span><span class="sw" style="background:var(--e-aafte);height:0;border-top:2px solid var(--e-aafte);border-radius:0"></span>Funded Enrollment (K-12 AAFTE)</span>
+        </div>
+      </div>
+      <div class="coll-body enroll-body">
+        <svg id="enrollChart" viewBox="0 0 960 170" role="img" aria-label="Enrollment: general ed vs special ed headcount with funded enrollment AAFTE"></svg>
+        <p style="font-size:11.5px;color:var(--faint);margin:2px 2px 8px">Stacked bars = OSPI Report Card headcount (Gen-Ed + Special-Ed = total), 2014-15+. Line = <b>Funded Enrollment</b> (K-12 AAFTE — annual-average FTE) from <code>enrollment.avro</code>. District-level — independent of the filters below.</p>
+      </div>
+    </div>
+  </div>
 
   <div class="banner" id="banner"></div>
 
   <div class="kpis" id="kpis"></div>
-
-  <div class="card" id="enrollCard">
-    <div class="chead">
-      <h2><button class="collapse-btn" id="enrollCollapse" aria-label="Collapse enrollment">▼</button>Enrollment</h2>
-      <div class="legend">
-        <span><span class="sw" style="background:var(--e-gen)"></span>General ed (headcount)</span>
-        <span><span class="sw" style="background:var(--e-sped)"></span>Special ed (headcount)</span>
-        <span><span class="sw" style="background:var(--e-aafte);height:0;border-top:2px solid var(--e-aafte);border-radius:0"></span>Funded Enrollment (K-12 AAFTE)</span>
-      </div>
-    </div>
-    <div class="enroll-body">
-      <svg id="enrollChart" viewBox="0 0 960 170" role="img" aria-label="Enrollment: general ed vs special ed headcount with funded enrollment AAFTE"></svg>
-      <p style="font-size:11.5px;color:var(--faint);margin:2px 2px 8px">Stacked bars = OSPI Report Card headcount (Gen-Ed + Special-Ed = total), 2014-15+. Line = <b>Funded Enrollment</b> (K-12 AAFTE — annual-average FTE) from <code>enrollment.avro</code>. District-level — independent of the filters below.</p>
-    </div>
-  </div>
 
   <div class="card">
     <div class="chead">
@@ -500,6 +519,14 @@ function renderTrees(){
   }
   host.querySelectorAll('[data-all]').forEach(b=>b.onclick=()=>{sel[b.dataset.all]=leafCodes(dims[b.dataset.all].tree,new Set(),false);refresh(b.dataset.all);});
   host.querySelectorAll('[data-none]').forEach(b=>b.onclick=()=>{sel[b.dataset.none]=new Set();refresh(b.dataset.none);});
+  updateFilterSummary();
+}
+function updateFilterSummary(){
+  const el=$('#filterSum'); if(!el)return;
+  const parts=['program','object','activity','duty'].map(k=>{
+    const all=leafCodes(dims[k].tree,new Set(),false),n=[...sel[k]].filter(c=>all.has(c)).length,m=all.size;
+    return `${dims[k].name}: ${n===m?'All':(n===0?'None':n+'/'+m)}`;});
+  el.textContent=parts.join('   ·   ');
 }
 function renderNode(node,host,depth,dimKey,isRoot){
   const isLeaf=node.code!==undefined;
@@ -819,17 +846,31 @@ function downloadCsvLong(){
 /* ---- events ---- */
 $('#measSeg').querySelectorAll('button').forEach(btn=>btn.onclick=()=>{state.meas=btn.dataset.m;
   $('#measSeg').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===btn));render();});
-const enrollCard=$('#enrollCard');
-function setEnrollCollapsed(c){enrollCard.classList.toggle('collapsed',c);$('#enrollCollapse').textContent=c?'▶':'▼';}
-$('#enrollCollapse').onclick=()=>setEnrollCollapsed(!enrollCard.classList.contains('collapsed'));
-// Auto-collapse ONCE, the first time the card becomes sticky (first scroll-down),
-// then disconnect — no further automatic behavior. Manual toggle still works.
+// Collapsible cards (Filters + Enrollment) inside one sticky #stickyZone so they
+// stack like an accordion. Body max-height is animated via measured scrollHeight so
+// variable-height content collapses cleanly. Each card toggles independently.
+function makeCollapsible(card,btn){
+  const body=card.querySelector('.coll-body');
+  function set(c){
+    if(c===card.classList.contains('collapsed'))return;
+    if(c){body.style.maxHeight=body.scrollHeight+'px';body.getBoundingClientRect();body.style.maxHeight='0px';card.classList.add('collapsed');}
+    else{card.classList.remove('collapsed');body.style.maxHeight=body.scrollHeight+'px';
+      const done=e=>{if(e.propertyName!=='max-height')return;body.style.maxHeight='';body.removeEventListener('transitionend',done);};
+      body.addEventListener('transitionend',done);}
+    btn.textContent=c?'▶':'▼';
+  }
+  card._setCollapsed=set;
+  btn.onclick=()=>set(!card.classList.contains('collapsed'));
+}
+makeCollapsible($('#filterCard'),$('#filterCollapse'));
+makeCollapsible($('#enrollCard'),$('#enrollCollapse'));
+// Auto-collapse BOTH once, the first time the sticky zone sticks (first scroll-down).
 (function(){
-  const sentinel=document.createElement('div');sentinel.style.height='1px';
-  enrollCard.parentNode.insertBefore(sentinel,enrollCard);
-  const io=new IntersectionObserver(([e])=>{
-    if(!e.isIntersecting){setEnrollCollapsed(true);io.disconnect();}
-  },{rootMargin:'-7px 0px 0px 0px',threshold:0});
+  const zone=$('#stickyZone'),sentinel=document.createElement('div');sentinel.style.height='1px';
+  zone.parentNode.insertBefore(sentinel,zone);
+  const io=new IntersectionObserver(([e])=>{if(!e.isIntersecting){
+    $('#filterCard')._setCollapsed(true);$('#enrollCard')._setCollapsed(true);io.disconnect();}},
+    {rootMargin:'-7px 0px 0px 0px',threshold:0});
   io.observe(sentinel);
 })();
 const tb=$('#themeBtn');let theme=null;
