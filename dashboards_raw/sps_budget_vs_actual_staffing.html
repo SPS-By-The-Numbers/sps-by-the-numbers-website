@@ -9,16 +9,16 @@
   --bg:#f6f7f9; --panel:#ffffff; --ink:#1a2230; --muted:#5c6a7e; --faint:#8a97a8;
   --line:#e4e8ee; --line2:#eef1f5;
   --budget:#9aa7bd; --budget-fill:#c3ccdb;
-  --actual:#4f46e5; --actual-fill:#6366f1;
-  --over:#e5484d; --under:#2f9e6b;
-  --accent:#4f46e5; --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.10);
+  --actual:#0072B2; --actual-fill:#0072B2;
+  --over:#D55E00; --under:#009E73;
+  --accent:#0072B2; --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.10);
   --radius:14px;
 }
 @media (prefers-color-scheme:dark){
   :root{
     --bg:#0e1116; --panel:#161b22; --ink:#e8edf4; --muted:#9aa7b8; --faint:#6b7789;
     --line:#242c37; --line2:#1c232d; --budget:#6b7791; --budget-fill:#3a4459;
-    --actual:#8b8cf7; --actual-fill:#6366f1; --over:#f2555a; --under:#3ec98a; --accent:#8b8cf7;
+    --actual:#5aa9e6; --actual-fill:#3f94d6; --over:#ef7d3c; --under:#26c39c; --accent:#5aa9e6;
     --shadow:0 1px 2px rgba(0,0,0,.4);
   }
 }
@@ -31,13 +31,15 @@
 :root[data-theme="light"]{
   --bg:#f6f7f9; --panel:#ffffff; --ink:#1a2230; --muted:#5c6a7e; --faint:#8a97a8;
   --line:#e4e8ee; --line2:#eef1f5; --budget:#9aa7bd; --budget-fill:#c3ccdb;
-  --actual:#4f46e5; --actual-fill:#6366f1; --over:#e5484d; --under:#2f9e6b; --accent:#4f46e5;
+  --actual:#0072B2; --actual-fill:#0072B2; --over:#D55E00; --under:#009E73; --accent:#0072B2;
   --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.10);
 }
-:root{--enroll:#b45309;--e-aafte:#b45309;--e-head:#0e7490;--e-gen:#7c3aed;--e-sped:#be185d}
-@media (prefers-color-scheme:dark){:root{--enroll:#f59e0b;--e-aafte:#f59e0b;--e-head:#38bdf8;--e-gen:#a78bfa;--e-sped:#f472b6}}
-:root[data-theme="dark"]{--enroll:#f59e0b;--e-aafte:#f59e0b;--e-head:#38bdf8;--e-gen:#a78bfa;--e-sped:#f472b6}
-:root[data-theme="light"]{--enroll:#b45309;--e-aafte:#b45309;--e-head:#0e7490;--e-gen:#7c3aed;--e-sped:#be185d}
+/* Okabe-Ito colorblind-safe palette. Enrollment = reddish-purple / orange / sky-blue,
+   distinct from the staffing charts (gray budget, blue actual, vermillion/green variance). */
+:root{--enroll:#56B4E9;--e-aafte:#56B4E9;--e-head:#009E73;--e-gen:#CC79A7;--e-sped:#E69F00}
+@media (prefers-color-scheme:dark){:root{--enroll:#7cc7ef;--e-aafte:#7cc7ef;--e-head:#2ec4a0;--e-gen:#dd9cc4;--e-sped:#f0b64a}}
+:root[data-theme="dark"]{--enroll:#7cc7ef;--e-aafte:#7cc7ef;--e-head:#2ec4a0;--e-gen:#dd9cc4;--e-sped:#f0b64a}
+:root[data-theme="light"]{--enroll:#56B4E9;--e-aafte:#56B4E9;--e-head:#009E73;--e-gen:#CC79A7;--e-sped:#E69F00}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);
@@ -53,6 +55,7 @@ h1{font-size:22px;margin:0 0 4px;letter-spacing:-.01em}
 .measrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:18px 0 12px}
 .seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--panel);box-shadow:var(--shadow)}
 .seg button{border:0;background:transparent;color:var(--muted);padding:10px 16px;font-size:13px;cursor:pointer;white-space:nowrap}
+.seg button+button{border-left:1px solid var(--line)}
 .seg button.on{background:var(--accent);color:#fff;font-weight:600}
 .meas-note{font-size:12px;color:var(--faint)}
 .meas-note b{color:var(--muted)}
@@ -103,6 +106,12 @@ h1{font-size:22px;margin:0 0 4px;letter-spacing:-.01em}
 .k-val.pos{color:var(--over)} .k-val.neg{color:var(--under)}
 
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 18px 10px;margin-top:6px}
+#enrollCard{position:sticky;top:6px;z-index:5}
+#enrollCard.collapsed{padding-bottom:14px}
+.enroll-body{overflow:hidden;max-height:300px;opacity:1;transition:max-height .32s ease,opacity .22s ease}
+#enrollCard.collapsed .enroll-body{max-height:0;opacity:0}
+.collapse-btn{background:transparent;border:0;color:var(--muted);cursor:pointer;font-size:11px;padding:0;margin-right:7px;vertical-align:1px}
+.collapse-btn:hover{color:var(--ink)}
 .card h2{font-size:14px;margin:0;font-weight:650}
 .card .chead{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:6px}
 .legend{display:flex;gap:16px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
@@ -169,11 +178,10 @@ table.pt td.f0,table.pt td.f1{color:var(--ink)}
   <div class="measrow">
     <div class="seg" id="measSeg">
       <button data-m="fte" class="on">FTE</button>
-      <button data-m="asg">Salary · assignment</button>
-      <button data-m="tfs">Salary · final</button>
+      <button data-m="tfs">Salary (final)</button>
+      <button data-m="asg">Salary (initial assigned)</button>
     </div>
-    <div class="enroll-tog" id="enrollTog"></div>
-    <div class="meas-note">$ = <b>salary only</b> (Object&nbsp;2+3), <b>not total compensation</b> — excludes benefits (Object&nbsp;4), insurance &amp; other pay. Enrollment = right axis (dashed).</div>
+    <div class="meas-note">$ = <b>salary only</b> (Object&nbsp;2+3), <b>not total compensation</b> — excludes benefits (Object&nbsp;4), insurance &amp; other pay.</div>
   </div>
 
   <div class="trees" id="trees"></div>
@@ -181,6 +189,21 @@ table.pt td.f0,table.pt td.f1{color:var(--ink)}
   <div class="banner" id="banner"></div>
 
   <div class="kpis" id="kpis"></div>
+
+  <div class="card" id="enrollCard">
+    <div class="chead">
+      <h2><button class="collapse-btn" id="enrollCollapse" aria-label="Collapse enrollment">▼</button>Enrollment</h2>
+      <div class="legend">
+        <span><span class="sw" style="background:var(--e-gen)"></span>General ed (headcount)</span>
+        <span><span class="sw" style="background:var(--e-sped)"></span>Special ed (headcount)</span>
+        <span><span class="sw" style="background:var(--e-aafte);height:0;border-top:2px solid var(--e-aafte);border-radius:0"></span>Funded Enrollment (K-12 AAFTE)</span>
+      </div>
+    </div>
+    <div class="enroll-body">
+      <svg id="enrollChart" viewBox="0 0 960 170" role="img" aria-label="Enrollment: general ed vs special ed headcount with funded enrollment AAFTE"></svg>
+      <p style="font-size:11.5px;color:var(--faint);margin:2px 2px 8px">Stacked bars = OSPI Report Card headcount (Gen-Ed + Special-Ed = total), 2014-15+. Line = <b>Funded Enrollment</b> (K-12 AAFTE — annual-average FTE) from <code>enrollment.avro</code>. District-level — independent of the filters below.</p>
+    </div>
+  </div>
 
   <div class="card">
     <div class="chead">
@@ -405,48 +428,45 @@ const sel={};
 for(const k in dims){sel[k]=leafCodes(dims[k].tree,new Set(),false);} // default: all enabled leaves
 const expanded={}; // id -> bool (default collapsed except root shown expanded)
 
-// Enrollment series (right axis). GenEd = Headcount − SpecEd (both OSPI Report Card).
-// AAFTE is annual-avg K-12 FTE (enrollment.avro); RC has no FTE.
-const ENROLL=[
-  {key:'aafte',    label:'AAFTE',    color:'var(--e-aafte)',get:o=>o.afte},
-  {key:'headcount',label:'Headcount',color:'var(--e-head)', get:o=>o.headcount},
-  {key:'gened',    label:'GenEd',    color:'var(--e-gen)',  get:o=>(o.headcount!=null&&o.sped!=null)?o.headcount-o.sped:null},
-  {key:'sped',     label:'SpecEd',   color:'var(--e-sped)', get:o=>o.sped},
-];
-let state={meas:'fte',enrollOn:new Set(['aafte','headcount','gened','sped'])};
-function renderEnrollToggles(){
-  const host=$('#enrollTog');if(!host)return;
-  host.innerHTML='<span class="etog-lab">Enrollment</span>'+ENROLL.map(e=>
-    `<button class="etog ${state.enrollOn.has(e.key)?'on':''}" data-ek="${e.key}"><span class="edot" style="background:${e.color}"></span>${e.label}</button>`).join('');
-  host.querySelectorAll('.etog').forEach(bt=>bt.onclick=()=>{const k=bt.dataset.ek;
-    state.enrollOn.has(k)?state.enrollOn.delete(k):state.enrollOn.add(k);
-    render();renderRecon();renderEnrollToggles();});
-}
-// Multi-series enrollment overlay on a shared 0-based right axis (dashed lines).
-// years/xfn map a year-index to plotted x; top/bottom bound the plot; rightX = plot right edge.
-function enrollLine(years,xfn,top,bottom,rightX){
-  if(!DATA.enroll || !state.enrollOn.size)return '';
-  const active=ENROLL.filter(e=>state.enrollOn.has(e.key));
-  let maxv=0;
-  const series=active.map(e=>{
-    const pts=years.map((y,i)=>({i,y,v:e.get(DATA.enroll[y]||{})})).filter(p=>p.v!=null&&p.v>0);
-    pts.forEach(p=>{if(p.v>maxv)maxv=p.v;}); return {e,pts};});
-  if(maxv<=0)return '';
-  const hi=niceCeil(maxv),lo=0,yTo=v=>bottom-((v-lo)/(hi-lo))*(bottom-top);
+let state={meas:'fte'};
+// Dedicated Enrollment chart: stacked bars GenEd (bottom) + SpecEd (top) =
+// Headcount (OSPI Report Card), with an AAFTE line (K-12 FTE, enrollment.avro).
+// Shares the exact x geometry of the staffing charts so the years line up.
+function renderEnroll(){
+  const svg=$('#enrollChart'); if(!svg||!DATA.enroll)return;
+  const years=DATA.years, w=960,h=170,l=66,r=18,t=12,b=34,iw=w-l-r,ih=h-t-b;
+  const g=y=>DATA.enroll[y]||{};
+  const gened=y=>{const o=g(y);return (o.headcount!=null&&o.sped!=null)?o.headcount-o.sped:null;};
+  let maxv=0; years.forEach(y=>{const o=g(y); if(o.headcount)maxv=Math.max(maxv,o.headcount); if(o.afte)maxv=Math.max(maxv,o.afte);});
+  const hi=niceCeil(maxv)||1,lo=0;
+  const x=i=>l+i*(iw/years.length), bw=iw/years.length, yTo=v=>t+ih-((v-lo)/(hi-lo))*ih;
   const kfmt=v=>v===0?'0':((v/1000)%1===0?(v/1000)+'k':(v/1000).toFixed(1)+'k');
   let s='';
-  for(let k=0;k<=3;k++){const val=hi*k/3,yy=yTo(val);
-    s+=`<text class="axtx" x="${rightX+8}" y="${yy+3.5}" text-anchor="start" fill="var(--muted)">${kfmt(val)}</text>`;}
-  const cy=(top+bottom)/2,lx=rightX+48;
-  s+=`<text x="${lx}" y="${cy}" fill="var(--muted)" font-size="11.5" font-weight="600" text-anchor="middle" transform="rotate(-90 ${lx} ${cy})">Enrollment (AAFTE or Headcount)</text>`;
-  series.forEach(({e,pts})=>{if(!pts.length)return;
-    let d='';pts.forEach((p,j)=>{d+=(j?'L':'M')+xfn(p.i).toFixed(1)+' '+yTo(p.v).toFixed(1)+' ';});
-    s+=`<path d="${d}" fill="none" stroke="${e.color}" stroke-width="2" stroke-dasharray="5 3" opacity=".95"/>`;
-    pts.forEach(p=>{const px=xfn(p.i).toFixed(1),py=yTo(p.v).toFixed(1);
-      const tt=`<div class="t-yr">${p.y}</div><div class="t-row"><span class="d">${e.label}</span><span>${Math.round(p.v).toLocaleString()}</span></div>`;
-      s+=`<circle cx="${px}" cy="${py}" r="2.2" fill="${e.color}"/>`;
-      s+=`<circle cx="${px}" cy="${py}" r="6" fill="transparent" class="bar" data-tip="${encodeURIComponent(tt)}"/>`;});});
-  return s;
+  for(let k=0;k<=4;k++){const val=hi*k/4,yy=yTo(val);
+    s+=`<line class="gl" x1="${l}" y1="${yy.toFixed(1)}" x2="${w-r}" y2="${yy.toFixed(1)}"/>`;
+    s+=`<text class="axtx" x="${l-8}" y="${yy+3.5}" text-anchor="end">${kfmt(val)}</text>`;}
+  s+=`<text class="axtitle" transform="translate(16,${t+ih/2}) rotate(-90)" text-anchor="middle">Students</text>`;
+  const bwd=bw*0.6;
+  years.forEach((y,i)=>{const o=g(y),ge=gened(y),sp=o.sped,cx=x(i)+(bw-bwd)/2;
+    if(ge!=null&&sp!=null){
+      const geH=(ge/hi)*ih, spH=(sp/hi)*ih, hc=ge+sp;
+      const tt=`<div class="t-yr">${y}</div>`+
+        `<div class="t-row"><span class="d">Headcount</span><span>${Math.round(hc).toLocaleString()}</span></div>`+
+        `<div class="t-row"><span class="d">Gen-Ed</span><span>${Math.round(ge).toLocaleString()}</span></div>`+
+        `<div class="t-row"><span class="d">Sp-Ed</span><span>${Math.round(sp).toLocaleString()} (${(sp/hc*100).toFixed(1)}%)</span></div>`;
+      s+=`<rect class="bar" x="${cx.toFixed(1)}" y="${yTo(ge).toFixed(1)}" width="${bwd.toFixed(1)}" height="${geH.toFixed(1)}" fill="var(--e-gen)" data-tip="${encodeURIComponent(tt)}"/>`;
+      s+=`<rect class="bar" x="${cx.toFixed(1)}" y="${yTo(hc).toFixed(1)}" width="${bwd.toFixed(1)}" height="${spH.toFixed(1)}" fill="var(--e-sped)" data-tip="${encodeURIComponent(tt)}"/>`;
+    }
+    s+=`<text class="axtx" x="${x(i)+bw/2}" y="${t+ih+18}" text-anchor="middle">${shortYr(y)}</text>`;});
+  // AAFTE line
+  const pts=years.map((y,i)=>({i,v:g(y).afte})).filter(p=>p.v!=null&&p.v>0);
+  if(pts.length){let d='';pts.forEach((p,j)=>{d+=(j?'L':'M')+(x(p.i)+bw/2).toFixed(1)+' '+yTo(p.v).toFixed(1)+' ';});
+    s+=`<path d="${d}" fill="none" stroke="var(--e-aafte)" stroke-width="2.4"/>`;
+    pts.forEach(p=>{const px=(x(p.i)+bw/2).toFixed(1),py=yTo(p.v).toFixed(1);
+      const tt=`<div class="t-yr">${years[p.i]}</div><div class="t-row"><span class="d">Funded Enrollment (AAFTE)</span><span>${Math.round(p.v).toLocaleString()}</span></div>`;
+      s+=`<circle cx="${px}" cy="${py}" r="2.6" fill="var(--e-aafte)"/>`;
+      s+=`<circle cx="${px}" cy="${py}" r="6" fill="transparent" class="bar" data-tip="${encodeURIComponent(tt)}"/>`;});}
+  svg.setAttribute('viewBox',`0 0 ${w} ${h}`);svg.innerHTML=s;attachTips(svg);
 }
 
 /* ---- tree rendering ---- */
@@ -584,7 +604,7 @@ function renderKpis(actual,budget,years,M){
   cards.push({lab:'Variance %',val:varp==null?'—':(varp>0?'+':'')+varp.toFixed(1)+'%',sub:'vs plan',cls:varp==null?'':(varp>0?'pos':'neg')});
   $('#kpis').innerHTML=cards.map(c=>`<div class="kpi"><div class="k-lab">${c.lab}</div><div class="k-val ${c.cls||''}">${c.val}</div><div class="k-sub">${c.sub}</div></div>`).join('');
 }
-const CH={w:960,h:380,l:66,r:56,t:18,b:52};
+const CH={w:960,h:380,l:66,r:18,t:18,b:52};
 function niceMax(m){if(m<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(m)));const n=m/p;const s=n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10;return s*p;}
 function niceCeil(m){if(m<=0)return 1;const p=Math.pow(10,Math.floor(Math.log10(m)));const n=m/p;for(const s of[1,1.5,2,2.5,3,4,5,6,8,10])if(n<=s)return s*p;return 10*p;}
 function ticks(max){const o=[];for(let i=0;i<=4;i++)o.push(max*i/4);return o;}
@@ -619,14 +639,13 @@ function renderChart(actual,budget,years,M){
       }
     }else if(rep){s+=barRect(cx,yTo(av),grp,(av/max)*ih,'var(--actual-fill)','var(--actual)',buildTip(y,av,null,M,rep));}
     s+=`<text class="axtx" x="${x(i)+bw/2}" y="${t+ih+18}" text-anchor="middle" ${rep?'':'opacity="0.6"'}>${shortYr(y)}</text>`;});
-  s+=enrollLine(years,i=>x(i)+bw/2,t,t+ih,w-r);
   svg.setAttribute('viewBox',`0 0 ${w} ${h}`);svg.innerHTML=s;attachTips(svg);
 }
 function renderVar(actual,budget,years,M){
   const card=$('#varCard');if(!budget){card.style.display='none';return;}card.style.display='';
   const vt=$('#varTitle');if(vt)vt.textContent='Variance — Actual minus Budget ('+(M.salary?'salary $':'FTE')+')';
   const fmt=M.money?fmtMoney:fmtInt, vfmt=M.fmt;
-  const svg=$('#varChart'),w=960,h=210,l=66,r=56,t=14,b=40,iw=w-l-r,ih=h-t-b;
+  const svg=$('#varChart'),w=960,h=210,l=66,r=18,t=14,b=40,iw=w-l-r,ih=h-t-b;
   // Same 13-year axis as the main chart; a year is blank unless it has BOTH an
   // actual and a budget (so 2025-26 leaves a gap, keeping columns aligned).
   const ok=y=>(actual[y]||0)>0 && (budget[y]||0)>0;
@@ -641,7 +660,6 @@ function renderVar(actual,budget,years,M){
       const tt=`<div class="t-yr">${y}</div><div class="t-row"><span class="d">Actual−Budget</span><span>${(d>0?'+':'')+vfmt(d)}</span></div>`;
       s+=`<rect class="bar" x="${cx.toFixed(1)}" y="${yy.toFixed(1)}" width="${cw.toFixed(1)}" height="${Math.max(0.5,bh).toFixed(1)}" rx="2" fill="${col}" data-tip="${encodeURIComponent(tt)}"/>`;}
     s+=`<text class="axtx" x="${x(i)+bw/2}" y="${h-b+18}" text-anchor="middle" ${rep?'':'opacity="0.6"'}>${shortYr(y)}</text>`;});
-  s+=enrollLine(years,i=>x(i)+bw/2,t,t+ih,w-r);
   svg.setAttribute('viewBox',`0 0 ${w} ${h}`);svg.innerHTML=s;attachTips(svg);
 }
 // Static data-quality chart: GF15 published staff-count budget vs the GF9
@@ -649,7 +667,7 @@ function renderVar(actual,budget,years,M){
 function renderRecon(){
   const data=DATA.recon; if(!data||!data.length)return;
   const svg=$('#reconChart'); if(!svg)return;
-  const w=960,h=300,l=66,r=56,t=18,b=46,iw=w-l-r,ih=h-t-b;
+  const w=960,h=300,l=66,r=18,t=18,b=46,iw=w-l-r,ih=h-t-b;
   const yrs=data.map(d=>d.year);
   const g15=data.map(d=>d.gf15_cert+d.gf15_class);
   const ex=data.map(d=>d.exhibit_cert+d.exhibit_class);
@@ -679,14 +697,11 @@ function renderRecon(){
     s+=`<circle cx="${x(i).toFixed(1)}" cy="${yTo(ex[i]).toFixed(1)}" r="2.6" fill="var(--actual)"/>`;
     s+=`<rect class="bar" x="${(x(i)-cw/2).toFixed(1)}" y="${t}" width="${cw.toFixed(1)}" height="${ih}" fill="transparent" data-tip="${encodeURIComponent(tt)}"/>`;
     s+=`<text class="axtx" x="${x(i).toFixed(1)}" y="${t+ih+18}" text-anchor="middle">${shortYr(y)}</text>`;});
-  s+=enrollLine(yrs,i=>x(i),t,t+ih,w-r);
   svg.setAttribute('viewBox',`0 0 ${w} ${h}`);svg.innerHTML=s;attachTips(svg);
 }
 function renderLegend(hasBudget){let s='';
   if(hasBudget)s+=`<span><span class="sw" style="background:var(--budget-fill);border:1px solid var(--budget)"></span>Budget (F-195 GF9)</span>`;
   s+=`<span><span class="sw" style="background:var(--actual-fill)"></span>Actual (S-275)</span>`;
-  ENROLL.filter(e=>state.enrollOn.has(e.key)).forEach(e=>{
-    s+=`<span><span class="sw" style="background:${e.color};height:0;border-top:2px dashed ${e.color};border-radius:0"></span>${e.label}</span>`;});
   $('#legend').innerHTML=s;}
 /* ---- standalone data table (NOT filter-synced): rows = P-A-O line items,
    columns = years, cell metric chosen by a selector. CSV = long format. ---- */
@@ -804,6 +819,19 @@ function downloadCsvLong(){
 /* ---- events ---- */
 $('#measSeg').querySelectorAll('button').forEach(btn=>btn.onclick=()=>{state.meas=btn.dataset.m;
   $('#measSeg').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===btn));render();});
+const enrollCard=$('#enrollCard');
+function setEnrollCollapsed(c){enrollCard.classList.toggle('collapsed',c);$('#enrollCollapse').textContent=c?'▶':'▼';}
+$('#enrollCollapse').onclick=()=>setEnrollCollapsed(!enrollCard.classList.contains('collapsed'));
+// Auto-collapse ONCE, the first time the card becomes sticky (first scroll-down),
+// then disconnect — no further automatic behavior. Manual toggle still works.
+(function(){
+  const sentinel=document.createElement('div');sentinel.style.height='1px';
+  enrollCard.parentNode.insertBefore(sentinel,enrollCard);
+  const io=new IntersectionObserver(([e])=>{
+    if(!e.isIntersecting){setEnrollCollapsed(true);io.disconnect();}
+  },{rootMargin:'-7px 0px 0px 0px',threshold:0});
+  io.observe(sentinel);
+})();
 const tb=$('#themeBtn');let theme=null;
 tb.onclick=()=>{theme=theme==='dark'?'light':(theme==='light'?null:'dark');
   if(theme)document.documentElement.setAttribute('data-theme',theme);else document.documentElement.removeAttribute('data-theme');};
@@ -817,10 +845,10 @@ $('#provenance').innerHTML=
  `<b>Groupings + roll-ups</b> mirror <code>sps-by-the-numbers-website/app/finance/_filteritems/</code> and the synthetic activity merges in <code>DistrictData.tsx</code> (27+34→Teaching, 23+84→Principal's Office). `+
  `<b>Object</b>: certificated ↔ Object 2, classified ↔ Object 3 (exhibit_kind on budget; OSPI duty code 11–64 cert / 90–99 classified on S-275). District: ${DATA.district} (ccddd ${DATA.ccddd}). Years ${DATA.years[0]}–${DATA.years[DATA.years.length-1]}.`;
 
-renderEnrollToggles();
 renderTrees();
 render();
 renderRecon();
+renderEnroll();
 })();
 </script>
 </body>
