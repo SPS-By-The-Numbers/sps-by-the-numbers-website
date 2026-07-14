@@ -154,14 +154,17 @@ th.sortable:hover{color:var(--ink)}
 .dpos{color:var(--under)} .dneg{color:var(--over)} .dz{color:var(--faint)}
 .tbl-ctrls select{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:12.5px;cursor:pointer}
 .pt-scroll{max-height:600px;overflow:auto;border:1px solid var(--line2);border-radius:8px;margin-bottom:4px}
-table.pt{font-size:10.5px;border-collapse:separate;border-spacing:0;width:100%;min-width:1082px;table-layout:fixed}
+table.pt{font-size:10.5px;border-collapse:separate;border-spacing:0;width:100%;min-width:1098px;table-layout:fixed}
 table.pt th,table.pt td{padding:3px 5px;border-bottom:1px solid var(--line2);text-align:left;vertical-align:top;overflow:hidden}
 table.pt thead th{position:sticky;top:0;background:var(--panel);z-index:2;box-shadow:0 1px 0 var(--line);color:var(--faint);font-weight:600}
 /* wrap the Program/Activity/Duty labels so the whole grid fits on a wide screen */
 table.pt th.f0,table.pt td.f0{width:92px;white-space:normal;line-height:1.22;word-break:break-word}
 table.pt th.f1,table.pt td.f1{width:106px;white-space:normal;line-height:1.22;word-break:break-word}
 table.pt th.objc,table.pt td.objc{width:48px;white-space:normal;line-height:1.22}
-table.pt th.dutyc,table.pt td.dutyc{width:108px;white-space:normal;line-height:1.22;word-break:break-word}
+table.pt th.dutyc,table.pt td.dutyc{width:64px;white-space:normal;line-height:1.22;word-break:break-word}
+table.pt th.spk,table.pt td.spk{width:60px;text-align:center;vertical-align:middle;padding:2px 3px}
+table.pt td.spk .spk-svg{display:block;width:100%;height:16px}
+table.pt th.spk{color:var(--faint);font-weight:600}
 table.pt th.num,table.pt td.num{width:52px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 table.pt th.tot,table.pt td.tot{width:52px;text-align:right;white-space:nowrap;font-weight:600;border-left:1px solid var(--line)}
 table.pt tbody tr:hover td{background:var(--line2)}
@@ -734,7 +737,10 @@ function renderLegend(hasBudget){let s='';
 /* ---- standalone data table (NOT filter-synced): rows = P-A-O line items,
    columns = years, cell metric chosen by a selector. CSV = long format. ---- */
 const PROG_LABEL=new Map(DATA.programs.map(p=>[p.code,p.label]));
+// Prefer the curated TREE_ACTIVITY names (e.g. 11 = Board of Directors) over the
+// bare "Activity N" placeholders some codes carry in DATA.activities.
 const ACT_LABEL=new Map(DATA.activities.map(a=>[a.code,a.label]));
+(function walkAct(n){if(n.code!==undefined)ACT_LABEL.set(n.code,n.label);else n.children.forEach(walkAct);})(TREE_ACTIVITY);
 const objLabel=o=>o==='cert'?'Certificated':'Classified';
 const PMETRICS=[
   {key:'actFte',label:'Actual FTE',            side:'actual',field:'fte',type:'fte',  csv:'actual_fte'},
@@ -786,6 +792,21 @@ function fmtCell(v,type){return type==='money'?fmtMoney(v):v.toLocaleString(unde
 function deltaSpan(v,type){const mag=type==='money'?fmtMoney(Math.abs(v)):Math.abs(v).toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1});
   return `<span class="${v>0?'dpos':'dneg'}">${v>0?'+':'−'}${mag}</span>`;}
 
+// Inline SVG sparkline of a row's RAW metric series across DATA.years (gaps break
+// the line). Independent of the raw/Δ cell mode — it always shows the trajectory.
+function spark(r){
+  const ys=DATA.years, vals=ys.map(y=>r.by[y]);
+  let mn=Infinity,mx=-Infinity; vals.forEach(v=>{if(v!=null){if(v<mn)mn=v;if(v>mx)mx=v;}});
+  if(!isFinite(mn))return ''; // no data in any year
+  const W=54,H=16,pad=1.5,n=ys.length,xw=n>1?(W-2*pad)/(n-1):0;
+  const yof=v=>mx===mn?H/2:H-pad-((v-mn)/(mx-mn))*(H-2*pad);
+  let d='',started=false;
+  vals.forEach((v,i)=>{ if(v==null){started=false;return;}
+    const x=pad+i*xw,y=yof(v); d+=(started?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)+' '; started=true; });
+  let li=-1; for(let i=vals.length-1;i>=0;i--){if(vals[i]!=null){li=i;break;}}
+  const dot=li>=0?`<circle cx="${(pad+li*xw).toFixed(1)}" cy="${yof(vals[li]).toFixed(1)}" r="1.7" fill="var(--accent)"/>`:'';
+  return `<svg class="spk-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><path d="${d.trim()}" fill="none" stroke="var(--accent)" stroke-width="1.2" stroke-linejoin="round" stroke-linecap="round"/>${dot}</svg>`;
+}
 function renderDataTable(){
   const m=PMETRICS.find(x=>x.key===ptMetric);
   if(m.variance)ptMode='raw'; // year-over-year delta of a variance is nonsensical
@@ -815,14 +836,16 @@ function renderDataTable(){
   h+=`<th class="sortable f0" data-col="program">Program${arrow('program')}</th>`+
      `<th class="sortable f1" data-col="activity">Activity${arrow('activity')}</th>`+
      `<th class="sortable objc" data-col="obj">Object${arrow('obj')}</th>`+
-     `<th class="sortable dutyc" data-col="duty">Duty${arrow('duty')}</th>`;
+     `<th class="sortable dutyc" data-col="duty">Duty${arrow('duty')}</th>`+
+     `<th class="spk" title="Raw ${m.label} across years">Trend</th>`;
   DATA.years.forEach(y=>{h+=`<th class="sortable num" data-col="${y}">${shortYr(y)}${arrow(y)}</th>`;});
   h+=`<th class="sortable num tot" data-col="mean" title="Mean per year (over years the line item has data)">Mean/yr${arrow('mean')}</th></tr></thead><tbody>`;
   rows.forEach(r=>{
     h+=`<tr><td class="f0">${PROG_LABEL.get(r.program)||('Program '+r.program)}</td>`+
        `<td class="f1">${ACT_LABEL.get(r.activity)||('Activity '+r.activity)}</td>`+
        `<td class="objc">${r.obj==='cert'?'Cert':'Class'}</td>`+
-       `<td class="dutyc">${dutyLabel(r.duty)}</td>`;
+       `<td class="dutyc">${dutyLabel(r.duty)}</td>`+
+       `<td class="spk" title="Raw ${m.label}, ${shortYr(DATA.years[0])}–${shortYr(DATA.years[DATA.years.length-1])}">${spark(r)}</td>`;
     DATA.years.forEach(y=>{let cell='';
       if(ptMode==='raw'){const v=r.by[y]; if(v)cell=fmtCell(v,m.type);}
       else{const d=cellMode(r,y); if(d)cell=deltaSpan(d,m.type);}
