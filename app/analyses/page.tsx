@@ -49,6 +49,85 @@ export default function Page() {
           </Link></li>
         </ul>
 
+        <Typography component="h4" variant="h4">Expenditure Flows (Sankey)</Typography>
+        <p>
+          Interactive Sankey diagrams tracing 2024&ndash;2025 SPS actual
+          expenditures through OSPI classifications: source &rarr; program &rarr;
+          activity &rarr; object (and further to school or NCES category).
+        </p>
+        <ul>
+          <li>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Link
+                href="/analyses/sps_sankey_avro_spao_actuals_2024-2025.html"
+                target="_blank"
+                rel="noopener"
+              >
+                <Typography component="span">
+                  All Expenditures ($1,195.9M) — Source → Program → Activity → Object
+                </Typography>
+              </Link>
+              <AiChip />
+            </Box>
+          </li>
+          <li>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Link
+                href="/analyses/sps_sankey_avro_spao_comp_actuals_2024-2025.html"
+                target="_blank"
+                rel="noopener"
+              >
+                <Typography component="span">
+                  Compensation ($978.6M) — Source → Program → Activity → Object
+                </Typography>
+              </Link>
+              <AiChip />
+            </Box>
+          </li>
+          <li>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Link
+                href="/analyses/sps_sankey_avro_spao_comp_school_actuals_2024-2025.html"
+                target="_blank"
+                rel="noopener"
+              >
+                <Typography component="span">
+                  Compensation by School ($978.6M) — Source → Program → Activity → Object → School
+                </Typography>
+              </Link>
+              <AiChip />
+            </Box>
+          </li>
+          <li>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Link
+                href="/analyses/sps_sankey_avro_spao_noncomp_actuals_2024-2025.html"
+                target="_blank"
+                rel="noopener"
+              >
+                <Typography component="span">
+                  Non-Compensation ($217.2M) — Source → Program → Activity → Object
+                </Typography>
+              </Link>
+              <AiChip />
+            </Box>
+          </li>
+          <li>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Link
+                href="/analyses/sps_sankey_avro_spao_noncomp_nces_actuals_2024-2025.html"
+                target="_blank"
+                rel="noopener"
+              >
+                <Typography component="span">
+                  Non-Compensation by NCES Category ($217.2M) — Source → Program → Activity → Object → NCES
+                </Typography>
+              </Link>
+              <AiChip />
+            </Box>
+          </li>
+        </ul>
+
         <Typography component="h4" variant="h4">Transportation</Typography>
         <ul>
           <li><Link href="/analyses/bus-funding">
