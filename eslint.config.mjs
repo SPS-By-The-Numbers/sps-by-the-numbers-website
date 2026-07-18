@@ -1,17 +1,6 @@
 import { defineConfig, globalIgnores } from "eslint/config";
-import { fileURLToPath } from "node:url";
-import { FlatCompat } from "@eslint/eslintrc";
-import js from "@eslint/js";
-import path from "node:path";
+import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import pluginPrettierRecommended from "eslint-plugin-prettier/recommended";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all,
-});
 
 export default defineConfig([
   globalIgnores([
@@ -22,9 +11,8 @@ export default defineConfig([
     "coverage",
     ".*/**/*",
   ]),
+  ...nextCoreWebVitals,
   {
-    extends: compat.extends("next/core-web-vitals"),
-
     rules: {
       "@next/next/no-img-element": 0,
       "@next/next/no-html-link-for-pages": 0,
