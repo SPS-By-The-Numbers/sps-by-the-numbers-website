@@ -73,6 +73,20 @@ export default function Page() {
           <li>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Link
+                href="/analyses/sps_sankey_avro_spao_expanded_source_actuals_2024-2025.html"
+                target="_blank"
+                rel="noopener"
+              >
+                <Typography component="span">
+                  All Expenditures, Expanded Source ($1,195.9M) — Source (6 buckets) → Program → Activity → Object
+                </Typography>
+              </Link>
+              <AiChip />
+            </Box>
+          </li>
+          <li>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Link
                 href="/analyses/sps_sankey_avro_spao_comp_actuals_2024-2025.html"
                 target="_blank"
                 rel="noopener"
