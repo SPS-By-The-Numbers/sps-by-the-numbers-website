@@ -87,6 +87,20 @@ export default function Page() {
           <li>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Link
+                href="/analyses/sps_sankey_avro_spao_by_account_directed_actuals_2024-2025.html"
+                target="_blank"
+                rel="noopener"
+              >
+                <Typography component="span">
+                  All Expenditures, By Revenue Account ($1,195.9M) — 60 Accounts + Fund Balance Drawdown (OSPI-directed) → Program → Activity → Object
+                </Typography>
+              </Link>
+              <AiChip />
+            </Box>
+          </li>
+          <li>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Link
                 href="/analyses/sps_sankey_avro_spao_comp_actuals_2024-2025.html"
                 target="_blank"
                 rel="noopener"
