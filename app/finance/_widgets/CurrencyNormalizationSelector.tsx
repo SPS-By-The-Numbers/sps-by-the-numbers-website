@@ -35,6 +35,7 @@ export default function CurrencyNormalizationSelector({
       >
         <MenuItem value="amount">Amount</MenuItem>
         <MenuItem value="pctexp">% of Expenditures</MenuItem>
+        <MenuItem value="pctrev">% of Revenues</MenuItem>
         <MenuItem value="pctcomp">% of All Compensation</MenuItem>
       </Select>
     </FormControl>

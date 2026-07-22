@@ -678,3 +678,145 @@ Sessions append here. Format:
   most districts will show far fewer than 183 non-zero leaves in practice
   — that's expected, same as ObjectFilter/ProgramFilter always exposing
   more codes than any one district uses in a given year.
+
+### Session 2 — Revenues dashboard route — DONE — 2026-07-21
+
+- **What landed**:
+  - `app/finance/revenues/page.tsx` — server component, metadata + renders
+    `RevenuesPage`.
+  - `app/finance/revenues/RevenuesPage.tsx` — `RevenuesSettings`,
+    `DEFAULT_REVENUES_SETTINGS`, `SERIALIZE_REVENUES_SETTINGS_GENERATORS`
+    (`makeDatasetSerializeConfig`, `makeRevenueSerializeConfig`, the new
+    `makeProgramSerializeConfig`), `SERIALIZE_REVENUES_CONTEXT_SETTINGS_GENERATORS`,
+    renders `<EnsureDistrictData … ContentComponent={RevenuesDashboard}/>`.
+  - `app/finance/revenues/RevenuesContextSettings.tsx` — facet enum
+    `["category", "revenue", "program"]` serialized to `"0"/"1"/"2"`,
+    `RevenuesContextSettings` type + `DEFAULT_DASHBOARD_SETTINGS`, settings
+    panel contents, copying `ExpendituresContextSettings.tsx` shape exactly.
+  - `app/finance/revenues/RevenuesDashboard.tsx` — `"use client"`
+    ContentComponent mirroring `ExpendituresDashboard.tsx`/
+    `DetailedActualsDashboard.tsx` (no context row, so no
+    `augmentContextComponents`/`"hascontext"` class — closer to
+    `DetailedActualsDashboard.tsx` in that respect). Calls `extractFacets`
+    with `DistrictData.prototype.filteredRevenues` passed as the existing
+    `extractor` parameter.
+  - `app/finance/_settings/common_settings.ts`: added
+    `makeProgramSerializeConfig` (urlVar `p`, `ProgramFilter`) and
+    `makeDefaultProgramSettings()`; `makePaSerializeConfig`/
+    `makeDefaultPaSettings` now compose on top of these instead of
+    duplicating the program entry.
+  - `app/finance/_settings/common_settings.test.ts`: added a
+    `"ProgramFilter"` entry to the golden/round-trip test table for the
+    new `makeProgramSerializeConfig`.
+  - `app/PrimaryNav.tsx`: added `{ name: "Revenues", isAppPath: true,
+    pathPrefix: "revenues" }` to `FINANCE_NAV_CONFIGS`, right after
+    Expenditures.
+  - `app/finance/_widgets/FinanceSubNav.tsx`: added a matching
+    `<NavLink href="/finance/revenues">Revenues</NavLink>`, right after
+    Expenditures.
+  - Optional nicety **done**: `utilities/normalizations.ts` — added
+    `"pctrev"` to `ALL_CURRENCY_NORMALIZATION` (the underlying
+    `extractNormalizationDf` branch already existed per Ground Truth, it
+    was just unreachable via the selector). `app/finance/_widgets/
+    CurrencyNormalizationSelector.tsx` — added a `"% of Revenues"`
+    `MenuItem` for it. This makes percent-of-revenue selectable on every
+    finance dashboard that uses this selector (expenditures, detailed
+    actuals, revenues), not just revenues.
+
+- **Deviations from plan + why**:
+  - `extractFacets` in `utilities/ChartableVitals.ts` turned out to
+    **already be generalized** — it takes an `extractor` parameter
+    (default `DistrictData.prototype.filteredExpenditures`) that Session 1
+    (unknowingly, since `filteredRevenues` was added for other reasons)
+    made a drop-in replacement for: `filteredRevenues` has the exact
+    `(filters) => ColumnTable` shape `extractFacets` expects, called via
+    `extractor.call(districtData, expenditureSettings)`. Likewise
+    `toFacetedCharatbleDataset`/`extractRawExpenditures` in
+    `ChartableMetrics.ts` are column-generic (`class_of`, `data_type`,
+    `<facet>_code`, `amount`) and needed no changes — this matches what
+    Ground Truth already documented. **No new `extractRevenueFacets`
+    function was needed and none was added** — `RevenuesDashboard.tsx`
+    just passes `DistrictData.prototype.filteredRevenues` as the
+    `extractor` argument to the existing `extractFacets`. This is the
+    "generalize via frame-accessor parameter" branch of the judgment call,
+    and it turned out to require zero new generalization work.
+  - `RevenuesSettings` is typed as `DatasetSettings &
+    RevenueCategoryFilters & RevenueAccountFilters & PFilters` (fields
+    required, not `Partial<...>` as the plan's prose literally states).
+    Reason: `Filter.toSummaryText`/`toFilterString` take a bare
+    `Set<number>`, and the settings object is always fully populated by
+    `DEFAULT_REVENUES_SETTINGS` — every other dashboard in the repo
+    (`ExpendituresSettings`, `DetailedActualsSettings`) follows this same
+    non-`Partial` convention for exactly this reason, even though the
+    `filteredExpenditures`/`filteredRevenues` filter parameter types
+    themselves are `Partial<...>` (a settings object with all fields
+    present is structurally assignable to a `Partial` parameter type, so
+    nothing is lost). `Partial<...>` was almost certainly meant loosely in
+    the plan to describe "some subset of these filter fields", not as a
+    literal TS type to copy verbatim.
+  - No standalone "program-only" serialize config existed before this
+    session (`makePaSerializeConfig` bundles program+activity, which
+    revenues doesn't have). Added `makeProgramSerializeConfig` /
+    `makeDefaultProgramSettings` to `common_settings.ts` and had
+    `makePaSerializeConfig`/`makeDefaultPaSettings` delegate to them, so
+    there's one source of truth for the program filter's `p` urlVar
+    instead of two. `ProgramFilterContents` (the widget) already worked
+    generically on `BaseSettings & PFilters`, so no widget changes were
+    needed there.
+  - `RevenuesDashboard.tsx` has no context row (funded enrollment /
+    cashflow / revenues / expenditures sparklines) — that machinery
+    (`augmentContextComponents`) is specific to `ExpendituresDashboard.tsx`
+    and wasn't asked for here; `RevenuesDashboard.tsx` mirrors the simpler
+    `DetailedActualsDashboard.tsx` shape instead (single `<HcDashboard
+    config={config} />`, no `className="hascontext"`).
+
+- **Verification**:
+  - `npx tsc --noEmit`: clean.
+  - `npm run lint` on every file touched/created this session: 0 errors,
+    confirmed via `--fix` and by diffing full-repo `npm run lint` output
+    before (`git stash -u`) vs after — the only per-file deltas are (a)
+    `app/PrimaryNav.tsx` +2 pre-existing-style prettier errors (the new
+    `Revenues` nav entry uses the same single-quote style as its
+    `Expenditures`/`Detailed Actuals` neighbors in that array, which were
+    already flagged before this session — matching neighbor style was
+    prioritized per the "match existing code style" guardrail over fixing
+    unrelated pre-existing formatting), (b) `utilities/normalizations.ts`
+    net **-3** errors (an incidental trailing-newline cleanup from
+    `eslint --fix`), (c) zero errors in every new `app/finance/revenues/*`
+    file. Net repo-wide error count: 8269 → 8270 (all pre-existing debt,
+    unrelated to correctness).
+  - `npm run test`: 12 suites / 51 tests green (49 from Session 1 + 2 new:
+    a `"ProgramFilter"` golden + round-trip case in
+    `common_settings.test.ts`).
+  - `npm run build`: succeeds; `/finance/revenues` appears in the route
+    list as a static page alongside the other finance dashboards.
+  - No browser automation was available in this session (Claude in Chrome
+    extension not connected). Verified instead via: `npm run dev` +
+    `curl` against `/finance/revenues`, `/finance/revenues?c=f.0`,
+    `?c=f.1`, `?c=f.2` (facet switch via context param), and
+    `/finance/revenues?d=c.17001~rc.gA` (category-filtered deep link) —
+    all returned HTTP 200 with no compile/render errors in the dev server
+    log. The client-side data fetch/chart render (AVRO → arquero →
+    Highcharts) itself was **not** visually confirmed in a real browser —
+    this is the one gap versus full verification and should be spot-
+    checked with a browser in a later session if one becomes available.
+    The settings serialize/deserialize round-trip was verified in code
+    (traced `SettingsLayout` → `serializeDatasetSettings` →
+    `RevenueCategoryFilter.toFilterString`/`RevenueFilter.toFilterString`
+    → URL `rc`/`rv` fragments → `deserializeDatasetSettings` on reload)
+    and covered by the existing `RevenueFilter` round-trip test from
+    Session 1 plus the new `ProgramFilter` one added this session.
+
+- **Notes for next session**: Session 3 (Sankey compute engine) doesn't
+  depend on anything UI-side from this session — it only needs the
+  Session 1 domain/filter shapes (`utilities/domain/revenues.ts`,
+  `RevenueCategoryFilters`/`RevenueAccountFilters`, `filteredRevenues`),
+  which are unchanged here. One thing worth knowing: `extractFacets`'s
+  `extractor` parameter is the established seam for "run this against a
+  different DistrictData frame" — Session 4's `FlowDashboard.tsx` will
+  likely want its own direct `districtData.expenditures()`/`.revenues()`
+  calls per the Locked-decision-7 single-(year,data_type) contract rather
+  than going through `extractFacets` (which is faceted-dashboard-shaped,
+  not Sankey-shaped), so this seam probably isn't directly reusable there
+  — just flagging it exists in case it's useful for something narrower
+  (e.g. a per-node total lookup).

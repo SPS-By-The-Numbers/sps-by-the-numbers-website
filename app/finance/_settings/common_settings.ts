@@ -46,9 +46,15 @@ export function makeDefaultDatasetSettings(ccddd: number) {
   };
 }
 
-export function makeDefaultPaSettings() {
+export function makeDefaultProgramSettings() {
   return {
     programCodes: ProgramFilter.allCodes(),
+  };
+}
+
+export function makeDefaultPaSettings() {
+  return {
+    ...makeDefaultProgramSettings(),
     activityCodes: ActivityFilter.allCodes(),
   };
 }
@@ -138,7 +144,7 @@ export function makeDatasetSerializeConfig(context?): SettingsConfig {
   ];
 }
 
-export function makePaSerializeConfig(context?): SettingsConfig {
+export function makeProgramSerializeConfig(context?): SettingsConfig {
   return [
     [
       "programCodes",
@@ -148,6 +154,12 @@ export function makePaSerializeConfig(context?): SettingsConfig {
         filter: ProgramFilter,
       },
     ],
+  ];
+}
+
+export function makePaSerializeConfig(context?): SettingsConfig {
+  return [
+    ...makeProgramSerializeConfig(context),
     [
       "activityCodes",
       {

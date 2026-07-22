@@ -1,6 +1,7 @@
 export const ALL_CURRENCY_NORMALIZATION = [
   "amount", // Raw amount. No normalization
   "pctexp", // Percent of total expenditures.
+  "pctrev", // Percent of total revenues.
   "pctcomp", // Percent total expenditures on compensation.
 ];
 export type CurrencyNormalization = (typeof ALL_CURRENCY_NORMALIZATION)[number];
@@ -39,5 +40,3 @@ export function deserializeStaffingNormalization(
 }
 
 export type StaffingNormalization = (typeof ALL_STAFFING_NORMALIZATION)[number];
-
-

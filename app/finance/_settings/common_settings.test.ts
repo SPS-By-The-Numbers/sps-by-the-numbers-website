@@ -14,6 +14,11 @@ const ALL_TEST_CONFIGS = [
     serializedMinusFirst: "p.QA~a.QA",
   },
   {
+    name: "ProgramFilter",
+    configGenerator: CommonSettings.makeProgramSerializeConfig,
+    serializedMinusFirst: "p.QA",
+  },
+  {
     name: "DutyRootFilter",
     configGenerator: CommonSettings.makeDutyRootSerializeConfig,
     serializedMinusFirst: "d.QA",

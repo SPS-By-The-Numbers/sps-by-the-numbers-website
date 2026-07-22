@@ -25,6 +25,7 @@ export default function FinanceSubNav({ sx = [] }: Params) {
       <Stack direction="row" spacing={4} sx={{ alignItems: "center" }}>
         <NavLink href={"/finance/vitals"}>Vitals</NavLink>
         <NavLink href={"/finance/expenditures"}>Expenditures</NavLink>
+        <NavLink href={"/finance/revenues"}>Revenues</NavLink>
         <NavLink href={"/finance/detailedactuals"}>Detailed Actuals</NavLink>
         <NavLink href={"/finance/staffing"}>Staffing</NavLink>
         <NavLink href={"/finance/correlations"}>Correlations</NavLink>
