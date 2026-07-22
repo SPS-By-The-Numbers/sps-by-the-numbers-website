@@ -1038,3 +1038,149 @@ Sessions append here. Format:
     `makeNcesSerializeConfig` (`n`) and `makeSchoolFilterConfig` (`s`) (verified
     in `DetailedActualsPage.tsx`), so nces/school deep links ARE viable — do not
     return null for them. This flow route also serializes `n`/`s` itself.
+
+### Session 5 — Band tooltips with two deep links — DONE (static-verified) — 2026-07-21
+
+- **What landed**:
+  - `utilities/sankey/deepLinks.ts` — `linkForNode(node: SankeyNode, ctx:
+    {ccddd:number; sourceMode:SourceMode}): {href, label} | null`. Hand-composes
+    the `d`/`c` URL fragments (`c.<ccddd>~<urlVar>.<Filter.toFilterString(
+    new Set([code]))>` + `&c=<facet>`) per the plan's node→dashboard→urlVar
+    table, `encodeURIComponent`-ing the whole `d` value. Returns `null` whenever
+    `node.custom.code === null` (covers both `fb:*`/`level:"fundBalance"` and
+    `flt:*`/`level:"filtered"` per Session 3/4's confirmed shape) before even
+    looking at `level`, plus a `switch` default for defense in depth.
+  - `utilities/sankey/deepLinks.test.ts` — 10 tests, all green. Covers all 7
+    linkable rows of the table (source×2 modes, program, activity, object,
+    nces, school) plus fb/filtered/null-code null cases. For program and
+    object, goes further than a bare `Filter.fromFilterString` check: feeds the
+    generated `d` value through the **real**
+    `CommonSettings.deserializeDatasetSettings` with
+    `[makeDatasetSerializeConfig, makePaoSerializeConfig]` (exactly what
+    `SERIALIZE_EXPENDITURES_SETTINGS_GENERATORS` is built from) and asserts
+    `programCodes`/`objectCodes === Set([code])` end to end.
+  - `app/finance/flow/FlowDashboard.tsx` — replaced the Session 4 placeholder
+    `tooltip: { enabled: true }` with the full `useHTML`/`stickOnContact`
+    formatter from the plan (band hover: `From → To` + compact-USD weight +
+    up to two `linkForNode`-built links; node hover: name + through-flow sum +
+    a single link when linkable — the Session 5 nice-to-have, included). Also
+    added a `plotOptions.sankey.point.events.click` handler that opens a small
+    MUI `Popover` (anchored at the click position) with the same two links,
+    built from the exact same `linkForNode` calls via a shared `bandLinks()`
+    helper — see "Tooltip approach shipped" below for why.
+
+- **Facet-index verification (done, not blindly trusted from the plan)**: read
+  the real `ALL_FACETS`/`serialize*Facet` in `RevenuesContextSettings.tsx`
+  (`category`→`"0"`, `revenue`→`"1"`, `program`→`"2"`),
+  `ExpendituresContextSettings.tsx` (`activity`→`"0"`, `program`→`"1"`,
+  `object`→`"2"`), and `DetailedActualsDashboard.tsx`
+  (`activity`→`"0"`,`program`→`"1"`,`object`→`"2"`,`school`→`"3"`,`nces`→`"4"`).
+  The plan's `f.0`/`f.1`/`f.2` numbers for source/program/activity/object
+  turned out to match reality exactly — no override needed. The plan's table
+  didn't specify a context facet for nces/school (only "verify viability"); I
+  added `f.4`/`f.3` for them anyway (a small, low-risk enhancement beyond the
+  literal spec) so those deep links land on detailedactuals with the linked
+  code's own facet already selected, consistent with every other row of the
+  table — flagged here as a deviation, not hidden.
+  - nces/school viability: re-confirmed Session 4's claim myself by reading
+    `SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS` in
+    `DetailedActualsPage.tsx` — it does include `makeSchoolFilterConfig` (`s`)
+    and `makeNcesSerializeConfig` (`n`). Both links are real, not null.
+
+- **Tooltip approach shipped: formatter (hover) + Popover (click) fallback,
+  both wired, neither one alone.** Rationale: `stickOnContact: true` (the
+  plan's primary mechanism) *does* have in-repo precedent — it's already used
+  in `utilities/highcharts/ChartConfigGenerators.tsx`'s budget/actuals tooltip
+  — which is somewhat reassuring, but that precedent is a plain
+  `shared: true` tooltip with no `useHTML`/clickable-link content, so it
+  doesn't actually validate the "pointer can cross into the tooltip and click
+  a link" behavior this session needs. Browser automation was checked (see
+  Verification below) and is NOT available in this environment, so the click-
+  through behavior could not be watched directly. Per the plan's explicit
+  guidance ("If it's not testable and you're not confident stickOnContact
+  alone is reliable, add the fallback"), I shipped both: the HTML tooltip
+  formatter as primary UX, and a click handler on
+  `plotOptions.sankey.point.events.click` that opens an MUI `Popover` with the
+  identical two links as a guaranteed-clickable fallback surface, independent
+  of tooltip hover/stick timing. Both draw from the same `linkForNode` calls
+  (via the shared `bandLinks()` helper) so there is exactly one place that
+  decides what a node/band links to.
+
+- **Deviations from the plan + why**:
+  - Added the nces/school `f.4`/`f.3` context-facet extras not listed in the
+    plan's table (see Facet-index verification above) — pure enhancement,
+    same mechanism as the other rows, no risk identified.
+  - Shipped the Popover fallback unconditionally rather than "only if clicks
+    don't land" — because there was no way to observe whether clicks land
+    (see Tooltip approach above). This is the conservative reading of the
+    plan's own contingency instruction, not a rejection of `stickOnContact`;
+    `stickOnContact` is still enabled and is the primary hover UX.
+  - `linkForNode`'s hand-composed `d` value deliberately does NOT round-trip
+    through each target page's actual `*Page.tsx` generator arrays at runtime
+    (e.g. does not import `SERIALIZE_EXPENDITURES_SETTINGS_GENERATORS` from
+    `ExpendituresPage.tsx`) — per the plan, hand-composition is explicitly
+    sanctioned as "acceptable and easier to test." Verified in the test file
+    that no existing test in this repo imports a `*Page.tsx` file directly
+    (all use `common_settings.ts`'s generator functions directly, e.g.
+    `common_settings.test.ts`); matched that precedent rather than introducing
+    a new import-a-Page-file-in-a-test pattern. The round-trip tests for
+    program/object still use the *real* `deserializeDatasetSettings` +
+    `makeDatasetSerializeConfig`/`makePaoSerializeConfig` (the exact functions
+    `SERIALIZE_EXPENDITURES_SETTINGS_GENERATORS` is composed from), so the
+    "real generators" bar from the plan's spec is met without the extra
+    transitive import weight.
+
+- **Verification**:
+  - **Browser automation availability — checked, not available.** Invoked the
+    `claude-in-chrome` skill directly this session; it reported the Chrome
+    extension is not connected in this environment and instructed not to
+    attempt any `mcp__claude-in-chrome__*` calls. Per the task's fallback
+    path, verification proceeded via static methods only.
+  - `npx tsc --noEmit`: clean.
+  - `npm run test`: 16 suites / 90 tests green (10 new, all in
+    `deepLinks.test.ts`).
+  - `npm run lint` on touched files: `deepLinks.ts` and `deepLinks.test.ts`
+    clean (0 errors/warnings after `eslint --fix` on the test file's prettier
+    formatting). `FlowDashboard.tsx` has exactly one **warning** (not error):
+    `react-hooks/unsupported-syntax` / "Compilation Skipped: `this` is not
+    supported syntax," pointing at the Highcharts `formatter(this: any) {...}`
+    — an unavoidable consequence of Highcharts' `this`-bound formatter API
+    (same pattern the plan's own snippet specifies). Confirmed via
+    `git stash -u` before/after repo-wide `npm run lint` comparison: baseline
+    8270 problems (8268 errors / 2 warnings) → after this session's changes
+    8271 problems (8268 errors / 3 warnings) — **zero new errors, one new
+    (unavoidable) warning**, all pre-existing debt elsewhere untouched.
+  - `npm run build`: succeeds; `/finance/flow` still in the static route list.
+  - `npm run dev` + `curl`, against a **freshly started** dev server (found and
+    killed a stray pre-existing `next dev` process from earlier in the day
+    still holding port 3000/the Turbopack lock file, to make sure the curl
+    hits were actually compiling this session's code, not stale output):
+    `/finance/flow`, `/finance/flow?d=c.17001~lv.o`,
+    `/finance/flow?d=c.17001~sm.a~dt.b`,
+    `/finance/expenditures?d=c.17001~p.QA&c=f.1`,
+    `/finance/revenues?d=c.17001~rc.gA&c=f.0`,
+    `/finance/detailedactuals?d=c.17001~n.gA&c=f.4`, and
+    `/finance/detailedactuals?d=c.17001~s.gA&c=f.3` all returned HTTP 200 with
+    real (non-cached) compile times in the server log and no server-side
+    errors in the response body.
+  - **NOT visually confirmed in a browser (open for Session 6 or a human)**:
+    hovering a band and seeing the tooltip with both links; whether
+    `stickOnContact` actually keeps the tooltip open long enough for a pointer
+    to reach and click a link (the exact uncertainty that motivated shipping
+    the Popover fallback); clicking a node/band and seeing the Popover appear
+    and its links work; that each opened target dashboard is *visibly*
+    filtered to exactly the right node (URL-level correctness is
+    tested/verified per above, but the resulting chart render on the target
+    page was not eyeballed). This compounds with Session 4's still-open item
+    (the Sankey chart's own rendering was never visually confirmed either) —
+    Session 6 should treat "open `/finance/flow` in a real browser and
+    interact with it" as the single highest-value verification step still
+    outstanding across both sessions.
+
+- **Notes for Session 6**: nothing here blocks reconciliation work. The two
+  open visual-confirmation items (Session 4's chart render, this session's
+  tooltip/Popover click-through) are independent of the numbers Session 6 is
+  reconciling, but Session 6 should still eyeball both while it has a browser
+  open for the reconciliation pass anyway, and note in its own log entry
+  whether `stickOnContact` alone would have sufficed (i.e. whether the
+  Popover fallback turned out to be load-bearing or just insurance).
