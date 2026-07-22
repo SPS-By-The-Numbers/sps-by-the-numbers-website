@@ -926,3 +926,115 @@ Sessions append here. Format:
 - **Verification**: `npm run test` → 14 suites / 76 tests green (25 new).
   `npx tsc --noEmit` clean. `npm run lint` clean on all 5 new files (verified
   with `eslint --fix`; repo-wide pre-existing prettier debt untouched).
+
+### Session 4 — Expenditure Flow view (route + settings + chart) — DONE (static-verified) — 2026-07-21
+
+- **What landed** (new route `app/finance/flow/`, plus two small additive nav
+  entries; no existing dashboard behavior changed):
+  - `app/finance/flow/FlowSettings.ts` — `FlowSettings` type,
+    `DEFAULT_FLOW_SETTINGS` (one-element, on `DEFAULT_DATASET_SETTINGS`),
+    the four custom URL-var serializers (`makeFlowSerializeConfig`), the
+    enabled-level letter helpers (`serializeEnabledLevels`/
+    `deserializeEnabledLevels`), and the exported generators array
+    `SERIALIZE_FLOW_SETTINGS_GENERATORS`. Kept PURE (no client/sankey-runtime
+    imports beyond the `Level`/`SourceMode` *types*) so it is jest-testable.
+  - `app/finance/flow/FlowSettings.test.ts` — 4 new tests (level-letter
+    round-trip + junk rejection; defaults omit `lv`/`sm`/`y`/`dt`; full
+    URL round-trip of all four custom vars + a program-filter subset;
+    latest/category/actuals defaults round-trip). 80 tests total now green.
+  - `app/finance/flow/FlowLevelContents.tsx` — settings-panel widget:
+    MUI checkboxes for Object/NCES/School optional levels + `SettingsSelect`s
+    for source granularity and data type + a bespoke year `Select` (value
+    `""` = Latest = `classOf:null`). Pulls `districtDataMap` from
+    `useDistrictData()` (widgets don't receive districtData as a prop) and
+    guards for the district being absent (empty year list).
+  - `app/finance/flow/FlowDashboard.tsx` — the `"use client"` ContentComponent.
+    Bakes `expenditures()`/`revenues()` to one `(class_of, data_type)` via
+    `.params({year,dt}).filter(...).objects()`, builds `FlowFilters`, calls
+    `computeFlows`, adapts nodes/links to a single Highcharts `sankey` series,
+    renders `<HighchartsReact>` inside `<SettingsLayout>`.
+  - `app/finance/flow/FlowPage.tsx` + `page.tsx` — `EnsureDistrictData` wiring
+    and server metadata.
+  - `app/PrimaryNav.tsx` + `app/finance/_widgets/FinanceSubNav.tsx` — added
+    "Expenditure Flow" → `/finance/flow`, placed after Revenues.
+
+- **Reconciliation with Session 3's REAL signatures (not the plan's sketch)**:
+  - Called `computeFlows(expRows, revRows, { mode, enabledLevels, filters })`
+    exactly as Session 3 shipped it. `enabledLevels` is passed as ONLY the
+    optional levels (`[...settings.enabledLevels]`); the engine adds
+    source/program/activity and normalizes order internally, so the settings
+    only ever store the optional trio. `attributeSources` is never called
+    directly from here (the engine owns it), so its `{progTot, attributed}`
+    return shape and the drawdown/growth sentinels are internal as documented.
+  - `FlowFilters` sets are include-sets. I pass the full settings Sets for every
+    level every render (source uses `revenueCategoryCodes` vs `revenueCodes`
+    per `sourceMode`). Passing the full "all selected" default Set is a no-op
+    (everyone passes), and filters for disabled levels are never consulted
+    because the engine only checks cells present in each record's path — so no
+    special-casing was needed. `totals.grandTotal` drives the chart subtitle.
+
+- **Deviations from plan + why**:
+  - Per Session 2's precedent, `FlowSettings`'s filter fields are populated in
+    the defaults (not left `undefined`) even though the type spells them
+    `Partial<...>`; the `"filter"` serializers call `filter.toFilterString(
+    settings[key])` and need a defined Set. A fully-populated object is
+    assignable to the `Partial` type, so nothing is lost.
+  - The generators array lives in `FlowSettings.ts` (pure), not in
+    `FlowPage.tsx`, specifically so the round-trip test can import it without
+    dragging in `HighchartsReact`/MUI/the provider tree. `FlowPage` and
+    `FlowDashboard` both import it from there.
+  - Context settings: `DEFAULT_COMMON_CONTEXT_SETTINGS` with an empty generators
+    array and empty `contextSettingsComponents` — no context panel renders and
+    `serializeContext` returns `""` (no `c=` in the URL), matching "no facet".
+  - Chart height: `700` normally, `Math.max(700, nodeCount*14)` when School is
+    enabled (per the ~110-node guard in the plan).
+  - Added a minimal empty-state Typography when `links.length === 0` (cheap
+    insurance; the fuller friendly empty-state polish is still Session 6's).
+
+- **Verification — STATIC ONLY (no browser; claude-in-chrome not connected)**:
+  - `npx tsc --noEmit` clean; `npm run test` → 15 suites / 80 tests green
+    (4 new); `npm run build` succeeds with `/finance/flow` in the static route
+    list; `npm run lint` clean on all new `app/finance/flow/*` files (via
+    `eslint --fix`; the 2-line nav additions match neighbor single-quote style,
+    so `PrimaryNav.tsx`/`FinanceSubNav.tsx` carry only the same pre-existing
+    prettier debt as before — unchanged by this session).
+  - `npm run dev` + `curl`: `/finance/flow`, `?d=c.17001~lv.o`, and
+    `?d=c.17001~sm.a~dt.b` all return HTTP 200 with NO server error. NOTE: a
+    hand-built GARBAGE filter (`?d=c.17001~p.A`) logs `Error: Iterator overrun`
+    during SSR — but this is PRE-EXISTING `number_set` decoder behavior on
+    malformed input, NOT a flow bug: the identical error reproduces on the
+    existing `/finance/expenditures?d=c.17001~p.A`. Real serializer output never
+    emits such strings; the round-trip test exercises valid encodings only.
+  - **NOT visually confirmed in a browser**: the AVRO→arquero→`computeFlows`→
+    Highcharts render, the actual Sankey drawing, the reconciliation totals
+    (Seattle 2024-25 actuals ≈ $1.196B / drawdown ≈ $23.71M), and the
+    Filtered-Out band appearing when programs are narrowed. The compute engine
+    itself IS hand-verified at those magnitudes by Session 3's scratch check
+    ($1195.86M / $23.71M), and the settings round-trip IS covered by the new
+    tests — but a real browser pass on `/finance/flow` is still OPEN and is the
+    single biggest thing Session 6's reconciliation must actually eyeball.
+
+- **Notes for Session 5 (band tooltips with deep links)**:
+  - `node.custom` shape (from Session 3, confirmed wired straight through this
+    route into the Highcharts node options): `{ level: Level | "fundBalance" |
+    "filtered"; code: number | null }`. For real nodes `code` is the domain code
+    (category_code or revenue_code for source per mode; program/activity/object/
+    nces/school codes for the rest); for `fb:*` and `flt:*` nodes `code` is
+    `null` and `level` is `"fundBalance"`/`"filtered"` → those get no link.
+  - In `FlowDashboard.tsx` the `ctx` a `linkForNode` builder needs is available
+    from `allSettings[0]`: `ccddd = settings.ccddd` and `sourceMode =
+    settings.sourceMode`. (Year/data_type are also on `settings` if a deep link
+    should carry them, but the plan's link table doesn't.)
+  - Highcharts node options passed are exactly `{id, name, color, column,
+    custom}`; in a sankey point formatter, `this.point.fromNode.options` /
+    `.toNode.options` expose that object, so `linkForNode(point.fromNode.options,
+    ctx)` works. The series currently sets only `tooltip:{enabled:true}` and a
+    `dataLabels` style — Session 5 replaces the tooltip block.
+  - **Deep-link generator wiring THIS route already has** (so Session 5's link
+    table can rely on it): source→`/finance/revenues` uses `rc`/`rv` — those
+    generators exist (`makeRevenueSerializeConfig`, Session 1/2). program/
+    activity/object→`/finance/expenditures` use `p`/`a`/`o` — exist. For
+    nces/school→`/finance/detailedactuals`: that page's generators DO include
+    `makeNcesSerializeConfig` (`n`) and `makeSchoolFilterConfig` (`s`) (verified
+    in `DetailedActualsPage.tsx`), so nces/school deep links ARE viable — do not
+    return null for them. This flow route also serializes `n`/`s` itself.
