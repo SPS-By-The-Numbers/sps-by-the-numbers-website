@@ -54,23 +54,29 @@
   fill: var(--highcharts-color-2);
 }
 
+// Fund Balance Drawdown-sourced flow: every band and node the drawdown money
+// passes through (downstream of the red drawdown node) gets a thin light-red
+// border. Declared after the base rules so the stroke overrides the base
+// node stroke on equal specificity.
+.highcharts-link.sankey-drawdown-link {
+  stroke: #ef9a9a;
+  stroke-width: 1px;
+}
+.highcharts-node.sankey-drawdown-node {
+  stroke: #ef9a9a;
+  stroke-width: 1px;
+}
+
 // A single accent on hover, applied by Highcharts (via the highcharts-point-
 // hover class it adds in both styled and non-styled mode) to the hovered
-// node/band and its directly connected nodes/links. Declared after the base
-// rules so it wins on equal specificity.
+// node/band and its directly connected nodes/links. Declared last so it wins
+// on equal specificity (over both the base and the drawdown-outline rules).
 .highcharts-node.highcharts-point-hover {
   fill: #1976d2;
   stroke: #1976d2;
 }
 .highcharts-link.highcharts-point-hover {
   fill: #1976d2;
-}
-
-// Bands flowing out of the Fund Balance Drawdown node get a thin light-red
-// border so drawdown-funded flow is visible wherever it goes.
-.sankey-drawdown-link {
-  stroke: #ef9a9a;
-  stroke-width: 1px;
 }
 
 .highcharts-crosshair {

@@ -381,3 +381,36 @@ describe("computeFlows — reorderable levels and disabling source/program", () 
     expect(link(links, "prog:20", "act:27")).toBeCloseTo(50, 6);
   });
 });
+
+describe("computeFlows — Fund Balance Drawdown downstream outline", () => {
+  // In the deficit fixture, drawdown fills program 10's residual gap (30), so
+  // its money flows on to program 10's activities. Program 20 is funded by
+  // directed revenue, so its flow is NOT drawdown-sourced.
+  const { nodes, links } = computeFlows(deficitExp(), deficitRev(), {
+    mode: "account",
+    enabledLevels: BASE_LEVELS,
+    filters: {},
+  });
+  const linkDrawdown = (from: string, to: string) =>
+    links.find((l) => l.from === from && l.to === to)?.drawdown;
+  const nodeDrawdown = (id: string) => nodeById(nodes, id)?.drawdown;
+
+  it("marks every link carrying drawdown-sourced flow, and no others", () => {
+    expect(linkDrawdown("fb:drawdown", "prog:10")).toBe(true);
+    expect(linkDrawdown("prog:10", "act:27")).toBe(true);
+    expect(linkDrawdown("prog:10", "act:29")).toBe(true);
+    // Program 20's band is directed-revenue funded, not drawdown.
+    expect(linkDrawdown("prog:20", "act:27")).toBeFalsy();
+  });
+
+  it("marks downstream nodes but not the red drawdown source itself", () => {
+    expect(nodeDrawdown("prog:10")).toBe(true);
+    // act 27 is reached by drawdown flow via program 10 (even though program 20
+    // also feeds it), so it is downstream.
+    expect(nodeDrawdown("act:27")).toBe(true);
+    expect(nodeDrawdown("act:29")).toBe(true);
+    expect(nodeDrawdown("prog:20")).toBeFalsy();
+    // The drawdown source node is filled red, not outlined.
+    expect(nodeDrawdown("fb:drawdown")).toBeFalsy();
+  });
+});

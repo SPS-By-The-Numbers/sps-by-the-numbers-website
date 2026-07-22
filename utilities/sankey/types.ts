@@ -73,10 +73,19 @@ export type SankeyNode = {
   color: string;
   column: number;
   custom: { level: Level | "fundBalance" | "filtered"; code: number | null };
+  // True when Fund Balance Drawdown-sourced flow passes through this node
+  // (downstream of the drawdown source), for the light-red outline.
+  drawdown?: boolean;
 };
 
-// An emitted sankey link (already summed per (from, to) pair).
-export type SankeyLink = { from: string; to: string; weight: number };
+// An emitted sankey link (already summed per (from, to) pair). `drawdown` marks
+// links that carry Fund Balance Drawdown-sourced flow.
+export type SankeyLink = {
+  from: string;
+  to: string;
+  weight: number;
+  drawdown?: boolean;
+};
 
 // Options for `computeFlows`.
 export type ComputeFlowsOpts = {

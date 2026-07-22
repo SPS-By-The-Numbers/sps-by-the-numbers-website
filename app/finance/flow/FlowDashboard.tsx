@@ -20,7 +20,7 @@ import {
   flowBaseClass,
   flowNodeClass,
   SANKEY_DRAWDOWN_LINK_CLASS,
-  SANKEY_DRAWDOWN_NODE_ID,
+  SANKEY_DRAWDOWN_NODE_CLASS,
 } from "utilities/sankey/colors";
 import { makeCurrencyFormatter } from "utilities/highcharts/utils";
 import { serializeDatasetSettings } from "app/finance/_settings/common_settings";
@@ -223,19 +223,21 @@ export default function FlowDashboard({
             from: l.from,
             to: l.to,
             weight: l.weight,
-            // Color by CSS class (see colors.ts). Bands leaving the Fund
-            // Balance Drawdown node also get the border class.
-            className:
-              l.from === SANKEY_DRAWDOWN_NODE_ID
-                ? `${baseClass} ${SANKEY_DRAWDOWN_LINK_CLASS}`
-                : baseClass,
+            // Color by CSS class (see colors.ts). Bands anywhere downstream of
+            // the Fund Balance Drawdown node also get the border class.
+            className: l.drawdown
+              ? `${baseClass} ${SANKEY_DRAWDOWN_LINK_CLASS}`
+              : baseClass,
           })),
           nodes: nodes.map((n) => ({
             id: n.id,
             name: n.name,
             // Budget = grey, Actuals = blue, Fund Balance = red — via CSS class,
-            // since the fill attribute is overridden by styled-mode CSS.
-            className: flowNodeClass(n.custom.level, dt),
+            // since the fill attribute is overridden by styled-mode CSS. Nodes
+            // downstream of the drawdown source also get the border class.
+            className: n.drawdown
+              ? `${flowNodeClass(n.custom.level, dt)} ${SANKEY_DRAWDOWN_NODE_CLASS}`
+              : flowNodeClass(n.custom.level, dt),
             column: n.column,
             custom: n.custom,
           })),

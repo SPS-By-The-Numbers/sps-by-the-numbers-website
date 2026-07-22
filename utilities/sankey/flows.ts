@@ -70,7 +70,11 @@ type Cell = {
 };
 
 // A flow record: an ordered path of cells (one per enabled column) plus weight.
-type FlowRecord = { path: Cell[]; weight: number };
+// `fromDrawdown` marks records funded by the Fund Balance Drawdown source, so
+// every node/link they traverse can be outlined downstream.
+type FlowRecord = { path: Cell[]; weight: number; fromDrawdown?: boolean };
+
+const DRAWDOWN_NODE_ID = "fb:drawdown";
 
 function nodeIdForSource(code: number, sourceLabel: string): Cell {
   if (code === DRAWDOWN_SOURCE_CODE) {
@@ -249,7 +253,11 @@ export function computeFlows(
           }
           const s = srcCodes[i];
           const srcCell = nodeIdForSource(s, sourceLabel.get(s) ?? String(s));
-          records.push({ path: [srcCell, ...expCells], weight: w });
+          records.push({
+            path: [srcCell, ...expCells],
+            weight: w,
+            fromDrawdown: srcCell.id === DRAWDOWN_NODE_ID,
+          });
         }
       }
     } else {
@@ -341,13 +349,19 @@ export function computeFlows(
 
   const linkWeights = new Map<string, number>();
   const linkEndpoints = new Map<string, { from: string; to: string }>();
-  const addLink = (from: string, to: string, weight: number): void => {
-    const key = `${from} ${to}`;
+  const addLink = (from: string, to: string, weight: number): string => {
+    const key = `${from} ${to}`;
     linkWeights.set(key, (linkWeights.get(key) ?? 0) + weight);
     if (!linkEndpoints.has(key)) {
       linkEndpoints.set(key, { from, to });
     }
+    return key;
   };
+
+  // Nodes/links carrying Fund Balance Drawdown-sourced flow (the drawdown node
+  // itself is excluded below -- it is the red source, not a downstream node).
+  const drawdownLinkKeys = new Set<string>();
+  const drawdownNodeIds = new Set<string>();
 
   for (const rec of records) {
     // First column (in the path's own indexing) whose filter fails.
@@ -365,11 +379,20 @@ export function computeFlows(
     );
     for (let c = 0; c < resolved.length; c++) {
       registerNode(resolved[c], c);
+      if (rec.fromDrawdown) {
+        drawdownNodeIds.add(resolved[c].id);
+      }
     }
     for (let c = 0; c < resolved.length - 1; c++) {
-      addLink(resolved[c].id, resolved[c + 1].id, rec.weight);
+      const key = addLink(resolved[c].id, resolved[c + 1].id, rec.weight);
+      if (rec.fromDrawdown) {
+        drawdownLinkKeys.add(key);
+      }
     }
   }
+  // The drawdown source node is filled red already; only its DOWNSTREAM nodes
+  // get the outline.
+  drawdownNodeIds.delete(DRAWDOWN_NODE_ID);
 
   // --- Emit links, dropping dust -----------------------------------------
   const links: SankeyLink[] = [];
@@ -378,7 +401,12 @@ export function computeFlows(
       continue;
     }
     const ends = linkEndpoints.get(key)!;
-    links.push({ from: ends.from, to: ends.to, weight });
+    links.push({
+      from: ends.from,
+      to: ends.to,
+      weight,
+      ...(drawdownLinkKeys.has(key) ? { drawdown: true } : {}),
+    });
   }
 
   // Drop nodes that ended up with no surviving link (dust-only nodes).
@@ -390,7 +418,7 @@ export function computeFlows(
   const nodeList: SankeyNode[] = [];
   for (const n of nodes.values()) {
     if (referenced.has(n.id)) {
-      nodeList.push(n);
+      nodeList.push(drawdownNodeIds.has(n.id) ? { ...n, drawdown: true } : n);
     }
   }
 

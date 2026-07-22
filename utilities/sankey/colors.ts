@@ -47,9 +47,11 @@ export const FLOW_BUDGET_CLASS = "flow-budget";
 export const FLOW_FUND_BALANCE_CLASS = "flow-fund-balance";
 
 // The Fund Balance Drawdown node id (emitted by the compute engine) and the CSS
-// class applied to bands flowing OUT of it (thin light-red border).
+// classes for its DOWNSTREAM flow: every link (band) and node that
+// drawdown-sourced money passes through gets a thin light-red border.
 export const SANKEY_DRAWDOWN_NODE_ID = "fb:drawdown";
 export const SANKEY_DRAWDOWN_LINK_CLASS = "sankey-drawdown-link";
+export const SANKEY_DRAWDOWN_NODE_CLASS = "sankey-drawdown-node";
 
 export type FlowDataType = "actuals" | "budget";
 
