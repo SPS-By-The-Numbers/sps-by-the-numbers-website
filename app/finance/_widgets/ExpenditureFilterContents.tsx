@@ -9,24 +9,39 @@ import FormGroup from "@mui/material/FormGroup";
 import NcesFilter from "app/finance/_filteritems/nces";
 import ObjectFilter from "app/finance/_filteritems/object";
 import ProgramFilter from "app/finance/_filteritems/program";
+import RevenueCategoryFilter from "app/finance/_filteritems/revenue_category";
+import RevenueFilter from "app/finance/_filteritems/revenue";
 import StudentGroupFilter from "app/finance/_filteritems/student_group";
 import Switch from "@mui/material/Switch";
 import TestSubjectFilter from "app/finance/_filteritems/test_subject";
 
-import type { PFilters, AFilters, OFilters, SchoolFilters, DutyRootFilters, NcesFilters, GradeLevelFilters, TestAdministrationFilters, StudentGroupFilters, TestSubjectFilters } from "utilities/DistrictData";
+import type {
+  PFilters,
+  AFilters,
+  OFilters,
+  SchoolFilters,
+  DutyRootFilters,
+  NcesFilters,
+  GradeLevelFilters,
+  TestAdministrationFilters,
+  StudentGroupFilters,
+  TestSubjectFilters,
+  RevenueCategoryFilters,
+  RevenueAccountFilters,
+} from "utilities/DistrictData";
 import type { BaseSettings } from "app/finance/_settings/base_settings";
 import type { BaseFacetContextSettings } from "app/finance/_settings/common_context_settings";
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 
 interface Props<T extends BaseSettings, U extends BaseSettings = BaseSettings> {
-  contextSettings?: U,
+  contextSettings?: U;
   settings: T;
   setSettings: (x: T) => void;
 }
 
 type OverridePrimaryFilterSettings = BaseSettings & {
   overridePrimaryFilter: boolean;
-}
+};
 
 // Component for showing one filter.
 function FilterTree({ title, items, selectedItems, setSelectedItems }) {
@@ -82,10 +97,10 @@ export function ObjectFilterContents({
       title="Object"
       items={ObjectFilter.treeViewItems()}
       selectedItems={ObjectFilter.codesToTreeViewItems(settings.objectCodes)}
-      setSelectedItems={selected =>
+      setSelectedItems={(selected) =>
         setSettings({
           ...settings,
-          objectCodes: ObjectFilter.treeViewItemsToCodes(selected)
+          objectCodes: ObjectFilter.treeViewItemsToCodes(selected),
         })
       }
     />
@@ -101,11 +116,13 @@ export function ActivityFilterContents({
     <FilterTree
       title="Activity"
       items={ActivityFilter.treeViewItems()}
-      selectedItems={ActivityFilter.codesToTreeViewItems(settings.activityCodes)}
-      setSelectedItems={selected =>
+      selectedItems={ActivityFilter.codesToTreeViewItems(
+        settings.activityCodes,
+      )}
+      setSelectedItems={(selected) =>
         setSettings({
           ...settings,
-          activityCodes: ActivityFilter.treeViewItemsToCodes(selected)
+          activityCodes: ActivityFilter.treeViewItemsToCodes(selected),
         })
       }
     />
@@ -122,10 +139,10 @@ export function ProgramFilterContents({
       title="Program"
       items={ProgramFilter.treeViewItems()}
       selectedItems={ProgramFilter.codesToTreeViewItems(settings.programCodes)}
-      setSelectedItems={selected =>
+      setSelectedItems={(selected) =>
         setSettings({
           ...settings,
-          programCodes: ProgramFilter.treeViewItemsToCodes(selected)
+          programCodes: ProgramFilter.treeViewItemsToCodes(selected),
         })
       }
     />
@@ -138,17 +155,20 @@ export function SchoolFilterContents({
   settings,
   setSettings,
 }: Props<DatasetSettings & SchoolFilters, BaseFacetContextSettings>) {
-  const schoolFilter = makeSchoolFilter(settings.ccddd, contextSettings?.schoolGrouping);
+  const schoolFilter = makeSchoolFilter(
+    settings.ccddd,
+    contextSettings?.schoolGrouping,
+  );
 
   return (
     <FilterTree
       title="School"
       items={schoolFilter.treeViewItems()}
       selectedItems={schoolFilter.codesToTreeViewItems(settings.schoolCodes)}
-      setSelectedItems={selected =>
+      setSelectedItems={(selected) =>
         setSettings({
           ...settings,
-          schoolCodes: schoolFilter.treeViewItemsToCodes(selected)
+          schoolCodes: schoolFilter.treeViewItemsToCodes(selected),
         })
       }
     />
@@ -164,11 +184,13 @@ export function DutyRootFilterContents({
     <FilterTree
       title="Duty Root"
       items={DutyRootFilter.treeViewItems()}
-      selectedItems={DutyRootFilter.codesToTreeViewItems(settings.dutyRootCodes)}
-      setSelectedItems={selected =>
+      selectedItems={DutyRootFilter.codesToTreeViewItems(
+        settings.dutyRootCodes,
+      )}
+      setSelectedItems={(selected) =>
         setSettings({
           ...settings,
-          dutyRootCodes: DutyRootFilter.treeViewItemsToCodes(selected)
+          dutyRootCodes: DutyRootFilter.treeViewItemsToCodes(selected),
         })
       }
     />
@@ -185,10 +207,53 @@ export function NcesFilterContents({
       title="Nces"
       items={NcesFilter.treeViewItems()}
       selectedItems={NcesFilter.codesToTreeViewItems(settings.ncesCodes)}
-      setSelectedItems={selected =>
+      setSelectedItems={(selected) =>
         setSettings({
           ...settings,
-          ncesCodes: NcesFilter.treeViewItemsToCodes(selected)
+          ncesCodes: NcesFilter.treeViewItemsToCodes(selected),
+        })
+      }
+    />
+  );
+}
+
+// Settings component to render selection of revenue categories.
+export function RevenueCategoryFilterContents({
+  settings,
+  setSettings,
+}: Props<BaseSettings & RevenueCategoryFilters>) {
+  return (
+    <FilterTree
+      title="Revenue Category"
+      items={RevenueCategoryFilter.treeViewItems()}
+      selectedItems={RevenueCategoryFilter.codesToTreeViewItems(
+        settings.revenueCategoryCodes,
+      )}
+      setSelectedItems={(selected) =>
+        setSettings({
+          ...settings,
+          revenueCategoryCodes:
+            RevenueCategoryFilter.treeViewItemsToCodes(selected),
+        })
+      }
+    />
+  );
+}
+
+// Settings component to render selection of revenue accounts.
+export function RevenueFilterContents({
+  settings,
+  setSettings,
+}: Props<BaseSettings & RevenueAccountFilters>) {
+  return (
+    <FilterTree
+      title="Revenue Account"
+      items={RevenueFilter.treeViewItems()}
+      selectedItems={RevenueFilter.codesToTreeViewItems(settings.revenueCodes)}
+      setSelectedItems={(selected) =>
+        setSettings({
+          ...settings,
+          revenueCodes: RevenueFilter.treeViewItemsToCodes(selected),
         })
       }
     />
@@ -204,11 +269,13 @@ export function GradeLevelFilterContents({
     <FilterTree
       title="Grade Level"
       items={GradeLevelFilter.treeViewItems()}
-      selectedItems={GradeLevelFilter.codesToTreeViewItems(settings.gradeLevelCodes)}
-      setSelectedItems={selected =>
+      selectedItems={GradeLevelFilter.codesToTreeViewItems(
+        settings.gradeLevelCodes,
+      )}
+      setSelectedItems={(selected) =>
         setSettings({
           ...settings,
-          gradeLevelCodes: GradeLevelFilter.treeViewItemsToCodes(selected)
+          gradeLevelCodes: GradeLevelFilter.treeViewItemsToCodes(selected),
         })
       }
     />
@@ -224,11 +291,14 @@ export function AssessmentTypeFilterContents({
     <FilterTree
       title="Assessment Type"
       items={AssessmentTypeFilter.treeViewItems()}
-      selectedItems={AssessmentTypeFilter.codesToTreeViewItems(settings.testAdministrationCodes)}
-      setSelectedItems={selected =>
+      selectedItems={AssessmentTypeFilter.codesToTreeViewItems(
+        settings.testAdministrationCodes,
+      )}
+      setSelectedItems={(selected) =>
         setSettings({
           ...settings,
-          testAdministrationCodes: AssessmentTypeFilter.treeViewItemsToCodes(selected)
+          testAdministrationCodes:
+            AssessmentTypeFilter.treeViewItemsToCodes(selected),
         })
       }
     />
@@ -244,11 +314,13 @@ export function StudentGroupFilterContents({
     <FilterTree
       title="Student Group"
       items={StudentGroupFilter.treeViewItems()}
-      selectedItems={StudentGroupFilter.codesToTreeViewItems(settings.studentGroupCodes)}
-      setSelectedItems={selected =>
+      selectedItems={StudentGroupFilter.codesToTreeViewItems(
+        settings.studentGroupCodes,
+      )}
+      setSelectedItems={(selected) =>
         setSettings({
           ...settings,
-          studentGroupCodes: StudentGroupFilter.treeViewItemsToCodes(selected)
+          studentGroupCodes: StudentGroupFilter.treeViewItemsToCodes(selected),
         })
       }
     />
@@ -264,11 +336,13 @@ export function TestSubjectFilterContents({
     <FilterTree
       title="Test Subject"
       items={TestSubjectFilter.treeViewItems()}
-      selectedItems={TestSubjectFilter.codesToTreeViewItems(settings.testSubjectCodes)}
-      setSelectedItems={selected =>
+      selectedItems={TestSubjectFilter.codesToTreeViewItems(
+        settings.testSubjectCodes,
+      )}
+      setSelectedItems={(selected) =>
         setSettings({
           ...settings,
-          testSubjectCodes: TestSubjectFilter.treeViewItemsToCodes(selected)
+          testSubjectCodes: TestSubjectFilter.treeViewItemsToCodes(selected),
         })
       }
     />

@@ -9,7 +9,12 @@ import ALL_TEST_SUBJECTS from "utilities/domain/test_subjects";
 
 import type { ColumnTable } from "arquero";
 
-function codesToStrings<T>(domain: Array<T>, codeKey: string, valueKey: string, codes: Set<number>): Set<string> {
+function codesToStrings<T>(
+  domain: Array<T>,
+  codeKey: string,
+  valueKey: string,
+  codes: Set<number>,
+): Set<string> {
   const result = new Set<string>();
   for (const entry of domain) {
     if (codes.has(entry[codeKey])) {
@@ -24,7 +29,8 @@ function codesToStrings<T>(domain: Array<T>, codeKey: string, valueKey: string, 
 export const SYNTH_ACT_CODE_TEACHING = 9990;
 export const SYNTH_ACT_TEACHING = "Teaching (27) / Professional Learning (34)";
 export const SYNTH_ACT_CODE_PRINCIPAL_OFFICE = 9991;
-export const SYNTH_ACT_PRINCPAL_OFFICE = "Principal's Office (23) / Principal (84)";
+export const SYNTH_ACT_PRINCPAL_OFFICE =
+  "Principal's Office (23) / Principal (84)";
 
 export type AFilters = {
   activityCodes: Set<number>;
@@ -32,7 +38,7 @@ export type AFilters = {
 
 export type PFilters = {
   programCodes: Set<number>;
-}
+};
 
 export type OFilters = {
   objectCodes: Set<number>;
@@ -54,13 +60,26 @@ export type DutyRootFilters = {
   dutyRootCodes: Set<number>;
 };
 
+export type RevenueCategoryFilters = {
+  revenueCategoryCodes: Set<number>;
+};
+
+export type RevenueAccountFilters = {
+  revenueCodes: Set<number>;
+};
+
 export type DemographicFilters = {
   activityCodes: Set<number>;
 };
 
 type ExpendituresFilters = Partial<PAOFilters & NcesFilters & SchoolFilters>;
+type RevenuesFilters = Partial<
+  RevenueCategoryFilters & RevenueAccountFilters & PFilters
+>;
 type StaffingFilters = Partial<PAFilters & DutyRootFilters & SchoolFilters>;
-type EnrollmentFilters = Partial<DemographicFilters & SchoolFilters & GradeLevelFilters & StudentGroupFilters>;
+type EnrollmentFilters = Partial<
+  DemographicFilters & SchoolFilters & GradeLevelFilters & StudentGroupFilters
+>;
 export type GradeLevelFilters = {
   gradeLevelCodes: Set<number>;
 };
@@ -77,7 +96,13 @@ export type TestSubjectFilters = {
   testSubjectCodes: Set<number>;
 };
 
-type AssessmentFilters = Partial<SchoolFilters & GradeLevelFilters & TestAdministrationFilters & StudentGroupFilters & TestSubjectFilters>;
+type AssessmentFilters = Partial<
+  SchoolFilters &
+    GradeLevelFilters &
+    TestAdministrationFilters &
+    StudentGroupFilters &
+    TestSubjectFilters
+>;
 
 const YEAR_GROUP_BY = ["class_of"];
 const FINANCE_GROUP_BY = ["data_type", ...YEAR_GROUP_BY];
@@ -474,7 +499,7 @@ export default class DistrictData {
     return this.s275_summary_df;
   }
 
-  filteredS275Summary(staffingFilter : StaffingFilters) {
+  filteredS275Summary(staffingFilter: StaffingFilters) {
     let results = this.s275_summary_df;
 
     if (staffingFilter.programCodes !== undefined) {
@@ -575,21 +600,38 @@ export default class DistrictData {
     }
 
     if (filter.testAdministrationCodes !== undefined) {
-      const testAdministrations = codesToStrings(ALL_ASSESSMENT_TYPES, "test_administration_code", "test_administration", filter.testAdministrationCodes);
+      const testAdministrations = codesToStrings(
+        ALL_ASSESSMENT_TYPES,
+        "test_administration_code",
+        "test_administration",
+        filter.testAdministrationCodes,
+      );
       results = results
         .params({ testAdministrations: [...testAdministrations] })
-        .filter((d, $) => d.includes($.testAdministrations, d.test_administration));
+        .filter((d, $) =>
+          d.includes($.testAdministrations, d.test_administration),
+        );
     }
 
     if (filter.studentGroupCodes !== undefined) {
-      const studentGroups = codesToStrings(ALL_STUDENT_GROUPS, "student_group_code", "student_group", filter.studentGroupCodes);
+      const studentGroups = codesToStrings(
+        ALL_STUDENT_GROUPS,
+        "student_group_code",
+        "student_group",
+        filter.studentGroupCodes,
+      );
       results = results
         .params({ studentGroups: [...studentGroups] })
         .filter((d, $) => d.includes($.studentGroups, d.student_group));
     }
 
     if (filter.testSubjectCodes !== undefined) {
-      const testSubjects = codesToStrings(ALL_TEST_SUBJECTS, "test_subject_code", "test_subject", filter.testSubjectCodes);
+      const testSubjects = codesToStrings(
+        ALL_TEST_SUBJECTS,
+        "test_subject_code",
+        "test_subject",
+        filter.testSubjectCodes,
+      );
       results = results
         .params({ testSubjects: [...testSubjects] })
         .filter((d, $) => d.includes($.testSubjects, d.test_subject));
@@ -597,30 +639,34 @@ export default class DistrictData {
 
     // Join with domain tables to add display names and code columns for series identification.
     const gradeLevelDomain = aq.table({
-      grade_level_code: ALL_GRADE_LEVELS.map(g => g.grade_level_code),
-      grade_level: ALL_GRADE_LEVELS.map(g => g.grade_level),
+      grade_level_code: ALL_GRADE_LEVELS.map((g) => g.grade_level_code),
+      grade_level: ALL_GRADE_LEVELS.map((g) => g.grade_level),
     });
     const testSubjectDomain = aq.table({
-      test_subject: ALL_TEST_SUBJECTS.map(t => t.test_subject),
-      test_subject_code: ALL_TEST_SUBJECTS.map(t => t.test_subject_code),
+      test_subject: ALL_TEST_SUBJECTS.map((t) => t.test_subject),
+      test_subject_code: ALL_TEST_SUBJECTS.map((t) => t.test_subject_code),
     });
     const assessmentTypeDomain = aq.table({
-      test_administration: ALL_ASSESSMENT_TYPES.map(t => t.test_administration),
-      test_administration_code: ALL_ASSESSMENT_TYPES.map(t => t.test_administration_code),
+      test_administration: ALL_ASSESSMENT_TYPES.map(
+        (t) => t.test_administration,
+      ),
+      test_administration_code: ALL_ASSESSMENT_TYPES.map(
+        (t) => t.test_administration_code,
+      ),
     });
     const studentGroupDomain = aq.table({
-      student_group: ALL_STUDENT_GROUPS.map(g => g.student_group),
-      student_group_code: ALL_STUDENT_GROUPS.map(g => g.student_group_code),
+      student_group: ALL_STUDENT_GROUPS.map((g) => g.student_group),
+      student_group_code: ALL_STUDENT_GROUPS.map((g) => g.student_group_code),
     });
 
     return results
-    .derive({
-      data_type: d => "actuals",
-    })
-    .join_left(gradeLevelDomain, "grade_level_code")
-    .join_left(testSubjectDomain, "test_subject")
-    .join_left(assessmentTypeDomain, "test_administration")
-    .join_left(studentGroupDomain, "student_group");
+      .derive({
+        data_type: (d) => "actuals",
+      })
+      .join_left(gradeLevelDomain, "grade_level_code")
+      .join_left(testSubjectDomain, "test_subject")
+      .join_left(assessmentTypeDomain, "test_administration")
+      .join_left(studentGroupDomain, "student_group");
   }
 
   filteredEnrollment(filter: EnrollmentFilters) {
@@ -644,20 +690,28 @@ export default class DistrictData {
     // as just another dimension. Fold the relevant columns down into
     // (student_group_column, amount) rows, then attach the human-readable
     // student_group label and the numeric student_group_code.
-    const groupColumns = ALL_ENROLLMENT_STUDENT_GROUPS.map(g => g.column);
-    results = results.fold(groupColumns, { as: ["student_group_column", "amount"] });
+    const groupColumns = ALL_ENROLLMENT_STUDENT_GROUPS.map((g) => g.column);
+    results = results.fold(groupColumns, {
+      as: ["student_group_column", "amount"],
+    });
     const groupDomain = aq.table({
-      student_group_column: ALL_ENROLLMENT_STUDENT_GROUPS.map(g => g.column),
-      student_group_code: ALL_ENROLLMENT_STUDENT_GROUPS.map(g => g.student_group_code),
-      student_group: ALL_ENROLLMENT_STUDENT_GROUPS.map(g => g.student_group),
-      student_group_type: ALL_ENROLLMENT_STUDENT_GROUPS.map(g => g.student_group_type),
+      student_group_column: ALL_ENROLLMENT_STUDENT_GROUPS.map((g) => g.column),
+      student_group_code: ALL_ENROLLMENT_STUDENT_GROUPS.map(
+        (g) => g.student_group_code,
+      ),
+      student_group: ALL_ENROLLMENT_STUDENT_GROUPS.map((g) => g.student_group),
+      student_group_type: ALL_ENROLLMENT_STUDENT_GROUPS.map(
+        (g) => g.student_group_type,
+      ),
     });
     results = results.join_left(groupDomain, "student_group_column");
 
     if (filter.studentGroupCodes !== undefined) {
       results = results
         .params({ studentGroupCodes: [...filter.studentGroupCodes] })
-        .filter((d, $) => d.includes($.studentGroupCodes, d.student_group_code));
+        .filter((d, $) =>
+          d.includes($.studentGroupCodes, d.student_group_code),
+        );
     }
 
     // Provide a grade_level string alongside the existing grade column so
@@ -671,39 +725,76 @@ export default class DistrictData {
     return results.derive({
       grade_level: (d) => d.grade,
       grade_cohort: (d) =>
-        d.grade_level_code === 97 ? "PreK" :
-        d.grade_level_code === 98 || d.grade_level_code === 1 || d.grade_level_code === 2 ? "K-2" :
-        d.grade_level_code === 3 || d.grade_level_code === 4 || d.grade_level_code === 5 ? "3-5" :
-        d.grade_level_code === 6 || d.grade_level_code === 7 || d.grade_level_code === 8 ? "6-8" :
-        d.grade_level_code === 9 || d.grade_level_code === 10 || d.grade_level_code === 11 || d.grade_level_code === 12 ? "9-12" :
-        "Other",
+        d.grade_level_code === 97
+          ? "PreK"
+          : d.grade_level_code === 98 ||
+              d.grade_level_code === 1 ||
+              d.grade_level_code === 2
+            ? "K-2"
+            : d.grade_level_code === 3 ||
+                d.grade_level_code === 4 ||
+                d.grade_level_code === 5
+              ? "3-5"
+              : d.grade_level_code === 6 ||
+                  d.grade_level_code === 7 ||
+                  d.grade_level_code === 8
+                ? "6-8"
+                : d.grade_level_code === 9 ||
+                    d.grade_level_code === 10 ||
+                    d.grade_level_code === 11 ||
+                    d.grade_level_code === 12
+                  ? "9-12"
+                  : "Other",
       grade_cohort_code: (d) =>
-        d.grade_level_code === 97 ? 9001 :
-        d.grade_level_code === 98 || d.grade_level_code === 1 || d.grade_level_code === 2 ? 9002 :
-        d.grade_level_code === 3 || d.grade_level_code === 4 || d.grade_level_code === 5 ? 9003 :
-        d.grade_level_code === 6 || d.grade_level_code === 7 || d.grade_level_code === 8 ? 9004 :
-        d.grade_level_code === 9 || d.grade_level_code === 10 || d.grade_level_code === 11 || d.grade_level_code === 12 ? 9005 :
-        9999,
+        d.grade_level_code === 97
+          ? 9001
+          : d.grade_level_code === 98 ||
+              d.grade_level_code === 1 ||
+              d.grade_level_code === 2
+            ? 9002
+            : d.grade_level_code === 3 ||
+                d.grade_level_code === 4 ||
+                d.grade_level_code === 5
+              ? 9003
+              : d.grade_level_code === 6 ||
+                  d.grade_level_code === 7 ||
+                  d.grade_level_code === 8
+                ? 9004
+                : d.grade_level_code === 9 ||
+                    d.grade_level_code === 10 ||
+                    d.grade_level_code === 11 ||
+                    d.grade_level_code === 12
+                  ? 9005
+                  : 9999,
       // Projected high-school diploma year. Grade 12 students
       // graduate in class_of itself; each grade below adds another
       // year (Grade 11 → +1, …, Grade 1 → +11, K → +12, PK → +13).
       // The "All Grades" rollup row gets null since it isn't a
       // single grade level.
       diploma_year: (d) =>
-        d.grade_level_code === 99 ? null :
-        d.grade_level_code === 98 ? d.class_of + 12 :
-        d.grade_level_code === 97 ? d.class_of + 13 :
-        d.class_of + (12 - d.grade_level_code),
+        d.grade_level_code === 99
+          ? null
+          : d.grade_level_code === 98
+            ? d.class_of + 12
+            : d.grade_level_code === 97
+              ? d.class_of + 13
+              : d.class_of + (12 - d.grade_level_code),
       diploma_year_code: (d) =>
-        d.grade_level_code === 99 ? null :
-        d.grade_level_code === 98 ? d.class_of + 12 :
-        d.grade_level_code === 97 ? d.class_of + 13 :
-        d.class_of + (12 - d.grade_level_code),
+        d.grade_level_code === 99
+          ? null
+          : d.grade_level_code === 98
+            ? d.class_of + 12
+            : d.grade_level_code === 97
+              ? d.class_of + 13
+              : d.class_of + (12 - d.grade_level_code),
       years_to_diploma: (d) =>
-        d.grade_level_code === 99 ? null :
-        d.grade_level_code === 98 ? 12 :
-        d.grade_level_code === 97 ? 13 :
-        12 - d.grade_level_code,
+        d.grade_level_code === 99
+          ? null
+          : d.grade_level_code === 98
+            ? 12
+            : d.grade_level_code === 97
+              ? 13
+              : 12 - d.grade_level_code,
     });
   }
 
@@ -773,6 +864,32 @@ export default class DistrictData {
       results = results
         .params(expendituresFilter)
         .filter((d, $) => d.includes([...$.ncesCodes], d.nces_code));
+    }
+
+    return results;
+  }
+
+  filteredRevenues(revenuesFilter: RevenuesFilters) {
+    let results = this.gf_revenue_df;
+
+    if (revenuesFilter.revenueCategoryCodes !== undefined) {
+      results = results
+        .params(revenuesFilter)
+        .filter((d, $) =>
+          d.includes([...$.revenueCategoryCodes], d.category_code),
+        );
+    }
+
+    if (revenuesFilter.revenueCodes !== undefined) {
+      results = results
+        .params(revenuesFilter)
+        .filter((d, $) => d.includes([...$.revenueCodes], d.revenue_code));
+    }
+
+    if (revenuesFilter.programCodes !== undefined) {
+      results = results
+        .params(revenuesFilter)
+        .filter((d, $) => d.includes([...$.programCodes], d.program_code));
     }
 
     return results;
