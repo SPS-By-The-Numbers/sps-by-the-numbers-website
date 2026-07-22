@@ -1390,8 +1390,11 @@ before relying on the interactive UI.**
 ### Draggable/orderable levels — OVERRIDES Locked decision 1 — 2026-07-22
 - The flow view's level selection is now a draggable, enable/disable list
   instead of fixed order + always-on source/program/activity. Resource (Source)
-  and Program are pinned to positions 1 & 2 (cannot be dragged) but CAN be
-  disabled; Activity/Object/NCES/School can be reordered and toggled.
+  and Program are pinned to positions 1 & 2 (cannot be dragged); Resource can be
+  disabled but Program cannot (it is the attribution linchpin — always shown,
+  enforced in `deserializeLevelPlan` so even a hand-crafted URL can't hide it).
+  Activity/Object/NCES/School can be reordered and toggled. (The engine still
+  supports hiding program for generality; the product just never asks it to.)
 - This deliberately supersedes **Locked decision 1** ("Sankey level order is
   fixed: Source → Program → Activity always, then optional Object/NCES/School").
   The user asked for it directly.

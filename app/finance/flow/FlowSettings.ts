@@ -67,6 +67,9 @@ export type FlowSettings = DatasetSettings &
 
 // The two pinned levels and the four reorderable ones.
 export const PINNED_LEVELS: ReadonlyArray<Level> = ["source", "program"];
+// Program cannot be disabled: it is the revenue-attribution linchpin and is
+// always rendered. (Resource/Source is pinned but may be disabled.)
+export const ALWAYS_ENABLED_LEVELS: ReadonlyArray<Level> = ["program"];
 export const REORDERABLE_LEVELS: ReadonlyArray<Level> = [
   "activity",
   "object",
@@ -156,7 +159,10 @@ export function deserializeLevelPlan(s: string): LevelPlan {
   ];
   return [...PINNED_LEVELS, ...orderedReorderables].map((level) => ({
     level,
-    enabled: enabled.get(level) ?? DEFAULT_ENABLED[level],
+    // Program is always enabled, even if a hand-crafted URL says otherwise.
+    enabled: ALWAYS_ENABLED_LEVELS.includes(level)
+      ? true
+      : (enabled.get(level) ?? DEFAULT_ENABLED[level]),
   }));
 }
 

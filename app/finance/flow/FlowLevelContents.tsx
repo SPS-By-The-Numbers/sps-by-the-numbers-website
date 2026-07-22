@@ -4,10 +4,10 @@
 //
 // The top control is the "level plan": an ordered list of the sankey columns
 // with an enable/disable checkbox per level. Resource (Source) and Program are
-// pinned to the top two positions and cannot be moved (but can be disabled);
-// Activity / Object / NCES / School can be reordered by dragging and toggled on
-// or off. Below it are selects for source granularity, fiscal year, and data
-// type.
+// pinned to the top two positions and cannot be moved; Resource may be disabled
+// but Program cannot (it is always shown). Activity / Object / NCES / School can
+// be reordered by dragging and toggled on or off. Below it are selects for
+// source granularity, fiscal year, and data type.
 //
 // Year options come from `districtData.all_class_ofs()`. This widget can render
 // before the district data has loaded, so it pulls the map from context and
@@ -26,7 +26,7 @@ import SettingsSelect from "app/finance/_widgets/SettingsSelect";
 import Typography from "@mui/material/Typography";
 import { useDistrictData } from "app/finance/_providers/DistrictDataProvider";
 import { useId, useState } from "react";
-import { PINNED_LEVELS } from "./FlowSettings";
+import { ALWAYS_ENABLED_LEVELS, PINNED_LEVELS } from "./FlowSettings";
 
 import type { FlowSettings, LevelPlan } from "./FlowSettings";
 import type { Level } from "utilities/sankey/types";
@@ -58,6 +58,10 @@ function isPinned(level: Level): boolean {
   return PINNED_LEVELS.includes(level);
 }
 
+function isAlwaysEnabled(level: Level): boolean {
+  return ALWAYS_ENABLED_LEVELS.includes(level);
+}
+
 export default function FlowLevelContents({
   settings,
   setSettings,
@@ -85,6 +89,9 @@ export default function FlowLevelContents({
     setSettings({ ...settings, levelPlan: plan });
 
   const toggleLevel = (level: Level, enabled: boolean) => {
+    if (isAlwaysEnabled(level)) {
+      return; // Program is always shown.
+    }
     setPlan(
       settings.levelPlan.map((e) =>
         e.level === level ? { ...e, enabled } : e,
@@ -189,7 +196,11 @@ export default function FlowLevelContents({
                   <PushPinIcon
                     fontSize="small"
                     sx={{ color: "text.disabled", fontSize: "1rem", mr: "2px" }}
-                    titleAccess="Pinned; cannot be moved"
+                    titleAccess={
+                      isAlwaysEnabled(entry.level)
+                        ? "Pinned and always shown"
+                        : "Pinned; cannot be moved"
+                    }
                   />
                 ) : (
                   <DragIndicatorIcon
@@ -200,6 +211,7 @@ export default function FlowLevelContents({
                 <Checkbox
                   size="small"
                   checked={entry.enabled}
+                  disabled={isAlwaysEnabled(entry.level)}
                   onChange={(e) => toggleLevel(entry.level, e.target.checked)}
                   inputProps={{
                     "aria-label": `Show ${LEVEL_LABEL[entry.level]} column`,

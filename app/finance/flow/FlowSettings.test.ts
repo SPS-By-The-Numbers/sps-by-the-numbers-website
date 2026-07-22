@@ -39,27 +39,27 @@ describe("FlowSettings level plan", () => {
       ),
     ).toEqual("RPAOnS");
 
-    // Disabling Program and reordering School before Activity.
+    // Disabling Resource (Source) and reordering School before Activity.
     expect(
       serializeLevelPlan(
         plan([
-          ["source", true],
-          ["program", false],
+          ["source", false],
+          ["program", true],
           ["school", true],
           ["activity", true],
           ["object", false],
           ["nces", false],
         ]),
       ),
-    ).toEqual("RpSAon");
+    ).toEqual("rPSAon");
   });
 
   it("deserialize round-trips order + enabled and pins Resource/Program", () => {
-    const restored = deserializeLevelPlan("RpSAon");
+    const restored = deserializeLevelPlan("rPSAon");
     expect(restored).toEqual(
       plan([
-        ["source", true],
-        ["program", false],
+        ["source", false],
+        ["program", true],
         ["school", true],
         ["activity", true],
         ["object", false],
@@ -84,9 +84,18 @@ describe("FlowSettings level plan", () => {
     expect(junky[2]).toEqual({ level: "object", enabled: true });
   });
 
+  it("Program can never be disabled, even via a hand-crafted URL", () => {
+    // "rp" tries to disable both Resource and Program; only Resource obeys.
+    const restored = deserializeLevelPlan("rp");
+    const program = restored.find((e) => e.level === "program");
+    const source = restored.find((e) => e.level === "source");
+    expect(program!.enabled).toBe(true);
+    expect(source!.enabled).toBe(false);
+  });
+
   it("enabledLevelsFromPlan returns the enabled levels in order", () => {
-    expect(enabledLevelsFromPlan(deserializeLevelPlan("RpSAon"))).toEqual([
-      "source",
+    expect(enabledLevelsFromPlan(deserializeLevelPlan("rPSAon"))).toEqual([
+      "program",
       "school",
       "activity",
     ]);
@@ -106,8 +115,8 @@ describe("FlowSettings level plan", () => {
   it("full settings round-trip through the URL", () => {
     const programSubset = new Set([...ProgramFilter.allCodes()].slice(0, 2));
     const modifiedPlan = plan([
-      ["source", true],
-      ["program", false],
+      ["source", false],
+      ["program", true],
       ["school", true],
       ["activity", true],
       ["object", false],
@@ -127,7 +136,7 @@ describe("FlowSettings level plan", () => {
       SERIALIZE_FLOW_SETTINGS_GENERATORS,
     );
     // The four custom vars are present in the URL fragment.
-    expect(serialized[0]).toContain("lv.RpSAon");
+    expect(serialized[0]).toContain("lv.rPSAon");
     expect(serialized[0]).toContain("sm.a");
     expect(serialized[0]).toContain("y.2025");
     expect(serialized[0]).toContain("dt.b");
