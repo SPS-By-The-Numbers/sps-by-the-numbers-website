@@ -34,7 +34,10 @@ import Typography from "@mui/material/Typography";
 
 import type { ReactNode, ComponentType } from "react";
 import type { SettingsRenderComponentType } from "app/finance/_widgets/SettingsContents";
-import type { BaseSettings, SettingsSerializer } from "app/finance/_settings/base_settings";
+import type {
+  BaseSettings,
+  SettingsSerializer,
+} from "app/finance/_settings/base_settings";
 
 const drawerWidthPx = 240;
 
@@ -164,21 +167,56 @@ export default function SettingsLayout<
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [isClosing, setIsClosing] = React.useState(false);
   const [nextSettingId, setNextSettingId] = React.useState(1);
+  // Shows the "Updating" overlay while a settings change is being applied.
+  // Applying a change re-renders the dashboard, whose data crunching
+  // (arquero + chart config) runs synchronously and freezes the main thread —
+  // so a CSS spinner would just stall. Instead we block interaction with a
+  // static overlay and, crucially, let the browser PAINT it before kicking off
+  // the blocking navigation (see the double rAF below).
+  const [updating, setUpdating] = React.useState(false);
 
-  const navigateToNewSettings = (newContextSettings : ContextSettingsType, newAllSettings : Array<SettingsType>) => {
+  // Clear the overlay once the new settings have flowed back in as props (which
+  // only happens after the blocking recompute has committed). The safety
+  // timeout guarantees the overlay can never get permanently stuck (e.g. if a
+  // navigation resolves to the same URL and no re-render occurs).
+  React.useEffect(() => {
+    setUpdating(false);
+  }, [allSettings, contextSettings]);
+  React.useEffect(() => {
+    if (!updating) {
+      return;
+    }
+    const timer = setTimeout(() => setUpdating(false), 5000);
+    return () => clearTimeout(timer);
+  }, [updating]);
+
+  const navigateToNewSettings = (
+    newContextSettings: ContextSettingsType,
+    newAllSettings: Array<SettingsType>,
+  ) => {
     const queries = new Array<string>();
     for (const settingsQuery of settingsSerializer.serialize(newAllSettings)) {
       if (settingsQuery) {
         queries.push(`d=${settingsQuery}`);
       }
     }
-    const contextQuery = settingsSerializer.serializeContext(newContextSettings);
+    const contextQuery =
+      settingsSerializer.serializeContext(newContextSettings);
     if (contextQuery) {
       queries.push(`c=${contextQuery}`);
     }
 
     if (queries.length !== 0) {
-      router.replace(`${pathname}?${queries.join("&")}`);
+      const url = `${pathname}?${queries.join("&")}`;
+      setUpdating(true);
+      // Defer the (main-thread-blocking) navigation until after the overlay has
+      // painted. The first rAF fires before the next paint; the nested rAF
+      // fires after it, by which point the overlay is on screen.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          router.replace(url);
+        });
+      });
     }
   };
 
@@ -305,6 +343,37 @@ export default function SettingsLayout<
       >
         {children}
       </Box>
+      {updating && (
+        <Box
+          // Full-viewport blocker: covers the drawer and the content, so every
+          // control is inert until the update finishes. No spinner — the main
+          // thread is frozen during the recompute, so animation would stall.
+          sx={{
+            position: "fixed",
+            inset: 0,
+            zIndex: (theme) => theme.zIndex.modal + 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "rgba(0, 0, 0, 0.35)",
+            cursor: "wait",
+          }}
+        >
+          <Box
+            sx={{
+              px: 3,
+              py: 2,
+              borderRadius: 1,
+              boxShadow: 6,
+              backgroundColor: "background.paper",
+            }}
+          >
+            <Typography variant="h6" component="p">
+              Updating…
+            </Typography>
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 }
