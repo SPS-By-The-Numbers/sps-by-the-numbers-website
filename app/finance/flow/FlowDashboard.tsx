@@ -16,6 +16,7 @@ import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
 import { computeFlows } from "utilities/sankey/flows";
 import { linkForNode } from "utilities/sankey/deepLinks";
+import { SANKEY_HIGHLIGHT, SANKEY_NEUTRAL } from "utilities/sankey/colors";
 import { makeCurrencyFormatter } from "utilities/highcharts/utils";
 import { serializeDatasetSettings } from "app/finance/_settings/common_settings";
 import { useHighcharts } from "components/providers/HighchartsProvider";
@@ -145,6 +146,34 @@ export default function FlowDashboard({
     // below the chart).
     const hasFilteredOut = nodes.some((n) => n.custom.level === "filtered");
 
+    // Order nodes so the largest sit at the top of each column. Highcharts lays
+    // out a column's nodes in the order they are first *created*, which is the
+    // order they are first encountered while scanning the links (data) array.
+    // So we sort the links by their endpoints' magnitude: sorting by the from
+    // node's size makes the source column exactly size-descending, and the
+    // secondary to-node sort floats the big downstream nodes up as well.
+    const inflow = new Map<string, number>();
+    const outflow = new Map<string, number>();
+    for (const l of links) {
+      outflow.set(l.from, (outflow.get(l.from) ?? 0) + l.weight);
+      inflow.set(l.to, (inflow.get(l.to) ?? 0) + l.weight);
+    }
+    // A node's magnitude is the larger of its in/out flow (they are equal for
+    // interior nodes by conservation; one side is 0 for pure sources / sinks).
+    const nodeSize = (id: string) =>
+      Math.max(inflow.get(id) ?? 0, outflow.get(id) ?? 0);
+    const sortedLinks = [...links].sort((a, b) => {
+      const fromDelta = nodeSize(b.from) - nodeSize(a.from);
+      if (fromDelta !== 0) {
+        return fromDelta;
+      }
+      const toDelta = nodeSize(b.to) - nodeSize(a.to);
+      if (toDelta !== 0) {
+        return toDelta;
+      }
+      return b.weight - a.weight;
+    });
+
     // Bump the chart height when the (wide) School column is enabled; Seattle
     // has ~110 schools.
     const height = settings.enabledLevels.has("school")
@@ -177,7 +206,7 @@ export default function FlowDashboard({
         {
           type: "sankey",
           keys: ["from", "to", "weight"],
-          data: links.map((l) => ({
+          data: sortedLinks.map((l) => ({
             from: l.from,
             to: l.to,
             weight: l.weight,
@@ -185,7 +214,10 @@ export default function FlowDashboard({
           nodes: nodes.map((n) => ({
             id: n.id,
             name: n.name,
-            color: n.color,
+            // Uniform neutral gray by default; the semantic color from the
+            // compute engine (n.color) is intentionally not shown. A single
+            // accent appears only on hover (see plotOptions.sankey.states).
+            color: SANKEY_NEUTRAL,
             column: n.column,
             custom: n.custom,
           })),
@@ -236,6 +268,14 @@ export default function FlowDashboard({
       },
       plotOptions: {
         sankey: {
+          // Everything is gray until hovered. Hovering a node or band applies a
+          // single accent color to it and its directly connected nodes/links
+          // (Highcharts propagates the hover state across the connection), and
+          // dims everything else via the inactive state.
+          states: {
+            hover: { color: SANKEY_HIGHLIGHT },
+            inactive: { opacity: 0.3, linkOpacity: 0.08 },
+          },
           point: {
             events: {
               // Click-to-open fallback (see the `PopoverState` comment

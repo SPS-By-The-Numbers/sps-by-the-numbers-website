@@ -31,6 +31,15 @@ export const SANKEY_COLORS = {
   filteredOut: "#BDBDBD",
 };
 
+// Presentation colors for the interactive flow view. The diagram renders every
+// node and band in a single neutral gray; a single accent color is revealed
+// only on hover, applied by Highcharts to the hovered node/band and its
+// directly connected nodes/links (see FlowDashboard's `states.hover`). These
+// are intentionally separate from the semantic palette above, which the
+// compute engine still attaches to each node for non-visual uses.
+export const SANKEY_NEUTRAL = "#AEB4BA";
+export const SANKEY_HIGHLIGHT = "#1976D2";
+
 // Map a revenue category (or the category a revenue account rolls up to) to its
 // source-band color. The bucket is derived from the code's leading thousands
 // digit so it works for both category codes (e.g. 3000) and account codes (e.g.
