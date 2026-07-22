@@ -1,0 +1,347 @@
+// Sankey flow computation for the Expenditure Flow view.
+//
+// Turns pre-filtered expenditure + revenue rows into deduped Highcharts-shaped
+// nodes and links. Pipeline:
+//   1. Attribute revenue -> program on UNFILTERED data (attribution.ts).
+//   2. Aggregate expenditures to the tuple of enabled expenditure levels (perf:
+//      before expanding across sources).
+//   3. Expand each aggregated row across its program's attributed sources
+//      proportionally (share = attributed[p][src] / prog_tot[p]).
+//   4. Partition each resulting flow record per Locked decision 4: at the first
+//      enabled level whose filter fails, the record follows real nodes for the
+//      columns before it and one chained gray "Filtered Out" node per column
+//      from there to the last column. Grand total is conserved in every column.
+//   5. Emit deduped nodes (prefixed ids, colors, explicit columns) and links
+//      summed per (from, to), dropping links below `minWeight` to kill dust.
+
+import {
+  attributeSources,
+  DRAWDOWN_SOURCE_CODE,
+  GROWTH_PROGRAM_CODE,
+  prorate,
+} from "utilities/sankey/attribution";
+import { colorForNode } from "utilities/sankey/colors";
+import type {
+  ComputeFlowsOpts,
+  ComputeFlowsResult,
+  ExpRow,
+  FlowFilters,
+  FlowTotals,
+  Level,
+  RevRow,
+  SankeyLink,
+  SankeyNode,
+} from "utilities/sankey/types";
+
+const DEFAULT_MIN_WEIGHT = 0.005;
+
+// Fixed level order (Locked decision 1). source/program/activity are always
+// present; object/nces/school are optional but keep this order.
+const CANONICAL_LEVELS: Level[] = [
+  "source",
+  "program",
+  "activity",
+  "object",
+  "nces",
+  "school",
+];
+const ALWAYS_ON: ReadonlySet<Level> = new Set<Level>([
+  "source",
+  "program",
+  "activity",
+]);
+
+// Map an expenditure level to its code/label fields on an ExpRow.
+const EXP_CODE_FIELD: Record<Exclude<Level, "source">, keyof ExpRow> = {
+  program: "program_code",
+  activity: "activity_code",
+  object: "object_code",
+  nces: "nces_code",
+  school: "school_code",
+};
+const EXP_LABEL_FIELD: Record<Exclude<Level, "source">, keyof ExpRow> = {
+  program: "program",
+  activity: "activity",
+  object: "object",
+  nces: "nces",
+  school: "school",
+};
+
+// Map a level to its FlowFilters key.
+const FILTER_KEY: Record<Level, keyof FlowFilters> = {
+  source: "sourceCodes",
+  program: "programCodes",
+  activity: "activityCodes",
+  object: "objectCodes",
+  nces: "ncesCodes",
+  school: "schoolCodes",
+};
+
+// The id/level/label a column entry carries.
+type Cell = {
+  level: Level | "fundBalance" | "filtered";
+  code: number | null; // null for fund-balance / filtered nodes
+  id: string;
+  name: string;
+};
+
+// A flow record: an ordered path of cells (one per enabled column) plus weight.
+type FlowRecord = { path: Cell[]; weight: number };
+
+function nodeIdForSource(code: number, sourceLabel: string): Cell {
+  if (code === DRAWDOWN_SOURCE_CODE) {
+    return {
+      level: "fundBalance",
+      code: null,
+      id: "fb:drawdown",
+      name: "Fund Balance Drawdown",
+    };
+  }
+  return { level: "source", code, id: `src:${code}`, name: sourceLabel };
+}
+
+const LEVEL_ID_PREFIX: Record<Exclude<Level, "source">, string> = {
+  program: "prog",
+  activity: "act",
+  object: "obj",
+  nces: "nces",
+  school: "sch",
+};
+
+export function computeFlows(
+  expRows: ReadonlyArray<ExpRow>,
+  revRows: ReadonlyArray<RevRow>,
+  opts: ComputeFlowsOpts,
+): ComputeFlowsResult {
+  const minWeight = opts.minWeight ?? DEFAULT_MIN_WEIGHT;
+
+  // Normalize enabled levels to canonical order, always including the
+  // mandatory columns.
+  const enabled = CANONICAL_LEVELS.filter(
+    (l) => ALWAYS_ON.has(l) || opts.enabledLevels.includes(l),
+  );
+  // Enabled expenditure levels (everything but the derived source column).
+  const expLevels = enabled.filter((l) => l !== "source") as Exclude<
+    Level,
+    "source"
+  >[];
+
+  const { progTot, attributed } = attributeSources(expRows, revRows, opts.mode);
+
+  // --- Label maps ---------------------------------------------------------
+  // Source labels come from revenue rows (category or account label per mode).
+  const sourceLabel = new Map<number, string>();
+  for (const r of revRows) {
+    if (opts.mode === "category") {
+      sourceLabel.set(r.category_code, r.category);
+    } else {
+      sourceLabel.set(r.revenue_code, r.revenue);
+    }
+  }
+  // Expenditure-level labels come from expenditure rows.
+  const expLabels: Record<string, Map<number, string>> = {};
+  for (const l of expLevels) {
+    expLabels[l] = new Map<number, string>();
+  }
+
+  // --- Aggregate expenditures to the enabled-level tuple ------------------
+  type Agg = { codes: Map<Exclude<Level, "source">, number>; amount: number };
+  const agg = new Map<string, Agg>();
+  for (const e of expRows) {
+    if (e.amount === 0) {
+      continue;
+    }
+    const codes = new Map<Exclude<Level, "source">, number>();
+    const keyParts: number[] = [];
+    for (const l of expLevels) {
+      const code = e[EXP_CODE_FIELD[l]] as number;
+      codes.set(l, code);
+      keyParts.push(code);
+      const label = e[EXP_LABEL_FIELD[l]] as string;
+      if (!expLabels[l].has(code)) {
+        expLabels[l].set(code, label);
+      }
+    }
+    const key = keyParts.join("|");
+    const existing = agg.get(key);
+    if (existing) {
+      existing.amount += e.amount;
+    } else {
+      agg.set(key, { codes, amount: e.amount });
+    }
+  }
+
+  // --- Build flow records -------------------------------------------------
+  const records: FlowRecord[] = [];
+
+  const buildExpCells = (
+    codes: Map<Exclude<Level, "source">, number>,
+  ): Cell[] =>
+    expLevels.map((l) => {
+      const code = codes.get(l)!;
+      const name = expLabels[l].get(code) ?? String(code);
+      return { level: l, code, id: `${LEVEL_ID_PREFIX[l]}:${code}`, name };
+    });
+
+  for (const row of agg.values()) {
+    const program = row.codes.get("program")!;
+    const sources = attributed.get(program);
+    if (!sources) {
+      continue;
+    }
+    const total = progTot.get(program) ?? 0;
+    if (total <= 0) {
+      continue;
+    }
+    const srcCodes = [...sources.keys()];
+    const srcWeights = srcCodes.map((s) => sources.get(s)!);
+    // share of this aggregated row that each source funds.
+    const shares = prorate(row.amount, srcWeights);
+    const expCells = buildExpCells(row.codes);
+    for (let i = 0; i < srcCodes.length; i++) {
+      const w = shares[i];
+      if (w <= 0) {
+        continue;
+      }
+      const s = srcCodes[i];
+      const srcCell = nodeIdForSource(s, sourceLabel.get(s) ?? String(s));
+      records.push({ path: [srcCell, ...expCells], weight: w });
+    }
+  }
+
+  // --- Growth records: source -> Fund Balance Growth (terminal in Program) --
+  let growthTotal = 0;
+  const growthSources = attributed.get(GROWTH_PROGRAM_CODE);
+  if (growthSources) {
+    const growthCell: Cell = {
+      level: "fundBalance",
+      code: null,
+      id: "fb:growth",
+      name: "Fund Balance Growth",
+    };
+    for (const [s, amount] of growthSources.entries()) {
+      if (amount <= 0) {
+        continue;
+      }
+      growthTotal += amount;
+      const srcCell = nodeIdForSource(s, sourceLabel.get(s) ?? String(s));
+      // Growth sits in the Program column (index 1); its path is only two
+      // columns long and never extends to later columns.
+      records.push({ path: [srcCell, growthCell], weight: amount });
+    }
+  }
+
+  // --- Partition per filters + accumulate links & nodes -------------------
+  const filteredCells = new Map<number, Cell>(); // column -> shared "Filtered Out" cell
+  const filteredCell = (col: number): Cell => {
+    let c = filteredCells.get(col);
+    if (!c) {
+      c = {
+        level: "filtered",
+        code: null,
+        id: `flt:${col}`,
+        name: "Filtered Out",
+      };
+      filteredCells.set(col, c);
+    }
+    return c;
+  };
+
+  const passesFilter = (cell: Cell): boolean => {
+    // Synthetic fund-balance nodes are never filtered by a level filter.
+    if (cell.level === "fundBalance") {
+      return true;
+    }
+    const set = opts.filters[FILTER_KEY[cell.level as Level]];
+    if (!set) {
+      return true;
+    }
+    return cell.code !== null && set.has(cell.code);
+  };
+
+  const nodes = new Map<string, SankeyNode>();
+  const registerNode = (cell: Cell, column: number): void => {
+    if (nodes.has(cell.id)) {
+      return;
+    }
+    nodes.set(cell.id, {
+      id: cell.id,
+      name: cell.name,
+      color: colorForNode(cell.level, cell.code),
+      column,
+      custom: { level: cell.level, code: cell.code },
+    });
+  };
+
+  const linkWeights = new Map<string, number>();
+  const linkEndpoints = new Map<string, { from: string; to: string }>();
+  const addLink = (from: string, to: string, weight: number): void => {
+    const key = `${from} ${to}`;
+    linkWeights.set(key, (linkWeights.get(key) ?? 0) + weight);
+    if (!linkEndpoints.has(key)) {
+      linkEndpoints.set(key, { from, to });
+    }
+  };
+
+  for (const rec of records) {
+    // First column (in the path's own indexing) whose filter fails.
+    let failIdx = rec.path.length;
+    for (let c = 0; c < rec.path.length; c++) {
+      if (!passesFilter(rec.path[c])) {
+        failIdx = c;
+        break;
+      }
+    }
+    // Resolve each path column to a concrete cell (real or Filtered Out) and
+    // register its node with the correct absolute column.
+    const resolved: Cell[] = rec.path.map((cell, c) =>
+      c < failIdx ? cell : filteredCell(c),
+    );
+    for (let c = 0; c < resolved.length; c++) {
+      registerNode(resolved[c], c);
+    }
+    for (let c = 0; c < resolved.length - 1; c++) {
+      addLink(resolved[c].id, resolved[c + 1].id, rec.weight);
+    }
+  }
+
+  // --- Emit links, dropping dust -----------------------------------------
+  const links: SankeyLink[] = [];
+  for (const [key, weight] of linkWeights.entries()) {
+    if (weight < minWeight) {
+      continue;
+    }
+    const ends = linkEndpoints.get(key)!;
+    links.push({ from: ends.from, to: ends.to, weight });
+  }
+
+  // Drop nodes that ended up with no surviving link (dust-only nodes).
+  const referenced = new Set<string>();
+  for (const l of links) {
+    referenced.add(l.from);
+    referenced.add(l.to);
+  }
+  const nodeList: SankeyNode[] = [];
+  for (const n of nodes.values()) {
+    if (referenced.has(n.id)) {
+      nodeList.push(n);
+    }
+  }
+
+  // --- Totals -------------------------------------------------------------
+  const expenditure = expRows.reduce((a, e) => a + e.amount, 0);
+  const revenue = revRows.reduce((a, r) => a + r.amount, 0);
+  let drawdown = 0;
+  for (const inner of attributed.values()) {
+    drawdown += inner.get(DRAWDOWN_SOURCE_CODE) ?? 0;
+  }
+  const totals: FlowTotals = {
+    expenditure,
+    revenue,
+    drawdown,
+    growth: growthTotal,
+    grandTotal: revenue + drawdown,
+  };
+
+  return { nodes: nodeList, links, totals };
+}

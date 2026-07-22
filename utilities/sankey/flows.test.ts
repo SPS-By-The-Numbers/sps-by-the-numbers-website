@@ -1,0 +1,287 @@
+import { expect } from "@jest/globals";
+import { computeFlows } from "utilities/sankey/flows";
+import { SANKEY_COLORS } from "utilities/sankey/colors";
+import type {
+  ExpRow,
+  Level,
+  RevRow,
+  SankeyLink,
+  SankeyNode,
+} from "utilities/sankey/types";
+
+function exp(
+  program_code: number,
+  program: string,
+  activity_code: number,
+  activity: string,
+  amount: number,
+  extra: Partial<ExpRow> = {},
+): ExpRow {
+  return {
+    program_code,
+    program,
+    activity_code,
+    activity,
+    object_code: 0,
+    object: "",
+    nces_code: 0,
+    nces: "",
+    school_code: 0,
+    school: "",
+    amount,
+    ...extra,
+  };
+}
+
+function rev(
+  revenue_code: number,
+  category_code: number,
+  program_code: number,
+  amount: number,
+): RevRow {
+  return {
+    revenue_code,
+    revenue: `rev ${revenue_code}`,
+    category_code,
+    category: `cat ${category_code}`,
+    program_code,
+    program: `prog ${program_code}`,
+    amount,
+  };
+}
+
+// The standard deficit fixture used across several tests.
+//   Program 10 "Basic" spends 100 (act 27 = 60, act 29 = 40).
+//   Program 20 "SpEd"  spends 50  (act 27 = 50).
+//   Revenue: account 4210 directed to program 20 (50), account 1100 fungible (70).
+//   Total expenditure 150, revenue 120 => Fund Balance Drawdown 30.
+function deficitExp(): ExpRow[] {
+  return [
+    exp(10, "Basic", 27, "Teaching", 60),
+    exp(10, "Basic", 29, "Other", 40),
+    exp(20, "SpEd", 27, "Teaching", 50),
+  ];
+}
+function deficitRev(): RevRow[] {
+  return [rev(4210, 4000, 20, 50), rev(1100, 1000, 0, 70)];
+}
+
+function link(links: SankeyLink[], from: string, to: string): number {
+  return links
+    .filter((l) => l.from === from && l.to === to)
+    .reduce((a, l) => a + l.weight, 0);
+}
+
+function outflow(links: SankeyLink[], id: string): number {
+  return links.filter((l) => l.from === id).reduce((a, l) => a + l.weight, 0);
+}
+
+function inflow(links: SankeyLink[], id: string): number {
+  return links.filter((l) => l.to === id).reduce((a, l) => a + l.weight, 0);
+}
+
+function nodeById(nodes: SankeyNode[], id: string): SankeyNode | undefined {
+  return nodes.find((n) => n.id === id);
+}
+
+// Total link weight leaving every node that sits in `column`.
+function columnOutgoing(
+  nodes: SankeyNode[],
+  links: SankeyLink[],
+  column: number,
+): number {
+  const ids = new Set(
+    nodes.filter((n) => n.column === column).map((n) => n.id),
+  );
+  return links.filter((l) => ids.has(l.from)).reduce((a, l) => a + l.weight, 0);
+}
+
+function columnIncoming(
+  nodes: SankeyNode[],
+  links: SankeyLink[],
+  column: number,
+): number {
+  const ids = new Set(
+    nodes.filter((n) => n.column === column).map((n) => n.id),
+  );
+  return links.filter((l) => ids.has(l.to)).reduce((a, l) => a + l.weight, 0);
+}
+
+const BASE_LEVELS: Level[] = ["source", "program", "activity"];
+
+describe("computeFlows — basic deficit, no filters", () => {
+  const { nodes, links, totals } = computeFlows(deficitExp(), deficitRev(), {
+    mode: "account",
+    enabledLevels: BASE_LEVELS,
+    filters: {},
+  });
+
+  it("credits attributed sources into programs", () => {
+    expect(link(links, "src:1100", "prog:10")).toBeCloseTo(70, 6);
+    expect(link(links, "fb:drawdown", "prog:10")).toBeCloseTo(30, 6);
+    expect(link(links, "src:4210", "prog:20")).toBeCloseTo(50, 6);
+  });
+
+  it("per-program inflow == outflow == prog_tot for every program", () => {
+    // program 10: inflow 100 (70 + 30), outflow 100 (act 27 = 60, act 29 = 40).
+    expect(inflow(links, "prog:10")).toBeCloseTo(100, 6);
+    expect(outflow(links, "prog:10")).toBeCloseTo(100, 6);
+    // program 20: 50 in, 50 out.
+    expect(inflow(links, "prog:20")).toBeCloseTo(50, 6);
+    expect(outflow(links, "prog:20")).toBeCloseTo(50, 6);
+  });
+
+  it("reports the fund balance drawdown", () => {
+    expect(totals.drawdown).toBeCloseTo(30, 6);
+    expect(totals.growth).toBeCloseTo(0, 6);
+    expect(totals.expenditure).toBeCloseTo(150, 6);
+    expect(totals.revenue).toBeCloseTo(120, 6);
+    // Grand total = revenue + drawdown = expenditure.
+    expect(totals.grandTotal).toBeCloseTo(150, 6);
+    expect(outflow(links, "fb:drawdown")).toBeCloseTo(30, 6);
+  });
+
+  it("every column totals the grand total", () => {
+    // Column 0 (source) and column 1 (program) both emit the grand total.
+    expect(columnOutgoing(nodes, links, 0)).toBeCloseTo(150, 6);
+    expect(columnOutgoing(nodes, links, 1)).toBeCloseTo(150, 6);
+    // Columns 1 and 2 both receive the grand total.
+    expect(columnIncoming(nodes, links, 1)).toBeCloseTo(150, 6);
+    expect(columnIncoming(nodes, links, 2)).toBeCloseTo(150, 6);
+  });
+
+  it("assigns prefixed ids, colors and columns", () => {
+    expect(nodeById(nodes, "src:1100")!.column).toBe(0);
+    expect(nodeById(nodes, "src:1100")!.color).toBe(SANKEY_COLORS.localTaxes);
+    expect(nodeById(nodes, "prog:10")!.column).toBe(1);
+    expect(nodeById(nodes, "prog:10")!.color).toBe(SANKEY_COLORS.program);
+    expect(nodeById(nodes, "act:27")!.column).toBe(2);
+    expect(nodeById(nodes, "fb:drawdown")!.color).toBe(
+      SANKEY_COLORS.fundBalance,
+    );
+    expect(nodeById(nodes, "fb:drawdown")!.custom).toEqual({
+      level: "fundBalance",
+      code: null,
+    });
+  });
+});
+
+describe("computeFlows — column conservation with a program filter", () => {
+  // Keep only program 20; program 10 diverts to the Filtered Out chain at the
+  // Program column.
+  const { nodes, links } = computeFlows(deficitExp(), deficitRev(), {
+    mode: "account",
+    enabledLevels: BASE_LEVELS,
+    filters: { programCodes: new Set([20]) },
+  });
+
+  it("diverts the filtered program into a chained gray band", () => {
+    // Real sources still credited at column 0.
+    expect(link(links, "src:1100", "flt:1")).toBeCloseTo(70, 6);
+    expect(link(links, "fb:drawdown", "flt:1")).toBeCloseTo(30, 6);
+    // The gray band chains left -> right to the last column.
+    expect(link(links, "flt:1", "flt:2")).toBeCloseTo(100, 6);
+    // program 20 is unaffected.
+    expect(link(links, "src:4210", "prog:20")).toBeCloseTo(50, 6);
+    expect(link(links, "prog:20", "act:27")).toBeCloseTo(50, 6);
+  });
+
+  it("conserves the grand total in every column", () => {
+    for (let col = 0; col <= 1; col++) {
+      expect(columnOutgoing(nodes, links, col)).toBeCloseTo(150, 6);
+    }
+    for (let col = 1; col <= 2; col++) {
+      expect(columnIncoming(nodes, links, col)).toBeCloseTo(150, 6);
+    }
+  });
+
+  it("colors the Filtered Out nodes gray", () => {
+    expect(nodeById(nodes, "flt:1")!.color).toBe(SANKEY_COLORS.filteredOut);
+    expect(nodeById(nodes, "flt:2")!.color).toBe(SANKEY_COLORS.filteredOut);
+    expect(nodeById(nodes, "flt:1")!.column).toBe(1);
+    expect(nodeById(nodes, "flt:2")!.column).toBe(2);
+  });
+});
+
+describe("computeFlows — first-failing-level diversion at Activity", () => {
+  // Keep only activity 29; activity-27 flow must still credit real Source and
+  // Program nodes, then divert to Filtered Out from the Activity column on.
+  const { nodes, links } = computeFlows(deficitExp(), deficitRev(), {
+    mode: "account",
+    enabledLevels: BASE_LEVELS,
+    filters: { activityCodes: new Set([29]) },
+  });
+
+  it("credits real Source and Program before diverting at Activity", () => {
+    // Real source -> program links carry the full program-10 attribution
+    // (both the passing act-29 flow and the diverted act-27 flow).
+    expect(link(links, "src:1100", "prog:10")).toBeCloseTo(70, 6);
+    expect(link(links, "fb:drawdown", "prog:10")).toBeCloseTo(30, 6);
+    // The kept activity survives.
+    expect(link(links, "prog:10", "act:29")).toBeCloseTo(40, 6);
+    // The filtered activities divert from the Activity column.
+    expect(link(links, "prog:10", "flt:2")).toBeCloseTo(60, 6);
+    expect(link(links, "prog:20", "flt:2")).toBeCloseTo(50, 6);
+  });
+
+  it("does not emit a node for the fully-filtered activity", () => {
+    expect(nodeById(nodes, "act:27")).toBeUndefined();
+    expect(nodeById(nodes, "act:29")).toBeDefined();
+  });
+
+  it("still conserves the grand total in the Activity column", () => {
+    // act:29 (40) + flt:2 (110) == 150.
+    expect(columnIncoming(nodes, links, 2)).toBeCloseTo(150, 6);
+  });
+});
+
+describe("computeFlows — surplus routes to Fund Balance Growth", () => {
+  const expRows = [exp(10, "Basic", 27, "Teaching", 50)];
+  const revRows = [rev(9000, 9000, 0, 80)];
+  const { nodes, links, totals } = computeFlows(expRows, revRows, {
+    mode: "account",
+    enabledLevels: BASE_LEVELS,
+    filters: {},
+  });
+
+  it("emits a terminal Fund Balance Growth node in the Program column", () => {
+    expect(totals.growth).toBeCloseTo(30, 6);
+    expect(link(links, "src:9000", "fb:growth")).toBeCloseTo(30, 6);
+    const growth = nodeById(nodes, "fb:growth")!;
+    expect(growth.column).toBe(1);
+    expect(growth.color).toBe(SANKEY_COLORS.fundBalance);
+    // Growth is terminal: it has inflow but no outflow.
+    expect(inflow(links, "fb:growth")).toBeCloseTo(30, 6);
+    expect(outflow(links, "fb:growth")).toBeCloseTo(0, 6);
+    // Grand total = revenue = expenditure + growth.
+    expect(totals.grandTotal).toBeCloseTo(80, 6);
+  });
+});
+
+describe("computeFlows — optional levels", () => {
+  it("adds the Object column when enabled and keeps conservation", () => {
+    const expRows = [
+      exp(10, "Basic", 27, "Teaching", 60, { object_code: 2, object: "Cert" }),
+      exp(10, "Basic", 27, "Teaching", 40, {
+        object_code: 4,
+        object: "Benefits",
+      }),
+    ];
+    const revRows = [rev(9000, 9000, 0, 100)];
+    const { nodes, links } = computeFlows(expRows, revRows, {
+      mode: "account",
+      enabledLevels: ["source", "program", "activity", "object"],
+      filters: {},
+    });
+
+    expect(nodeById(nodes, "obj:2")!.column).toBe(3);
+    expect(nodeById(nodes, "obj:2")!.color).toBe(SANKEY_COLORS.object[2]);
+    expect(link(links, "act:27", "obj:2")).toBeCloseTo(60, 6);
+    expect(link(links, "act:27", "obj:4")).toBeCloseTo(40, 6);
+    // Every column still totals 100.
+    for (let col = 0; col <= 2; col++) {
+      expect(columnOutgoing(nodes, links, col)).toBeCloseTo(100, 6);
+    }
+    expect(columnIncoming(nodes, links, 3)).toBeCloseTo(100, 6);
+  });
+});

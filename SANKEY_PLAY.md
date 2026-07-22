@@ -820,3 +820,109 @@ Sessions append here. Format:
   not Sankey-shaped), so this seam probably isn't directly reusable there
   — just flagging it exists in case it's useful for something narrower
   (e.g. a per-node total lookup).
+
+### Session 3 — Sankey compute engine (pure TS + tests) — DONE — 2026-07-21
+
+- **What landed** (new self-contained module tree `utilities/sankey/`, no
+  arquero, no UI, no touches to existing code):
+  - `utilities/sankey/types.ts` — `ExpRow`, `RevRow`, `Level`, `SourceMode`,
+    `FlowFilters`, `SankeyNode`, `SankeyLink` exactly as specified, plus three
+    additive types the engine needs: `ComputeFlowsOpts`, `FlowTotals`,
+    `ComputeFlowsResult`.
+  - `utilities/sankey/colors.ts` — `SANKEY_COLORS` verbatim from Locked
+    decision 11 + `colorForNode(level, code)`. Source color derives the
+    category bucket from the code's leading thousands digit
+    (`Math.floor(code/1000)*1000`), so it works for both category codes and
+    account codes (account mode inherits its category's color); 3000/4000→state,
+    5000/6000→federal, 7000/8000→otherEntities, etc.
+  - `utilities/sankey/attribution.ts` — `attributeSources(expRows, revRows,
+    mode)` (3-pass) + exported `prorate` helper + sentinel constants
+    `DRAWDOWN_SOURCE_CODE = -2`, `GROWTH_PROGRAM_CODE = -1`.
+  - `utilities/sankey/flows.ts` — `computeFlows(expRows, revRows, opts)`.
+  - `attribution.test.ts` (12 cases) + `flows.test.ts` (13 cases) — 25 new
+    tests, all green; small synthetic fixtures, no arquero.
+
+- **Test cases (all pass)**:
+  - prorate: last-recipient-remainder sums to total (indivisible 100/[1,2] and
+    100/[1,1,1]); clean split; zero-weight guard.
+  - attribution: directed clamp + spillover-to-fungible; directed-to-a-program-
+    with-no-expenditure spills entirely; fungible proration sums exactly to the
+    pool (clean + indivisible); deficit→drawdown = exp−rev; surplus→growth =
+    rev−exp; per-program conservation (mixed directed/fungible deficit fixture);
+    category rollup keeps the directed/fungible split when one category mixes
+    both kinds of account.
+  - flows: source→program crediting; per-program inflow==outflow==prog_tot;
+    drawdown reporting + totals; grand-total conserved in every column
+    (unfiltered); program-filter diversion into a chained gray band + column
+    conservation with filters; first-failing-level diversion at Activity (real
+    Source+Program still credited, no node for the fully-filtered activity);
+    surplus→terminal `fb:growth` node (inflow, zero outflow); optional Object
+    column enabled + conservation.
+  - Hand sanity-check at real Seattle magnitudes (scratch script): exp
+    $1195.86M, rev $1172.15M → drawdown **$23.71M**, grandTotal $1195.86M,
+    per-program in==out, columns 0/1 total the grand total. Matches the handoff.
+
+- **Deviations from the plan's sketch (Session 4 MUST read this)**:
+  1. **`attributeSources` return type** is `{ progTot: Map<number,number>;
+     attributed: Map<number, Map<number,number>> }`, NOT the bare
+     `Map<programCode, Map<sourceKey, amount>>` in the plan. Rationale: the bare
+     map can't represent Fund Balance Drawdown (a synthetic *inflow source* into
+     real programs) or Fund Balance Growth (a synthetic *sink* in the Program
+     column) without sentinels, and `computeFlows` needs `progTot` anyway. In
+     `attributed`: for a real program `p`, `attributed.get(p)` maps source codes
+     (real, plus possibly `DRAWDOWN_SOURCE_CODE`) to dollars summing to
+     `progTot.get(p)`; the key `GROWTH_PROGRAM_CODE` holds a source→dollars map
+     of unspent revenue (Fund Balance Growth). Real program/revenue codes are
+     non-negative, so the negative sentinels never collide. **Session 4 calls
+     `computeFlows`, not `attributeSources` directly, so this is internal** —
+     but if Session 6 reconciliation wants raw attribution it should use this
+     shape and the exported `DRAWDOWN_SOURCE_CODE`/`GROWTH_PROGRAM_CODE`.
+  2. **Pass 2 is aggregate-then-distribute, not the handoff's row-by-row loop.**
+     The handoff pseudocode processes each fungible row independently and can
+     overfill a program (or mis-handle surplus) if a single row's amount exceeds
+     the remaining gap. I aggregate the fungible pool by source, compute
+     `placedTotal = min(fungibleTotal, totalRemaining)`, distribute it across
+     programs proportional to their gaps, then split each program's fill among
+     sources proportional to what each source contributed — a nested `prorate`
+     that is penny-exact on both axes and routes any unplaceable fungible dollars
+     to growth uniformly. Same totals as the handoff on deficit data; strictly
+     more correct on surplus/overflow data.
+  3. **Penny-exactness** is achieved via `prorate` giving the LAST recipient the
+     exact remainder (per the plan's hint), not integer-cents. Conservation
+     tests assert `toBeCloseTo(_, 6)` (well past the penny); the engine drops
+     links below `minWeight` (default **$0.005**) to kill float dust.
+  4. **Column conservation caveat**: grand total is conserved in every column
+     ONLY in the deficit/balanced case. In a **surplus** year, `fb:growth` is
+     terminal in the Program column, so columns 0–1 total `revenue` while
+     columns 2+ (activity onward) total `expenditure` (< revenue). This is
+     economically correct (growth doesn't flow to activities), not a bug — the
+     column-conservation invariant/test is a deficit-scenario check.
+
+- **`computeFlows` call signature Session 4 depends on**:
+  `computeFlows(expRows: ExpRow[], revRows: RevRow[], opts: { mode: SourceMode;
+  enabledLevels: Level[]; filters: FlowFilters; minWeight?: number })
+  → { nodes: SankeyNode[]; links: SankeyLink[]; totals: FlowTotals }`.
+  - `enabledLevels` is normalized internally: `source`/`program`/`activity` are
+    ALWAYS included regardless of what you pass, and levels are re-ordered to the
+    canonical `source→program→activity→object→nces→school`. So passing just
+    `["object"]` yields columns source,program,activity,object. Node `column` is
+    the 0-based POSITION in the enabled set (enable only `school` → school is
+    column 3, not 5) — the `flt:<col>` ids follow the same positional index.
+  - `filters` sets are **include** sets (present ⇒ only listed codes pass;
+    absent key ⇒ all pass). `sourceCodes` are category OR account codes matching
+    `mode`. Fund-balance nodes (`fb:drawdown`/`fb:growth`) always bypass filters.
+    Session 4 must materialize each filter as the effective selected `Set<number>`
+    (or omit the key) before calling — the engine does no domain expansion.
+  - Rows must be pre-filtered by the caller to ONE `(class_of, data_type)` and
+    converted from arquero via `.objects()`. `attributeSources` only reads
+    `program_code`/`amount` off exp rows, but `computeFlows` reads the full
+    `ExpRow` fields for the enabled levels, so bake all columns.
+  - `totals.grandTotal === revenue + drawdown === expenditure + growth` — the
+    source-column total; use it for the chart title / reconciliation.
+  - Node `custom.level` is `Level | "fundBalance" | "filtered"` and
+    `custom.code` is `null` for fb/flt nodes — this is exactly what Session 5's
+    `linkForNode` deep-link builder keys off of.
+
+- **Verification**: `npm run test` → 14 suites / 76 tests green (25 new).
+  `npx tsc --noEmit` clean. `npm run lint` clean on all 5 new files (verified
+  with `eslint --fix`; repo-wide pre-existing prettier debt untouched).
