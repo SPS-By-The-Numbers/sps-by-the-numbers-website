@@ -26,6 +26,15 @@
   padding: 0 20px;
 }
 
+// Expenditure Flow (Sankey): bands flowing out of the Fund Balance Drawdown
+// node get a thin light-red border so drawdown-funded flow is visible wherever
+// it goes. The class is set per-link in FlowDashboard; links carry no stroke of
+// their own, so this rule is unopposed.
+.sankey-drawdown-link {
+  stroke: #ef9a9a;
+  stroke-width: 1px;
+}
+
 .highcharts-crosshair {
   stroke: violet;
 }

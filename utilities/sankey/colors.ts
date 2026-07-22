@@ -31,14 +31,43 @@ export const SANKEY_COLORS = {
   filteredOut: "#BDBDBD",
 };
 
-// Presentation colors for the interactive flow view. The diagram renders every
-// node and band in a single neutral gray; a single accent color is revealed
-// only on hover, applied by Highcharts to the hovered node/band and its
-// directly connected nodes/links (see FlowDashboard's `states.hover`). These
-// are intentionally separate from the semantic palette above, which the
-// compute engine still attaches to each node for non-visual uses.
-export const SANKEY_NEUTRAL = "#AEB4BA";
+// Presentation colors for the interactive flow view. These are intentionally
+// separate from the semantic palette above, which the compute engine still
+// attaches to each node for non-visual uses.
+//
+// The base color of every node/band reflects budget vs actuals, matching the
+// bar charts' styled-mode palette in styles/highcharts-base.scss (actuals =
+// --highcharts-color-1, budget = --highcharts-color-2). A single accent color
+// is revealed only on hover (FlowDashboard's `states.hover`), and the Fund
+// Balance nodes are always red.
+export const SANKEY_ACTUALS_COLOR = "#006aa3"; // blue (matches color-1)
+export const SANKEY_BUDGET_COLOR = "#cccccc"; // grey (matches color-2)
+export const SANKEY_FUND_BALANCE_COLOR = SANKEY_COLORS.fundBalance; // red
 export const SANKEY_HIGHLIGHT = "#1976D2";
+
+// The Fund Balance Drawdown node id (emitted by the compute engine) and the CSS
+// class applied to bands flowing OUT of it, so drawdown-funded flow carries a
+// thin light-red border wherever it goes (rule in styles/highcharts-base.scss).
+export const SANKEY_DRAWDOWN_NODE_ID = "fb:drawdown";
+export const SANKEY_DRAWDOWN_LINK_CLASS = "sankey-drawdown-link";
+
+export type FlowDataType = "actuals" | "budget";
+
+// Base band/node color for the flow view given the data type.
+export function flowBaseColor(dataType: FlowDataType): string {
+  return dataType === "budget" ? SANKEY_BUDGET_COLOR : SANKEY_ACTUALS_COLOR;
+}
+
+// Display color for a node: Fund Balance nodes (drawdown / growth) are always
+// red; every other node uses the budget/actuals base color.
+export function flowNodeColor(
+  level: Level | "fundBalance" | "filtered",
+  dataType: FlowDataType,
+): string {
+  return level === "fundBalance"
+    ? SANKEY_FUND_BALANCE_COLOR
+    : flowBaseColor(dataType);
+}
 
 // Map a revenue category (or the category a revenue account rolls up to) to its
 // source-band color. The bucket is derived from the code's leading thousands

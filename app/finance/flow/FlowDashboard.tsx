@@ -16,7 +16,13 @@ import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
 import { computeFlows } from "utilities/sankey/flows";
 import { linkForNode } from "utilities/sankey/deepLinks";
-import { SANKEY_HIGHLIGHT, SANKEY_NEUTRAL } from "utilities/sankey/colors";
+import {
+  flowBaseColor,
+  flowNodeColor,
+  SANKEY_DRAWDOWN_LINK_CLASS,
+  SANKEY_DRAWDOWN_NODE_ID,
+  SANKEY_HIGHLIGHT,
+} from "utilities/sankey/colors";
 import { makeCurrencyFormatter } from "utilities/highcharts/utils";
 import { serializeDatasetSettings } from "app/finance/_settings/common_settings";
 import { useHighcharts } from "components/providers/HighchartsProvider";
@@ -30,7 +36,7 @@ import {
   RevenueFilterContents,
   SchoolFilterContents,
 } from "app/finance/_widgets/ExpenditureFilterContents";
-import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
+import FlowDatasetSettingsContents from "./FlowDatasetSettingsContents";
 import FlowLevelContents from "./FlowLevelContents";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import {
@@ -184,6 +190,10 @@ export default function FlowDashboard({
       : 700;
 
     const dataTypeLabel = dt === "budget" ? "Budget" : "Actuals";
+    // Base color reflects budget (grey) vs actuals (blue), matching the bar
+    // charts' palette. Fund Balance nodes are always red, and bands leaving the
+    // Fund Balance Drawdown node get a thin light-red border (via CSS class).
+    const baseColor = flowBaseColor(dt);
 
     // Deficit years draw down the fund balance; surplus years grow it. Show
     // whichever applies rather than a misleading "Drawdown $0.00".
@@ -213,18 +223,23 @@ export default function FlowDashboard({
             from: l.from,
             to: l.to,
             weight: l.weight,
-            // Explicit gray on each band. Without this, links inherit the
+            // Explicit base color on each band. Without this, links inherit the
             // from-node's auto-assigned palette color (colorByPoint), not our
             // node options.color, so the bands would stay colored.
-            color: SANKEY_NEUTRAL,
+            color: baseColor,
+            // Bands leaving the Fund Balance Drawdown node get a thin light-red
+            // border so drawdown-funded flow is marked wherever it goes.
+            ...(l.from === SANKEY_DRAWDOWN_NODE_ID
+              ? { className: SANKEY_DRAWDOWN_LINK_CLASS }
+              : {}),
           })),
           nodes: nodes.map((n) => ({
             id: n.id,
             name: n.name,
-            // Uniform neutral gray by default; the semantic color from the
-            // compute engine (n.color) is intentionally not shown. A single
-            // accent appears only on hover (see plotOptions.sankey.states).
-            color: SANKEY_NEUTRAL,
+            // Budget = grey, Actuals = blue; Fund Balance nodes are always red.
+            // The compute engine's semantic color (n.color) is not shown; a
+            // single accent appears only on hover (plotOptions.sankey.states).
+            color: flowNodeColor(n.custom.level, dt),
             column: n.column,
             custom: n.custom,
           })),
@@ -340,7 +355,7 @@ export default function FlowDashboard({
       contextSettingsComponents={[]}
       allSettings={allSettings}
       settingsContentsComponents={[
-        DatasetSettingsContents,
+        FlowDatasetSettingsContents,
         FlowLevelContents,
         RevenueCategoryFilterContents,
         RevenueFilterContents,
