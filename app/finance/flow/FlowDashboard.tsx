@@ -17,11 +17,10 @@ import Typography from "@mui/material/Typography";
 import { computeFlows } from "utilities/sankey/flows";
 import { linkForNode } from "utilities/sankey/deepLinks";
 import {
-  flowBaseColor,
-  flowNodeColor,
+  flowBaseClass,
+  flowNodeClass,
   SANKEY_DRAWDOWN_LINK_CLASS,
   SANKEY_DRAWDOWN_NODE_ID,
-  SANKEY_HIGHLIGHT,
 } from "utilities/sankey/colors";
 import { makeCurrencyFormatter } from "utilities/highcharts/utils";
 import { serializeDatasetSettings } from "app/finance/_settings/common_settings";
@@ -190,10 +189,11 @@ export default function FlowDashboard({
       : 700;
 
     const dataTypeLabel = dt === "budget" ? "Budget" : "Actuals";
-    // Base color reflects budget (grey) vs actuals (blue), matching the bar
-    // charts' palette. Fund Balance nodes are always red, and bands leaving the
-    // Fund Balance Drawdown node get a thin light-red border (via CSS class).
-    const baseColor = flowBaseColor(dt);
+    // Coloring is by CSS class, not fill attribute (see colors.ts): budget grey
+    // vs actuals blue, Fund Balance red, and drawdown-sourced bands get a thin
+    // light-red border. The fill attribute would be overridden by Highcharts'
+    // .highcharts-color-0 styled-mode CSS.
+    const baseClass = flowBaseClass(dt);
 
     // Deficit years draw down the fund balance; surplus years grow it. Show
     // whichever applies rather than a misleading "Drawdown $0.00".
@@ -223,23 +223,19 @@ export default function FlowDashboard({
             from: l.from,
             to: l.to,
             weight: l.weight,
-            // Explicit base color on each band. Without this, links inherit the
-            // from-node's auto-assigned palette color (colorByPoint), not our
-            // node options.color, so the bands would stay colored.
-            color: baseColor,
-            // Bands leaving the Fund Balance Drawdown node get a thin light-red
-            // border so drawdown-funded flow is marked wherever it goes.
-            ...(l.from === SANKEY_DRAWDOWN_NODE_ID
-              ? { className: SANKEY_DRAWDOWN_LINK_CLASS }
-              : {}),
+            // Color by CSS class (see colors.ts). Bands leaving the Fund
+            // Balance Drawdown node also get the border class.
+            className:
+              l.from === SANKEY_DRAWDOWN_NODE_ID
+                ? `${baseClass} ${SANKEY_DRAWDOWN_LINK_CLASS}`
+                : baseClass,
           })),
           nodes: nodes.map((n) => ({
             id: n.id,
             name: n.name,
-            // Budget = grey, Actuals = blue; Fund Balance nodes are always red.
-            // The compute engine's semantic color (n.color) is not shown; a
-            // single accent appears only on hover (plotOptions.sankey.states).
-            color: flowNodeColor(n.custom.level, dt),
+            // Budget = grey, Actuals = blue, Fund Balance = red — via CSS class,
+            // since the fill attribute is overridden by styled-mode CSS.
+            className: flowNodeClass(n.custom.level, dt),
             column: n.column,
             custom: n.custom,
           })),
@@ -290,15 +286,14 @@ export default function FlowDashboard({
       },
       plotOptions: {
         sankey: {
-          // Don't auto-assign per-node palette colors; every node/band uses the
-          // explicit neutral gray we set above.
+          // Don't auto-assign per-node palette colors; the CSS classes set the
+          // fill (see colors.ts / highcharts-base.scss).
           colorByPoint: false,
-          // Everything is gray until hovered. Hovering a node or band applies a
-          // single accent color to it and its directly connected nodes/links
-          // (Highcharts propagates the hover state across the connection), and
-          // dims everything else via the inactive state.
+          // The single accent-on-hover color is applied by CSS
+          // (.highcharts-point-hover), since a fill attribute here would be
+          // overridden by the styled-mode CSS. We still dim the rest via the
+          // inactive state (opacity is not overridden by the color CSS).
           states: {
-            hover: { color: SANKEY_HIGHLIGHT },
             inactive: { opacity: 0.3, linkOpacity: 0.08 },
           },
           point: {

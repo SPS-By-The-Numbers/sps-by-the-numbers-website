@@ -1,35 +1,35 @@
 import { expect } from "@jest/globals";
 
 import {
-  flowBaseColor,
-  flowNodeColor,
-  SANKEY_ACTUALS_COLOR,
-  SANKEY_BUDGET_COLOR,
+  flowBaseClass,
+  flowNodeClass,
+  FLOW_ACTUALS_CLASS,
+  FLOW_BUDGET_CLASS,
+  FLOW_FUND_BALANCE_CLASS,
   SANKEY_DRAWDOWN_NODE_ID,
-  SANKEY_FUND_BALANCE_COLOR,
 } from "utilities/sankey/colors";
 
-describe("flow presentation colors", () => {
-  it("uses blue for actuals and grey for budget", () => {
-    expect(flowBaseColor("actuals")).toBe(SANKEY_ACTUALS_COLOR);
-    expect(flowBaseColor("budget")).toBe(SANKEY_BUDGET_COLOR);
+describe("flow presentation classes", () => {
+  it("uses the actuals class for actuals and the budget class for budget", () => {
+    expect(flowBaseClass("actuals")).toBe(FLOW_ACTUALS_CLASS);
+    expect(flowBaseClass("budget")).toBe(FLOW_BUDGET_CLASS);
   });
 
-  it("colors Fund Balance nodes red regardless of data type", () => {
-    expect(flowNodeColor("fundBalance", "actuals")).toBe(
-      SANKEY_FUND_BALANCE_COLOR,
+  it("classes Fund Balance nodes as fund-balance regardless of data type", () => {
+    expect(flowNodeClass("fundBalance", "actuals")).toBe(
+      FLOW_FUND_BALANCE_CLASS,
     );
-    expect(flowNodeColor("fundBalance", "budget")).toBe(
-      SANKEY_FUND_BALANCE_COLOR,
+    expect(flowNodeClass("fundBalance", "budget")).toBe(
+      FLOW_FUND_BALANCE_CLASS,
     );
   });
 
-  it("colors every other node with the budget/actuals base color", () => {
-    expect(flowNodeColor("program", "actuals")).toBe(SANKEY_ACTUALS_COLOR);
-    expect(flowNodeColor("source", "budget")).toBe(SANKEY_BUDGET_COLOR);
-    expect(flowNodeColor("activity", "actuals")).toBe(SANKEY_ACTUALS_COLOR);
-    // Filtered-out nodes are not Fund Balance, so they follow the base color.
-    expect(flowNodeColor("filtered", "budget")).toBe(SANKEY_BUDGET_COLOR);
+  it("classes every other node with the budget/actuals base class", () => {
+    expect(flowNodeClass("program", "actuals")).toBe(FLOW_ACTUALS_CLASS);
+    expect(flowNodeClass("source", "budget")).toBe(FLOW_BUDGET_CLASS);
+    expect(flowNodeClass("activity", "actuals")).toBe(FLOW_ACTUALS_CLASS);
+    // Filtered-out nodes are not Fund Balance, so they follow the base class.
+    expect(flowNodeClass("filtered", "budget")).toBe(FLOW_BUDGET_CLASS);
   });
 
   it("pins the drawdown node id the engine actually emits", () => {

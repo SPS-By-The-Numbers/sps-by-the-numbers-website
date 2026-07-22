@@ -31,42 +31,42 @@ export const SANKEY_COLORS = {
   filteredOut: "#BDBDBD",
 };
 
-// Presentation colors for the interactive flow view. These are intentionally
-// separate from the semantic palette above, which the compute engine still
-// attaches to each node for non-visual uses.
+// Presentation classes for the interactive flow view.
 //
-// The base color of every node/band reflects budget vs actuals, matching the
-// bar charts' styled-mode palette in styles/highcharts-base.scss (actuals =
-// --highcharts-color-1, budget = --highcharts-color-2). A single accent color
-// is revealed only on hover (FlowDashboard's `states.hover`), and the Fund
-// Balance nodes are always red.
-export const SANKEY_ACTUALS_COLOR = "#006aa3"; // blue (matches color-1)
-export const SANKEY_BUDGET_COLOR = "#cccccc"; // grey (matches color-2)
-export const SANKEY_FUND_BALANCE_COLOR = SANKEY_COLORS.fundBalance; // red
-export const SANKEY_HIGHLIGHT = "#1976D2";
+// The flow view is colored via CSS CLASSES, not the fill attribute. The app
+// loads Highcharts' styled-mode CSS (highcharts/css/highcharts.css), whose
+// `.highcharts-color-N { fill: var(--highcharts-color-N) }` rules override any
+// inline fill attribute (CSS beats SVG presentation attributes) -- so setting
+// `color` on a node/link does nothing; the band renders as --highcharts-color-0
+// (a blue). Instead we assign a class and let styles/highcharts-base.scss set
+// the fill with higher specificity. Actuals = blue, Budget = grey (reusing the
+// bar charts' --highcharts-color-1/2), Fund Balance = red; a single accent on
+// hover; drawdown-sourced bands get a thin light-red border.
+export const FLOW_ACTUALS_CLASS = "flow-actuals";
+export const FLOW_BUDGET_CLASS = "flow-budget";
+export const FLOW_FUND_BALANCE_CLASS = "flow-fund-balance";
 
 // The Fund Balance Drawdown node id (emitted by the compute engine) and the CSS
-// class applied to bands flowing OUT of it, so drawdown-funded flow carries a
-// thin light-red border wherever it goes (rule in styles/highcharts-base.scss).
+// class applied to bands flowing OUT of it (thin light-red border).
 export const SANKEY_DRAWDOWN_NODE_ID = "fb:drawdown";
 export const SANKEY_DRAWDOWN_LINK_CLASS = "sankey-drawdown-link";
 
 export type FlowDataType = "actuals" | "budget";
 
-// Base band/node color for the flow view given the data type.
-export function flowBaseColor(dataType: FlowDataType): string {
-  return dataType === "budget" ? SANKEY_BUDGET_COLOR : SANKEY_ACTUALS_COLOR;
+// Base band/node CSS class for the flow view given the data type.
+export function flowBaseClass(dataType: FlowDataType): string {
+  return dataType === "budget" ? FLOW_BUDGET_CLASS : FLOW_ACTUALS_CLASS;
 }
 
-// Display color for a node: Fund Balance nodes (drawdown / growth) are always
-// red; every other node uses the budget/actuals base color.
-export function flowNodeColor(
+// CSS class for a node: Fund Balance nodes (drawdown / growth) are always red;
+// every other node uses the budget/actuals base class.
+export function flowNodeClass(
   level: Level | "fundBalance" | "filtered",
   dataType: FlowDataType,
 ): string {
   return level === "fundBalance"
-    ? SANKEY_FUND_BALANCE_COLOR
-    : flowBaseColor(dataType);
+    ? FLOW_FUND_BALANCE_CLASS
+    : flowBaseClass(dataType);
 }
 
 // Map a revenue category (or the category a revenue account rolls up to) to its

@@ -26,10 +26,48 @@
   padding: 0 20px;
 }
 
-// Expenditure Flow (Sankey): bands flowing out of the Fund Balance Drawdown
-// node get a thin light-red border so drawdown-funded flow is visible wherever
-// it goes. The class is set per-link in FlowDashboard; links carry no stroke of
-// their own, so this rule is unopposed.
+// Expenditure Flow (Sankey) coloring.
+//
+// The app loads Highcharts' styled-mode CSS (highcharts.css), whose
+// `.highcharts-color-N { fill: var(--highcharts-color-N) }` rules override any
+// inline fill attribute — so the flow view is colored by CLASS here instead.
+// These selectors (`.highcharts-node.flow-*` / `.highcharts-link.flow-*`, two
+// classes) outrank `.highcharts-color-0` (one class) and, being loaded after
+// highcharts.css, win. Actuals = blue, Budget = grey (reusing the bar charts'
+// --highcharts-color-1/2), Fund Balance = red.
+.highcharts-node.flow-actuals {
+  fill: var(--highcharts-color-1);
+  stroke: var(--highcharts-color-1);
+}
+.highcharts-node.flow-budget {
+  fill: var(--highcharts-color-2);
+  stroke: var(--highcharts-color-2);
+}
+.highcharts-node.flow-fund-balance {
+  fill: #b71c1c;
+  stroke: #b71c1c;
+}
+.highcharts-link.flow-actuals {
+  fill: var(--highcharts-color-1);
+}
+.highcharts-link.flow-budget {
+  fill: var(--highcharts-color-2);
+}
+
+// A single accent on hover, applied by Highcharts (via the highcharts-point-
+// hover class it adds in both styled and non-styled mode) to the hovered
+// node/band and its directly connected nodes/links. Declared after the base
+// rules so it wins on equal specificity.
+.highcharts-node.highcharts-point-hover {
+  fill: #1976d2;
+  stroke: #1976d2;
+}
+.highcharts-link.highcharts-point-hover {
+  fill: #1976d2;
+}
+
+// Bands flowing out of the Fund Balance Drawdown node get a thin light-red
+// border so drawdown-funded flow is visible wherever it goes.
 .sankey-drawdown-link {
   stroke: #ef9a9a;
   stroke-width: 1px;
