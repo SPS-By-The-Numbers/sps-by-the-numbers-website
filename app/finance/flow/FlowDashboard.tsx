@@ -33,7 +33,10 @@ import {
 import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
 import FlowLevelContents from "./FlowLevelContents";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
-import { SERIALIZE_FLOW_SETTINGS_GENERATORS } from "./FlowSettings";
+import {
+  enabledLevelsFromPlan,
+  SERIALIZE_FLOW_SETTINGS_GENERATORS,
+} from "./FlowSettings";
 
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
 import type { CommonContextSettings } from "app/finance/_settings/common_context_settings";
@@ -42,7 +45,6 @@ import type { DeepLink, DeepLinkCtx } from "utilities/sankey/deepLinks";
 import type {
   ExpRow,
   FlowFilters,
-  Level,
   RevRow,
   SankeyNode,
 } from "utilities/sankey/types";
@@ -131,9 +133,10 @@ export default function FlowDashboard({
       schoolCodes: settings.schoolCodes,
     };
 
+    const enabledLevels = enabledLevelsFromPlan(settings.levelPlan);
     const { nodes, links, totals } = computeFlows(expRows, revRows, {
       mode: settings.sourceMode,
-      enabledLevels: [...settings.enabledLevels] as Level[],
+      enabledLevels,
       filters,
     });
 
@@ -176,7 +179,7 @@ export default function FlowDashboard({
 
     // Bump the chart height when the (wide) School column is enabled; Seattle
     // has ~110 schools.
-    const height = settings.enabledLevels.has("school")
+    const height = enabledLevels.includes("school")
       ? Math.max(700, nodes.length * 14)
       : 700;
 

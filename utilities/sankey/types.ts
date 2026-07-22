@@ -37,9 +37,9 @@ export type RevRow = {
   amount: number;
 };
 
-// The ordered sankey columns. `source` is column 0 (derived via attribution),
-// `program`/`activity` always follow; `object`/`nces`/`school` are optional and
-// keep this fixed order when enabled.
+// The possible sankey columns. `source` is derived via revenue attribution; the
+// rest are expenditure classifications. The displayed subset and their order
+// are chosen by the caller (see ComputeFlowsOpts.enabledLevels).
 export type Level =
   | "source"
   | "program"
@@ -81,9 +81,12 @@ export type SankeyLink = { from: string; to: string; weight: number };
 // Options for `computeFlows`.
 export type ComputeFlowsOpts = {
   mode: SourceMode;
-  // The levels to render as columns. `source`, `program`, and `activity` are
-  // always included regardless; the optional `object`/`nces`/`school` are
-  // rendered iff present here. Order is normalized internally.
+  // The exact ordered list of columns to render, left to right. Any level may
+  // be omitted (its column is hidden) and the levels may appear in any order.
+  // `program` is always used internally for revenue attribution even when its
+  // own column is not shown; when `source` is omitted the revenue side (and the
+  // Fund Balance nodes) are dropped and the diagram starts at the first listed
+  // expenditure column.
   enabledLevels: Level[];
   filters: FlowFilters;
   // Links below this weight (in dollars) are dropped to kill float dust.

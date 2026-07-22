@@ -35,22 +35,6 @@ import type {
 
 const DEFAULT_MIN_WEIGHT = 0.005;
 
-// Fixed level order (Locked decision 1). source/program/activity are always
-// present; object/nces/school are optional but keep this order.
-const CANONICAL_LEVELS: Level[] = [
-  "source",
-  "program",
-  "activity",
-  "object",
-  "nces",
-  "school",
-];
-const ALWAYS_ON: ReadonlySet<Level> = new Set<Level>([
-  "source",
-  "program",
-  "activity",
-]);
-
 // Map an expenditure level to its code/label fields on an ExpRow.
 const EXP_CODE_FIELD: Record<Exclude<Level, "source">, keyof ExpRow> = {
   program: "program_code",
@@ -115,16 +99,23 @@ export function computeFlows(
 ): ComputeFlowsResult {
   const minWeight = opts.minWeight ?? DEFAULT_MIN_WEIGHT;
 
-  // Normalize enabled levels to canonical order, always including the
-  // mandatory columns.
-  const enabled = CANONICAL_LEVELS.filter(
-    (l) => ALWAYS_ON.has(l) || opts.enabledLevels.includes(l),
-  );
-  // Enabled expenditure levels (everything but the derived source column).
-  const expLevels = enabled.filter((l) => l !== "source") as Exclude<
-    Level,
-    "source"
-  >[];
+  // `enabledLevels` is the exact ordered list of display columns. `source` and
+  // `program` may be omitted (disabled), and the remaining levels may appear in
+  // any order. (The UI pins Resource/Program to the front, but the engine does
+  // not depend on that.) Program is ALWAYS used internally for revenue
+  // attribution, even when its own column is hidden.
+  const displayLevels = opts.enabledLevels;
+  const showSource = displayLevels.includes("source");
+  // Displayed expenditure levels, in display order (everything but source). May
+  // include `program` at some position.
+  const expDisplayLevels = displayLevels.filter(
+    (l) => l !== "source",
+  ) as Exclude<Level, "source">[];
+  // The displayed non-program expenditure levels. Program is keyed separately
+  // below because attribution needs it whether or not its column is shown.
+  const reorderableDisplay = expDisplayLevels.filter(
+    (l) => l !== "program",
+  ) as Exclude<Level, "source" | "program">[];
 
   const { progTot, attributed } = attributeSources(expRows, revRows, opts.mode);
 
@@ -138,22 +129,34 @@ export function computeFlows(
       sourceLabel.set(r.revenue_code, r.revenue);
     }
   }
-  // Expenditure-level labels come from expenditure rows.
+  // Program labels (for the program cell) plus the other expenditure-level
+  // labels come from expenditure rows.
+  const programLabel = new Map<number, string>();
   const expLabels: Record<string, Map<number, string>> = {};
-  for (const l of expLevels) {
+  for (const l of reorderableDisplay) {
     expLabels[l] = new Map<number, string>();
   }
 
-  // --- Aggregate expenditures to the enabled-level tuple ------------------
-  type Agg = { codes: Map<Exclude<Level, "source">, number>; amount: number };
+  // --- Aggregate expenditures to (program, displayed reorderable levels) ---
+  // Program is always part of the aggregation key (needed to group flow by
+  // program for attribution) even when the Program column is hidden.
+  type Agg = {
+    program: number;
+    codes: Map<Exclude<Level, "source" | "program">, number>;
+    amount: number;
+  };
   const agg = new Map<string, Agg>();
   for (const e of expRows) {
     if (e.amount === 0) {
       continue;
     }
-    const codes = new Map<Exclude<Level, "source">, number>();
-    const keyParts: number[] = [];
-    for (const l of expLevels) {
+    const program = e.program_code;
+    if (!programLabel.has(program)) {
+      programLabel.set(program, e.program);
+    }
+    const codes = new Map<Exclude<Level, "source" | "program">, number>();
+    const keyParts: number[] = [program];
+    for (const l of reorderableDisplay) {
       const code = e[EXP_CODE_FIELD[l]] as number;
       codes.set(l, code);
       keyParts.push(code);
@@ -167,18 +170,27 @@ export function computeFlows(
     if (existing) {
       existing.amount += e.amount;
     } else {
-      agg.set(key, { codes, amount: e.amount });
+      agg.set(key, { program, codes, amount: e.amount });
     }
   }
 
   // --- Build flow records -------------------------------------------------
   const records: FlowRecord[] = [];
 
-  const buildExpCells = (
-    codes: Map<Exclude<Level, "source">, number>,
-  ): Cell[] =>
-    expLevels.map((l) => {
-      const code = codes.get(l)!;
+  // The displayed expenditure cells for one aggregated tuple, in display order.
+  // The `program` column (if shown) uses the tuple's own program code.
+  const buildExpCells = (row: Agg): Cell[] =>
+    expDisplayLevels.map((l) => {
+      if (l === "program") {
+        const name = programLabel.get(row.program) ?? String(row.program);
+        return {
+          level: "program",
+          code: row.program,
+          id: `prog:${row.program}`,
+          name,
+        };
+      }
+      const code = row.codes.get(l)!;
       const name = expLabels[l].get(code) ?? String(code);
       return { level: l, code, id: `${LEVEL_ID_PREFIX[l]}:${code}`, name };
     });
@@ -196,20 +208,15 @@ export function computeFlows(
     if (row.amount <= 0) {
       continue;
     }
-    const p = row.codes.get("program")!;
-    let arr = rowsByProgram.get(p);
+    let arr = rowsByProgram.get(row.program);
     if (!arr) {
       arr = [];
-      rowsByProgram.set(p, arr);
+      rowsByProgram.set(row.program, arr);
     }
     arr.push(row);
   }
 
   for (const [program, progRows] of rowsByProgram.entries()) {
-    const sources = attributed.get(program);
-    if (!sources) {
-      continue;
-    }
     const total = progTot.get(program) ?? 0;
     if (total <= 0) {
       continue;
@@ -219,47 +226,74 @@ export function computeFlows(
       total,
       progRows.map((r) => r.amount),
     );
-    const srcCodes = [...sources.keys()];
-    const srcWeights = srcCodes.map((s) => sources.get(s)!);
-    for (let ri = 0; ri < progRows.length; ri++) {
-      const rowAmount = scaled[ri];
-      if (rowAmount <= 0) {
+
+    if (showSource) {
+      // Split each tuple across the program's attributed revenue sources.
+      const sources = attributed.get(program);
+      if (!sources) {
         continue;
       }
-      // share of this aggregated row that each source funds.
-      const shares = prorate(rowAmount, srcWeights);
-      const expCells = buildExpCells(progRows[ri].codes);
-      for (let i = 0; i < srcCodes.length; i++) {
-        const w = shares[i];
-        if (w <= 0) {
+      const srcCodes = [...sources.keys()];
+      const srcWeights = srcCodes.map((s) => sources.get(s)!);
+      for (let ri = 0; ri < progRows.length; ri++) {
+        const rowAmount = scaled[ri];
+        if (rowAmount <= 0) {
           continue;
         }
-        const s = srcCodes[i];
-        const srcCell = nodeIdForSource(s, sourceLabel.get(s) ?? String(s));
-        records.push({ path: [srcCell, ...expCells], weight: w });
+        const shares = prorate(rowAmount, srcWeights);
+        const expCells = buildExpCells(progRows[ri]);
+        for (let i = 0; i < srcCodes.length; i++) {
+          const w = shares[i];
+          if (w <= 0) {
+            continue;
+          }
+          const s = srcCodes[i];
+          const srcCell = nodeIdForSource(s, sourceLabel.get(s) ?? String(s));
+          records.push({ path: [srcCell, ...expCells], weight: w });
+        }
+      }
+    } else {
+      // Source column hidden: no revenue side, no per-source split. Each tuple
+      // flows as one record starting at the first displayed expenditure column.
+      for (let ri = 0; ri < progRows.length; ri++) {
+        const rowAmount = scaled[ri];
+        if (rowAmount <= 0) {
+          continue;
+        }
+        const expCells = buildExpCells(progRows[ri]);
+        if (expCells.length === 0) {
+          continue;
+        }
+        records.push({ path: expCells, weight: rowAmount });
       }
     }
   }
 
-  // --- Growth records: source -> Fund Balance Growth (terminal in Program) --
+  // --- Growth: source -> Fund Balance Growth (terminal) -------------------
+  // The growth total is a fund-level fact (independent of which columns show);
+  // the source -> growth records are only emitted when the Source column is on.
   let growthTotal = 0;
   const growthSources = attributed.get(GROWTH_PROGRAM_CODE);
   if (growthSources) {
-    const growthCell: Cell = {
-      level: "fundBalance",
-      code: null,
-      id: "fb:growth",
-      name: "Fund Balance Growth",
-    };
-    for (const [s, amount] of growthSources.entries()) {
-      if (amount <= 0) {
-        continue;
+    for (const amount of growthSources.values()) {
+      if (amount > 0) {
+        growthTotal += amount;
       }
-      growthTotal += amount;
-      const srcCell = nodeIdForSource(s, sourceLabel.get(s) ?? String(s));
-      // Growth sits in the Program column (index 1); its path is only two
-      // columns long and never extends to later columns.
-      records.push({ path: [srcCell, growthCell], weight: amount });
+    }
+    if (showSource) {
+      const growthCell: Cell = {
+        level: "fundBalance",
+        code: null,
+        id: "fb:growth",
+        name: "Fund Balance Growth",
+      };
+      for (const [s, amount] of growthSources.entries()) {
+        if (amount <= 0) {
+          continue;
+        }
+        const srcCell = nodeIdForSource(s, sourceLabel.get(s) ?? String(s));
+        records.push({ path: [srcCell, growthCell], weight: amount });
+      }
     }
   }
 

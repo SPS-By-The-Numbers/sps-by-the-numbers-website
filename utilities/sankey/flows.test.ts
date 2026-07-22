@@ -318,3 +318,66 @@ describe("computeFlows — negative expenditure lines (Session 6 regression)", (
     expect(columnIncoming(nodes, links, 2)).toBeCloseTo(100, 6);
   });
 });
+
+describe("computeFlows — reorderable levels and disabling source/program", () => {
+  it("renders the columns in the caller's order", () => {
+    // Object before Activity: obj is column 2, activity is column 3.
+    const expRows = [
+      exp(10, "Basic", 27, "Teaching", 100, {
+        object_code: 2,
+        object: "Cert Salaries",
+      }),
+    ];
+    const revRows = [rev(1100, 1000, 0, 100)];
+    const { nodes, links } = computeFlows(expRows, revRows, {
+      mode: "account",
+      enabledLevels: ["source", "program", "object", "activity"],
+      filters: {},
+    });
+
+    expect(nodeById(nodes, "prog:10")!.column).toBe(1);
+    expect(nodeById(nodes, "obj:2")!.column).toBe(2);
+    expect(nodeById(nodes, "act:27")!.column).toBe(3);
+    // Links follow the chosen order program -> object -> activity.
+    expect(link(links, "prog:10", "obj:2")).toBeCloseTo(100, 6);
+    expect(link(links, "obj:2", "act:27")).toBeCloseTo(100, 6);
+  });
+
+  it("hides the Program column but keeps attribution (source -> activity)", () => {
+    const { nodes, links, totals } = computeFlows(deficitExp(), deficitRev(), {
+      mode: "account",
+      enabledLevels: ["source", "activity"],
+      filters: {},
+    });
+
+    // No program node; sources link straight to activities.
+    expect(nodes.some((n) => n.custom.level === "program")).toBe(false);
+    // Attribution still ran: drawdown source exists (deficit fixture), total
+    // conserved across both columns.
+    expect(totals.drawdown).toBeCloseTo(30, 6);
+    expect(columnOutgoing(nodes, links, 0)).toBeCloseTo(150, 6);
+    expect(columnIncoming(nodes, links, 1)).toBeCloseTo(150, 6);
+    // act 27 is funded by both programs (60 from prog10 + 50 from prog20 = 110).
+    expect(inflow(links, "act:27")).toBeCloseTo(110, 6);
+  });
+
+  it("hides the Source column: no revenue side, starts at Program", () => {
+    const { nodes, links, totals } = computeFlows(deficitExp(), deficitRev(), {
+      mode: "account",
+      enabledLevels: ["program", "activity"],
+      filters: {},
+    });
+
+    // No source or fund-balance nodes at all.
+    expect(nodes.some((n) => n.custom.level === "source")).toBe(false);
+    expect(nodes.some((n) => n.custom.level === "fundBalance")).toBe(false);
+    expect(nodeById(nodes, "prog:10")!.column).toBe(0);
+    expect(nodeById(nodes, "act:27")!.column).toBe(1);
+    // The displayed columns total the net expenditure (150), and the totals
+    // still report the fund-level drawdown for the subtitle.
+    expect(columnOutgoing(nodes, links, 0)).toBeCloseTo(150, 6);
+    expect(totals.drawdown).toBeCloseTo(30, 6);
+    expect(link(links, "prog:10", "act:27")).toBeCloseTo(60, 6);
+    expect(link(links, "prog:20", "act:27")).toBeCloseTo(50, 6);
+  });
+});

@@ -1,4 +1,4 @@
-import { expect, test } from "@jest/globals";
+import { expect } from "@jest/globals";
 
 import {
   serializeDatasetSettings,
@@ -7,28 +7,89 @@ import {
 import {
   DEFAULT_FLOW_SETTINGS,
   SERIALIZE_FLOW_SETTINGS_GENERATORS,
-  deserializeEnabledLevels,
-  serializeEnabledLevels,
+  deserializeLevelPlan,
+  enabledLevelsFromPlan,
+  serializeLevelPlan,
 } from "app/finance/flow/FlowSettings";
 import ProgramFilter from "app/finance/_filteritems/program";
 
+import type { LevelPlan } from "app/finance/flow/FlowSettings";
 import type { Level } from "utilities/sankey/types";
 
-describe("FlowSettings", () => {
-  it("enabled-level letters round-trip and ignore junk", () => {
-    expect(serializeEnabledLevels(new Set<Level>())).toEqual("");
-    expect(serializeEnabledLevels(new Set<Level>(["object"]))).toEqual("o");
-    // Always emitted in canonical order regardless of insertion order.
-    expect(
-      serializeEnabledLevels(new Set<Level>(["school", "object", "nces"])),
-    ).toEqual("ons");
+function plan(entries: Array<[Level, boolean]>): LevelPlan {
+  return entries.map(([level, enabled]) => ({ level, enabled }));
+}
 
-    expect(deserializeEnabledLevels("")).toEqual(new Set());
-    expect(deserializeEnabledLevels("os")).toEqual(
-      new Set<Level>(["object", "school"]),
+describe("FlowSettings level plan", () => {
+  it("encodes enabled state (case) and order; default serializes to empty", () => {
+    // Default plan is omitted from the URL.
+    expect(serializeLevelPlan(DEFAULT_FLOW_SETTINGS[0].levelPlan)).toEqual("");
+
+    // Enabling Object + School (order unchanged) => RP A O n S.
+    expect(
+      serializeLevelPlan(
+        plan([
+          ["source", true],
+          ["program", true],
+          ["activity", true],
+          ["object", true],
+          ["nces", false],
+          ["school", true],
+        ]),
+      ),
+    ).toEqual("RPAOnS");
+
+    // Disabling Program and reordering School before Activity.
+    expect(
+      serializeLevelPlan(
+        plan([
+          ["source", true],
+          ["program", false],
+          ["school", true],
+          ["activity", true],
+          ["object", false],
+          ["nces", false],
+        ]),
+      ),
+    ).toEqual("RpSAon");
+  });
+
+  it("deserialize round-trips order + enabled and pins Resource/Program", () => {
+    const restored = deserializeLevelPlan("RpSAon");
+    expect(restored).toEqual(
+      plan([
+        ["source", true],
+        ["program", false],
+        ["school", true],
+        ["activity", true],
+        ["object", false],
+        ["nces", false],
+      ]),
     );
-    // Unknown letters are ignored.
-    expect(deserializeEnabledLevels("oxz")).toEqual(new Set<Level>(["object"]));
+
+    // Resource/Program are always pinned to the front even if the URL puts a
+    // reorderable first, and any level missing from the URL is filled in
+    // (canonical order, default-enabled state).
+    const junky = deserializeLevelPlan("O"); // only "object enabled" mentioned
+    expect(junky.map((e) => e.level)).toEqual([
+      "source",
+      "program",
+      "object",
+      "activity",
+      "nces",
+      "school",
+    ]);
+    expect(junky[0]).toEqual({ level: "source", enabled: true });
+    expect(junky[1]).toEqual({ level: "program", enabled: true });
+    expect(junky[2]).toEqual({ level: "object", enabled: true });
+  });
+
+  it("enabledLevelsFromPlan returns the enabled levels in order", () => {
+    expect(enabledLevelsFromPlan(deserializeLevelPlan("RpSAon"))).toEqual([
+      "source",
+      "school",
+      "activity",
+    ]);
   });
 
   it("defaults omit the flow-only url vars", () => {
@@ -44,9 +105,17 @@ describe("FlowSettings", () => {
 
   it("full settings round-trip through the URL", () => {
     const programSubset = new Set([...ProgramFilter.allCodes()].slice(0, 2));
+    const modifiedPlan = plan([
+      ["source", true],
+      ["program", false],
+      ["school", true],
+      ["activity", true],
+      ["object", false],
+      ["nces", false],
+    ]);
     const modified = {
       ...DEFAULT_FLOW_SETTINGS[0],
-      enabledLevels: new Set<Level>(["object", "school"]),
+      levelPlan: modifiedPlan,
       sourceMode: "account" as const,
       classOf: 2025,
       dataType: "budget" as const,
@@ -58,7 +127,7 @@ describe("FlowSettings", () => {
       SERIALIZE_FLOW_SETTINGS_GENERATORS,
     );
     // The four custom vars are present in the URL fragment.
-    expect(serialized[0]).toContain("lv.os");
+    expect(serialized[0]).toContain("lv.RpSAon");
     expect(serialized[0]).toContain("sm.a");
     expect(serialized[0]).toContain("y.2025");
     expect(serialized[0]).toContain("dt.b");
@@ -69,9 +138,7 @@ describe("FlowSettings", () => {
       SERIALIZE_FLOW_SETTINGS_GENERATORS,
     );
 
-    expect(restored.enabledLevels).toEqual(
-      new Set<Level>(["object", "school"]),
-    );
+    expect(restored.levelPlan).toEqual(modifiedPlan);
     expect(restored.sourceMode).toEqual("account");
     expect(restored.classOf).toEqual(2025);
     expect(restored.dataType).toEqual("budget");
@@ -90,6 +157,6 @@ describe("FlowSettings", () => {
     expect(restored.classOf).toBeNull();
     expect(restored.sourceMode).toEqual("category");
     expect(restored.dataType).toEqual("actuals");
-    expect(restored.enabledLevels).toEqual(new Set());
+    expect(restored.levelPlan).toEqual(DEFAULT_FLOW_SETTINGS[0].levelPlan);
   });
 });

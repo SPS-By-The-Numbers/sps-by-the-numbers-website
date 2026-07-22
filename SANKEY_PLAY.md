@@ -1382,3 +1382,33 @@ tooltip interact in a browser. **Assessment: the compute/data layer is
 trustworthy to ship; the rendering/interaction layer is code-complete and
 statically sound but visually unconfirmed — do a ~10-minute manual browser pass
 before relying on the interactive UI.**
+
+---
+
+## Post-plan changes (user-requested, after Session 6)
+
+### Draggable/orderable levels — OVERRIDES Locked decision 1 — 2026-07-22
+- The flow view's level selection is now a draggable, enable/disable list
+  instead of fixed order + always-on source/program/activity. Resource (Source)
+  and Program are pinned to positions 1 & 2 (cannot be dragged) but CAN be
+  disabled; Activity/Object/NCES/School can be reordered and toggled.
+- This deliberately supersedes **Locked decision 1** ("Sankey level order is
+  fixed: Source → Program → Activity always, then optional Object/NCES/School").
+  The user asked for it directly.
+- Engine (`utilities/sankey/flows.ts`): `ComputeFlowsOpts.enabledLevels` is now
+  the EXACT ordered list of display columns. Any level may be omitted; levels
+  may be in any order. Program is still ALWAYS used internally for revenue
+  attribution even when its column is hidden. When Source is hidden, the revenue
+  side (and Fund Balance nodes) drop and the diagram starts at the first
+  expenditure column. All existing conservation tests still pass unchanged; new
+  tests cover reordering + hiding source/program.
+- Settings (`FlowSettings.ts`): `enabledLevels: Set<Level>` replaced by
+  `levelPlan: LevelPlan` (ordered `{level, enabled}[]`). URL var `lv` now encodes
+  one letter per level (r/p/a/o/n/s), UPPERCASE=enabled, Resource+Program first,
+  then reorderables in chosen order (e.g. default `RPAons`, omitted when default).
+- Widget (`FlowLevelContents.tsx`): native HTML5 drag-and-drop list (no new dep).
+- Also (separate small asks): the diagram now renders uniform neutral gray with a
+  single accent color revealed only on hover, and nodes are size-sorted (largest
+  at the top of each column). Verified: 97 tests green, tsc + lint clean, build
+  ok, all URL forms SSR 200. Still visually unconfirmed in a real browser (no
+  browser automation available) — same standing caveat as Sessions 4-6.
