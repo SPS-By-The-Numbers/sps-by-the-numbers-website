@@ -301,36 +301,42 @@ export default function FlowDashboard({
         SchoolFilterContents,
       ]}
     >
-      <Typography className="analysis-title" component="h1" variant="h1">
-        General Fund Expenditure Flow. Revenue source through program, activity,
-        and (optionally) object, NCES, and school.
-      </Typography>
-      {empty ? (
-        <Typography sx={{ p: 2 }}>
-          No expenditure data for the selected year and data type.
+      {/* The parent content region in SettingsLayout is a fixed-height
+          (100vh) box with overflow: hidden, so a tall chart -- e.g. Seattle
+          with the ~110-node School column enabled -- would be clipped with no
+          way to reach the bottom. This Box fills that region and scrolls in
+          BOTH directions: vertically for tall charts, horizontally for wide
+          ones. */}
+      <Box sx={{ height: "100%", overflow: "auto" }}>
+        <Typography className="analysis-title" component="h1" variant="h1">
+          General Fund Expenditure Flow. Revenue source through program,
+          activity, and (optionally) object, NCES, and school.
         </Typography>
-      ) : (
-        <>
-          <div style={{ overflowX: "auto" }}>
+        {empty ? (
+          <Typography sx={{ p: 2 }}>
+            No expenditure data for the selected year and data type.
+          </Typography>
+        ) : (
+          <>
             <HighchartsReact
               highcharts={highchartsObjs.highcharts}
               options={options}
             />
-          </div>
-          <Typography
-            variant="caption"
-            component="p"
-            sx={{ px: 2, pt: 1, color: "text.secondary" }}
-          >
-            Attribution of revenue to programs runs on the whole fund; filters
-            never change that math. When a filter is applied, the flow it
-            removes is re-routed into a gray <strong>Filtered Out</strong> band
-            that continues to the last column so every column still totals the
-            grand total.
-            {hasFilteredOut ? " A Filtered Out band is currently shown." : ""}
-          </Typography>
-        </>
-      )}
+            <Typography
+              variant="caption"
+              component="p"
+              sx={{ px: 2, pt: 1, color: "text.secondary" }}
+            >
+              Attribution of revenue to programs runs on the whole fund; filters
+              never change that math. When a filter is applied, the flow it
+              removes is re-routed into a gray <strong>Filtered Out</strong>{" "}
+              band that continues to the last column so every column still
+              totals the grand total.
+              {hasFilteredOut ? " A Filtered Out band is currently shown." : ""}
+            </Typography>
+          </>
+        )}
+      </Box>
       <Popover
         open={popover !== null}
         onClose={() => setPopover(null)}
