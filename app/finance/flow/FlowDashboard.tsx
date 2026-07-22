@@ -386,6 +386,13 @@ export default function FlowDashboard({
             <HighchartsReact
               highcharts={highchartsObjs.highcharts}
               options={options}
+              // Recreate the chart on every options change instead of
+              // chart.update(). Highcharts sankey does not reliably re-apply
+              // node/band colors on an in-place update, so switching e.g.
+              // Actuals->Budget would keep the old fills. A full redraw is fine
+              // here (single chart, no per-chart state to preserve) and the
+              // "Updating" overlay masks it.
+              immutable
             />
             <Typography
               variant="caption"
