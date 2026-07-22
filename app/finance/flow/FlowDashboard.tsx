@@ -210,6 +210,10 @@ export default function FlowDashboard({
             from: l.from,
             to: l.to,
             weight: l.weight,
+            // Explicit gray on each band. Without this, links inherit the
+            // from-node's auto-assigned palette color (colorByPoint), not our
+            // node options.color, so the bands would stay colored.
+            color: SANKEY_NEUTRAL,
           })),
           nodes: nodes.map((n) => ({
             id: n.id,
@@ -268,6 +272,9 @@ export default function FlowDashboard({
       },
       plotOptions: {
         sankey: {
+          // Don't auto-assign per-node palette colors; every node/band uses the
+          // explicit neutral gray we set above.
+          colorByPoint: false,
           // Everything is gray until hovered. Hovering a node or band applies a
           // single accent color to it and its directly connected nodes/links
           // (Highcharts propagates the hover state across the connection), and
