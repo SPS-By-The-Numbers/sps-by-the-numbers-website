@@ -183,8 +183,29 @@ export function computeFlows(
       return { level: l, code, id: `${LEVEL_ID_PREFIX[l]}:${code}`, name };
     });
 
+  // Group aggregated tuples by program. A tuple whose NET amount is <= 0 (real
+  // OSPI data carries negative correction/abatement lines) cannot be drawn as a
+  // band; dropping it outright would leak its magnitude and break per-column
+  // conservation. Instead we scale each program's surviving positive tuples so
+  // they sum EXACTLY to the program's net expenditure (progTot) -- which is also
+  // its attributed inflow -- keeping every column penny-conserved. (Session 6
+  // fix: the old per-row `w <= 0` skip dropped net-negative tuples and let the
+  // source/activity columns overshoot the grand total; see SANKEY_PLAY.md.)
+  const rowsByProgram = new Map<number, Agg[]>();
   for (const row of agg.values()) {
-    const program = row.codes.get("program")!;
+    if (row.amount <= 0) {
+      continue;
+    }
+    const p = row.codes.get("program")!;
+    let arr = rowsByProgram.get(p);
+    if (!arr) {
+      arr = [];
+      rowsByProgram.set(p, arr);
+    }
+    arr.push(row);
+  }
+
+  for (const [program, progRows] of rowsByProgram.entries()) {
     const sources = attributed.get(program);
     if (!sources) {
       continue;
@@ -193,19 +214,30 @@ export function computeFlows(
     if (total <= 0) {
       continue;
     }
+    // Scale the positive tuples down so they sum to the net program total.
+    const scaled = prorate(
+      total,
+      progRows.map((r) => r.amount),
+    );
     const srcCodes = [...sources.keys()];
     const srcWeights = srcCodes.map((s) => sources.get(s)!);
-    // share of this aggregated row that each source funds.
-    const shares = prorate(row.amount, srcWeights);
-    const expCells = buildExpCells(row.codes);
-    for (let i = 0; i < srcCodes.length; i++) {
-      const w = shares[i];
-      if (w <= 0) {
+    for (let ri = 0; ri < progRows.length; ri++) {
+      const rowAmount = scaled[ri];
+      if (rowAmount <= 0) {
         continue;
       }
-      const s = srcCodes[i];
-      const srcCell = nodeIdForSource(s, sourceLabel.get(s) ?? String(s));
-      records.push({ path: [srcCell, ...expCells], weight: w });
+      // share of this aggregated row that each source funds.
+      const shares = prorate(rowAmount, srcWeights);
+      const expCells = buildExpCells(progRows[ri].codes);
+      for (let i = 0; i < srcCodes.length; i++) {
+        const w = shares[i];
+        if (w <= 0) {
+          continue;
+        }
+        const s = srcCodes[i];
+        const srcCell = nodeIdForSource(s, sourceLabel.get(s) ?? String(s));
+        records.push({ path: [srcCell, ...expCells], weight: w });
+      }
     }
   }
 

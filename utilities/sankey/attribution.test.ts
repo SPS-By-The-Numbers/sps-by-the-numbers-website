@@ -241,3 +241,56 @@ describe("attributeSources — category rollup keeps directed/fungible split", (
     expect(attributed.get(10)!.get(4000)).toBeCloseTo(40, 6);
   });
 });
+
+describe("attributeSources — negative directed revenue (Session 6 regression)", () => {
+  // A directed revenue account that nets negative (a mid-year revenue
+  // correction) must still be conserved: total attributed real-source dollars
+  // must equal total revenue to the penny, so drawdown == expenditure - revenue.
+  // Regression for the pre-fix `spill > 0` guard that silently dropped it.
+  it("nets a negative directed account so drawdown == exp - rev", () => {
+    // Program 10 spends 100, program 20 spends 50 (total exp 150).
+    const expRows = [exp(10, 100), exp(20, 50)];
+    // Directed to program 20: +50 on account 4210 and a -10 correction on the
+    // same directed account (net directed = 40). Fungible account 1100 = 70.
+    // Revenue total = 50 - 10 + 70 = 110, so drawdown must be 150 - 110 = 40.
+    const revRows = [
+      rev(4210, 4000, 20, 50),
+      rev(4210, 4000, 20, -10),
+      rev(1100, 1000, 0, 70),
+    ];
+
+    const { progTot, attributed } = attributeSources(
+      expRows,
+      revRows,
+      "account",
+    );
+
+    const revTotal = revRows.reduce((a, r) => a + r.amount, 0);
+    let realConsumed = 0;
+    for (const [program, inner] of attributed.entries()) {
+      if (program === GROWTH_PROGRAM_CODE) {
+        continue;
+      }
+      for (const [s, v] of inner.entries()) {
+        if (s !== DRAWDOWN_SOURCE_CODE) {
+          realConsumed += v;
+        }
+      }
+    }
+    // Real-source attribution equals revenue exactly (the -10 nets in, it is
+    // not dropped).
+    expect(realConsumed).toBeCloseTo(revTotal, 6);
+    expect(revTotal).toBeCloseTo(110, 6);
+    // Every attributed value is non-negative (no negative bands).
+    for (const inner of attributed.values()) {
+      for (const v of inner.values()) {
+        expect(v).toBeGreaterThanOrEqual(0);
+      }
+    }
+    // Drawdown fills the gap: 150 - 110 = 40, and per-program inflow == prog_tot.
+    expect(drawdownTotal(attributed)).toBeCloseTo(40, 6);
+    expect(growthTotal(attributed)).toBeCloseTo(0, 6);
+    expect(inflow(attributed, 10)).toBeCloseTo(progTot.get(10)!, 6);
+    expect(inflow(attributed, 20)).toBeCloseTo(progTot.get(20)!, 6);
+  });
+});

@@ -55,6 +55,23 @@ export default function Page() {
           expenditures through OSPI classifications: source &rarr; program &rarr;
           activity &rarr; object (and further to school or NCES category).
         </p>
+        <Box
+          sx={{
+            p: 1.5,
+            mb: 1,
+            borderLeft: '4px solid #E69F00',
+            backgroundColor: 'rgba(230, 159, 0, 0.08)',
+          }}
+        >
+          <Typography component="span">
+            <strong>New:</strong> explore these flows live for any Washington
+            district, year, and budget-vs-actuals in the{' '}
+            <Link href="/finance/flow">interactive Expenditure Flow dashboard</Link>
+            {' '}&mdash; pick your own optional levels and filters, and click any
+            band to jump into the underlying revenues or expenditures data. The
+            static diagrams below are fixed 2024&ndash;2025 SPS snapshots.
+          </Typography>
+        </Box>
         <ul>
           <li>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>

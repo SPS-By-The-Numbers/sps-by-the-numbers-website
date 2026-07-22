@@ -1184,3 +1184,201 @@ Sessions append here. Format:
   open for the reconciliation pass anyway, and note in its own log entry
   whether `stickOnContact` alone would have sufficed (i.e. whether the
   Popover fallback turned out to be load-bearing or just insurance).
+
+### Session 6 — Reconciliation, polish, cross-links — DONE (found + fixed 2 real compute bugs) — 2026-07-21
+
+**Browser automation: checked, STILL NOT AVAILABLE.** Re-invoked the
+`claude-in-chrome` skill this session; it again reports the Chrome extension is
+not connected. So the two open visual items (Sankey render, tooltip/Popover
+click-through) remain **UNVERIFIED in a real browser** — see "What is still
+open" at the bottom. In place of a browser, this session drove the REAL compute
+engine over the REAL cached AVRO data via a throwaway Node decoder + jest
+harness (now deleted; the decode logic mirrored `FetchData.ts`'s
+`DecimalToNumberType` exactly, so the numbers below are what the browser client
+would parse from the same files).
+
+**This session found and fixed TWO real correctness bugs in Session 3's compute
+engine** that only surface on real data with negative (correction/abatement)
+line items — the synthetic fixtures and Session 3's magnitude-only scratch check
+never exercised negatives, so they slipped through. Details under "Bugs" below.
+
+#### Reconciliation checklist — Seattle 17001, 2024-25 actuals (default view)
+
+Method: decoded `gs://…/17001/gf_expenditures` and `…/gf_revenues` AVRO, filtered
+to `class_of==2025 && data_type=="actuals"`, ran the real `computeFlows`.
+
+- [x] **VERIFIED — Grand total = $1,195,855,065.08** (plan said ≈ $1,195.86M).
+      Equals total expenditure to the penny; equals `revenue + drawdown` and
+      `expenditure + growth`.
+- [x] **VERIFIED — Revenue = $1,172,148,744.12** (plan said ≈ $1,172.15M).
+      Equals the raw revenue-frame sum.
+- [x] **VERIFIED — Fund Balance Drawdown = $23,706,320.96** (plan said ≈ $23.71M).
+      Equals expenditure − revenue exactly. **This is also the
+      `districtData.cashflow()` cross-check**: `cashflow()` groups the same two
+      frames by `class_of` and derives `revenues − expenditures`; per-year that
+      is −$23,706,320.96 for 2025 (see the full per-year table computed this
+      session — every historical year's exp/rev/cashflow was dumped and 2014-2019
+      + 2021 are surplus years, 2020 + 2022-2025 are deficit).
+- [x] **VERIFIED — Per-program inflow == outflow.** Max |inflow−outflow| across
+      all 32 programs = $0.00 (default), $0.01 (account mode, float dust across
+      860 links). Note the crediting is per-record so in==out is structural;
+      after the Bug B fix, in==out ALSO == progTot (net) for every program.
+      Top programs (in==out): Basic Education $489,664,037.00; Special Education
+      Supplemental (State) $258,342,147.67; Districtwide Support $158,656,770.87;
+      Pupil Transportation $63,819,395.43; Instructional Programs Other
+      $53,408,810.95. These match the expenditures dashboard faceted by program
+      (`/finance/expenditures?...&c=f.1`; facet index `f.1` = program, confirmed
+      against `ExpendituresContextSettings.tsx` in Session 5's log).
+- [x] **VERIFIED — Column conservation.** After the fixes, every column sums to
+      $1,195,855,065.08 (Δ ≤ $0.01 float dust) in default, +object, account, and
+      program-filtered views. **Before the fixes this FAILED** (columns overshot
+      by $2.49M default / $9.69M with object — see Bug B).
+- [~] **PARTIAL — Side-by-side with the static plotly variant**
+      `public/analyses/sps_sankey_avro_spao_expanded_source_actuals_2024-2025.html`.
+      That file (and its siblings) is a ~4.8 MB self-contained plotly HTML; the
+      analyses page labels ALL the 2024-25 SPS Sankeys "$1,195.9M", which is the
+      true expenditure total and **matches our post-fix grand total
+      $1,195,855,065.08 to the rounding shown**. I did NOT diff individual band
+      weights against the embedded plotly JSON (it's minified base64-ish blobs,
+      not worth parsing); the headline total agreement plus the penny-exact
+      internal reconciliation is the evidence. The pre-fix engine ($1,195.70M)
+      would NOT have matched the static "$1,195.9M" label — the fix brought them
+      into agreement.
+
+#### Bugs found + fixed (corrections to Session 3's `utilities/sankey/`)
+
+Both are the same blind spot: the algorithm assumed all dollar amounts are
+non-negative. Real OSPI data has 332 negative expenditure lines (−$27.28M
+gross, netting inside their tuples) and 3 negative directed revenue rows
+(−$152,169.48) for Seattle 2024-25.
+
+1. **`attribution.ts` (Session 3) — net-negative directed revenue was silently
+   dropped.** Pass 1 computed `v = Math.min(amount, room)` then guarded
+   `if (v > 0)` / `if (spill > 0)`. For a directed revenue account whose net is
+   negative (a mid-year correction), `v` was negative → not placed, and
+   `spill = amount − v = 0` → not spilled either, so the negative simply
+   vanished. Effect: total attributed real-source dollars EXCEEDED revenue by
+   the dropped amount ($152,169.48), so `grandTotal` (= revenue + drawdown) and
+   the reported drawdown were BOTH short by $152,169.48 ($1,195.70M / $23.55M
+   instead of $1,195.86M / $23.71M). **Fix:** `v = amount > 0 ? min(amount,
+   room) : 0` and spill on `if (spill !== 0)`, so negatives net into the
+   fungible pool. Pass 2 was also hardened: the fungible pool can now hold a
+   net-negative source, so placement/growth are prorated over only the POSITIVE
+   fungible sources while the net still counts in `fungibleTotal` (a negative
+   correction shrinks the placeable pool → surfaces as extra drawdown, never as
+   a negative band). Total attribution now equals revenue to the penny in both
+   category and account mode.
+2. **`flows.ts` (Session 3) — net-negative expenditure tuples were dropped,
+   breaking column conservation.** The per-row loop expanded each aggregated
+   `(program, activity[, object…])` tuple across sources with
+   `prorate(row.amount, …)` then `if (w <= 0) continue`. A tuple whose NET is
+   negative produced all-negative shares that were all skipped, so its magnitude
+   leaked: emitted bands summed to MORE than the grand total, and the overshoot
+   GREW with granularity (5 net-negative tuples = −$2.34M at program|activity;
+   12 = −$9.54M at program|activity|object — both matched the observed column
+   overshoot to the cent). **Fix:** group tuples by program, drop the net-≤0
+   tuples, and `prorate(progTot, positiveTupleAmounts)` to scale the survivors
+   so each program's emitted flow sums EXACTLY to its net `progTot` (= its
+   attributed inflow). This distributes a program's small net refund
+   proportionally across its positive children — a defensible, penny-exact,
+   conserving treatment (a Sankey can't draw a negative-width band). Every
+   column now conserves.
+
+Both fixes carry a **regression test**: `attribution.test.ts` ("negative
+directed revenue … drawdown == exp − rev", asserts real-source attributed ==
+revenue, all attributed values ≥ 0, drawdown fills the gap) and `flows.test.ts`
+("nets a negative tuple without breaking column conservation", asserts the
+negative activity produces no band, the positive is scaled to the net, and every
+column conserves). Suite: **16 files / 92 tests green** (was 90; +2 regressions).
+All 25 pre-existing sankey tests still pass unchanged.
+
+#### Edge cases exercised (real AVRO, real `computeFlows`)
+
+- [x] **`data_type=budget`, Seattle 2025** (deficit, $1,252,959,867.00 exp):
+      grandTotal == exp, drawdown $134,519,253.00 == exp − rev, columns conserve.
+- [x] **Surplus year → Fund Balance Growth path** (Seattle 2019 actuals, +$38.13M;
+      2021 actuals, +$37.42M): `growth` == revenue − expenditure exactly, a
+      terminal `fb:growth` node is emitted, `drawdown == 0`. Column totals are
+      correctly asymmetric here (source col == revenue, activity col ==
+      expenditure) — the documented Session-3 surplus caveat, not a bug.
+- [x] **Small district** (Wishram 20094, ~$3.0M): actuals AND budget both
+      reconcile, object column conserves, no attribution-clamp blow-up; both
+      happen to be small surplus years (growth path). No "revenue directed to a
+      missing program" pathology observed (that money spills to fungible as
+      designed — covered by an existing Session-3 test).
+- [x] **Empty frame** (Seattle 2014 budget = 0 rows): `computeFlows` returns 0
+      nodes / 0 links → `FlowDashboard` renders the friendly empty-state
+      Typography, no crash.
+- [x] **curl smoke test** (fresh dev server): `/finance/flow`,
+      `?d=c.17001~dt.b` (budget), `?d=c.17001~lv.o~sm.a` (object + account mode),
+      `?d=c.20094` and `?d=c.20094~dt.b` (small district), `/analyses` — all
+      HTTP 200, zero runtime-error markers in the SSR body. (Client-side chart
+      render still needs a browser — see below.)
+
+#### Polish landed (`FlowDashboard.tsx`)
+
+- **Loading state**: verified already wired — `FlowPage` → `EnsureDistrictData`
+  renders `<Loading text="Loading distrct data for …"/>` until the district's
+  data is in `districtDataMap`, then mounts `FlowDashboard`. No change needed.
+- **Title / subtitle**: title shows `${district} — General Fund Expenditure
+  Flow`; subtitle now shows `${FY} ${Actuals|Budget} · Total … · Revenue … ·
+  <fund-balance clause>`. **Fixed a subtitle bug I introduced-adjacent**: it
+  used to hard-code "Fund Balance Drawdown", which read "Drawdown $0.00" in a
+  surplus year; it now shows "Fund Balance Growth …" in surplus, "… Drawdown …"
+  in deficit, or "Balanced".
+- **"Filtered Out" legend note**: added a `caption` below the chart explaining
+  that attribution runs on the whole fund and that filtered flow re-routes into
+  the gray Filtered Out band (so every column still totals the grand total),
+  with an extra sentence when a Filtered Out band is actually present.
+- **Number formatting**: all currency via the shared `makeCurrencyFormatter(2)`
+  (compact USD), consistent with the rest of the app.
+
+#### Cross-links
+
+- **`app/analyses/page.tsx`**: added a highlighted callout at the top of the
+  "Expenditure Flows (Sankey)" section pointing to the interactive
+  `/finance/flow` (explains it covers any district/year/budget-vs-actuals and is
+  click-through to the underlying data; frames the static HTML files below as
+  fixed 2024-25 SPS snapshots). Matched the file's existing single-quote style.
+- **Expenditures dashboard header link**: **intentionally skipped.**
+  `ExpendituresDashboard.tsx` has no header/description text element — only
+  `<HcDashboard/>` inside `SettingsLayout` — so there is no natural, small spot
+  without adding a new element and risking the "don't modify existing dashboards'
+  behavior" guardrail. The flow view is already in `FINANCE_NAV_CONFIGS`
+  (Session 4), so it's discoverable. Per the plan's "don't force it," omitted.
+
+#### Verification
+
+- `npm run test` → 16 suites / 92 tests green.
+- `npm run lint` → the 5 clean-part files I touched (`attribution.ts`,
+  `flows.ts`, both `.test.ts`, `FlowDashboard.tsx`) are 0-error after
+  `eslint --fix`; `FlowDashboard.tsx` keeps the ONE pre-existing unavoidable
+  warning from Session 5 (`react-hooks/unsupported-syntax` on the Highcharts
+  `formatter(this: any)`). `app/analyses/page.tsx` additions match that file's
+  established single-quote style (its prettier double-quote "errors" are the
+  same repo-wide pre-existing debt Sessions 1-5 documented; not reformatted, to
+  avoid a whole-file noise diff).
+- `npm run build` → succeeds; `/finance/flow` and `/analyses` in the route list.
+- **Did NOT run `npm run deploy`** (per instruction).
+
+#### Tooltip / Popover question left for Session 5's log
+
+Could NOT determine whether `stickOnContact` alone would have sufficed vs. the
+Popover fallback being load-bearing — that requires a real browser hover/click,
+which was unavailable. The Popover fallback remains shipped as insurance.
+
+#### What is still open (the one thing a human / browser-equipped session must do)
+
+**The single highest-value remaining check: open `/finance/flow` in a real
+browser and confirm (a) the Sankey actually renders (bands, per-column
+alignment, Fund Balance / Filtered Out nodes pinned by `node.column`), (b)
+hovering a band shows the HTML tooltip with two working deep links, (c)
+`stickOnContact` lets the pointer reach and click those links — and if not, that
+the click-to-open Popover fallback works, and (d) each deep link lands on the
+target dashboard visibly filtered to that node.** Everything numeric is now
+VERIFIED against real data to the penny and every route SSR-renders without
+error, but no session in this project has ever seen the chart paint or the
+tooltip interact in a browser. **Assessment: the compute/data layer is
+trustworthy to ship; the rendering/interaction layer is code-complete and
+statically sound but visually unconfirmed — do a ~10-minute manual browser pass
+before relying on the interactive UI.**

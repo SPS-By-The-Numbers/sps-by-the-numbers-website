@@ -145,13 +145,20 @@ export function attributeSources(
     );
     for (const [key, amount] of sources) {
       const room = Math.max(0, cap - used);
-      const v = Math.min(amount, room);
+      // Only positive dollars fill a program's capacity; never "place" a
+      // net-negative directed amount as a (negative) band. Any unplaced
+      // remainder -- positive overflow OR a negative revenue correction --
+      // spills into the fungible pool so it nets there and total attribution
+      // still equals revenue to the penny. (Session 6 fix: `spill > 0` used to
+      // drop net-negative directed revenue, understating the drawdown/total;
+      // see SANKEY_PLAY.md.)
+      const v = amount > 0 ? Math.min(amount, room) : 0;
       if (v > 0) {
         nestedAdd(attributed, target, key, v);
         used += v;
       }
       const spill = amount - v;
-      if (spill > 0) {
+      if (spill !== 0) {
         addTo(fungible, key, spill);
       }
     }
@@ -168,21 +175,40 @@ export function attributeSources(
   );
   const totalRemaining = remaining.reduce((a, b) => a + b, 0);
 
-  const fungibleSources = [...fungible.keys()].sort((a, b) => a - b);
+  // The fungible pool may now contain net-negative entries (a directed revenue
+  // correction spilled here by pass 1). They net into `fungibleTotal` correctly,
+  // but only POSITIVE sources can carry a (non-negative) Sankey band; a net
+  // negative simply shrinks the placeable pool, surfacing as extra Fund Balance
+  // Drawdown rather than a negative band. (Session 6 fix; see SANKEY_PLAY.md.)
+  const allFungibleSources = [...fungible.keys()].sort((a, b) => a - b);
+  const fungibleTotal = allFungibleSources.reduce(
+    (a, s) => a + fungible.get(s)!,
+    0,
+  );
+  const fungibleSources = allFungibleSources.filter(
+    (s) => fungible.get(s)! > 0,
+  );
   const fungibleAmounts = fungibleSources.map((s) => fungible.get(s)!);
-  const fungibleTotal = fungibleAmounts.reduce((a, b) => a + b, 0);
 
-  const placedTotal = Math.min(fungibleTotal, totalRemaining);
+  const placedTotal = Math.max(0, Math.min(fungibleTotal, totalRemaining));
+  const growthTotal = Math.max(0, fungibleTotal - placedTotal);
 
-  // How much each source contributes to placement vs. growth.
+  // Placement and growth are each prorated over the positive sources; their sum
+  // is the NET fungibleTotal, so the tiny negative corrections are absorbed
+  // proportionally instead of being drawn as bands.
   const sourcePlaced =
-    fungibleTotal > 0 ? prorate(placedTotal, fungibleAmounts) : [];
-  for (let i = 0; i < fungibleSources.length; i++) {
-    const s = fungibleSources[i];
-    const placed = sourcePlaced[i] ?? 0;
-    const growth = (fungibleAmounts[i] ?? 0) - placed;
-    if (growth > 0) {
-      nestedAdd(attributed, GROWTH_PROGRAM_CODE, s, growth);
+    fungibleAmounts.length > 0 ? prorate(placedTotal, fungibleAmounts) : [];
+  if (growthTotal > 0 && fungibleAmounts.length > 0) {
+    const growthSplit = prorate(growthTotal, fungibleAmounts);
+    for (let i = 0; i < fungibleSources.length; i++) {
+      if (growthSplit[i] > 0) {
+        nestedAdd(
+          attributed,
+          GROWTH_PROGRAM_CODE,
+          fungibleSources[i],
+          growthSplit[i],
+        );
+      }
     }
   }
 

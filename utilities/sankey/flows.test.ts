@@ -285,3 +285,36 @@ describe("computeFlows — optional levels", () => {
     expect(columnIncoming(nodes, links, 3)).toBeCloseTo(100, 6);
   });
 });
+
+describe("computeFlows — negative expenditure lines (Session 6 regression)", () => {
+  // Real OSPI data carries negative correction/abatement lines. A tuple whose
+  // NET is <= 0 cannot be a band, but its magnitude must NOT leak: the program's
+  // emitted flow must still sum to its net expenditure, so every column stays
+  // conserved. Regression for the pre-fix `w <= 0` per-row skip in flows.ts.
+  it("nets a negative tuple without breaking column conservation", () => {
+    // Program 10 spends net 100: act 27 = +150, act 29 = -50 (a refund).
+    const expRows = [
+      exp(10, "Basic", 27, "Teaching", 150),
+      exp(10, "Basic", 29, "Refund", -50),
+    ];
+    const revRows = [rev(1100, 1000, 0, 100)];
+    const { nodes, links, totals } = computeFlows(expRows, revRows, {
+      mode: "account",
+      enabledLevels: BASE_LEVELS,
+      filters: {},
+    });
+
+    // Net program total is 100 = revenue, so no drawdown, no growth.
+    expect(totals.expenditure).toBeCloseTo(100, 6);
+    expect(totals.grandTotal).toBeCloseTo(100, 6);
+    // The negative activity produced no band; the surviving positive activity
+    // was scaled down from 150 to the net 100 rather than shown at 150.
+    expect(nodeById(nodes, "act:29")).toBeUndefined();
+    expect(link(links, "prog:10", "act:27")).toBeCloseTo(100, 6);
+    // Every column conserves the net grand total (would be 150 pre-fix).
+    for (let col = 0; col <= 1; col++) {
+      expect(columnOutgoing(nodes, links, col)).toBeCloseTo(100, 6);
+    }
+    expect(columnIncoming(nodes, links, 2)).toBeCloseTo(100, 6);
+  });
+});

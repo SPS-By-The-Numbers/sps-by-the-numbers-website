@@ -89,7 +89,7 @@ export default function FlowDashboard({
   const { highchartsObjs } = useHighcharts();
   const [popover, setPopover] = useState<PopoverState | null>(null);
 
-  const { options, empty } = useMemo(() => {
+  const { options, empty, hasFilteredOut } = useMemo(() => {
     const settings = allSettings[0];
     const districtData = districtDataMap[settings.ccddd];
     const ctx: DeepLinkCtx = {
@@ -137,8 +137,13 @@ export default function FlowDashboard({
     });
 
     if (links.length === 0) {
-      return { options: null, empty: true };
+      return { options: null, empty: true, hasFilteredOut: false };
     }
+
+    // A gray "Filtered Out" band only appears when a per-level filter diverts
+    // flow; surface an explanatory caption in that case (see the legend note
+    // below the chart).
+    const hasFilteredOut = nodes.some((n) => n.custom.level === "filtered");
 
     // Bump the chart height when the (wide) School column is enabled; Seattle
     // has ~110 schools.
@@ -147,6 +152,15 @@ export default function FlowDashboard({
       : 700;
 
     const dataTypeLabel = dt === "budget" ? "Budget" : "Actuals";
+
+    // Deficit years draw down the fund balance; surplus years grow it. Show
+    // whichever applies rather than a misleading "Drawdown $0.00".
+    const fundBalanceClause =
+      totals.drawdown > 0.005
+        ? `Fund Balance Drawdown ${fmt(totals.drawdown)}`
+        : totals.growth > 0.005
+          ? `Fund Balance Growth ${fmt(totals.growth)}`
+          : "Balanced";
 
     const chartOptions = {
       chart: { height },
@@ -157,9 +171,7 @@ export default function FlowDashboard({
       subtitle: {
         text: `${fiscalYearLabel(year)} ${dataTypeLabel} · Total ${fmt(
           totals.grandTotal,
-        )} · Revenue ${fmt(totals.revenue)} · Fund Balance Drawdown ${fmt(
-          totals.drawdown,
-        )}`,
+        )} · Revenue ${fmt(totals.revenue)} · ${fundBalanceClause}`,
       },
       series: [
         {
@@ -260,7 +272,7 @@ export default function FlowDashboard({
       },
     };
 
-    return { options: chartOptions, empty: false };
+    return { options: chartOptions, empty: false, hasFilteredOut };
   }, [districtDataMap, allSettings]);
 
   return (
@@ -298,12 +310,26 @@ export default function FlowDashboard({
           No expenditure data for the selected year and data type.
         </Typography>
       ) : (
-        <div style={{ overflowX: "auto" }}>
-          <HighchartsReact
-            highcharts={highchartsObjs.highcharts}
-            options={options}
-          />
-        </div>
+        <>
+          <div style={{ overflowX: "auto" }}>
+            <HighchartsReact
+              highcharts={highchartsObjs.highcharts}
+              options={options}
+            />
+          </div>
+          <Typography
+            variant="caption"
+            component="p"
+            sx={{ px: 2, pt: 1, color: "text.secondary" }}
+          >
+            Attribution of revenue to programs runs on the whole fund; filters
+            never change that math. When a filter is applied, the flow it
+            removes is re-routed into a gray <strong>Filtered Out</strong> band
+            that continues to the last column so every column still totals the
+            grand total.
+            {hasFilteredOut ? " A Filtered Out band is currently shown." : ""}
+          </Typography>
+        </>
       )}
       <Popover
         open={popover !== null}
