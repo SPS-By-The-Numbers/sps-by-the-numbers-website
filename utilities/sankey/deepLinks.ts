@@ -23,6 +23,7 @@
 // (`makePaoSerializeConfig`, `makeNcesSerializeConfig`,
 // `makeSchoolFilterConfig`, `makeRevenueSerializeConfig`) to confirm this.
 
+import { NEVER_COMBINE_REVENUE_CODES } from "utilities/sankey/attribution";
 import ActivityFilter from "app/finance/_filteritems/activity";
 import NcesFilter from "app/finance/_filteritems/nces";
 import ObjectFilter from "app/finance/_filteritems/object";
@@ -55,8 +56,13 @@ type LinkTarget = {
 
 function targetFor(node: SankeyNode, ctx: DeepLinkCtx): LinkTarget | null {
   switch (node.custom.level) {
-    case "source":
-      return ctx.sourceMode === "account"
+    case "source": {
+      // A never-combine source node carries a revenue ACCOUNT code even in
+      // category mode (it is kept separate), so it must link by account.
+      const asAccount =
+        ctx.sourceMode === "account" ||
+        NEVER_COMBINE_REVENUE_CODES.has(node.custom.code ?? -1);
+      return asAccount
         ? {
             path: "/finance/revenues",
             urlVar: "rv",
@@ -69,6 +75,7 @@ function targetFor(node: SankeyNode, ctx: DeepLinkCtx): LinkTarget | null {
             filter: RevenueCategoryFilter,
             contextFacet: "f.0",
           };
+    }
 
     case "program":
       return {

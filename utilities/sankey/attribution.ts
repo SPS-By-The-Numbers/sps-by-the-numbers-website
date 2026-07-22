@@ -29,6 +29,26 @@ export const DRAWDOWN_SOURCE_CODE = -2;
 // to the dollars they contributed to growth.
 export const GROWTH_PROGRAM_CODE = -1;
 
+// Revenue accounts that must ALWAYS render as their own source node and never be
+// rolled up into their category, even in category (source) mode.
+//   - 2500: Gifts, Grants, and Donations (Local).
+// (Fund Balance Drawdown is synthetic and already always separate.)
+export const NEVER_COMBINE_REVENUE_CODES: ReadonlySet<number> = new Set([2500]);
+
+// The source-column key for a revenue row: its category in category mode, its
+// account in account mode -- except never-combine accounts always key by their
+// own account code so they stay separate in both modes. The attribution math
+// and the source labels in `computeFlows` must use this SAME keying.
+export function sourceKeyOf(
+  r: Pick<RevRow, "category_code" | "revenue_code">,
+  mode: SourceMode,
+): number {
+  if (mode === "account" || NEVER_COMBINE_REVENUE_CODES.has(r.revenue_code)) {
+    return r.revenue_code;
+  }
+  return r.category_code;
+}
+
 export type AttributionResult = {
   // Real program_code -> total expenditure for that program.
   progTot: Map<number, number>;
@@ -102,14 +122,12 @@ export function attributeSources(
   // consumed[p] = dollars routed into program p so far.
   const consumed = new Map<number, number>();
 
-  // The source key used for link emission depends on the mode. Attribution math
-  // itself is independent of source identity (it is about programs and
-  // amounts), so we key by the emission code directly. Directed vs fungible is
-  // decided per revenue ROW (its own program_code), which is why we must NOT
-  // pre-aggregate accounts to categories before this step: a single category
-  // can mix directed and fungible accounts.
-  const sourceKeyOf = (r: RevRow): number =>
-    mode === "category" ? r.category_code : r.revenue_code;
+  // The source key used for link emission depends on the mode (see
+  // `sourceKeyOf`). Attribution math itself is independent of source identity
+  // (it is about programs and amounts). Directed vs fungible is decided per
+  // revenue ROW (its own program_code), which is why we must NOT pre-aggregate
+  // accounts to categories before this step: a single category can mix directed
+  // and fungible accounts.
 
   // --- Pass 1: directed accounts route to their target program, clamped.
   // Aggregate directed dollars per (target program, sourceKey) for determinism,
@@ -122,7 +140,7 @@ export function attributeSources(
     if (r.amount === 0) {
       continue;
     }
-    const key = sourceKeyOf(r);
+    const key = sourceKeyOf(r, mode);
     if (r.program_code !== 0) {
       let inner = directed.get(r.program_code);
       if (!inner) {

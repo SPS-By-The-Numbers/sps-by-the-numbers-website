@@ -199,9 +199,9 @@ export default function FlowDashboard({
     // whichever applies rather than a misleading "Drawdown $0.00".
     const fundBalanceClause =
       totals.drawdown > 0.005
-        ? `Fund Balance Drawdown ${fmt(totals.drawdown)}`
+        ? `General Fund Balance Drawdown ${fmt(totals.drawdown)}`
         : totals.growth > 0.005
-          ? `Fund Balance Growth ${fmt(totals.growth)}`
+          ? `General Fund Balance Growth ${fmt(totals.growth)}`
           : "Balanced";
 
     const chartOptions = {

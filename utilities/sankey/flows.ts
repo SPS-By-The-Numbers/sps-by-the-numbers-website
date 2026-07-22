@@ -18,7 +18,9 @@ import {
   attributeSources,
   DRAWDOWN_SOURCE_CODE,
   GROWTH_PROGRAM_CODE,
+  NEVER_COMBINE_REVENUE_CODES,
   prorate,
+  sourceKeyOf,
 } from "utilities/sankey/attribution";
 import { colorForNode } from "utilities/sankey/colors";
 import type {
@@ -82,7 +84,7 @@ function nodeIdForSource(code: number, sourceLabel: string): Cell {
       level: "fundBalance",
       code: null,
       id: "fb:drawdown",
-      name: "Fund Balance Drawdown",
+      name: "General Fund Balance Drawdown",
     };
   }
   return { level: "source", code, id: `src:${code}`, name: sourceLabel };
@@ -124,14 +126,16 @@ export function computeFlows(
   const { progTot, attributed } = attributeSources(expRows, revRows, opts.mode);
 
   // --- Label maps ---------------------------------------------------------
-  // Source labels come from revenue rows (category or account label per mode).
+  // Source labels come from revenue rows, keyed the SAME way attribution keys
+  // sources (see `sourceKeyOf`): by category in category mode, by account in
+  // account mode, and always by account for never-combine accounts.
   const sourceLabel = new Map<number, string>();
   for (const r of revRows) {
-    if (opts.mode === "category") {
-      sourceLabel.set(r.category_code, r.category);
-    } else {
-      sourceLabel.set(r.revenue_code, r.revenue);
-    }
+    const key = sourceKeyOf(r, opts.mode);
+    const combined =
+      opts.mode === "category" &&
+      !NEVER_COMBINE_REVENUE_CODES.has(r.revenue_code);
+    sourceLabel.set(key, combined ? r.category : r.revenue);
   }
   // Program labels (for the program cell) plus the other expenditure-level
   // labels come from expenditure rows.
@@ -293,7 +297,7 @@ export function computeFlows(
         level: "fundBalance",
         code: null,
         id: "fb:growth",
-        name: "Fund Balance Growth",
+        name: "General Fund Balance Growth",
       };
       for (const [s, amount] of growthSources.entries()) {
         if (amount <= 0) {

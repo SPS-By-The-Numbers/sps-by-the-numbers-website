@@ -382,6 +382,40 @@ describe("computeFlows — reorderable levels and disabling source/program", () 
   });
 });
 
+describe("computeFlows — never-combine sources and node names", () => {
+  it("keeps Gifts/Grants/Donations (2500) separate even in category mode", () => {
+    // Two fungible accounts in the same category 2000: the grants/gifts account
+    // (2500, never-combine) and another (2100). Program 10 spends 100.
+    const expRows = [exp(10, "Basic", 27, "Teaching", 100)];
+    const revRows = [
+      rev(2500, 2000, 0, 40), // Gifts, Grants, and Donations
+      rev(2100, 2000, 0, 60), // other Local Non-tax
+    ];
+    const { nodes, links } = computeFlows(expRows, revRows, {
+      mode: "category",
+      enabledLevels: BASE_LEVELS,
+      filters: {},
+    });
+
+    // 2500 stays its own account node; 2100 rolls up into the category node.
+    expect(nodeById(nodes, "src:2500")).toBeDefined();
+    expect(nodeById(nodes, "src:2000")).toBeDefined();
+    expect(link(links, "src:2500", "prog:10")).toBeCloseTo(40, 6);
+    expect(link(links, "src:2000", "prog:10")).toBeCloseTo(60, 6);
+  });
+
+  it("names the drawdown node 'General Fund Balance Drawdown'", () => {
+    const { nodes } = computeFlows(deficitExp(), deficitRev(), {
+      mode: "account",
+      enabledLevels: BASE_LEVELS,
+      filters: {},
+    });
+    expect(nodeById(nodes, "fb:drawdown")!.name).toBe(
+      "General Fund Balance Drawdown",
+    );
+  });
+});
+
 describe("computeFlows — Fund Balance Drawdown downstream outline", () => {
   // In the deficit fixture, drawdown fills program 10's residual gap (30), so
   // its money flows on to program 10's activities. Program 20 is funded by
