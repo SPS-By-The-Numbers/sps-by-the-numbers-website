@@ -177,16 +177,23 @@ export default function FlowLevelContents({
           labelId={yearLabelId}
           id={yearSelectId}
           label="Fiscal Year"
-          value={settings.classOf === null ? "" : String(settings.classOf)}
+          // Default (classOf === null) means "latest": show the actual latest
+          // year (years is sorted newest-first) rather than a blank / "Latest"
+          // entry. Selecting the latest year just pins classOf to it.
+          value={
+            settings.classOf !== null
+              ? String(settings.classOf)
+              : years.length > 0
+                ? String(years[0])
+                : ""
+          }
           onChange={(e) =>
             setSettings({
               ...settings,
-              classOf:
-                e.target.value === "" ? null : parseInt(e.target.value, 10),
+              classOf: parseInt(e.target.value, 10),
             })
           }
         >
-          <MenuItem value="">Latest</MenuItem>
           {years.map((y) => (
             <MenuItem key={y} value={String(y)}>
               {fiscalYearLabel(y)}
@@ -425,13 +432,15 @@ export default function FlowLevelContents({
         );
       })()}
 
-      <SettingsSelect
-        label="Source Granularity"
-        settings={settings}
-        setSettings={setSettings}
-        fieldName="sourceMode"
-        options={SOURCE_MODE_OPTIONS}
-      />
+      {settings.levelPlan.find((e) => e.level === "source")?.enabled && (
+        <SettingsSelect
+          label="Resource (Source)"
+          settings={settings}
+          setSettings={setSettings}
+          fieldName="sourceMode"
+          options={SOURCE_MODE_OPTIONS}
+        />
+      )}
 
       <Box>
         <FormControlLabel
