@@ -131,7 +131,7 @@ describe("FlowSettings level plan", () => {
       classOf: 2025,
       dataType: "budget" as const,
       programCodes: programSubset,
-      coalesce: true,
+      coalesceLevels: new Set<Level>(["activity", "school"]),
       highlightPta: true,
     };
 
@@ -144,7 +144,9 @@ describe("FlowSettings level plan", () => {
     expect(serialized[0]).toContain("sm.a");
     expect(serialized[0]).toContain("y.2025");
     expect(serialized[0]).toContain("dt.b");
-    expect(serialized[0]).toContain("cs.1");
+    // cs encodes the EXPANDED (complement) levels: coalescing {activity,school}
+    // means the other four (source/program/object/nces) are expanded => "rpon".
+    expect(serialized[0]).toContain("cs.rpon");
     expect(serialized[0]).toContain("pt.1");
 
     const [restored] = deserializeDatasetSettings(
@@ -158,7 +160,9 @@ describe("FlowSettings level plan", () => {
     expect(restored.classOf).toEqual(2025);
     expect(restored.dataType).toEqual("budget");
     expect(restored.programCodes).toEqual(programSubset);
-    expect(restored.coalesce).toBe(true);
+    expect(restored.coalesceLevels).toEqual(
+      new Set<Level>(["activity", "school"]),
+    );
     expect(restored.highlightPta).toBe(true);
   });
 

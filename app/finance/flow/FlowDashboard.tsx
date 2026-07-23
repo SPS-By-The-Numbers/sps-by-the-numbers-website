@@ -13,10 +13,21 @@
 import Box from "@mui/material/Box";
 import HighchartsReact from "highcharts-react-official";
 import Popover from "@mui/material/Popover";
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Typography from "@mui/material/Typography";
+import { usePathname, useRouter } from "next/navigation";
 import { computeFlows } from "utilities/sankey/flows";
-import { linkForNode } from "utilities/sankey/deepLinks";
-import { flowLinkClass, flowNodeClass } from "utilities/sankey/colors";
+import { linksForNode } from "utilities/sankey/deepLinks";
+import {
+  flowLinkClass,
+  flowNodeClass,
+  schoolBucketClass,
+  SCHOOL_BUCKET_COUNT,
+  SCHOOL_PALETTE,
+  sizeBuckets,
+} from "utilities/sankey/colors";
+import ALL_SCHOOLS from "utilities/domain/schools";
 import { makeCurrencyFormatter } from "utilities/highcharts/utils";
 import ActivityFilter from "app/finance/_filteritems/activity";
 import NcesFilter from "app/finance/_filteritems/nces";
@@ -66,14 +77,17 @@ function fiscalYearLabel(classOf: number): string {
 // Shared by both the hover tooltip and the click-to-open Popover fallback
 // (see the click handler below): the two per-band links, skipping nodes
 // `linkForNode` says aren't linkable (Fund Balance / Filtered Out).
+// Band (link) hover: both ends' links, each faceting the target on the NEXT
+// level down (nextLayer = true); a node hover facets on the node's own level.
 function bandLinks(
   fromNode: { options: SankeyNode },
   toNode: { options: SankeyNode },
   ctx: DeepLinkCtx,
 ): Array<DeepLink> {
-  const l1 = linkForNode(fromNode.options, ctx);
-  const l2 = linkForNode(toNode.options, ctx);
-  return [l1, l2].filter((l): l is DeepLink => l !== null);
+  return [
+    ...linksForNode(fromNode.options, ctx, true),
+    ...linksForNode(toNode.options, ctx, true),
+  ];
 }
 
 // State for the click-triggered Popover fallback. `stickOnContact` (set on
@@ -99,13 +113,46 @@ export default function FlowDashboard({
 }: DistrictDataContentProps<FlowSettings, CommonContextSettings>) {
   const { highchartsObjs } = useHighcharts();
   const [popover, setPopover] = useState<PopoverState | null>(null);
+  const router = useRouter();
+  const pathname = usePathname();
 
-  const { options, empty, hasFilteredOut } = useMemo(() => {
+  // The on-graph Actuals/Budget toggle changes the same `dataType` setting the
+  // sidebar does, so the two stay in sync. It navigates to the URL with the new
+  // dataType (mirroring SettingsLayout's own navigation) so the whole settings
+  // round-trip and chart recompute run exactly as they do from the sidebar.
+  const setDataType = (dataType: "actuals" | "budget") => {
+    const newAllSettings = allSettings.map((s, i) =>
+      i === 0 ? { ...s, dataType } : s,
+    );
+    const queries = serializeDatasetSettings(
+      newAllSettings,
+      SERIALIZE_FLOW_SETTINGS_GENERATORS,
+    )
+      .filter((q) => !!q)
+      .map((q) => `d=${q}`);
+    if (queries.length > 0) {
+      router.replace(`${pathname}?${queries.join("&")}`);
+    }
+  };
+
+  const { options, empty, hasFilteredOut, schoolLegend } = useMemo(() => {
     const settings = allSettings[0];
     const districtData = districtDataMap[settings.ccddd];
+    // The deep links carry the flow's currently active filters (so they examine
+    // the highlighted item in the current context) and narrow to the node's own
+    // code.
     const ctx: DeepLinkCtx = {
       ccddd: settings.ccddd,
       sourceMode: settings.sourceMode,
+      filters: {
+        revenueCategoryCodes: settings.revenueCategoryCodes,
+        revenueCodes: settings.revenueCodes,
+        programCodes: settings.programCodes,
+        activityCodes: settings.activityCodes,
+        objectCodes: settings.objectCodes,
+        ncesCodes: settings.ncesCodes,
+        schoolCodes: settings.schoolCodes,
+      },
     };
 
     // Resolve the year: explicit selection, else the latest available.
@@ -165,11 +212,16 @@ export default function FlowDashboard({
       mode: settings.sourceMode,
       enabledLevels,
       filters,
-      coalesce: settings.coalesce,
+      coalesceLevels: [...settings.coalesceLevels],
     });
 
     if (links.length === 0) {
-      return { options: null, empty: true, hasFilteredOut: false };
+      return {
+        options: null,
+        empty: true,
+        hasFilteredOut: false,
+        schoolLegend: [] as Array<{ color: string; min: number; max: number }>,
+      };
     }
 
     // A gray "Filtered Out" band only appears when a per-level filter diverts
@@ -193,7 +245,26 @@ export default function FlowDashboard({
     // interior nodes by conservation; one side is 0 for pure sources / sinks).
     const nodeSize = (id: string) =>
       Math.max(inflow.get(id) ?? 0, outflow.get(id) ?? 0);
+    // Nodes pinned to the BOTTOM of their column regardless of size: the
+    // "Filtered Out" (flt:) nodes and the District Office school node(s).
+    // Highcharts orders a column top->bottom by node creation order (first
+    // appearance in the links scan), so we sort every link touching a
+    // bottom-pinned node after all others: those nodes are then created last.
+    const districtOfficeNodeIds = new Set(
+      (ALL_SCHOOLS[settings.ccddd] ?? [])
+        .filter((s) => s.is_district_office)
+        .map((s) => `sch:${s.school_code}`),
+    );
+    const isBottomNode = (id: string) =>
+      id.startsWith("flt:") || districtOfficeNodeIds.has(id);
+    const isBottomLink = (l: (typeof links)[number]) =>
+      isBottomNode(l.from) || isBottomNode(l.to);
     const sortedLinks = [...links].sort((a, b) => {
+      const fa = isBottomLink(a);
+      const fb = isBottomLink(b);
+      if (fa !== fb) {
+        return fa ? 1 : -1;
+      }
       const fromDelta = nodeSize(b.from) - nodeSize(a.from);
       if (fromDelta !== 0) {
         return fromDelta;
@@ -219,11 +290,46 @@ export default function FlowDashboard({
     // ~28px per node (nodePadding 18 + body + label line) plus title/margins.
     const height = Math.max(700, maxColumnCount * 28 + 120);
 
-    // Labels sit to the RIGHT of every node, so the rightmost column's labels
-    // extend past the right edge — reserve room for the longest one. (The left
-    // column's labels point inward, so the left margin stays small.)
-    const maxNameLen = nodes.reduce((m, n) => Math.max(m, n.name.length), 0);
-    const marginRight = Math.min(500, Math.round(maxNameLen * 8) + 40);
+    // Labels sit to the RIGHT of every node, so only the RIGHTMOST column's
+    // labels extend past the right edge — size the right margin to the longest
+    // label IN THAT COLUMN (using the global longest left a wide gutter when a
+    // long name lived in an earlier column). Other columns' labels point inward.
+    const maxColumn = columnCounts.size ? Math.max(...columnCounts.keys()) : 0;
+    const lastColMaxLen = nodes.reduce(
+      (m, n) => (n.column === maxColumn ? Math.max(m, n.name.length) : m),
+      0,
+    );
+    const marginRight = Math.min(460, Math.round(lastColMaxLen * 7.5) + 22);
+
+    // School nodes are colored by SIZE: rank their sizes into buckets and give
+    // each a palette class (see colors.ts / the scss). The District Office is
+    // pinned to the bottom, not size-colored, so it is excluded from the ramp.
+    const schoolSizes = new Map<string, number>();
+    for (const n of nodes) {
+      if (n.custom.level === "school" && !districtOfficeNodeIds.has(n.id)) {
+        schoolSizes.set(n.id, nodeSize(n.id));
+      }
+    }
+    const schoolBucket = sizeBuckets(schoolSizes, SCHOOL_BUCKET_COUNT);
+    // Legend rows: for each occupied bucket, its color and size range.
+    const bucketRange = new Map<number, { min: number; max: number }>();
+    for (const [id, b] of schoolBucket.entries()) {
+      const s = schoolSizes.get(id) ?? 0;
+      const r = bucketRange.get(b);
+      if (r) {
+        r.min = Math.min(r.min, s);
+        r.max = Math.max(r.max, s);
+      } else {
+        bucketRange.set(b, { min: s, max: s });
+      }
+    }
+    const schoolLegend = [...bucketRange.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([bucket, r]) => ({
+        color: SCHOOL_PALETTE[bucket] ?? "#000",
+        min: r.min,
+        max: r.max,
+      }));
 
     const dataTypeLabel = dt === "budget" ? "Budget" : "Actuals";
 
@@ -263,10 +369,14 @@ export default function FlowDashboard({
           nodes: nodes.map((n) => ({
             id: n.id,
             name: n.name,
-            // Color by CSS class: base, except the drawdown node (red), growth
-            // node (green), Filtered Out (grey), and — when highlighting PTA —
-            // the PTA-funding source node.
-            className: flowNodeClass(n, dt, settings.highlightPta),
+            // Color by CSS class. School nodes are colored by size bucket
+            // (District Office is excluded and falls through to base);
+            // everything else is base, except the drawdown node (red), growth
+            // node (green), Filtered Out (grey), and — highlighting PTA — the
+            // PTA-funding source node.
+            className: schoolBucket.has(n.id)
+              ? schoolBucketClass(schoolBucket.get(n.id)!)
+              : flowNodeClass(n, dt, settings.highlightPta),
             column: n.column,
             custom: n.custom,
           })),
@@ -336,17 +446,18 @@ export default function FlowDashboard({
                   : "";
               return `<b>${p.name} (${members.length})</b><br/>${fmt(p.sum)}<br/>${shown}${more}`;
             }
-            const nodeLink = linkForNode(p.options as SankeyNode, ctx);
-            return (
-              `<b>${p.name}</b><br/>${fmt(p.sum)}` +
-              (nodeLink
-                ? `<br/><a href="${nodeLink.href}" target="_blank" rel="noopener" style="pointer-events:all">${nodeLink.label} ↗</a>`
-                : "")
-            );
+            // Node hover: links open the node's item faceted at its own level.
+            const nodeLinks = linksForNode(p.options as SankeyNode, ctx);
+            const nodeLinksHtml = nodeLinks
+              .map(
+                (l) =>
+                  `<br/><a href="${l.href}" target="_blank" rel="noopener" style="pointer-events:all">${l.label} ↗</a>`,
+              )
+              .join("");
+            return `<b>${p.name}</b><br/>${fmt(p.sum)}${nodeLinksHtml}`;
           }
 
-          // Band hover: one link per node on the band (Locked design
-          // decision #8), skipping either side that isn't linkable.
+          // Band hover: each end's links, faceted one level down.
           const links = bandLinks(p.fromNode, p.toNode, ctx);
           const linksHtml = links
             .map(
@@ -385,8 +496,7 @@ export default function FlowDashboard({
                 let links: Array<DeepLink> = [];
                 if (p.isNode) {
                   title = p.name;
-                  const l = linkForNode(p.options as SankeyNode, ctx);
-                  links = l ? [l] : [];
+                  links = linksForNode(p.options as SankeyNode, ctx);
                 } else if (p.fromNode && p.toNode) {
                   title = `${p.fromNode.name} → ${p.toNode.name}`;
                   links = bandLinks(p.fromNode, p.toNode, ctx);
@@ -409,7 +519,12 @@ export default function FlowDashboard({
       },
     };
 
-    return { options: chartOptions, empty: false, hasFilteredOut };
+    return {
+      options: chartOptions,
+      empty: false,
+      hasFilteredOut,
+      schoolLegend,
+    };
   }, [districtDataMap, allSettings]);
 
   // A signature that changes on any settings change, used to key (and thus
@@ -452,28 +567,94 @@ export default function FlowDashboard({
           BOTH directions: vertically for tall charts, horizontally for wide
           ones. */}
       <Box sx={{ height: "100%", overflow: "auto" }}>
-        <Typography className="analysis-title" component="h1" variant="h1">
-          General Fund Expenditure Flow. Revenue source through program,
-          activity, and (optionally) object, NCES, and school.
-        </Typography>
+        {schoolLegend.length > 0 && (
+          // Legend for the school-size color buckets, pinned to the top when
+          // the School level is shown.
+          <Box
+            sx={{
+              position: "sticky",
+              top: 0,
+              zIndex: 3,
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: 1.5,
+              px: 1,
+              py: 0.5,
+              backgroundColor: "background.paper",
+              borderBottom: "1px solid",
+              borderColor: "divider",
+            }}
+          >
+            <Typography variant="caption" sx={{ fontWeight: 600 }}>
+              School size:
+            </Typography>
+            {schoolLegend.map((b, i) => (
+              <Box
+                key={i}
+                sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
+              >
+                <Box
+                  sx={{
+                    width: 14,
+                    height: 14,
+                    borderRadius: "2px",
+                    backgroundColor: b.color,
+                    flex: "0 0 auto",
+                  }}
+                />
+                <Typography variant="caption" sx={{ whiteSpace: "nowrap" }}>
+                  {fmt(b.min)}–{fmt(b.max)}
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        )}
         {empty ? (
           <Typography sx={{ p: 2 }}>
             No expenditure data for the selected year and data type.
           </Typography>
         ) : (
           <>
-            <HighchartsReact
-              // Remount the chart whenever any setting changes (the key is the
-              // serialized dataset settings). This guarantees a brand-new chart
-              // that reflects the current options — e.g. the budget (grey) vs
-              // actuals (blue) node/band colors — rather than relying on an
-              // in-place chart.update(), which can leave stale sankey colors. A
-              // full redraw is fine here (single chart, no per-chart state to
-              // preserve) and the "Updating" overlay masks it.
-              key={chartKey}
-              highcharts={highchartsObjs.highcharts}
-              options={options}
-            />
+            <Box sx={{ position: "relative" }}>
+              {/* Actuals/Budget toggle overlaid on the graph (top-left), synced
+                  with the sidebar Data Type selector. */}
+              <ToggleButtonGroup
+                size="small"
+                exclusive
+                color="primary"
+                value={allSettings[0].dataType}
+                onChange={(_e, v) => {
+                  if (v) {
+                    setDataType(v);
+                  }
+                }}
+                aria-label="Data type"
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  left: 12,
+                  zIndex: 2,
+                  backgroundColor: "background.paper",
+                }}
+              >
+                <ToggleButton value="actuals">Actuals</ToggleButton>
+                <ToggleButton value="budget">Budget</ToggleButton>
+              </ToggleButtonGroup>
+              <HighchartsReact
+                // Remount the chart whenever any setting changes (the key is the
+                // serialized dataset settings). This guarantees a brand-new
+                // chart that reflects the current options — e.g. the budget
+                // (grey) vs actuals (blue) node/band colors — rather than
+                // relying on an in-place chart.update(), which can leave stale
+                // sankey colors. A full redraw is fine here (single chart, no
+                // per-chart state to preserve) and the "Updating" overlay masks
+                // it.
+                key={chartKey}
+                highcharts={highchartsObjs.highcharts}
+                options={options}
+              />
+            </Box>
             <Typography
               variant="caption"
               component="p"

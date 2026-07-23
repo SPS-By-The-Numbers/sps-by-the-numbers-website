@@ -11,11 +11,12 @@
 //           p=program, a=activity, o=object, n=nces, s=school); UPPERCASE means
 //           enabled, lowercase disabled; Resource and Program are always emitted
 //           first (they are pinned in the UI), and the remaining letters appear
-//           in the user's chosen order. e.g. "RPAons" is the default.
+//           in the user's chosen order. e.g. "RPAOns" is the default.
 //   - `sm`  source mode ("a" = account, omitted = category)
 //   - `y`   selected class_of (fiscal year end); omitted => latest available
 //   - `dt`  data type ("b" = budget, omitted = actuals)
-//   - `cs`  coalesce small nodes into "Other" ("1" = on, omitted = off)
+//   - `cs`  EXPANDED (not-coalesced) levels as letters; default is all-collapsed
+//           so omitted = every level coalesced
 //   - `pt`  highlight the PTA-funding resource ("1" = on, omitted = off)
 // Defaults serialize to the empty string so they are omitted from the URL.
 
@@ -65,8 +66,8 @@ export type FlowSettings = DatasetSettings &
     // null => latest available class_of.
     classOf: number | null;
     dataType: "actuals" | "budget";
-    // Combine small nodes on each level into an "Other" node.
-    coalesce: boolean;
+    // The levels whose small nodes are combined into an "Other" node.
+    coalesceLevels: Set<Level>;
     // Highlight the resource node that includes PTA funding.
     highlightPta: boolean;
   };
@@ -102,15 +103,43 @@ const LETTER_LEVEL: Record<string, Level> = {
   n: "nces",
   s: "school",
 };
+const CANONICAL_LEVEL_ORDER: ReadonlyArray<Level> = [
+  "source",
+  "program",
+  "activity",
+  "object",
+  "nces",
+  "school",
+];
 
-// The out-of-the-box plan: Resource, Program, Activity shown; Object, NCES,
-// School hidden; reorderables in canonical order. Matches the previous
-// always-on source/program/activity behavior.
+// Which levels coalesce their small nodes. The DEFAULT is all-collapsed, so to
+// keep the default omitted from the URL we encode the COMPLEMENT — the letters
+// of the levels that are EXPANDED (not coalesced), in canonical order. Thus
+// all-collapsed (default) => "" (omitted), and e.g. "a" means "activity is
+// expanded, everything else collapsed".
+export function serializeCoalesceLevels(levels: Set<Level>): string {
+  return CANONICAL_LEVEL_ORDER.filter((l) => !levels.has(l))
+    .map((l) => LEVEL_LETTER[l])
+    .join("");
+}
+export function deserializeCoalesceLevels(s: string): Set<Level> {
+  const expanded = new Set<Level>();
+  for (const ch of s) {
+    const level = LETTER_LEVEL[ch];
+    if (level) {
+      expanded.add(level);
+    }
+  }
+  return new Set<Level>(CANONICAL_LEVEL_ORDER.filter((l) => !expanded.has(l)));
+}
+
+// The out-of-the-box plan: Resource, Program, Activity, Object shown; NCES,
+// School hidden; reorderables in canonical order.
 export const DEFAULT_LEVEL_PLAN: LevelPlan = [
   { level: "source", enabled: true },
   { level: "program", enabled: true },
   { level: "activity", enabled: true },
-  { level: "object", enabled: false },
+  { level: "object", enabled: true },
   { level: "nces", enabled: false },
   { level: "school", enabled: false },
 ];
@@ -186,7 +215,8 @@ export const DEFAULT_FLOW_SETTINGS: Array<FlowSettings> =
     sourceMode: "category" as const,
     classOf: null,
     dataType: "actuals" as const,
-    coalesce: false,
+    // Default: all levels collapsed (small nodes coalesced).
+    coalesceLevels: new Set<Level>(CANONICAL_LEVEL_ORDER),
     highlightPta: false,
   }));
 
@@ -239,13 +269,13 @@ export function makeFlowSerializeConfig(): SettingsConfig {
       },
     ],
     [
-      "coalesce",
+      "coalesceLevels",
       {
         serializerType: "custom",
         urlVar: "cs",
-        // false is the default and serializes to "" (omitted from URL).
-        serialize: (settings, key) => (settings[key] ? "1" : ""),
-        deserialize: (settings, s) => s === "1",
+        // empty set is the default and serializes to "" (omitted from URL).
+        serialize: (settings, key) => serializeCoalesceLevels(settings[key]),
+        deserialize: (settings, s) => deserializeCoalesceLevels(s),
       },
     ],
     [

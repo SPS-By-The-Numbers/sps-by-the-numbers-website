@@ -73,6 +73,8 @@
 }
 .highcharts-link.flow-filtered {
   fill: #bdbdbd;
+  // Filtered Out bands are de-emphasized (lower than the default link opacity).
+  fill-opacity: 0.25;
 }
 // The PTA-funding highlight: a putrid mustard / bile — unmissable, conveying
 // the appropriate enthusiasm for this question, while staying well clear of the
@@ -105,6 +107,34 @@
 }
 .highcharts-link.flow-budget.highcharts-point-hover {
   fill: #757575;
+}
+
+// School nodes colored by size (ranked into buckets). Distinct,
+// colorblind-friendly, red-free (widely-separated viridis anchors + amber,
+// small -> large). These MUST match SCHOOL_PALETTE in colors.ts.
+.highcharts-node.flow-school-b0 {
+  fill: #440154;
+  stroke: #440154;
+}
+.highcharts-node.flow-school-b1 {
+  fill: #3b528b;
+  stroke: #3b528b;
+}
+.highcharts-node.flow-school-b2 {
+  fill: #21918c;
+  stroke: #21918c;
+}
+.highcharts-node.flow-school-b3 {
+  fill: #5ec962;
+  stroke: #5ec962;
+}
+.highcharts-node.flow-school-b4 {
+  fill: #fde725;
+  stroke: #fde725;
+}
+.highcharts-node.flow-school-b5 {
+  fill: #e69f00;
+  stroke: #e69f00;
 }
 
 .highcharts-crosshair {

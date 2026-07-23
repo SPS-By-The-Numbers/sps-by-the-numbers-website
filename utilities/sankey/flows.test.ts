@@ -467,7 +467,7 @@ describe("computeFlows — coalesce small categories", () => {
       mode: "category",
       enabledLevels: BASE_LEVELS,
       filters: {},
-      coalesce: true,
+      coalesceLevels: ["activity"],
     });
     const other = nodes.find((n) => n.id === "other:2");
     expect(other).toBeDefined();
@@ -478,6 +478,19 @@ describe("computeFlows — coalesce small categories", () => {
     expect(nodeById(nodes, "act:31")).toBeUndefined();
     // The Other node carries the combined weight (5 x 2 = 10).
     expect(link(links, "prog:10", "other:2")).toBeCloseTo(10, 6);
+  });
+
+  it("only coalesces the levels asked for", () => {
+    // Same fixture, but coalescing the SOURCE level (not activity) leaves the
+    // tiny activities alone.
+    const { nodes } = computeFlows(expRows, revRows, {
+      mode: "category",
+      enabledLevels: BASE_LEVELS,
+      filters: {},
+      coalesceLevels: ["source"],
+    });
+    expect(nodes.find((n) => n.id === "other:2")).toBeUndefined();
+    expect(nodeById(nodes, "act:31")).toBeDefined();
   });
 
   it("never coalesces a never-combine source even when tiny", () => {
@@ -495,13 +508,13 @@ describe("computeFlows — coalesce small categories", () => {
       mode: "category",
       enabledLevels: BASE_LEVELS,
       filters: {},
-      coalesce: true,
+      coalesceLevels: ["source", "activity"],
     });
     // The tiny grants/gifts account is NOT swept into an Other resource.
     expect(nodeById(nodes, "src:2500")).toBeDefined();
   });
 
-  it("leaves everything separate when coalesce is off", () => {
+  it("leaves everything separate when no levels coalesce", () => {
     const { nodes } = computeFlows(expRows, revRows, {
       mode: "category",
       enabledLevels: BASE_LEVELS,

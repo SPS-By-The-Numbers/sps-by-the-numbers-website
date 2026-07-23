@@ -3,6 +3,7 @@ import { expect } from "@jest/globals";
 import {
   flowLinkClass,
   flowNodeClass,
+  sizeBuckets,
   FLOW_ACTUALS_CLASS,
   FLOW_BUDGET_CLASS,
   FLOW_DRAWDOWN_CLASS,
@@ -55,6 +56,11 @@ describe("flow presentation classes", () => {
     expect(flowLinkClass("prog:10", "act:27", "budget")).toBe(
       FLOW_BUDGET_CLASS,
     );
+    // Bands touching a Filtered Out node are the filtered class (de-emphasized).
+    expect(flowLinkClass("prog:10", "flt:1", "actuals")).toBe(
+      FLOW_FILTERED_CLASS,
+    );
+    expect(flowLinkClass("flt:1", "flt:2", "budget")).toBe(FLOW_FILTERED_CLASS);
   });
 
   it("highlights the PTA-funding source only when the flag is on", () => {
@@ -73,5 +79,37 @@ describe("flow presentation classes", () => {
     expect(flowNodeClass(node("prog:10", "program"), "actuals", true)).toBe(
       FLOW_ACTUALS_CLASS,
     );
+  });
+
+  it("sizeBuckets ranks ids into ascending-size quantiles", () => {
+    // 7 ids, sizes 10..70; 7 buckets => one per bucket, smallest = 0.
+    const sizes = new Map<string, number>([
+      ["c", 30],
+      ["a", 10],
+      ["g", 70],
+      ["b", 20],
+      ["e", 50],
+      ["d", 40],
+      ["f", 60],
+    ]);
+    const b = sizeBuckets(sizes, 7);
+    expect(b.get("a")).toBe(0); // smallest
+    expect(b.get("g")).toBe(6); // largest
+    expect(b.get("d")).toBe(3); // middle
+
+    // Fewer ids than buckets: each still lands in range, largest gets the top.
+    const b2 = sizeBuckets(
+      new Map([
+        ["x", 5],
+        ["y", 9],
+      ]),
+      7,
+    );
+    expect(b2.get("x")).toBe(0);
+    expect(b2.get("y")).toBe(6);
+
+    // Single id -> top bucket; empty -> empty.
+    expect(sizeBuckets(new Map([["only", 1]]), 7).get("only")).toBe(6);
+    expect(sizeBuckets(new Map(), 7).size).toBe(0);
   });
 });

@@ -97,9 +97,10 @@ export type ComputeFlowsOpts = {
   filters: FlowFilters;
   // Links below this weight (in dollars) are dropped to kill float dust.
   minWeight?: number;
-  // When true, small nodes on each level are combined into a single "Other"
-  // node per column (never-combine sources and fund-balance nodes are exempt).
-  coalesce?: boolean;
+  // Levels whose small nodes are combined into a single "Other" node for that
+  // column (never-combine sources and fund-balance nodes are always exempt).
+  // Empty / omitted = no coalescing.
+  coalesceLevels?: Level[];
 };
 
 // Totals summarizing the flow, for reconciliation and chart titles.

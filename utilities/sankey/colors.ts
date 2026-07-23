@@ -56,6 +56,47 @@ export const FLOW_FILTERED_CLASS = "flow-filtered"; // neutral grey
 // only a fraction of it (likely a small one). Opt-in via the settings toggle.
 export const FLOW_PTA_CLASS = "flow-pta";
 
+// School nodes are colored by SIZE: their sizes are ranked and split into
+// SCHOOL_BUCKET_COUNT buckets, each rendered in a distinct, colorblind-friendly,
+// red-free shade (widely-separated viridis anchors + amber, small -> large).
+// These hexes MUST match the .flow-school-b<n> rules in
+// styles/highcharts-base.scss (the CSS colors the nodes; this array colors the
+// legend swatches). Class per bucket is `flow-school-b<n>`.
+export const SCHOOL_PALETTE = [
+  "#440154", // dark purple (smallest)
+  "#3b528b", // indigo
+  "#21918c", // teal
+  "#5ec962", // green
+  "#fde725", // yellow
+  "#e69f00", // amber (largest)
+];
+export const SCHOOL_BUCKET_COUNT = SCHOOL_PALETTE.length;
+export function schoolBucketClass(bucket: number): string {
+  return `flow-school-b${bucket}`;
+}
+
+// Assigns each id a bucket in [0, buckets-1] by ASCENDING size RANK, spread
+// across the full palette: the smallest gets 0, the largest gets buckets-1, the
+// rest evenly in between. Ties break by id for determinism.
+export function sizeBuckets(
+  sizeById: Map<string, number>,
+  buckets: number,
+): Map<string, number> {
+  const ids = [...sizeById.keys()].sort((a, b) => {
+    const d = (sizeById.get(a) ?? 0) - (sizeById.get(b) ?? 0);
+    return d !== 0 ? d : a < b ? -1 : a > b ? 1 : 0;
+  });
+  const n = ids.length;
+  const out = new Map<string, number>();
+  ids.forEach((id, i) => {
+    out.set(
+      id,
+      n <= 1 ? buckets - 1 : Math.round((i / (n - 1)) * (buckets - 1)),
+    );
+  });
+  return out;
+}
+
 // Node ids for the two synthetic fund-balance nodes (emitted by the engine).
 export const DRAWDOWN_NODE_ID = "fb:drawdown";
 export const GROWTH_NODE_ID = "fb:growth";
@@ -93,14 +134,18 @@ export function flowNodeClass(
   return flowBaseClass(dataType);
 }
 
-// CSS class for a link (band): (optional) bands leaving the PTA-funding source,
-// else drawdown-outflow red, growth-inflow green, everything else the base.
+// CSS class for a link (band): a Filtered Out band (touching a `flt:` node)
+// first, then (optional) bands leaving the PTA-funding source, then
+// drawdown-outflow red, growth-inflow green, everything else the base.
 export function flowLinkClass(
   from: string,
   to: string,
   dataType: FlowDataType,
   highlightPta = false,
 ): string {
+  if (from.startsWith("flt:") || to.startsWith("flt:")) {
+    return FLOW_FILTERED_CLASS;
+  }
   if (highlightPta && from === PTA_SOURCE_NODE_ID) {
     return FLOW_PTA_CLASS;
   }

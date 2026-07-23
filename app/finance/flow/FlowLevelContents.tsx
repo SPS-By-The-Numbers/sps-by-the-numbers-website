@@ -15,14 +15,18 @@
 
 import Box from "@mui/material/Box";
 import Checkbox from "@mui/material/Checkbox";
+import CompressIcon from "@mui/icons-material/Compress";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import FormControl from "@mui/material/FormControl";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import FormLabel from "@mui/material/FormLabel";
+import IconButton from "@mui/material/IconButton";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import PushPinIcon from "@mui/icons-material/PushPin";
 import Select from "@mui/material/Select";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import SettingsSelect from "app/finance/_widgets/SettingsSelect";
 import Typography from "@mui/material/Typography";
 import { useDistrictData } from "app/finance/_providers/DistrictDataProvider";
@@ -67,6 +71,24 @@ function isAlwaysEnabled(level: Level): boolean {
   return ALWAYS_ENABLED_LEVELS.includes(level);
 }
 
+// Filled (contained) icon-button style: solid primary when active, muted grey
+// otherwise.
+function filledIconSx(active: boolean) {
+  return {
+    borderRadius: 1,
+    padding: "4px",
+    backgroundColor: active ? "primary.main" : "action.selected",
+    color: active ? "primary.contrastText" : "text.secondary",
+    "&:hover": {
+      backgroundColor: active ? "primary.dark" : "action.hover",
+    },
+    "&.Mui-disabled": {
+      backgroundColor: "action.disabledBackground",
+      color: "action.disabled",
+    },
+  };
+}
+
 export default function FlowLevelContents({
   settings,
   setSettings,
@@ -104,6 +126,16 @@ export default function FlowLevelContents({
     );
   };
 
+  const toggleCoalesce = (level: Level, on: boolean) => {
+    const next = new Set(settings.coalesceLevels);
+    if (on) {
+      next.add(level);
+    } else {
+      next.delete(level);
+    }
+    setSettings({ ...settings, coalesceLevels: next });
+  };
+
   // Move the reorderable row at `from` to `to`. Pinned rows (indices 0/1) never
   // move and are never displaced.
   const moveRow = (from: number, to: number) => {
@@ -134,8 +166,16 @@ export default function FlowLevelContents({
     >
       <FormControl component="fieldset" variant="standard">
         <FormLabel component="legend" sx={{ fontSize: "0.85rem" }}>
-          Levels (drag to reorder)
+          Levels — drag to reorder
         </FormLabel>
+        <Typography
+          variant="caption"
+          component="p"
+          sx={{ color: "text.secondary", mb: "0.25rem" }}
+        >
+          Eye: show / hide the level. Compress: coalesce its small nodes into an
+          &ldquo;Other&rdquo; node.
+        </Typography>
         <Box role="list" sx={{ display: "flex", flexDirection: "column" }}>
           {settings.levelPlan.map((entry, index) => {
             const pinned = isPinned(entry.level);
@@ -143,6 +183,8 @@ export default function FlowLevelContents({
             const unavailable =
               settings.dataType === "budget" &&
               ACTUALS_ONLY_LEVELS.includes(entry.level);
+            const shown = entry.enabled && !unavailable;
+            const coalesceOn = settings.coalesceLevels.has(entry.level);
             return (
               <Box
                 key={entry.level}
@@ -217,15 +259,6 @@ export default function FlowLevelContents({
                     sx={{ color: "text.secondary", fontSize: "1.1rem" }}
                   />
                 )}
-                <Checkbox
-                  size="small"
-                  checked={entry.enabled && !unavailable}
-                  disabled={isAlwaysEnabled(entry.level) || unavailable}
-                  onChange={(e) => toggleLevel(entry.level, e.target.checked)}
-                  inputProps={{
-                    "aria-label": `Show ${LEVEL_LABEL[entry.level]} column`,
-                  }}
-                />
                 <Typography
                   variant="body2"
                   sx={unavailable ? { color: "text.disabled" } : undefined}
@@ -233,6 +266,53 @@ export default function FlowLevelContents({
                   {LEVEL_LABEL[entry.level]}
                   {unavailable ? " (actuals only)" : ""}
                 </Typography>
+                <Box
+                  sx={{
+                    marginLeft: "auto",
+                    display: "flex",
+                    gap: "4px",
+                    pl: "4px",
+                  }}
+                >
+                  <IconButton
+                    size="small"
+                    sx={filledIconSx(shown)}
+                    disabled={isAlwaysEnabled(entry.level) || unavailable}
+                    onClick={() => toggleLevel(entry.level, !entry.enabled)}
+                    title={
+                      shown
+                        ? `Hide ${LEVEL_LABEL[entry.level]}`
+                        : `Show ${LEVEL_LABEL[entry.level]}`
+                    }
+                    aria-pressed={shown}
+                    aria-label={
+                      shown
+                        ? `Hide ${LEVEL_LABEL[entry.level]} column`
+                        : `Show ${LEVEL_LABEL[entry.level]} column`
+                    }
+                  >
+                    {shown ? (
+                      <VisibilityIcon fontSize="small" />
+                    ) : (
+                      <VisibilityOffIcon fontSize="small" />
+                    )}
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    sx={filledIconSx(coalesceOn)}
+                    disabled={!entry.enabled || unavailable}
+                    onClick={() => toggleCoalesce(entry.level, !coalesceOn)}
+                    title={
+                      coalesceOn
+                        ? `Stop coalescing small ${LEVEL_LABEL[entry.level]} nodes`
+                        : `Coalesce small ${LEVEL_LABEL[entry.level]} nodes into "Other"`
+                    }
+                    aria-pressed={coalesceOn}
+                    aria-label={`Coalesce small ${LEVEL_LABEL[entry.level]} nodes`}
+                  >
+                    <CompressIcon fontSize="small" />
+                  </IconButton>
+                </Box>
               </Box>
             );
           })}
@@ -277,19 +357,6 @@ export default function FlowLevelContents({
         setSettings={setSettings}
         fieldName="dataType"
         options={DATA_TYPE_OPTIONS}
-      />
-
-      <FormControlLabel
-        label="Coalesce Small Categories"
-        control={
-          <Checkbox
-            size="small"
-            checked={settings.coalesce}
-            onChange={(e) =>
-              setSettings({ ...settings, coalesce: e.target.checked })
-            }
-          />
-        }
       />
 
       <Box>

@@ -438,11 +438,12 @@ export function computeFlows(
     grandTotal: revenue + drawdown,
   };
 
-  if (opts.coalesce) {
+  if (opts.coalesceLevels && opts.coalesceLevels.length > 0) {
     const { nodes: cNodes, links: cLinks } = coalesceSmall(
       nodeList,
       links,
       totals.grandTotal,
+      new Set(opts.coalesceLevels),
     );
     return { nodes: cNodes, links: cLinks, totals };
   }
@@ -465,10 +466,14 @@ const OTHER_LABEL: Record<Level, string> = {
   school: "Other Schools",
 };
 
-// A node can be coalesced unless it is a fund-balance node, a Filtered Out node,
-// or a never-combine source account (which must always stay separate).
-function isCoalescable(n: SankeyNode): boolean {
+// A node can be coalesced only if its level is enabled for coalescing AND it is
+// not a fund-balance node, a Filtered Out node, or a never-combine source
+// account (which must always stay separate).
+function isCoalescable(n: SankeyNode, coalesceLevels: Set<Level>): boolean {
   if (n.custom.level === "fundBalance" || n.custom.level === "filtered") {
+    return false;
+  }
+  if (!coalesceLevels.has(n.custom.level)) {
     return false;
   }
   if (
@@ -481,14 +486,16 @@ function isCoalescable(n: SankeyNode): boolean {
   return true;
 }
 
-// Combine small coalescable nodes on each column into a single "Other:<col>"
-// node, rerouting their links and re-summing. The "Other" node lists the
-// combined members (name + through-flow) in its `custom.members` for the
-// tooltip. Columns with fewer than two small nodes are left untouched.
+// Combine small coalescable nodes on each column (whose level is in
+// `coalesceLevels`) into a single "Other:<col>" node, rerouting their links and
+// re-summing. The "Other" node lists the combined members (name + through-flow)
+// in its `custom.members` for the tooltip. Columns with fewer than two small
+// nodes are left untouched.
 function coalesceSmall(
   nodes: SankeyNode[],
   links: SankeyLink[],
   grandTotal: number,
+  coalesceLevels: Set<Level>,
 ): { nodes: SankeyNode[]; links: SankeyLink[] } {
   const threshold = grandTotal * COALESCE_MIN_FRACTION;
   if (threshold <= 0) {
@@ -508,7 +515,7 @@ function coalesceSmall(
   // Small coalescable nodes grouped by column.
   const smallByColumn = new Map<number, SankeyNode[]>();
   for (const n of nodes) {
-    if (isCoalescable(n) && nodeTotal(n.id) < threshold) {
+    if (isCoalescable(n, coalesceLevels) && nodeTotal(n.id) < threshold) {
       const arr = smallByColumn.get(n.column);
       if (arr) {
         arr.push(n);
