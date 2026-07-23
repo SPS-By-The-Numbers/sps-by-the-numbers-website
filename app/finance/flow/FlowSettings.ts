@@ -18,6 +18,10 @@
 //   - `cs`  EXPANDED (not-coalesced) levels as letters; default is all-collapsed
 //           so omitted = every level coalesced
 //   - `pt`  highlight the PTA-funding resource ("1" = on, omitted = off)
+//   - `scm` school-coalesce mode ("m" = middle-school area, "r" = region,
+//           omitted = enrollment size)
+//   - `sy`  the class_of whose enrollment sizes schools in size mode; omitted =>
+//           the chart's own year
 // Defaults serialize to the empty string so they are omitted from the URL.
 
 import { DEFAULT_DATASET_SETTINGS } from "app/finance/_settings/dataset_settings";
@@ -44,6 +48,10 @@ import type {
 } from "utilities/DistrictData";
 import type { Level, SourceMode } from "utilities/sankey/types";
 
+// How schools are grouped when the School level's coalescing is on: by
+// enrollment-size bucket, by middle-school attendance area, or by region.
+export type SchoolCoalesceMode = "size" | "ms" | "region";
+
 // One row of the level plan: a sankey column and whether it is currently shown.
 export type LevelPlanEntry = { level: Level; enabled: boolean };
 // The ordered level plan. Resource (source) and Program are pinned to indices
@@ -68,6 +76,11 @@ export type FlowSettings = DatasetSettings &
     dataType: "actuals" | "budget";
     // The levels whose small nodes are combined into an "Other" node.
     coalesceLevels: Set<Level>;
+    // When School coalescing is on, how schools are grouped (see the header).
+    schoolCoalesceMode: SchoolCoalesceMode;
+    // For size mode: the class_of whose enrollment sizes schools. null => the
+    // chart's own fiscal year.
+    schoolSizeYear: number | null;
     // Highlight the resource node that includes PTA funding.
     highlightPta: boolean;
   };
@@ -217,6 +230,8 @@ export const DEFAULT_FLOW_SETTINGS: Array<FlowSettings> =
     dataType: "actuals" as const,
     // Default: all levels collapsed (small nodes coalesced).
     coalesceLevels: new Set<Level>(CANONICAL_LEVEL_ORDER),
+    schoolCoalesceMode: "size" as const,
+    schoolSizeYear: null,
     highlightPta: false,
   }));
 
@@ -286,6 +301,32 @@ export function makeFlowSerializeConfig(): SettingsConfig {
         // false is the default and serializes to "" (omitted from URL).
         serialize: (settings, key) => (settings[key] ? "1" : ""),
         deserialize: (settings, s) => s === "1",
+      },
+    ],
+    [
+      "schoolCoalesceMode",
+      {
+        serializerType: "custom",
+        urlVar: "scm",
+        // "size" is the default and serializes to "" (omitted from URL).
+        serialize: (settings, key) =>
+          settings[key] === "ms" ? "m" : settings[key] === "region" ? "r" : "",
+        deserialize: (settings, s) =>
+          s === "m" ? "ms" : s === "r" ? "region" : "size",
+      },
+    ],
+    [
+      "schoolSizeYear",
+      {
+        serializerType: "custom",
+        urlVar: "sy",
+        // null (chart's own year) serializes to "" (omitted from URL).
+        serialize: (settings, key) =>
+          settings[key] == null ? "" : String(settings[key]),
+        deserialize: (settings, s) => {
+          const n = parseInt(s, 10);
+          return Number.isNaN(n) ? null : n;
+        },
       },
     ],
   ];

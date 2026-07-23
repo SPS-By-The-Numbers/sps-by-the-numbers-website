@@ -56,19 +56,19 @@ export const FLOW_FILTERED_CLASS = "flow-filtered"; // neutral grey
 // only a fraction of it (likely a small one). Opt-in via the settings toggle.
 export const FLOW_PTA_CLASS = "flow-pta";
 
-// School nodes are colored by SIZE: their sizes are ranked and split into
-// SCHOOL_BUCKET_COUNT buckets, each rendered in a distinct, colorblind-friendly,
-// red-free shade (widely-separated viridis anchors + amber, small -> large).
-// These hexes MUST match the .flow-school-b<n> rules in
-// styles/highcharts-base.scss (the CSS colors the nodes; this array colors the
-// legend swatches). Class per bucket is `flow-school-b<n>`.
+// School-column nodes are colored by node SIZE: magnitudes are ranked and split
+// into SCHOOL_BUCKET_COUNT buckets, each rendered on the PLASMA color scale
+// (perceptually uniform, dark purple -> yellow, small -> large). These hexes
+// MUST match the .flow-school-b<n> rules in styles/highcharts-base.scss (the CSS
+// colors the nodes; this array colors the legend swatches). Class per bucket is
+// `flow-school-b<n>`.
 export const SCHOOL_PALETTE = [
-  "#440154", // dark purple (smallest)
-  "#3b528b", // indigo
-  "#21918c", // teal
-  "#5ec962", // green
-  "#fde725", // yellow
-  "#e69f00", // amber (largest)
+  "#0d0887", // plasma 0.0 (smallest)
+  "#6a00a8", // plasma 0.2
+  "#b12a90", // plasma 0.4
+  "#e16462", // plasma 0.6
+  "#fca636", // plasma 0.8
+  "#f0f921", // plasma 1.0 (largest)
 ];
 export const SCHOOL_BUCKET_COUNT = SCHOOL_PALETTE.length;
 export function schoolBucketClass(bucket: number): string {

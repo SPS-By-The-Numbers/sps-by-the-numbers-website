@@ -86,6 +86,21 @@ function nodeIdForSource(code: number, sourceLabel: string): Cell {
   return { level: "source", code, id: `src:${code}`, name: sourceLabel };
 }
 
+// The AVRO revenue/expenditure labels occasionally carry a mis-encoded byte
+// where a dash belongs -- e.g. a Windows-1252 en/em dash (0x96 / 0x97) that
+// decoded either to the U+FFFD replacement char or straight to a C1 control
+// byte -- so a name renders as "Transportation<?>Operations". The upstream data
+// can't be fixed from here, so patch it at the label: turn those invalid
+// characters back into a dash. Returns "" for a missing label.
+function cleanLabel(s: string | null | undefined): string {
+  if (s == null) {
+    return "";
+  }
+  // U+FFFD replacement char + C0/C1 control chars (the latter includes the
+  // raw 0x96 / 0x97 en/em-dash bytes when decoded as Latin-1).
+  return s.replace(/[\u0000-\u001F\u007F-\u009F\uFFFD]/g, "-");
+}
+
 const LEVEL_ID_PREFIX: Record<Exclude<Level, "source">, string> = {
   program: "prog",
   activity: "act",
@@ -136,11 +151,17 @@ export function computeFlows(
     const combined =
       opts.mode === "category" &&
       !NEVER_COMBINE_REVENUE_CODES.has(r.revenue_code);
-    sourceLabel.set(key, combined ? r.category : r.revenue);
+    sourceLabel.set(key, cleanLabel(combined ? r.category : r.revenue));
     if (opts.mode === "category" && NEVER_COMBINE_REVENUE_CODES.has(key)) {
       sourceFilterCode.set(key, r.category_code);
     }
   }
+  // A revenue row with no category (a null category_code in category mode) keys
+  // a source with a blank label; show it as "Uncategorized" rather than "null".
+  const sourceName = (s: number): string => {
+    const label = sourceLabel.get(s);
+    return label && label.length > 0 ? label : "Uncategorized";
+  };
   // Program labels (for the program cell) plus the other expenditure-level
   // labels come from expenditure rows.
   const programLabel = new Map<number, string>();
@@ -164,7 +185,7 @@ export function computeFlows(
     }
     const program = e.program_code;
     if (!programLabel.has(program)) {
-      programLabel.set(program, e.program);
+      programLabel.set(program, cleanLabel(e.program));
     }
     const codes = new Map<Exclude<Level, "source" | "program">, number>();
     const keyParts: number[] = [program];
@@ -174,7 +195,7 @@ export function computeFlows(
       keyParts.push(code);
       const label = e[EXP_LABEL_FIELD[l]] as string;
       if (!expLabels[l].has(code)) {
-        expLabels[l].set(code, label);
+        expLabels[l].set(code, cleanLabel(label));
       }
     }
     const key = keyParts.join("|");
@@ -260,7 +281,7 @@ export function computeFlows(
             continue;
           }
           const s = srcCodes[i];
-          const srcCell = nodeIdForSource(s, sourceLabel.get(s) ?? String(s));
+          const srcCell = nodeIdForSource(s, sourceName(s));
           records.push({ path: [srcCell, ...expCells], weight: w });
         }
       }
@@ -303,7 +324,7 @@ export function computeFlows(
         if (amount <= 0) {
           continue;
         }
-        const srcCell = nodeIdForSource(s, sourceLabel.get(s) ?? String(s));
+        const srcCell = nodeIdForSource(s, sourceName(s));
         records.push({ path: [srcCell, growthCell], weight: amount });
       }
     }

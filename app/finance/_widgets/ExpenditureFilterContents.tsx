@@ -4,6 +4,7 @@ import ActivityFilter from "app/finance/_filteritems/activity";
 import AssessmentTypeFilter from "app/finance/_filteritems/assessment_type";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import DutyRootFilter from "app/finance/_filteritems/duty_root";
+import DutySuffixFilter from "app/finance/_filteritems/duty_suffix";
 import GradeLevelFilter from "app/finance/_filteritems/grade_level";
 import FormGroup from "@mui/material/FormGroup";
 import NcesFilter from "app/finance/_filteritems/nces";
@@ -21,6 +22,7 @@ import type {
   OFilters,
   SchoolFilters,
   DutyRootFilters,
+  DutySuffixFilters,
   NcesFilters,
   GradeLevelFilters,
   TestAdministrationFilters,
@@ -191,6 +193,29 @@ export function DutyRootFilterContents({
         setSettings({
           ...settings,
           dutyRootCodes: DutyRootFilter.treeViewItemsToCodes(selected),
+        })
+      }
+    />
+  );
+}
+
+// Settings component to filter staffing by contract type (Certificated vs
+// Classified, from the s275 duty suffix).
+export function DutySuffixFilterContents({
+  settings,
+  setSettings,
+}: Props<BaseSettings & DutySuffixFilters>) {
+  return (
+    <FilterTree
+      title="Contract Type"
+      items={DutySuffixFilter.treeViewItems()}
+      selectedItems={DutySuffixFilter.codesToTreeViewItems(
+        settings.dutySuffixCodes,
+      )}
+      setSelectedItems={(selected) =>
+        setSettings({
+          ...settings,
+          dutySuffixCodes: DutySuffixFilter.treeViewItemsToCodes(selected),
         })
       }
     />

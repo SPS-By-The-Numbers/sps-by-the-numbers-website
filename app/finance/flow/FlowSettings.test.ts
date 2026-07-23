@@ -112,6 +112,8 @@ describe("FlowSettings level plan", () => {
     expect(serialized).not.toContain("dt.");
     expect(serialized).not.toContain("cs.");
     expect(serialized).not.toContain("pt.");
+    expect(serialized).not.toContain("scm.");
+    expect(serialized).not.toContain("sy.");
   });
 
   it("full settings round-trip through the URL", () => {
@@ -132,6 +134,8 @@ describe("FlowSettings level plan", () => {
       dataType: "budget" as const,
       programCodes: programSubset,
       coalesceLevels: new Set<Level>(["activity", "school"]),
+      schoolCoalesceMode: "ms" as const,
+      schoolSizeYear: 2019,
       highlightPta: true,
     };
 
@@ -148,6 +152,8 @@ describe("FlowSettings level plan", () => {
     // means the other four (source/program/object/nces) are expanded => "rpon".
     expect(serialized[0]).toContain("cs.rpon");
     expect(serialized[0]).toContain("pt.1");
+    expect(serialized[0]).toContain("scm.m"); // ms mode
+    expect(serialized[0]).toContain("sy.2019");
 
     const [restored] = deserializeDatasetSettings(
       serialized,
@@ -163,6 +169,8 @@ describe("FlowSettings level plan", () => {
     expect(restored.coalesceLevels).toEqual(
       new Set<Level>(["activity", "school"]),
     );
+    expect(restored.schoolCoalesceMode).toEqual("ms");
+    expect(restored.schoolSizeYear).toEqual(2019);
     expect(restored.highlightPta).toBe(true);
   });
 

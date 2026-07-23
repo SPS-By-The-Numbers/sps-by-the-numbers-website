@@ -60,6 +60,10 @@ export type DutyRootFilters = {
   dutyRootCodes: Set<number>;
 };
 
+export type DutySuffixFilters = {
+  dutySuffixCodes: Set<number>;
+};
+
 export type RevenueCategoryFilters = {
   revenueCategoryCodes: Set<number>;
 };
@@ -76,7 +80,9 @@ type ExpendituresFilters = Partial<PAOFilters & NcesFilters & SchoolFilters>;
 type RevenuesFilters = Partial<
   RevenueCategoryFilters & RevenueAccountFilters & PFilters
 >;
-type StaffingFilters = Partial<PAFilters & DutyRootFilters & SchoolFilters>;
+type StaffingFilters = Partial<
+  PAFilters & DutyRootFilters & DutySuffixFilters & SchoolFilters
+>;
 type EnrollmentFilters = Partial<
   DemographicFilters & SchoolFilters & GradeLevelFilters & StudentGroupFilters
 >;
@@ -337,6 +343,27 @@ export default class DistrictData {
     return this.fundedEnrollment_df;
   }
 
+  // Per-school total enrollment for a class_of, as school_code -> headcount,
+  // read from OSPI rc_enrollment's "All Grades" (grade_level_code 99),
+  // all_students row. Empty when the year isn't covered -- rc_enrollment does
+  // not reach as far back as the expenditure history -- which lets callers fall
+  // back (see the Expenditure Flow school-size coloring).
+  schoolEnrollmentTotals(classOf: number): Map<number, number> {
+    const rows = this.enrollment_df
+      .params({ classOf })
+      .filter((d, $) => d.class_of === $.classOf && d.grade_level_code === 99)
+      .groupby("school_code")
+      .rollup({ enrollment: op.sum("all_students") })
+      .objects() as Array<{ school_code: number; enrollment: number }>;
+    const out = new Map<number, number>();
+    for (const r of rows) {
+      if (r.enrollment > 0) {
+        out.set(r.school_code, r.enrollment);
+      }
+    }
+    return out;
+  }
+
   expenditures() {
     return this.gf_expenditure_df;
   }
@@ -524,6 +551,14 @@ export default class DistrictData {
       results = results
         .params(staffingFilter)
         .filter((d, $) => d.includes([...$.dutyRootCodes], d.duty_root_code));
+    }
+
+    if (staffingFilter.dutySuffixCodes !== undefined) {
+      results = results
+        .params(staffingFilter)
+        .filter((d, $) =>
+          d.includes([...$.dutySuffixCodes], d.duty_suffix_code),
+        );
     }
 
     return results;

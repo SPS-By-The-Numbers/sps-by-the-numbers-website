@@ -59,6 +59,12 @@ const DATA_TYPE_OPTIONS: Record<string, string> = {
   budget: "Budget",
 };
 
+const SCHOOL_COALESCE_MODE_OPTIONS: Record<string, string> = {
+  size: "Enrollment size",
+  ms: "Middle school area",
+  region: "Region",
+};
+
 function fiscalYearLabel(classOf: number): string {
   return `${classOf - 1}-${classOf}`;
 }
@@ -98,6 +104,7 @@ export default function FlowLevelContents({
 }) {
   const yearLabelId = useId();
   const yearSelectId = useId();
+  const sizeYearLabelId = useId();
   const { districtDataMap } = useDistrictData();
   const districtData = districtDataMap[settings.ccddd];
 
@@ -319,6 +326,73 @@ export default function FlowLevelContents({
         </Box>
       </FormControl>
 
+      {(() => {
+        // School-coalescing options appear only when the School column is shown
+        // AND its coalescing is on: choose how schools are grouped, and (for
+        // size) which year's enrollment to size by.
+        const schoolEntry = settings.levelPlan.find(
+          (e) => e.level === "school",
+        );
+        const schoolShown =
+          !!schoolEntry?.enabled && settings.dataType !== "budget";
+        if (!schoolShown || !settings.coalesceLevels.has("school")) {
+          return null;
+        }
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.5rem",
+              pl: "0.5rem",
+              borderLeft: "2px solid",
+              borderColor: "divider",
+            }}
+          >
+            <Typography variant="caption" sx={{ color: "text.secondary" }}>
+              Coalesce schools into groups by:
+            </Typography>
+            <SettingsSelect
+              label="Group schools by"
+              settings={settings}
+              setSettings={setSettings}
+              fieldName="schoolCoalesceMode"
+              options={SCHOOL_COALESCE_MODE_OPTIONS}
+            />
+            {settings.schoolCoalesceMode === "size" && (
+              <FormControl size="small">
+                <InputLabel id={sizeYearLabelId}>Size by year</InputLabel>
+                <Select
+                  labelId={sizeYearLabelId}
+                  label="Size by year"
+                  value={
+                    settings.schoolSizeYear === null
+                      ? ""
+                      : String(settings.schoolSizeYear)
+                  }
+                  onChange={(e) =>
+                    setSettings({
+                      ...settings,
+                      schoolSizeYear:
+                        e.target.value === ""
+                          ? null
+                          : parseInt(e.target.value, 10),
+                    })
+                  }
+                >
+                  <MenuItem value="">Same as chart</MenuItem>
+                  {years.map((y) => (
+                    <MenuItem key={y} value={String(y)}>
+                      {fiscalYearLabel(y)}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
+          </Box>
+        );
+      })()}
+
       <SettingsSelect
         label="Source Granularity"
         settings={settings}
@@ -361,7 +435,7 @@ export default function FlowLevelContents({
 
       <Box>
         <FormControlLabel
-          label="Highlight resource w/ PTA funds"
+          label="Where is PTA Funding?"
           control={
             <Checkbox
               size="small"
@@ -372,14 +446,16 @@ export default function FlowLevelContents({
             />
           }
         />
-        <Typography
-          variant="caption"
-          component="p"
-          sx={{ color: "text.secondary", ml: "0.25rem", mt: "-0.25rem" }}
-        >
-          Highlights the whole Gifts, Grants &amp; Donations resource. PTA gifts
-          are only a fraction of it — likely a small one.
-        </Typography>
+        {settings.highlightPta && (
+          <Typography
+            variant="caption"
+            component="p"
+            sx={{ color: "text.secondary", ml: "0.25rem", mt: "-0.25rem" }}
+          >
+            It&apos;s a fraction of the Gifts, Grants &amp; Donations node, now
+            highlighted in yellow.
+          </Typography>
+        )}
       </Box>
     </Box>
   );

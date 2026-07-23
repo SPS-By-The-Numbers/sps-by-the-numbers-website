@@ -18,7 +18,7 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Typography from "@mui/material/Typography";
 import { usePathname, useRouter } from "next/navigation";
 import { computeFlows } from "utilities/sankey/flows";
-import { linksForNode } from "utilities/sankey/deepLinks";
+import { linksForBand, linksForNode } from "utilities/sankey/deepLinks";
 import {
   flowLinkClass,
   flowNodeClass,
@@ -65,29 +65,112 @@ import type {
   ExpRow,
   FlowFilters,
   RevRow,
+  SankeyLink,
   SankeyNode,
 } from "utilities/sankey/types";
 
 const fmt = makeCurrencyFormatter(2);
+// School sizes are enrollment head-counts, not dollars: format them as plain
+// rounded integers (for the size legend and the coalesced bucket labels).
+const fmtCount = (n: number) => Math.round(n).toLocaleString();
 
 function fiscalYearLabel(classOf: number): string {
   return `${classOf - 1}-${classOf}`;
 }
 
-// Shared by both the hover tooltip and the click-to-open Popover fallback
-// (see the click handler below): the two per-band links, skipping nodes
-// `linkForNode` says aren't linkable (Fund Balance / Filtered Out).
-// Band (link) hover: both ends' links, each faceting the target on the NEXT
-// level down (nextLayer = true); a node hover facets on the node's own level.
-function bandLinks(
-  fromNode: { options: SankeyNode },
-  toNode: { options: SankeyNode },
-  ctx: DeepLinkCtx,
-): Array<DeepLink> {
-  return [
-    ...linksForNode(fromNode.options, ctx, true),
-    ...linksForNode(toNode.options, ctx, true),
-  ];
+// Render a band's deep links (see `linksForBand`) as one tooltip sentence:
+// "Explore in <a>Expenditures</a> or <a>Detailed Actuals</a>" (an Oxford-comma
+// list once Staffing joins). Empty string when the band has no links.
+function bandLinksHtml(links: Array<DeepLink>): string {
+  if (links.length === 0) {
+    return "";
+  }
+  const anchors = links.map(
+    (l) =>
+      `<a href="${l.href}" target="_blank" rel="noopener" style="pointer-events:all">${l.label} ↗</a>`,
+  );
+  const joined =
+    anchors.length === 1
+      ? anchors[0]
+      : anchors.length === 2
+        ? `${anchors[0]} or ${anchors[1]}`
+        : `${anchors.slice(0, -1).join(", ")}, or ${anchors[anchors.length - 1]}`;
+  return `<br/>Explore in ${joined}`;
+}
+
+// When the School level coalesces, merge school nodes into aggregate group
+// nodes per the caller-supplied `group` map (school node id -> {aggregate id,
+// display name}) -- e.g. one node per enrollment-size bucket, middle-school
+// attendance area, or region. Schools absent from the map (District Office; a
+// school with no size in size mode) stay their own nodes. Each aggregate carries
+// its merged schools as `members` (for the tooltip). Reroutes and re-sums every
+// link touching a merged school. Color is driven by the aggregate id's prefix
+// downstream (`sbucket:` -> size palette; others -> base), not this node.color.
+function coalesceSchoolsByGroup(
+  nodes: SankeyNode[],
+  links: SankeyLink[],
+  group: Map<string, { id: string; name: string }>,
+): { nodes: SankeyNode[]; links: SankeyLink[] } {
+  // Through-flow of each school (they are terminal, so pure inflow), for its
+  // entry in the aggregate's member list.
+  const flow = new Map<string, number>();
+  for (const l of links) {
+    flow.set(l.to, (flow.get(l.to) ?? 0) + l.weight);
+  }
+  const rename = new Map<string, string>();
+  const groupName = new Map<string, string>();
+  const members = new Map<string, Array<{ name: string; weight: number }>>();
+  let column = 0;
+  for (const n of nodes) {
+    const g = group.get(n.id);
+    if (g === undefined) {
+      continue;
+    }
+    rename.set(n.id, g.id);
+    groupName.set(g.id, g.name);
+    column = n.column;
+    const m = { name: n.name, weight: flow.get(n.id) ?? 0 };
+    const arr = members.get(g.id);
+    if (arr) {
+      arr.push(m);
+    } else {
+      members.set(g.id, [m]);
+    }
+  }
+  if (rename.size === 0) {
+    return { nodes, links };
+  }
+
+  // Reroute each link onto the aggregate ids and re-sum duplicate (from, to).
+  const mapId = (id: string) => rename.get(id) ?? id;
+  const merged = new Map<string, SankeyLink>();
+  for (const l of links) {
+    const from = mapId(l.from);
+    const to = mapId(l.to);
+    const key = `${from}\t${to}`;
+    const prev = merged.get(key);
+    if (prev) {
+      prev.weight += l.weight;
+    } else {
+      merged.set(key, { from, to, weight: l.weight });
+    }
+  }
+
+  const groupNodes: SankeyNode[] = [...members.entries()].map(([id, mem]) => ({
+    id,
+    name: groupName.get(id) ?? "Schools",
+    color: "#000",
+    column,
+    custom: {
+      level: "school" as const,
+      code: null,
+      members: mem.sort((a, c) => c.weight - a.weight),
+    },
+  }));
+  return {
+    nodes: nodes.filter((n) => !rename.has(n.id)).concat(groupNodes),
+    links: [...merged.values()],
+  };
 }
 
 // State for the click-triggered Popover fallback. `stickOnContact` (set on
@@ -161,6 +244,21 @@ export default function FlowDashboard({
       settings.classOf ?? (years.length > 0 ? Math.max(...years) : 0);
     const dt = settings.dataType;
 
+    // School size is measured by total enrollment (OSPI rc_enrollment headcount)
+    // keyed by school_code, for the chosen size year (default: the chart's own
+    // year). rc_enrollment doesn't cover every expenditure year; when the size
+    // year has none (`haveEnrollment` false) size-based coloring/grouping isn't
+    // possible.
+    const sizeYear = settings.schoolSizeYear ?? year;
+    const enrollmentByCode = districtData.schoolEnrollmentTotals(sizeYear);
+    const haveEnrollment = enrollmentByCode.size > 0;
+    // How School coalescing groups schools, and whether we do it ourselves (vs
+    // the engine's generic "Other" rule): always for ms/region, and for size
+    // only when enrollment covers the size year.
+    const sizeMode = settings.schoolCoalesceMode === "size";
+    const customSchoolCoalesce =
+      settings.coalesceLevels.has("school") && (!sizeMode || haveEnrollment);
+
     // Bake the arquero frames down to one (class_of, data_type) as plain rows.
     const expRows = districtData
       .expenditures()
@@ -208,14 +306,24 @@ export default function FlowDashboard({
     const enabledLevels = enabledLevelsFromPlan(settings.levelPlan).filter(
       (l) => dt !== "budget" || !ACTUALS_ONLY_LEVELS.includes(l),
     );
-    const { nodes, links, totals } = computeFlows(expRows, revRows, {
+    // When we take over School coalescing (`customSchoolCoalesce`), hold "school"
+    // back from the engine and group schools ourselves below (by size / middle-
+    // school area / region). Otherwise let the engine coalesce schools its
+    // default "Other Schools" way.
+    const {
+      nodes: rawNodes,
+      links: rawLinks,
+      totals,
+    } = computeFlows(expRows, revRows, {
       mode: settings.sourceMode,
       enabledLevels,
       filters,
-      coalesceLevels: [...settings.coalesceLevels],
+      coalesceLevels: [...settings.coalesceLevels].filter(
+        (l) => l !== "school" || !customSchoolCoalesce,
+      ),
     });
 
-    if (links.length === 0) {
+    if (rawLinks.length === 0) {
       return {
         options: null,
         empty: true,
@@ -223,6 +331,95 @@ export default function FlowDashboard({
         schoolLegend: [] as Array<{ color: string; min: number; max: number }>,
       };
     }
+
+    // Nodes pinned to the BOTTOM of their column regardless of size: the
+    // "Filtered Out" (flt:) nodes and the District Office school node(s).
+    const districtOfficeNodeIds = new Set(
+      (ALL_SCHOOLS[settings.ccddd] ?? [])
+        .filter((s) => s.is_district_office)
+        .map((s) => `sch:${s.school_code}`),
+    );
+
+    // For SIZE-mode GROUPING only: rank the individual schools by enrollment
+    // (see enrollmentByCode) into buckets so they can merge into enrollment tiers
+    // ("Schools 294–450"). Excludes the District Office and any school the
+    // enrollment data omits; empty when the size year has no enrollment
+    // (`haveEnrollment` false). Node COLOR is handled separately, by node size,
+    // below.
+    const enrollSizes = new Map<string, number>();
+    if (haveEnrollment) {
+      for (const n of rawNodes) {
+        if (n.custom.level === "school" && !districtOfficeNodeIds.has(n.id)) {
+          const e =
+            n.custom.code !== null
+              ? enrollmentByCode.get(n.custom.code)
+              : undefined;
+          if (e !== undefined) {
+            enrollSizes.set(n.id, e);
+          }
+        }
+      }
+    }
+    const enrollBucket = sizeBuckets(enrollSizes, SCHOOL_BUCKET_COUNT);
+    const enrollRange = new Map<number, { min: number; max: number }>();
+    for (const [id, b] of enrollBucket.entries()) {
+      const s = enrollSizes.get(id) ?? 0;
+      const r = enrollRange.get(b);
+      if (r) {
+        r.min = Math.min(r.min, s);
+        r.max = Math.max(r.max, s);
+      } else {
+        enrollRange.set(b, { min: s, max: s });
+      }
+    }
+    const enrollLabel = (b: number) => {
+      const r = enrollRange.get(b);
+      return r ? `Schools ${fmtCount(r.min)}–${fmtCount(r.max)}` : "Schools";
+    };
+
+    // When we take over School coalescing, decide which aggregate each school
+    // merges into, by the chosen mode: an enrollment-size bucket ("Schools
+    // 294–450"), a middle-school attendance area, or a region (labeled by name).
+    // The District Office is excluded (it stays its own bottom-pinned node); a
+    // school with no enrollment (size mode) stays an individual node. Empty map
+    // => nothing to merge (engine output as-is). Coloring is by node size below.
+    const schoolGroup = new Map<string, { id: string; name: string }>();
+    if (customSchoolCoalesce) {
+      const infoByCode = new Map(
+        (ALL_SCHOOLS[settings.ccddd] ?? []).map((s) => [s.school_code, s]),
+      );
+      for (const n of rawNodes) {
+        if (n.custom.level !== "school" || districtOfficeNodeIds.has(n.id)) {
+          continue;
+        }
+        const code = n.custom.code;
+        if (code === null) {
+          continue;
+        }
+        if (sizeMode) {
+          const b = enrollBucket.get(n.id);
+          if (b !== undefined) {
+            schoolGroup.set(n.id, { id: `sbucket:${b}`, name: enrollLabel(b) });
+          }
+        } else if (settings.schoolCoalesceMode === "ms") {
+          const info = infoByCode.get(code);
+          schoolGroup.set(n.id, {
+            id: `smsg:${info?.ms_assignment_code ?? 0}`,
+            name: info?.ms_assignment ?? "Unknown area",
+          });
+        } else {
+          const info = infoByCode.get(code);
+          schoolGroup.set(n.id, {
+            id: `sregion:${info?.region ?? "unknown"}`,
+            name: info?.region ?? "Unknown region",
+          });
+        }
+      }
+    }
+    const { nodes, links } =
+      schoolGroup.size > 0
+        ? coalesceSchoolsByGroup(rawNodes, rawLinks, schoolGroup)
+        : { nodes: rawNodes, links: rawLinks };
 
     // A gray "Filtered Out" band only appears when a per-level filter diverts
     // flow; surface an explanatory caption in that case (see the legend note
@@ -245,16 +442,10 @@ export default function FlowDashboard({
     // interior nodes by conservation; one side is 0 for pure sources / sinks).
     const nodeSize = (id: string) =>
       Math.max(inflow.get(id) ?? 0, outflow.get(id) ?? 0);
-    // Nodes pinned to the BOTTOM of their column regardless of size: the
-    // "Filtered Out" (flt:) nodes and the District Office school node(s).
     // Highcharts orders a column top->bottom by node creation order (first
     // appearance in the links scan), so we sort every link touching a
-    // bottom-pinned node after all others: those nodes are then created last.
-    const districtOfficeNodeIds = new Set(
-      (ALL_SCHOOLS[settings.ccddd] ?? [])
-        .filter((s) => s.is_district_office)
-        .map((s) => `sch:${s.school_code}`),
-    );
+    // bottom-pinned node (Filtered Out / District Office) after all others:
+    // those nodes are then created last and land at the bottom of their column.
     const isBottomNode = (id: string) =>
       id.startsWith("flt:") || districtOfficeNodeIds.has(id);
     const isBottomLink = (l: (typeof links)[number]) =>
@@ -301,29 +492,34 @@ export default function FlowDashboard({
     );
     const marginRight = Math.min(460, Math.round(lastColMaxLen * 7.5) + 22);
 
-    // School nodes are colored by SIZE: rank their sizes into buckets and give
-    // each a palette class (see colors.ts / the scss). The District Office is
-    // pinned to the bottom, not size-colored, so it is excluded from the ramp.
-    const schoolSizes = new Map<string, number>();
+    // Color EVERY school-column node -- individual school, size/ms/region
+    // aggregate, engine "Other Schools", AND the District Office -- by its NODE
+    // SIZE (through-flow magnitude), ranked onto the plasma ramp (see
+    // SCHOOL_PALETTE). Applies to all categorize modes. The District Office is
+    // included: it is (almost) always the largest node, so it lands in the top
+    // bucket -- the brightest color. (The ramp is rank-based, so its outlier
+    // magnitude doesn't distort the others.) Color is independent of ordering:
+    // the District Office is still pinned to the bottom (see isBottomNode).
+    const colorSizes = new Map<string, number>();
     for (const n of nodes) {
-      if (n.custom.level === "school" && !districtOfficeNodeIds.has(n.id)) {
-        schoolSizes.set(n.id, nodeSize(n.id));
+      if (n.custom.level === "school") {
+        colorSizes.set(n.id, nodeSize(n.id));
       }
     }
-    const schoolBucket = sizeBuckets(schoolSizes, SCHOOL_BUCKET_COUNT);
-    // Legend rows: for each occupied bucket, its color and size range.
-    const bucketRange = new Map<number, { min: number; max: number }>();
-    for (const [id, b] of schoolBucket.entries()) {
-      const s = schoolSizes.get(id) ?? 0;
-      const r = bucketRange.get(b);
+    const schoolColorBucket = sizeBuckets(colorSizes, SCHOOL_BUCKET_COUNT);
+    // Legend: each occupied plasma bucket's color and its node-size ($) range.
+    const colorRange = new Map<number, { min: number; max: number }>();
+    for (const [id, b] of schoolColorBucket.entries()) {
+      const s = colorSizes.get(id) ?? 0;
+      const r = colorRange.get(b);
       if (r) {
         r.min = Math.min(r.min, s);
         r.max = Math.max(r.max, s);
       } else {
-        bucketRange.set(b, { min: s, max: s });
+        colorRange.set(b, { min: s, max: s });
       }
     }
-    const schoolLegend = [...bucketRange.entries()]
+    const schoolLegend = [...colorRange.entries()]
       .sort((a, b) => a[0] - b[0])
       .map(([bucket, r]) => ({
         color: SCHOOL_PALETTE[bucket] ?? "#000",
@@ -374,8 +570,8 @@ export default function FlowDashboard({
             // everything else is base, except the drawdown node (red), growth
             // node (green), Filtered Out (grey), and — highlighting PTA — the
             // PTA-funding source node.
-            className: schoolBucket.has(n.id)
-              ? schoolBucketClass(schoolBucket.get(n.id)!)
+            className: schoolColorBucket.has(n.id)
+              ? schoolBucketClass(schoolColorBucket.get(n.id)!)
               : flowNodeClass(n, dt, settings.highlightPta),
             column: n.column,
             custom: n.custom,
@@ -457,18 +653,17 @@ export default function FlowDashboard({
             return `<b>${p.name}</b><br/>${fmt(p.sum)}${nodeLinksHtml}`;
           }
 
-          // Band hover: each end's links, faceted one level down.
-          const links = bandLinks(p.fromNode, p.toNode, ctx);
-          const linksHtml = links
-            .map(
-              (l) =>
-                `<a href="${l.href}" target="_blank" rel="noopener" style="pointer-events:all">${l.label} ↗</a>`,
-            )
-            .join("<br/>");
+          // Band hover: one view filtered to exactly this band, faceted on the
+          // downstream level -- Expenditures / Detailed Actuals (+ Staffing for
+          // compensation-object flows). See `linksForBand`.
+          const links = linksForBand(
+            p.fromNode.options as SankeyNode,
+            p.toNode.options as SankeyNode,
+            ctx,
+          );
           return (
-            `<b>${p.fromNode.name} → ${p.toNode.name}</b><br/>${fmt(
-              p.weight,
-            )}<br/>` + linksHtml
+            `<b>${p.fromNode.name} → ${p.toNode.name}</b><br/>${fmt(p.weight)}` +
+            bandLinksHtml(links)
           );
         },
       },
@@ -499,7 +694,11 @@ export default function FlowDashboard({
                   links = linksForNode(p.options as SankeyNode, ctx);
                 } else if (p.fromNode && p.toNode) {
                   title = `${p.fromNode.name} → ${p.toNode.name}`;
-                  links = bandLinks(p.fromNode, p.toNode, ctx);
+                  links = linksForBand(
+                    p.fromNode.options as SankeyNode,
+                    p.toNode.options as SankeyNode,
+                    ctx,
+                  );
                 }
 
                 if (links.length === 0) {
@@ -587,7 +786,7 @@ export default function FlowDashboard({
             }}
           >
             <Typography variant="caption" sx={{ fontWeight: 600 }}>
-              School size:
+              School node size:
             </Typography>
             {schoolLegend.map((b, i) => (
               <Box

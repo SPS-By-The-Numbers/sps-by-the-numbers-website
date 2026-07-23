@@ -5,10 +5,12 @@ import {
   ProgramFilterContents,
   SchoolFilterContents,
   DutyRootFilterContents,
+  DutySuffixFilterContents,
 } from "app/finance/_widgets/ExpenditureFilterContents";
 import ActivityFilter from "app/finance/_filteritems/activity";
 import ProgramFilter from "app/finance/_filteritems/program";
 import DutyRootFilter from "app/finance/_filteritems/duty_root";
+import DutySuffixFilter from "app/finance/_filteritems/duty_suffix";
 import { makeHighchartConfig, getDataBounds } from "utilities/highcharts/utils";
 import { makeSchoolFilter } from "app/finance/_filteritems/school";
 import { useMemo } from "react";
@@ -17,21 +19,23 @@ import {
   toChartableDataset,
   getDataColumnNames,
 } from "utilities/ChartableMetrics";
-import {
-  makeContextCell,
-} from "utilities/highcharts/ChartConfigGenerators";
-import {
-  extractFacets,
-} from "utilities/ChartableVitals";
+import { makeContextCell } from "utilities/highcharts/ChartConfigGenerators";
+import { extractFacets } from "utilities/ChartableVitals";
 import { makeFacetContents } from "app/finance/_widgets/FacetContents";
 import ChartsEnabledContents from "app/finance/_widgets/ChartsEnabledContents";
 import SchoolGroupingContents from "app/finance/_widgets/SchoolGroupingContents";
 import SortOrderContents from "app/finance/_widgets/SortOrderContents";
 import YScaleContents from "app/finance/_widgets/YScaleContents";
-import { serializeDatasetSettings, serializeOneSetting } from "app/finance/_settings/common_settings";
+import {
+  serializeDatasetSettings,
+  serializeOneSetting,
+} from "app/finance/_settings/common_settings";
 import { makeFacetComponents } from "utilities/highcharts/FacetedBudgetActualCharts";
 import { op } from "arquero";
-import { SERIALIZE_STAFFING_SETTINGS_GENERATORS, SERIALIZE_STAFFING_CONTEXT_SETTINGS_GENERATORS } from "./StaffingPage";
+import {
+  SERIALIZE_STAFFING_SETTINGS_GENERATORS,
+  SERIALIZE_STAFFING_CONTEXT_SETTINGS_GENERATORS,
+} from "./StaffingPage";
 import * as aq from "arquero";
 import HcDashboard from "components/HcDashboard";
 import DatasetSettingsContents from "app/finance/_widgets/DatasetSettingsContents";
@@ -59,12 +63,14 @@ function augmentContextComponents(gui, components, data) {
 
   const fteBounds = {
     min: 0,
-    max: Math.max(...[
-      getDataBounds(data, "context_fte_studentSupportFte_actuals").max,
-      getDataBounds(data, "context_fte_buildingSupportFte_actuals").max,
-      getDataBounds(data, "context_fte_otherFte_actuals").max,
-    ])
-  }
+    max: Math.max(
+      ...[
+        getDataBounds(data, "context_fte_studentSupportFte_actuals").max,
+        getDataBounds(data, "context_fte_buildingSupportFte_actuals").max,
+        getDataBounds(data, "context_fte_otherFte_actuals").max,
+      ],
+    ),
+  };
   const cashflowBounds = getDataBounds(data, "context_amount_cashflow");
   gui.layouts.unshift({
     rowClassName: "context-row",
@@ -75,8 +81,9 @@ function augmentContextComponents(gui, components, data) {
         cells: [
           { id: "context-fundedEnrollment" },
           { id: "context-teachingFte" },
-        ]
-      }, {
+        ],
+      },
+      {
         cells: [
           { id: "context-studentSupportFte" },
           { id: "context-buildingSupportFte" },
@@ -115,7 +122,7 @@ function augmentContextComponents(gui, components, data) {
     makeContextCell(
       `context-buildingSupportFte`,
       CONNECTOR_ID,
-      'context_fte_buildingSupportFte',
+      "context_fte_buildingSupportFte",
       "Building Support",
       "fte" as const,
       fteBounds,
@@ -131,16 +138,22 @@ function augmentContextComponents(gui, components, data) {
   );
 }
 
-function componentsGenerator(facetOrder,
-                             contextSettings: StaffingContextSettings,
-                             settings: StaffingSettings,
-                             yBounds) {
-  const schoolFilter = makeSchoolFilter(settings.ccddd, contextSettings.schoolGrouping);
+function componentsGenerator(
+  facetOrder,
+  contextSettings: StaffingContextSettings,
+  settings: StaffingSettings,
+  yBounds,
+) {
+  const schoolFilter = makeSchoolFilter(
+    settings.ccddd,
+    contextSettings.schoolGrouping,
+  );
   const subtitle = `
   School(${schoolFilter.toSummaryText(settings.schoolCodes)}) /
   Prog(${ProgramFilter.toSummaryText(settings.programCodes)}) /
   Act(${ActivityFilter.toSummaryText(settings.activityCodes)}) /
-  Duty(${DutyRootFilter.toSummaryText(settings.dutyRootCodes)})
+  Duty(${DutyRootFilter.toSummaryText(settings.dutyRootCodes)}) /
+  Contract(${DutySuffixFilter.toSummaryText(settings.dutySuffixCodes)})
   `;
   const components = makeFacetComponents({
     idPrefix: settings.id.toString(),
@@ -198,7 +211,6 @@ export default function StaffingDashboard({
   allSettings,
   contextSettings,
 }: DistrictDataContentProps<StaffingSettings, StaffingContextSettings>) {
-
   const config = useMemo(() => {
     if (contextSettings.chartsEnabled === false) return null;
 
@@ -214,25 +226,31 @@ export default function StaffingDashboard({
       METRIC_NAME,
     );
 
-    return makeHighchartConfig(
-      {
-        connectorId: CONNECTOR_ID,
-        metricName: METRIC_NAME,
-        contextSettings,
-        allSettings,
-        fullFacetOrder,
-        componentsGenerator,
-        augmentContextComponents,
-        data,
-      }
-    );
+    return makeHighchartConfig({
+      connectorId: CONNECTOR_ID,
+      metricName: METRIC_NAME,
+      contextSettings,
+      allSettings,
+      fullFacetOrder,
+      componentsGenerator,
+      augmentContextComponents,
+      data,
+    });
   }, [contextSettings, districtDataMap, allSettings]);
 
   return (
     <SettingsLayout
       settingsSerializer={{
-        serialize: newAllSettings => serializeDatasetSettings(newAllSettings, SERIALIZE_STAFFING_SETTINGS_GENERATORS),
-          serializeContext: context => serializeOneSetting(context, SERIALIZE_STAFFING_CONTEXT_SETTINGS_GENERATORS),
+        serialize: (newAllSettings) =>
+          serializeDatasetSettings(
+            newAllSettings,
+            SERIALIZE_STAFFING_SETTINGS_GENERATORS,
+          ),
+        serializeContext: (context) =>
+          serializeOneSetting(
+            context,
+            SERIALIZE_STAFFING_CONTEXT_SETTINGS_GENERATORS,
+          ),
       }}
       allSettings={allSettings}
       contextSettings={contextSettings}
@@ -249,6 +267,7 @@ export default function StaffingDashboard({
         ProgramFilterContents,
         SchoolFilterContents,
         DutyRootFilterContents,
+        DutySuffixFilterContents,
       ]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">

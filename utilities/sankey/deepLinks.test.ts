@@ -1,7 +1,8 @@
 import { expect } from "@jest/globals";
-import { linksForNode } from "utilities/sankey/deepLinks";
+import { linksForBand, linksForNode } from "utilities/sankey/deepLinks";
 
 import ActivityFilter from "app/finance/_filteritems/activity";
+import DutySuffixFilter from "app/finance/_filteritems/duty_suffix";
 import NcesFilter from "app/finance/_filteritems/nces";
 import ObjectFilter from "app/finance/_filteritems/object";
 import ProgramFilter from "app/finance/_filteritems/program";
@@ -116,7 +117,7 @@ describe("linksForNode", () => {
     const det = byPath(links, "/finance/detailedactuals");
     expect(extractC(exp.href)).toBe("f.1"); // program
     expect(extractC(det.href)).toBe("f.1");
-    expect(exp.label).toBe("Explore Basic in Expenditures");
+    expect(exp.label).toBe("Explore Basic in Bud/Act History");
     expect(det.label).toBe("Explore Basic in Detailed Actuals");
 
     // Both narrow program to [1]; round-trip the Expenditures one through the
@@ -235,5 +236,161 @@ describe("linksForNode", () => {
     );
     expect(linksForNode(makeNode("filtered", null), CTX_CATEGORY)).toEqual([]);
     expect(linksForNode(makeNode("program", null), CTX_CATEGORY)).toEqual([]);
+  });
+});
+
+describe("linksForBand", () => {
+  it("program -> activity: Exp + Det, facet activity, narrows both ends", () => {
+    const links = linksForBand(
+      makeNode("program", 1, "Basic"),
+      makeNode("activity", 11, "Board of Directors"),
+      CTX_CATEGORY,
+    );
+    expect(links.map((l) => l.label)).toEqual([
+      "Bud/Act History",
+      "Detailed Actuals",
+    ]);
+    const exp = byPath(links, "/finance/expenditures");
+    expect(extractC(exp.href)).toBe("f.0"); // downstream (activity) facet
+    const d = extractD(exp.href);
+    expect(
+      ProgramFilter.fromFilterString(d.split("~p.")[1].split("~")[0]),
+    ).toEqual(new Set([1]));
+    expect(
+      ActivityFilter.fromFilterString(d.split("~a.")[1].split("~")[0]),
+    ).toEqual(new Set([11]));
+  });
+
+  it("source -> program: Exp + Det, facet program, narrows program only", () => {
+    const links = linksForBand(
+      makeNode("source", 1000, "Local Taxes"),
+      makeNode("program", 1, "Basic"),
+      CTX_CATEGORY,
+    );
+    expect(links.map((l) => l.label)).toEqual([
+      "Bud/Act History",
+      "Detailed Actuals",
+    ]);
+    expect(extractC(byPath(links, "/finance/expenditures").href)).toBe("f.1");
+    // Source isn't an expenditure dimension, so it can't narrow the target.
+    expect(extractD(byPath(links, "/finance/expenditures").href)).not.toContain(
+      "~rc.",
+    );
+  });
+
+  it("activity -> compensation object: adds Staffing narrowed by activity", () => {
+    const links = linksForBand(
+      makeNode("activity", 11, "Board of Directors"),
+      makeNode("object", 2, "Certificated Salaries"),
+      CTX_CATEGORY,
+    );
+    expect(links.map((l) => l.label)).toEqual([
+      "Bud/Act History",
+      "Detailed Actuals",
+      "Staffing (FTE)",
+    ]);
+    // Exp/Det facet the downstream object level.
+    expect(extractC(byPath(links, "/finance/expenditures").href)).toBe("f.2");
+    // Staffing facets activity (its own index) and narrows by activity, not
+    // object (staffing has no object filter).
+    const staff = byPath(links, "/finance/staffing");
+    expect(extractC(staff.href)).toBe("f.0");
+    const d = extractD(staff.href);
+    expect(
+      ActivityFilter.fromFilterString(d.split("~a.")[1].split("~")[0]),
+    ).toEqual(new Set([11]));
+    expect(d).not.toContain("~o.");
+    // Certificated-salary object (2) narrows staffing to the Certificated
+    // contract type.
+    expect(DutySuffixFilter.fromFilterString(d.split("~ct.")[1])).toEqual(
+      new Set([0, 1]),
+    );
+  });
+
+  it("compensation object -> school: Detailed Actuals + Staffing (by school)", () => {
+    const links = linksForBand(
+      makeNode("object", 3, "Classified Salaries"),
+      makeNode("school", 1002, "Some School"),
+      CTX_CATEGORY,
+    );
+    // object -> school: Expenditures can't facet school, so only Det + Staffing.
+    expect(links.map((l) => l.label)).toEqual([
+      "Detailed Actuals",
+      "Staffing (FTE)",
+    ]);
+    // Detailed Actuals always opens on the NCES facet (f.4).
+    expect(extractC(byPath(links, "/finance/detailedactuals").href)).toBe(
+      "f.4",
+    );
+    // School staffing facet is broken, so the link opens on Duty Root (f.3).
+    const staff = byPath(links, "/finance/staffing");
+    expect(extractC(staff.href)).toBe("f.3");
+    const d = extractD(staff.href);
+    expect(
+      makeSchoolFilter(CCDDD).fromFilterString(d.split("~s.")[1].split("~")[0]),
+    ).toEqual(new Set([1002]));
+    // Classified-salary object (3) narrows staffing to the Classified contract
+    // type.
+    expect(DutySuffixFilter.fromFilterString(d.split("~ct.")[1])).toEqual(
+      new Set([2, 3]),
+    );
+  });
+
+  it("non-compensation object -> non-salary target gets no Staffing link", () => {
+    const links = linksForBand(
+      makeNode("object", 5, "Supplies"),
+      makeNode("school", 1002, "Some School"),
+      CTX_CATEGORY,
+    );
+    expect(links.map((l) => l.label)).toEqual(["Detailed Actuals"]);
+  });
+
+  it("compensation object -> salary nces: Staffing faceted by Duty Root", () => {
+    const links = linksForBand(
+      makeNode("object", 2, "Certificated Salaries"),
+      makeNode("nces", 110, "Salaries of Regular Employee"),
+      CTX_CATEGORY,
+    );
+    // Downstream nces: no Expenditures facet; Det (NCES facet) + Staffing.
+    expect(links.map((l) => l.label)).toEqual([
+      "Detailed Actuals",
+      "Staffing (FTE)",
+    ]);
+    expect(extractC(byPath(links, "/finance/detailedactuals").href)).toBe(
+      "f.4",
+    );
+    // Neither end is P/A/S, so staffing opens on the Duty Root facet.
+    expect(extractC(byPath(links, "/finance/staffing").href)).toBe("f.3");
+  });
+
+  it("benefit nces -> school: Staffing too (benefits are compensation)", () => {
+    const links = linksForBand(
+      makeNode("nces", 212, "Group Insurance"),
+      makeNode("school", 1002, "Some School"),
+      CTX_CATEGORY,
+    );
+    expect(links.map((l) => l.label)).toEqual([
+      "Detailed Actuals",
+      "Staffing (FTE)",
+    ]);
+  });
+
+  it("salary nces -> school: Staffing narrowed by school, Duty Root facet", () => {
+    const links = linksForBand(
+      makeNode("nces", 120, "Salaries of Temporary EEs & Subs"),
+      makeNode("school", 1002, "Some School"),
+      CTX_CATEGORY,
+    );
+    expect(links.map((l) => l.label)).toEqual([
+      "Detailed Actuals",
+      "Staffing (FTE)",
+    ]);
+    const staff = byPath(links, "/finance/staffing");
+    expect(extractC(staff.href)).toBe("f.3"); // School facet broken -> Duty Root
+    expect(
+      makeSchoolFilter(CCDDD).fromFilterString(
+        extractD(staff.href).split("~s.")[1].split("~")[0],
+      ),
+    ).toEqual(new Set([1002]));
   });
 });

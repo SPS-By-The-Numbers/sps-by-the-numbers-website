@@ -10,9 +10,18 @@ import StaffingDashboard from "./StaffingDashboard";
 
 import type { CommonFacetContextSettings } from "app/finance/_settings/common_context_settings";
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
-import type { DutyRootFilters, PAFilters, SchoolFilters } from "utilities/DistrictData";
+import type {
+  DutyRootFilters,
+  DutySuffixFilters,
+  PAFilters,
+  SchoolFilters,
+} from "utilities/DistrictData";
 
-export type StaffingSettings = DatasetSettings & PAFilters & SchoolFilters & DutyRootFilters;
+export type StaffingSettings = DatasetSettings &
+  PAFilters &
+  SchoolFilters &
+  DutyRootFilters &
+  DutySuffixFilters;
 export type StaffingContextSettings = CommonFacetContextSettings<Facet>;
 
 const ALL_FACETS = ["activity", "program", "school", "duty_root"] as const;
@@ -62,23 +71,27 @@ export function deserializeFacet(s: string): Facet {
 
 const DEFAULT_STAFF_SETTINGS = DEFAULT_DATASET_SETTINGS.map((v) => ({
   ...v,
-  ...makeDefaultSettings(v.ccddd)
+  ...makeDefaultSettings(v.ccddd),
 }));
 
 export const SERIALIZE_STAFFING_SETTINGS_GENERATORS = [
   CommonSettings.makeDatasetSerializeConfig,
   CommonSettings.makePaSerializeConfig,
   CommonSettings.makeDutyRootSerializeConfig,
+  CommonSettings.makeDutySuffixSerializeConfig,
   CommonSettings.makeSchoolFilterConfig,
 ];
 
 export const SERIALIZE_STAFFING_CONTEXT_SETTINGS_GENERATORS = [
   ...CommonContextSettingsAll.COMMON_FACET_CONTEXT_SETTINGS_GENERATORS,
-  CommonContextSettingsAll.makeFacetSerializeConfigHelper<Facet>(serializeFacet, deserializeFacet),
+  CommonContextSettingsAll.makeFacetSerializeConfigHelper<Facet>(
+    serializeFacet,
+    deserializeFacet,
+  ),
   CommonContextSettingsAll.makeSchoolGroupingSerializeConfig,
 ];
 
-const DEFAULT_CONTEXT_SETTINGS : StaffingContextSettings = {
+const DEFAULT_CONTEXT_SETTINGS: StaffingContextSettings = {
   ...DEFAULT_COMMON_FACET_CONTEXT_SETTINGS,
   facet: deserializeFacet(""),
   sortType: "latest" as const,
@@ -94,4 +107,3 @@ export default function StaffingPage() {
     />
   );
 }
-

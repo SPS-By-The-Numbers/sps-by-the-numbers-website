@@ -109,32 +109,32 @@
   fill: #757575;
 }
 
-// School nodes colored by size (ranked into buckets). Distinct,
-// colorblind-friendly, red-free (widely-separated viridis anchors + amber,
-// small -> large). These MUST match SCHOOL_PALETTE in colors.ts.
+// School-column nodes colored by node size (ranked into buckets) on the PLASMA
+// scale (dark purple -> yellow, small -> large). These MUST match SCHOOL_PALETTE
+// in colors.ts.
 .highcharts-node.flow-school-b0 {
-  fill: #440154;
-  stroke: #440154;
+  fill: #0d0887;
+  stroke: #0d0887;
 }
 .highcharts-node.flow-school-b1 {
-  fill: #3b528b;
-  stroke: #3b528b;
+  fill: #6a00a8;
+  stroke: #6a00a8;
 }
 .highcharts-node.flow-school-b2 {
-  fill: #21918c;
-  stroke: #21918c;
+  fill: #b12a90;
+  stroke: #b12a90;
 }
 .highcharts-node.flow-school-b3 {
-  fill: #5ec962;
-  stroke: #5ec962;
+  fill: #e16462;
+  stroke: #e16462;
 }
 .highcharts-node.flow-school-b4 {
-  fill: #fde725;
-  stroke: #fde725;
+  fill: #fca636;
+  stroke: #fca636;
 }
 .highcharts-node.flow-school-b5 {
-  fill: #e69f00;
-  stroke: #e69f00;
+  fill: #f0f921;
+  stroke: #f0f921;
 }
 
 .highcharts-crosshair {

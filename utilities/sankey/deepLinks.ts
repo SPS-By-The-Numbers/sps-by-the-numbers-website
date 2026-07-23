@@ -27,7 +27,12 @@
 // generators to confirm it.
 
 import { NEVER_COMBINE_REVENUE_CODES } from "utilities/sankey/attribution";
+import ALL_NCES from "utilities/domain/nces";
 import ActivityFilter from "app/finance/_filteritems/activity";
+import DutySuffixFilter, {
+  CERTIFICATED_SUFFIX_CODES,
+  CLASSIFIED_SUFFIX_CODES,
+} from "app/finance/_filteritems/duty_suffix";
 import NcesFilter from "app/finance/_filteritems/nces";
 import ObjectFilter from "app/finance/_filteritems/object";
 import ProgramFilter from "app/finance/_filteritems/program";
@@ -36,7 +41,7 @@ import RevenueFilter from "app/finance/_filteritems/revenue";
 import { makeSchoolFilter } from "app/finance/_filteritems/school";
 
 import type { Filter } from "utilities/filter";
-import type { SankeyNode, SourceMode } from "utilities/sankey/types";
+import type { Level, SankeyNode, SourceMode } from "utilities/sankey/types";
 
 // The flow's active per-level filter code-sets (each is "all selected" by
 // default, in which case it is carried as a no-op / omitted). Fields are
@@ -136,7 +141,7 @@ function targetsForNode(
     nextFacet: string,
   ): Target => ({
     path: "/finance/expenditures",
-    dashboard: "Expenditures",
+    dashboard: "Bud/Act History",
     params,
     ownFacet,
     nextFacet,
@@ -240,4 +245,199 @@ export function linksForNode(
       `&c=${encodeURIComponent(facet)}`;
     return { href, label: `Explore ${node.name} in ${t.dashboard}` };
   });
+}
+
+// ---------------------------------------------------------------------------
+// Band (link) deep links.
+//
+// A band goes from an upstream node to a downstream node. Its links open a view
+// narrowed to EXACTLY that band -- the flow's active filters, plus BOTH
+// endpoints' own levels pinned to their codes -- faceted on the DOWNSTREAM
+// (to) level. Labels are the bare dashboard names; FlowDashboard renders them
+// as "Explore in <Expenditures> or <Detailed Actuals>".
+// ---------------------------------------------------------------------------
+
+// Object codes that are compensation-related: Certificated Salaries (2),
+// Classified Salaries (3), Employee Benefits (4). A band touching an uncollapsed
+// object node with one of these can also be explored in the Staffing dashboard.
+const COMPENSATION_OBJECT_CODES = new Set([2, 3, 4]);
+
+// NCES codes that are employee compensation: the "Salaries" category (Salaries
+// of Regular Employee, Salaries of Temporary EEs & Subs, etc.) AND the
+// "Benefits" category (which rolls up under the Benefits + Payroll Taxes object,
+// code 4). A band touching one of these is a compensation flow and gets a
+// Staffing link -- so the object(comp) -> nces(salary/benefit) -> school chain
+// is covered end to end for all three compensation objects.
+const COMPENSATION_NCES_CODES = new Set(
+  ALL_NCES.filter(
+    (n) => n.nces_category === "Salaries" || n.nces_category === "Benefits",
+  ).map((n) => n.nces_code),
+);
+
+// Facet index (the `c=f.N` context var) of a level in each dashboard. A level
+// absent from a map isn't a facet there, so that dashboard is skipped.
+const EXPENDITURES_FACET: Partial<Record<Level, string>> = {
+  activity: "f.0",
+  program: "f.1",
+  object: "f.2",
+};
+// Which band endpoint levels can narrow Staffing (P-A-S), mapped to the facet
+// its link opens on. School maps to Duty Root (f.3), NOT the School facet (f.2):
+// the dashboard's School facet is broken, and an object->school band already
+// narrows Staffing to a single school, so faceting on school would be degenerate
+// anyway -- Duty Root (staffing's default) breaks the FTE out by role instead.
+const STAFFING_FACET: Partial<Record<Level, string>> = {
+  activity: "f.0",
+  program: "f.1",
+  school: "f.3",
+};
+
+// The expenditure dimensions that can appear as a band endpoint / narrow term.
+type ExpDim = "program" | "activity" | "object" | "nces" | "school";
+
+// The ParamSpecs for the expenditure dimensions, seeded with the flow's active
+// filters (each omitted from the URL if still at its full domain).
+function activeParams(ctx: DeepLinkCtx): Record<ExpDim, ParamSpec> {
+  const f = ctx.filters;
+  return {
+    program: { urlVar: "p", filter: ProgramFilter, codes: f.programCodes },
+    activity: { urlVar: "a", filter: ActivityFilter, codes: f.activityCodes },
+    object: { urlVar: "o", filter: ObjectFilter, codes: f.objectCodes },
+    nces: { urlVar: "n", filter: NcesFilter, codes: f.ncesCodes },
+    school: {
+      urlVar: "s",
+      filter: makeSchoolFilter(ctx.ccddd),
+      codes: f.schoolCodes,
+    },
+  };
+}
+
+// Build a `<path>?d=c.<ccddd>~key.value~...&c=f.N` href, omitting any param
+// still at its full domain (the "all selected" no-op).
+function bandHref(
+  path: string,
+  ccddd: number,
+  params: ParamSpec[],
+  facet: string,
+): string {
+  const parts = [`c.${ccddd}`];
+  for (const p of params) {
+    if (!p.codes || p.codes.size >= p.filter.allCodes().size) {
+      continue;
+    }
+    const s = p.filter.toFilterString(p.codes);
+    if (s) {
+      parts.push(`${p.urlVar}.${s}`);
+    }
+  }
+  return (
+    `${path}?d=${encodeURIComponent(parts.join("~"))}` +
+    `&c=${encodeURIComponent(facet)}`
+  );
+}
+
+export function linksForBand(
+  from: SankeyNode,
+  to: SankeyNode,
+  ctx: DeepLinkCtx,
+): DeepLink[] {
+  const params = activeParams(ctx);
+  // Narrow each endpoint that is an expenditure dimension to its own code, so
+  // the target is filtered to exactly this band.
+  for (const n of [from, to]) {
+    const lvl = n.custom.level;
+    if (n.custom.code !== null && lvl in params) {
+      params[lvl as ExpDim] = {
+        ...params[lvl as ExpDim],
+        codes: new Set([n.custom.code]),
+      };
+    }
+  }
+
+  const facetLevel = to.custom.level;
+  const links: DeepLink[] = [];
+
+  // Expenditures (p/a/o) -- when the downstream level is one it can facet.
+  const expFacet = EXPENDITURES_FACET[facetLevel];
+  if (expFacet) {
+    links.push({
+      href: bandHref(
+        "/finance/expenditures",
+        ctx.ccddd,
+        [params.program, params.activity, params.object],
+        expFacet,
+      ),
+      label: "Bud/Act History",
+    });
+  }
+
+  // Detailed Actuals (p/a/o/s/n), narrowed to the band and always opened on the
+  // NCES facet (its finest breakdown), regardless of the band's downstream level.
+  links.push({
+    href: bandHref(
+      "/finance/detailedactuals",
+      ctx.ccddd,
+      [
+        params.program,
+        params.activity,
+        params.object,
+        params.school,
+        params.nces,
+      ],
+      "f.4",
+    ),
+    label: "Detailed Actuals",
+  });
+
+  // Staffing -- for any COMPENSATION band: one touching an uncollapsed
+  // compensation object (2/3/4) OR a salary NCES code (the "Salaries" category:
+  // regular / temporary employee salaries, etc.). This covers the whole comp
+  // chain -- object(comp) -> nces(salary) -> school -- not just the object
+  // endpoints. Narrow by whatever P-A-S the band constrains (endpoints that are
+  // Program / Activity / School) plus active filters; the object/nces
+  // compensation dimension is the relevance gate, not a narrow term (staffing
+  // has neither filter). Facet on the P/A/School endpoint's own dimension, else
+  // Duty Root (also used for School, whose staffing facet is broken).
+  const isCompensationBand = [from, to].some(
+    (n) =>
+      n.custom.code !== null &&
+      ((n.custom.level === "object" &&
+        COMPENSATION_OBJECT_CODES.has(n.custom.code)) ||
+        (n.custom.level === "nces" &&
+          COMPENSATION_NCES_CODES.has(n.custom.code))),
+  );
+  if (isCompensationBand) {
+    const staffEndpoint = [from, to].find(
+      (n) => STAFFING_FACET[n.custom.level] !== undefined,
+    );
+    const staffFacet = staffEndpoint
+      ? STAFFING_FACET[staffEndpoint.custom.level]!
+      : "f.3"; // Duty Root default
+    // If the compensation object is a SALARY object, narrow staffing to the
+    // matching contract type: Certificated for object 2, Classified for object
+    // 3. Benefits (object 4) and salary-nces bands with no object span both, so
+    // no contract-type narrowing.
+    const objCode = [from, to].find((n) => n.custom.level === "object")?.custom
+      .code;
+    const contractCodes =
+      objCode === 2
+        ? CERTIFICATED_SUFFIX_CODES
+        : objCode === 3
+          ? CLASSIFIED_SUFFIX_CODES
+          : undefined;
+    const contractParam: ParamSpec[] = contractCodes
+      ? [{ urlVar: "ct", filter: DutySuffixFilter, codes: contractCodes }]
+      : [];
+    links.push({
+      href: bandHref(
+        "/finance/staffing",
+        ctx.ccddd,
+        [params.program, params.activity, params.school, ...contractParam],
+        staffFacet,
+      ),
+      label: "Staffing (FTE)",
+    });
+  }
+
+  return links;
 }
