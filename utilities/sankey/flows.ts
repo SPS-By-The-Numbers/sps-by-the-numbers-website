@@ -438,5 +438,123 @@ export function computeFlows(
     grandTotal: revenue + drawdown,
   };
 
+  if (opts.coalesce) {
+    const { nodes: cNodes, links: cLinks } = coalesceSmall(
+      nodeList,
+      links,
+      totals.grandTotal,
+    );
+    return { nodes: cNodes, links: cLinks, totals };
+  }
+
   return { nodes: nodeList, links, totals };
+}
+
+// Nodes below this fraction of the grand total are candidates for coalescing
+// into "Other" (per column).
+const COALESCE_MIN_FRACTION = 0.01;
+
+// A node can be coalesced unless it is a fund-balance node, a Filtered Out node,
+// or a never-combine source account (which must always stay separate).
+function isCoalescable(n: SankeyNode): boolean {
+  if (n.custom.level === "fundBalance" || n.custom.level === "filtered") {
+    return false;
+  }
+  if (
+    n.custom.level === "source" &&
+    n.custom.code !== null &&
+    NEVER_COMBINE_REVENUE_CODES.has(n.custom.code)
+  ) {
+    return false;
+  }
+  return true;
+}
+
+// Combine small coalescable nodes on each column into a single "Other:<col>"
+// node, rerouting their links and re-summing. The "Other" node lists the
+// combined members (name + through-flow) in its `custom.members` for the
+// tooltip. Columns with fewer than two small nodes are left untouched.
+function coalesceSmall(
+  nodes: SankeyNode[],
+  links: SankeyLink[],
+  grandTotal: number,
+): { nodes: SankeyNode[]; links: SankeyLink[] } {
+  const threshold = grandTotal * COALESCE_MIN_FRACTION;
+  if (threshold <= 0) {
+    return { nodes, links };
+  }
+
+  // Node through-flow = larger of in/out (equal for interior nodes).
+  const inflow = new Map<string, number>();
+  const outflow = new Map<string, number>();
+  for (const l of links) {
+    outflow.set(l.from, (outflow.get(l.from) ?? 0) + l.weight);
+    inflow.set(l.to, (inflow.get(l.to) ?? 0) + l.weight);
+  }
+  const nodeTotal = (id: string) =>
+    Math.max(inflow.get(id) ?? 0, outflow.get(id) ?? 0);
+
+  // Small coalescable nodes grouped by column.
+  const smallByColumn = new Map<number, SankeyNode[]>();
+  for (const n of nodes) {
+    if (isCoalescable(n) && nodeTotal(n.id) < threshold) {
+      const arr = smallByColumn.get(n.column);
+      if (arr) {
+        arr.push(n);
+      } else {
+        smallByColumn.set(n.column, [n]);
+      }
+    }
+  }
+
+  const rename = new Map<string, string>(); // small node id -> other:<col>
+  const otherNodes: SankeyNode[] = [];
+  for (const [col, small] of smallByColumn.entries()) {
+    if (small.length < 2) {
+      continue; // nothing to combine
+    }
+    const otherId = `other:${col}`;
+    const members = small
+      .map((n) => ({ name: n.name, weight: nodeTotal(n.id) }))
+      .sort((a, b) => b.weight - a.weight);
+    for (const n of small) {
+      rename.set(n.id, otherId);
+    }
+    otherNodes.push({
+      id: otherId,
+      name: `Other (${members.length})`,
+      color: small[0].color,
+      column: col,
+      custom: { level: small[0].custom.level, code: null, members },
+    });
+  }
+
+  if (rename.size === 0) {
+    return { nodes, links };
+  }
+
+  // Reroute + re-sum links through the rename map.
+  const mapId = (id: string) => rename.get(id) ?? id;
+  const weights = new Map<string, number>();
+  const ends = new Map<string, { from: string; to: string }>();
+  for (const l of links) {
+    const from = mapId(l.from);
+    const to = mapId(l.to);
+    if (from === to) {
+      continue; // guard against a degenerate self-loop
+    }
+    const key = `${from}\t${to}`;
+    weights.set(key, (weights.get(key) ?? 0) + l.weight);
+    if (!ends.has(key)) {
+      ends.set(key, { from, to });
+    }
+  }
+  const newLinks: SankeyLink[] = [];
+  for (const [key, e] of ends.entries()) {
+    newLinks.push({ from: e.from, to: e.to, weight: weights.get(key)! });
+  }
+
+  const newNodes = nodes.filter((n) => !rename.has(n.id)).concat(otherNodes);
+
+  return { nodes: newNodes, links: newLinks };
 }

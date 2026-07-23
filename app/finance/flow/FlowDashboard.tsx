@@ -138,6 +138,7 @@ export default function FlowDashboard({
       mode: settings.sourceMode,
       enabledLevels,
       filters,
+      coalesce: settings.coalesce,
     });
 
     if (links.length === 0) {
@@ -245,9 +246,24 @@ export default function FlowDashboard({
         formatter(this: any) {
           const p = this.point;
           if (!p.from) {
-            // Node hover: total through-flow, plus a single deep link when
-            // the node itself is linkable (Fund Balance / Filtered Out
-            // nodes are not, so `nodeLink` is null there).
+            // Node hover: total through-flow. A coalesced "Other" node lists
+            // the small categories it combined; otherwise a single deep link
+            // when the node is linkable (Fund Balance / Filtered Out are not).
+            const members = p.options?.custom?.members as
+              | Array<{ name: string; weight: number }>
+              | undefined;
+            if (members && members.length) {
+              const MAX = 15;
+              const shown = members
+                .slice(0, MAX)
+                .map((m) => `${m.name}: ${fmt(m.weight)}`)
+                .join("<br/>");
+              const more =
+                members.length > MAX
+                  ? `<br/>…and ${members.length - MAX} more`
+                  : "";
+              return `<b>${p.name}</b><br/>${fmt(p.sum)}<br/>${shown}${more}`;
+            }
             const nodeLink = linkForNode(p.options as SankeyNode, ctx);
             return (
               `<b>${p.name}</b><br/>${fmt(p.sum)}` +

@@ -110,6 +110,7 @@ describe("FlowSettings level plan", () => {
     expect(serialized).not.toContain("sm.");
     expect(serialized).not.toContain("y.");
     expect(serialized).not.toContain("dt.");
+    expect(serialized).not.toContain("cs.");
   });
 
   it("full settings round-trip through the URL", () => {
@@ -129,17 +130,19 @@ describe("FlowSettings level plan", () => {
       classOf: 2025,
       dataType: "budget" as const,
       programCodes: programSubset,
+      coalesce: true,
     };
 
     const serialized = serializeDatasetSettings(
       [modified],
       SERIALIZE_FLOW_SETTINGS_GENERATORS,
     );
-    // The four custom vars are present in the URL fragment.
+    // The custom vars are present in the URL fragment.
     expect(serialized[0]).toContain("lv.rPSAon");
     expect(serialized[0]).toContain("sm.a");
     expect(serialized[0]).toContain("y.2025");
     expect(serialized[0]).toContain("dt.b");
+    expect(serialized[0]).toContain("cs.1");
 
     const [restored] = deserializeDatasetSettings(
       serialized,
@@ -152,6 +155,7 @@ describe("FlowSettings level plan", () => {
     expect(restored.classOf).toEqual(2025);
     expect(restored.dataType).toEqual("budget");
     expect(restored.programCodes).toEqual(programSubset);
+    expect(restored.coalesce).toBe(true);
   });
 
   it("latest year (null classOf) and category mode round-trip as defaults", () => {

@@ -448,6 +448,70 @@ describe("computeFlows — never-combine sources and node names", () => {
   });
 });
 
+describe("computeFlows — coalesce small categories", () => {
+  // Program 10 spends 1000 (act 27 = 990, plus 5 tiny activities of 2 each).
+  // With coalescing on, the 5 tiny activities (each < 1% of 1000) merge into one
+  // "Other" node; act 27 (99%) stays.
+  const expRows = [
+    exp(10, "Basic", 27, "Teaching", 990),
+    exp(10, "Basic", 31, "Tiny A", 2),
+    exp(10, "Basic", 32, "Tiny B", 2),
+    exp(10, "Basic", 33, "Tiny C", 2),
+    exp(10, "Basic", 34, "Tiny D", 2),
+    exp(10, "Basic", 35, "Tiny E", 2),
+  ];
+  const revRows = [rev(2500, 2000, 0, 1000)]; // never-combine account, funds it all
+
+  it("merges the small activities into an Other node with members", () => {
+    const { nodes, links } = computeFlows(expRows, revRows, {
+      mode: "category",
+      enabledLevels: BASE_LEVELS,
+      filters: {},
+      coalesce: true,
+    });
+    const other = nodes.find((n) => n.id === "other:2");
+    expect(other).toBeDefined();
+    expect(other!.custom.members).toHaveLength(5);
+    // The big activity is untouched.
+    expect(nodeById(nodes, "act:27")).toBeDefined();
+    // The tiny activities are gone as individual nodes.
+    expect(nodeById(nodes, "act:31")).toBeUndefined();
+    // The Other node carries the combined weight (5 x 2 = 10).
+    expect(link(links, "prog:10", "other:2")).toBeCloseTo(10, 6);
+  });
+
+  it("never coalesces a never-combine source even when tiny", () => {
+    // 2500 (never-combine) is only 10 of 1010 (<1%), but must stay separate.
+    const withTinyGrant = [
+      exp(10, "Basic", 27, "Teaching", 1010),
+      exp(10, "Basic", 31, "Tiny A", 2),
+      exp(10, "Basic", 32, "Tiny B", 2),
+    ];
+    const rev2 = [
+      rev(1100, 1000, 0, 1004), // big fungible (category node)
+      rev(2500, 2000, 0, 10), // tiny never-combine account
+    ];
+    const { nodes } = computeFlows(withTinyGrant, rev2, {
+      mode: "category",
+      enabledLevels: BASE_LEVELS,
+      filters: {},
+      coalesce: true,
+    });
+    // The tiny grants/gifts account is NOT swept into an Other resource.
+    expect(nodeById(nodes, "src:2500")).toBeDefined();
+  });
+
+  it("leaves everything separate when coalesce is off", () => {
+    const { nodes } = computeFlows(expRows, revRows, {
+      mode: "category",
+      enabledLevels: BASE_LEVELS,
+      filters: {},
+    });
+    expect(nodes.find((n) => n.id === "other:2")).toBeUndefined();
+    expect(nodeById(nodes, "act:31")).toBeDefined();
+  });
+});
+
 describe("computeFlows — the Resource column never contains Filtered Out", () => {
   const sourceColumnHasFiltered = (nodes: SankeyNode[]) =>
     nodes.some((n) => n.column === 0 && n.custom.level === "filtered");

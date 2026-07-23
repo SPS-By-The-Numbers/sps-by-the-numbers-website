@@ -17,6 +17,7 @@ import Box from "@mui/material/Box";
 import Checkbox from "@mui/material/Checkbox";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import FormControl from "@mui/material/FormControl";
+import FormControlLabel from "@mui/material/FormControlLabel";
 import FormLabel from "@mui/material/FormLabel";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
@@ -264,6 +265,19 @@ export default function FlowLevelContents({
         setSettings={setSettings}
         fieldName="dataType"
         options={DATA_TYPE_OPTIONS}
+      />
+
+      <FormControlLabel
+        label="Coalesce Small Categories"
+        control={
+          <Checkbox
+            size="small"
+            checked={settings.coalesce}
+            onChange={(e) =>
+              setSettings({ ...settings, coalesce: e.target.checked })
+            }
+          />
+        }
       />
     </Box>
   );

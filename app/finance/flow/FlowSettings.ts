@@ -4,7 +4,7 @@
 // The flow view is a SINGLE-dataset, per-district view (not a comparison view),
 // so `DEFAULT_FLOW_SETTINGS` is a one-element array built on
 // `DEFAULT_DATASET_SETTINGS`. Alongside the usual district + per-level filter
-// serializers (`c`/`g`/`cn`/`sn`, `p`/`a`/`o`, `n`, `s`, `rc`/`rv`) it adds four
+// serializers (`c`/`g`/`cn`/`sn`, `p`/`a`/`o`, `n`, `s`, `rc`/`rv`) it adds five
 // custom URL vars unique to this view:
 //   - `lv`  the level plan: an ORDERED, enable/disable-able list of the sankey
 //           columns. Encoded as one letter per level (r=Resource/source,
@@ -15,6 +15,7 @@
 //   - `sm`  source mode ("a" = account, omitted = category)
 //   - `y`   selected class_of (fiscal year end); omitted => latest available
 //   - `dt`  data type ("b" = budget, omitted = actuals)
+//   - `cs`  coalesce small nodes into "Other" ("1" = on, omitted = off)
 // Defaults serialize to the empty string so they are omitted from the URL.
 
 import { DEFAULT_DATASET_SETTINGS } from "app/finance/_settings/dataset_settings";
@@ -63,6 +64,8 @@ export type FlowSettings = DatasetSettings &
     // null => latest available class_of.
     classOf: number | null;
     dataType: "actuals" | "budget";
+    // Combine small nodes on each level into an "Other" node.
+    coalesce: boolean;
   };
 
 // The two pinned levels and the four reorderable ones.
@@ -177,6 +180,7 @@ export const DEFAULT_FLOW_SETTINGS: Array<FlowSettings> =
     sourceMode: "category" as const,
     classOf: null,
     dataType: "actuals" as const,
+    coalesce: false,
   }));
 
 // Custom serializer config for the four flow-only URL vars. Kept separate from
@@ -227,12 +231,22 @@ export function makeFlowSerializeConfig(): SettingsConfig {
         deserialize: (settings, s) => (s === "b" ? "budget" : "actuals"),
       },
     ],
+    [
+      "coalesce",
+      {
+        serializerType: "custom",
+        urlVar: "cs",
+        // false is the default and serializes to "" (omitted from URL).
+        serialize: (settings, key) => (settings[key] ? "1" : ""),
+        deserialize: (settings, s) => s === "1",
+      },
+    ],
   ];
 }
 
 // The dataset-settings serializer generators for the flow view, in fold order:
 // district identity, PAO filters, NCES, School (depends on ccddd), revenue
-// category/account filters, then the four flow-only custom vars.
+// category/account filters, then the flow-only custom vars.
 export const SERIALIZE_FLOW_SETTINGS_GENERATORS = [
   makeDatasetSerializeConfig,
   makePaoSerializeConfig,

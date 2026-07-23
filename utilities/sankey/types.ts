@@ -72,7 +72,13 @@ export type SankeyNode = {
   name: string;
   color: string;
   column: number;
-  custom: { level: Level | "fundBalance" | "filtered"; code: number | null };
+  custom: {
+    level: Level | "fundBalance" | "filtered";
+    code: number | null;
+    // Present on a coalesced "Other" node: the small nodes it combined (name +
+    // their through-flow), for the tooltip. Absent on ordinary nodes.
+    members?: Array<{ name: string; weight: number }>;
+  };
 };
 
 // An emitted sankey link (already summed per (from, to) pair).
@@ -91,6 +97,9 @@ export type ComputeFlowsOpts = {
   filters: FlowFilters;
   // Links below this weight (in dollars) are dropped to kill float dust.
   minWeight?: number;
+  // When true, small nodes on each level are combined into a single "Other"
+  // node per column (never-combine sources and fund-balance nodes are exempt).
+  coalesce?: boolean;
 };
 
 // Totals summarizing the flow, for reconciliation and chart titles.
