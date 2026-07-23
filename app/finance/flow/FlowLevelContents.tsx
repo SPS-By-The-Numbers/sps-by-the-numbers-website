@@ -171,6 +171,38 @@ export default function FlowLevelContents({
         gap: "0.7rem",
       }}
     >
+      <FormControl size="small">
+        <InputLabel id={yearLabelId}>Fiscal Year</InputLabel>
+        <Select
+          labelId={yearLabelId}
+          id={yearSelectId}
+          label="Fiscal Year"
+          value={settings.classOf === null ? "" : String(settings.classOf)}
+          onChange={(e) =>
+            setSettings({
+              ...settings,
+              classOf:
+                e.target.value === "" ? null : parseInt(e.target.value, 10),
+            })
+          }
+        >
+          <MenuItem value="">Latest</MenuItem>
+          {years.map((y) => (
+            <MenuItem key={y} value={String(y)}>
+              {fiscalYearLabel(y)}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <SettingsSelect
+        label="Data Type"
+        settings={settings}
+        setSettings={setSettings}
+        fieldName="dataType"
+        options={DATA_TYPE_OPTIONS}
+      />
+
       <FormControl component="fieldset" variant="standard">
         <FormLabel component="legend" sx={{ fontSize: "0.85rem" }}>
           Levels — drag to reorder
@@ -344,8 +376,8 @@ export default function FlowLevelContents({
               display: "flex",
               flexDirection: "column",
               gap: "0.5rem",
-              pl: "0.5rem",
-              borderLeft: "2px solid",
+              pr: "0.5rem",
+              borderRight: "2px solid",
               borderColor: "divider",
             }}
           >
@@ -399,38 +431,6 @@ export default function FlowLevelContents({
         setSettings={setSettings}
         fieldName="sourceMode"
         options={SOURCE_MODE_OPTIONS}
-      />
-
-      <FormControl size="small">
-        <InputLabel id={yearLabelId}>Fiscal Year</InputLabel>
-        <Select
-          labelId={yearLabelId}
-          id={yearSelectId}
-          label="Fiscal Year"
-          value={settings.classOf === null ? "" : String(settings.classOf)}
-          onChange={(e) =>
-            setSettings({
-              ...settings,
-              classOf:
-                e.target.value === "" ? null : parseInt(e.target.value, 10),
-            })
-          }
-        >
-          <MenuItem value="">Latest</MenuItem>
-          {years.map((y) => (
-            <MenuItem key={y} value={String(y)}>
-              {fiscalYearLabel(y)}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      <SettingsSelect
-        label="Data Type"
-        settings={settings}
-        setSettings={setSettings}
-        fieldName="dataType"
-        options={DATA_TYPE_OPTIONS}
       />
 
       <Box>
