@@ -443,18 +443,19 @@ export default function FlowDashboard({
     const nodeSize = (id: string) =>
       Math.max(inflow.get(id) ?? 0, outflow.get(id) ?? 0);
     // Highcharts orders a column top->bottom by node creation order (first
-    // appearance in the links scan), so we sort every link touching a
-    // bottom-pinned node (Filtered Out / District Office) after all others:
-    // those nodes are then created last and land at the bottom of their column.
-    const isBottomNode = (id: string) =>
-      id.startsWith("flt:") || districtOfficeNodeIds.has(id);
-    const isBottomLink = (l: (typeof links)[number]) =>
-      isBottomNode(l.from) || isBottomNode(l.to);
+    // appearance in the links scan). We push certain nodes to the bottom by
+    // sorting their links last, in tiers: normal nodes first (top, size-ranked),
+    // then the District Office (the lowest-ranked *school*), then Filtered Out
+    // (conceptually no longer in the chart -- always the very bottom).
+    const nodeBottomRank = (id: string): number =>
+      id.startsWith("flt:") ? 2 : districtOfficeNodeIds.has(id) ? 1 : 0;
+    const linkBottomRank = (l: (typeof links)[number]) =>
+      Math.max(nodeBottomRank(l.from), nodeBottomRank(l.to));
     const sortedLinks = [...links].sort((a, b) => {
-      const fa = isBottomLink(a);
-      const fb = isBottomLink(b);
-      if (fa !== fb) {
-        return fa ? 1 : -1;
+      const ra = linkBottomRank(a);
+      const rb = linkBottomRank(b);
+      if (ra !== rb) {
+        return ra - rb; // lower tier first (top); higher tier last (bottom)
       }
       const fromDelta = nodeSize(b.from) - nodeSize(a.from);
       if (fromDelta !== 0) {

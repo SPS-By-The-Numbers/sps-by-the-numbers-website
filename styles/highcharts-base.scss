@@ -56,8 +56,12 @@
   stroke: #2e7d32;
 }
 .highcharts-node.flow-filtered {
-  fill: #bdbdbd;
-  stroke: #bdbdbd;
+  // Demoted to a very light, semi-transparent grey so "Filtered Out" recedes --
+  // in particular it must not read like a real band in the Budget palette, whose
+  // base flows are already grey (--highcharts-color-2).
+  fill: #eaeaea;
+  stroke: #d5d5d5;
+  fill-opacity: 0.6;
 }
 .highcharts-link.flow-actuals {
   fill: var(--highcharts-color-1);
@@ -72,9 +76,10 @@
   fill: #2e7d32;
 }
 .highcharts-link.flow-filtered {
-  fill: #bdbdbd;
-  // Filtered Out bands are de-emphasized (lower than the default link opacity).
-  fill-opacity: 0.25;
+  fill: #eaeaea;
+  // Filtered Out bands are strongly de-emphasized (well below the default link
+  // opacity) so they fade back, distinct from the grey Budget bands.
+  fill-opacity: 0.12;
 }
 // The PTA-funding highlight: a putrid mustard / bile — unmissable, conveying
 // the appropriate enthusiasm for this question, while staying well clear of the
