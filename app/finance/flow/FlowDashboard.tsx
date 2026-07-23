@@ -18,6 +18,13 @@ import { computeFlows } from "utilities/sankey/flows";
 import { linkForNode } from "utilities/sankey/deepLinks";
 import { flowLinkClass, flowNodeClass } from "utilities/sankey/colors";
 import { makeCurrencyFormatter } from "utilities/highcharts/utils";
+import ActivityFilter from "app/finance/_filteritems/activity";
+import NcesFilter from "app/finance/_filteritems/nces";
+import ObjectFilter from "app/finance/_filteritems/object";
+import ProgramFilter from "app/finance/_filteritems/program";
+import RevenueCategoryFilter from "app/finance/_filteritems/revenue_category";
+import RevenueFilter from "app/finance/_filteritems/revenue";
+import { makeSchoolFilter } from "app/finance/_filteritems/school";
 import { serializeDatasetSettings } from "app/finance/_settings/common_settings";
 import { useHighcharts } from "components/providers/HighchartsProvider";
 import { useMemo, useState } from "react";
@@ -34,6 +41,7 @@ import FlowDatasetSettingsContents from "./FlowDatasetSettingsContents";
 import FlowLevelContents from "./FlowLevelContents";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import {
+  ACTUALS_ONLY_LEVELS,
   enabledLevelsFromPlan,
   SERIALIZE_FLOW_SETTINGS_GENERATORS,
 } from "./FlowSettings";
@@ -118,22 +126,41 @@ export default function FlowDashboard({
       .filter((d, $) => d.class_of === $.year && d.data_type === $.dt)
       .objects() as RevRow[];
 
-    // Filters are include-sets; a source filter uses category vs account codes
-    // per the current source mode. Filters for disabled levels are simply never
-    // consulted by the engine (their column is absent from the flow path).
+    // A filter that still has its whole domain selected means "no filter": pass
+    // undefined so codes that exist in the data but not in the filter's domain
+    // (e.g. unassigned NCES / school on much of GF spending) are shown instead
+    // of being swept into a single huge "Filtered Out" node. Only a genuinely
+    // narrowed selection filters. (`filteredExpenditures` behaves the same way,
+    // skipping a filter it was passed undefined for.)
+    const narrowed = (
+      codes: Set<number> | undefined,
+      domain: Set<number>,
+    ): Set<number> | undefined =>
+      codes && codes.size < domain.size ? codes : undefined;
+    const sourceIsAccount = settings.sourceMode === "account";
     const filters: FlowFilters = {
-      sourceCodes:
-        settings.sourceMode === "account"
-          ? settings.revenueCodes
-          : settings.revenueCategoryCodes,
-      programCodes: settings.programCodes,
-      activityCodes: settings.activityCodes,
-      objectCodes: settings.objectCodes,
-      ncesCodes: settings.ncesCodes,
-      schoolCodes: settings.schoolCodes,
+      sourceCodes: narrowed(
+        sourceIsAccount ? settings.revenueCodes : settings.revenueCategoryCodes,
+        (sourceIsAccount ? RevenueFilter : RevenueCategoryFilter).allCodes(),
+      ),
+      programCodes: narrowed(settings.programCodes, ProgramFilter.allCodes()),
+      activityCodes: narrowed(
+        settings.activityCodes,
+        ActivityFilter.allCodes(),
+      ),
+      objectCodes: narrowed(settings.objectCodes, ObjectFilter.allCodes()),
+      ncesCodes: narrowed(settings.ncesCodes, NcesFilter.allCodes()),
+      schoolCodes: narrowed(
+        settings.schoolCodes,
+        makeSchoolFilter(settings.ccddd).allCodes(),
+      ),
     };
 
-    const enabledLevels = enabledLevelsFromPlan(settings.levelPlan);
+    // Budget has no NCES / School breakdown, so drop those levels in Budget mode
+    // even if the level plan (carried over from Actuals) still has them enabled.
+    const enabledLevels = enabledLevelsFromPlan(settings.levelPlan).filter(
+      (l) => dt !== "budget" || !ACTUALS_ONLY_LEVELS.includes(l),
+    );
     const { nodes, links, totals } = computeFlows(expRows, revRows, {
       mode: settings.sourceMode,
       enabledLevels,
@@ -192,12 +219,11 @@ export default function FlowDashboard({
     // ~28px per node (nodePadding 18 + body + label line) plus title/margins.
     const height = Math.max(700, maxColumnCount * 28 + 120);
 
-    // Node labels are centered on the (thin) node, so the leftmost and rightmost
-    // columns' labels extend past the plot edges and clip. Reserve horizontal
-    // margin equal to about half the longest label's width on each side. (~6.5px
-    // per char at 0.7rem; the "(N)" the formatter adds is covered by padding.)
+    // Labels sit to the RIGHT of every node, so the rightmost column's labels
+    // extend past the right edge — reserve room for the longest one. (The left
+    // column's labels point inward, so the left margin stays small.)
     const maxNameLen = nodes.reduce((m, n) => Math.max(m, n.name.length), 0);
-    const sideMargin = Math.min(260, Math.round((maxNameLen * 6.5) / 2) + 18);
+    const marginRight = Math.min(500, Math.round(maxNameLen * 8) + 40);
 
     const dataTypeLabel = dt === "budget" ? "Budget" : "Actuals";
 
@@ -211,7 +237,7 @@ export default function FlowDashboard({
           : "Balanced";
 
     const chartOptions = {
-      chart: { height, marginLeft: sideMargin, marginRight: sideMargin },
+      chart: { height, marginLeft: 12, marginRight },
       credits: { enabled: false },
       title: {
         text: `${settings.name} — General Fund Expenditure Flow`,
@@ -253,6 +279,13 @@ export default function FlowDashboard({
           nodeWidth: 12,
           dataLabels: {
             useHTML: true,
+            inside: false,
+            // Place the label beside the node (to its right), vertically
+            // centered on it, rather than centered over it or below it.
+            align: "left",
+            verticalAlign: "middle",
+            x: 15,
+            y: 0,
             allowOverlap: true,
             crop: false,
             overflow: "allow",
@@ -274,7 +307,11 @@ export default function FlowDashboard({
       tooltip: {
         useHTML: true,
         stickOnContact: true,
-        followPointer: false,
+        // Follow the pointer so the tooltip appears where you're hovering, not
+        // anchored off by the (now side-placed) node. stickOnContact still
+        // freezes it when the pointer moves onto the tooltip so its links stay
+        // clickable (and the click-Popover is the backup).
+        followPointer: true,
         hideDelay: 300,
         // `this` is a Highcharts sankey Point; both node points and
         // from/to "link" (band) points land here.

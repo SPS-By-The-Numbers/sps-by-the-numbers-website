@@ -27,7 +27,11 @@ import SettingsSelect from "app/finance/_widgets/SettingsSelect";
 import Typography from "@mui/material/Typography";
 import { useDistrictData } from "app/finance/_providers/DistrictDataProvider";
 import { useId, useState } from "react";
-import { ALWAYS_ENABLED_LEVELS, PINNED_LEVELS } from "./FlowSettings";
+import {
+  ACTUALS_ONLY_LEVELS,
+  ALWAYS_ENABLED_LEVELS,
+  PINNED_LEVELS,
+} from "./FlowSettings";
 
 import type { FlowSettings, LevelPlan } from "./FlowSettings";
 import type { Level } from "utilities/sankey/types";
@@ -135,6 +139,10 @@ export default function FlowLevelContents({
         <Box role="list" sx={{ display: "flex", flexDirection: "column" }}>
           {settings.levelPlan.map((entry, index) => {
             const pinned = isPinned(entry.level);
+            // NCES / School have no breakdown in Budget data.
+            const unavailable =
+              settings.dataType === "budget" &&
+              ACTUALS_ONLY_LEVELS.includes(entry.level);
             return (
               <Box
                 key={entry.level}
@@ -211,15 +219,19 @@ export default function FlowLevelContents({
                 )}
                 <Checkbox
                   size="small"
-                  checked={entry.enabled}
-                  disabled={isAlwaysEnabled(entry.level)}
+                  checked={entry.enabled && !unavailable}
+                  disabled={isAlwaysEnabled(entry.level) || unavailable}
                   onChange={(e) => toggleLevel(entry.level, e.target.checked)}
                   inputProps={{
                     "aria-label": `Show ${LEVEL_LABEL[entry.level]} column`,
                   }}
                 />
-                <Typography variant="body2">
+                <Typography
+                  variant="body2"
+                  sx={unavailable ? { color: "text.disabled" } : undefined}
+                >
                   {LEVEL_LABEL[entry.level]}
+                  {unavailable ? " (actuals only)" : ""}
                 </Typography>
               </Box>
             );

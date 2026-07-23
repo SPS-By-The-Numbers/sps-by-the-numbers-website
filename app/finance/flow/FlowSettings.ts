@@ -76,6 +76,9 @@ export const PINNED_LEVELS: ReadonlyArray<Level> = ["source", "program"];
 // Program cannot be disabled: it is the revenue-attribution linchpin and is
 // always rendered. (Resource/Source is pinned but may be disabled.)
 export const ALWAYS_ENABLED_LEVELS: ReadonlyArray<Level> = ["program"];
+// The Budget data has no NCES / School breakdown, so those levels are not
+// selectable in Budget mode (and are ignored if a plan from Actuals kept them).
+export const ACTUALS_ONLY_LEVELS: ReadonlyArray<Level> = ["nces", "school"];
 export const REORDERABLE_LEVELS: ReadonlyArray<Level> = [
   "activity",
   "object",
