@@ -454,6 +454,17 @@ export function computeFlows(
 // into "Other" (per column).
 const COALESCE_MIN_FRACTION = 0.01;
 
+// The name of the coalesced "Other" node per level (the count is appended,
+// italicized, at render time -- see FlowDashboard's nodeFormatter).
+const OTHER_LABEL: Record<Level, string> = {
+  source: "Other Resources",
+  program: "Other Programs",
+  activity: "Other Activities",
+  object: "Other Objects",
+  nces: "Other NCES",
+  school: "Other Schools",
+};
+
 // A node can be coalesced unless it is a fund-balance node, a Filtered Out node,
 // or a never-combine source account (which must always stay separate).
 function isCoalescable(n: SankeyNode): boolean {
@@ -520,12 +531,16 @@ function coalesceSmall(
     for (const n of small) {
       rename.set(n.id, otherId);
     }
+    const level = small[0].custom.level;
     otherNodes.push({
       id: otherId,
-      name: `Other (${members.length})`,
+      name:
+        level === "fundBalance" || level === "filtered"
+          ? "Other"
+          : OTHER_LABEL[level],
       color: small[0].color,
       column: col,
-      custom: { level: small[0].custom.level, code: null, members },
+      custom: { level, code: null, members },
     });
   }
 

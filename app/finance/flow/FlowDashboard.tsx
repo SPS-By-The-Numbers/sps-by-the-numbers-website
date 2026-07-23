@@ -178,11 +178,19 @@ export default function FlowDashboard({
       return b.weight - a.weight;
     });
 
-    // Bump the chart height when the (wide) School column is enabled; Seattle
-    // has ~110 schools.
-    const height = enabledLevels.includes("school")
-      ? Math.max(700, nodes.length * 14)
-      : 700;
+    // Size the chart to the DENSEST column so every node has room for its label
+    // (labels are never hidden or overlapping — see nodePadding + dataLabels
+    // below). Height scales with the max nodes-in-a-column; the tall result
+    // scrolls inside the container.
+    const columnCounts = new Map<number, number>();
+    for (const n of nodes) {
+      columnCounts.set(n.column, (columnCounts.get(n.column) ?? 0) + 1);
+    }
+    const maxColumnCount = columnCounts.size
+      ? Math.max(...columnCounts.values())
+      : 0;
+    // ~28px per node (nodePadding 18 + body + label line) plus title/margins.
+    const height = Math.max(700, maxColumnCount * 28 + 120);
 
     const dataTypeLabel = dt === "budget" ? "Budget" : "Actuals";
 
@@ -229,9 +237,29 @@ export default function FlowDashboard({
             column: n.column,
             custom: n.custom,
           })),
-          nodePadding: 8,
+          // nodePadding fixes a minimum vertical gap between adjacent nodes
+          // (independent of node size), so labels centered on tiny nodes don't
+          // collide. Combined with the height above (which keeps Highcharts
+          // from shrinking this padding) and allowOverlap, labels are never
+          // hidden and never overlap.
+          nodePadding: 18,
           nodeWidth: 12,
           dataLabels: {
+            useHTML: true,
+            allowOverlap: true,
+            crop: false,
+            overflow: "allow",
+            // Append the coalesced-member count in italics so it doesn't read
+            // as part of the category name (e.g. "Other Activities (3)").
+            nodeFormatter(this: any) {
+              const name = this.point?.name ?? "";
+              const members = this.point?.options?.custom?.members as
+                | Array<unknown>
+                | undefined;
+              return members && members.length
+                ? `${name} <i style="opacity:0.7">(${members.length})</i>`
+                : name;
+            },
             style: { fontSize: "0.7rem", textOutline: "1px contrast" },
           },
         },
@@ -262,7 +290,7 @@ export default function FlowDashboard({
                 members.length > MAX
                   ? `<br/>…and ${members.length - MAX} more`
                   : "";
-              return `<b>${p.name}</b><br/>${fmt(p.sum)}<br/>${shown}${more}`;
+              return `<b>${p.name} (${members.length})</b><br/>${fmt(p.sum)}<br/>${shown}${more}`;
             }
             const nodeLink = linkForNode(p.options as SankeyNode, ctx);
             return (
