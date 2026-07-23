@@ -16,12 +16,7 @@ import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
 import { computeFlows } from "utilities/sankey/flows";
 import { linkForNode } from "utilities/sankey/deepLinks";
-import {
-  flowBaseClass,
-  flowNodeClass,
-  SANKEY_DRAWDOWN_LINK_CLASS,
-  SANKEY_DRAWDOWN_NODE_CLASS,
-} from "utilities/sankey/colors";
+import { flowLinkClass, flowNodeClass } from "utilities/sankey/colors";
 import { makeCurrencyFormatter } from "utilities/highcharts/utils";
 import { serializeDatasetSettings } from "app/finance/_settings/common_settings";
 import { useHighcharts } from "components/providers/HighchartsProvider";
@@ -189,11 +184,6 @@ export default function FlowDashboard({
       : 700;
 
     const dataTypeLabel = dt === "budget" ? "Budget" : "Actuals";
-    // Coloring is by CSS class, not fill attribute (see colors.ts): budget grey
-    // vs actuals blue, Fund Balance red, and drawdown-sourced bands get a thin
-    // light-red border. The fill attribute would be overridden by Highcharts'
-    // .highcharts-color-0 styled-mode CSS.
-    const baseClass = flowBaseClass(dt);
 
     // Deficit years draw down the fund balance; surplus years grow it. Show
     // whichever applies rather than a misleading "Drawdown $0.00".
@@ -223,21 +213,18 @@ export default function FlowDashboard({
             from: l.from,
             to: l.to,
             weight: l.weight,
-            // Color by CSS class (see colors.ts). Bands anywhere downstream of
-            // the Fund Balance Drawdown node also get the border class.
-            className: l.drawdown
-              ? `${baseClass} ${SANKEY_DRAWDOWN_LINK_CLASS}`
-              : baseClass,
+            // Color by CSS class (see colors.ts): base (budget grey / actuals
+            // blue), except drawdown outflow bands (red) and growth inflow
+            // bands (green).
+            className: flowLinkClass(l.from, l.to, dt),
           })),
           nodes: nodes.map((n) => ({
             id: n.id,
             name: n.name,
-            // Budget = grey, Actuals = blue, Fund Balance = red — via CSS class,
-            // since the fill attribute is overridden by styled-mode CSS. Nodes
-            // downstream of the drawdown source also get the border class.
-            className: n.drawdown
-              ? `${flowNodeClass(n.custom.level, dt)} ${SANKEY_DRAWDOWN_NODE_CLASS}`
-              : flowNodeClass(n.custom.level, dt),
+            // Color by CSS class: base, except the drawdown node (red) and the
+            // growth node (green); Filtered Out nodes are neutral grey. The fill
+            // attribute would be overridden by styled-mode CSS.
+            className: flowNodeClass(n, dt),
             column: n.column,
             custom: n.custom,
           })),

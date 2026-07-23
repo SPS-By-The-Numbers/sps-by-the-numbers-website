@@ -33,8 +33,12 @@
 // inline fill attribute — so the flow view is colored by CLASS here instead.
 // These selectors (`.highcharts-node.flow-*` / `.highcharts-link.flow-*`, two
 // classes) outrank `.highcharts-color-0` (one class) and, being loaded after
-// highcharts.css, win. Actuals = blue, Budget = grey (reusing the bar charts'
-// --highcharts-color-1/2), Fund Balance = red.
+// highcharts.css, win.
+//
+// Base: Actuals = blue, Budget = grey (reusing the bar charts'
+// --highcharts-color-1/2). Exceptions, filled to stand out: General Fund
+// Balance Drawdown node + its outflow bands = RED; General Fund Balance Growth
+// node + its inflow bands = GREEN. Filtered Out nodes = neutral grey.
 .highcharts-node.flow-actuals {
   fill: var(--highcharts-color-1);
   stroke: var(--highcharts-color-1);
@@ -43,9 +47,17 @@
   fill: var(--highcharts-color-2);
   stroke: var(--highcharts-color-2);
 }
-.highcharts-node.flow-fund-balance {
-  fill: #b71c1c;
-  stroke: #b71c1c;
+.highcharts-node.flow-drawdown {
+  fill: #c62828;
+  stroke: #c62828;
+}
+.highcharts-node.flow-growth {
+  fill: #2e7d32;
+  stroke: #2e7d32;
+}
+.highcharts-node.flow-filtered {
+  fill: #bdbdbd;
+  stroke: #bdbdbd;
 }
 .highcharts-link.flow-actuals {
   fill: var(--highcharts-color-1);
@@ -53,30 +65,35 @@
 .highcharts-link.flow-budget {
   fill: var(--highcharts-color-2);
 }
-
-// Fund Balance Drawdown-sourced flow: every band and node the drawdown money
-// passes through (downstream of the red drawdown node) gets a thin light-red
-// border. Declared after the base rules so the stroke overrides the base
-// node stroke on equal specificity.
-.highcharts-link.sankey-drawdown-link {
-  stroke: #ef9a9a;
-  stroke-width: 1px;
+.highcharts-link.flow-drawdown {
+  fill: #c62828;
 }
-.highcharts-node.sankey-drawdown-node {
-  stroke: #ef9a9a;
-  stroke-width: 1px;
+.highcharts-link.flow-growth {
+  fill: #2e7d32;
+}
+.highcharts-link.flow-filtered {
+  fill: #bdbdbd;
 }
 
-// A single accent on hover, applied by Highcharts (via the highcharts-point-
+// The accent-on-hover color, applied by Highcharts (via the highcharts-point-
 // hover class it adds in both styled and non-styled mode) to the hovered
-// node/band and its directly connected nodes/links. Declared last so it wins
-// on equal specificity (over both the base and the drawdown-outline rules).
-.highcharts-node.highcharts-point-hover {
+// node/band and its directly connected nodes/links. It matches the data type —
+// active blue for Actuals, active grey for Budget — so Budget doesn't jump to
+// blue on hover. Declared after the base rules and with an extra class so it
+// wins. The red/green fund-balance bands keep their color on hover (no rule).
+.highcharts-node.flow-actuals.highcharts-point-hover {
   fill: #1976d2;
   stroke: #1976d2;
 }
-.highcharts-link.highcharts-point-hover {
+.highcharts-link.flow-actuals.highcharts-point-hover {
   fill: #1976d2;
+}
+.highcharts-node.flow-budget.highcharts-point-hover {
+  fill: #757575;
+  stroke: #757575;
+}
+.highcharts-link.flow-budget.highcharts-point-hover {
+  fill: #757575;
 }
 
 .highcharts-crosshair {

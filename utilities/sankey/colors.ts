@@ -39,19 +39,22 @@ export const SANKEY_COLORS = {
 // inline fill attribute (CSS beats SVG presentation attributes) -- so setting
 // `color` on a node/link does nothing; the band renders as --highcharts-color-0
 // (a blue). Instead we assign a class and let styles/highcharts-base.scss set
-// the fill with higher specificity. Actuals = blue, Budget = grey (reusing the
-// bar charts' --highcharts-color-1/2), Fund Balance = red; a single accent on
-// hover; drawdown-sourced bands get a thin light-red border.
+// the fill with higher specificity.
+//
+// Almost everything uses the base class (Actuals = blue, Budget = grey, reusing
+// the bar charts' --highcharts-color-1/2). The exceptions are the two
+// fund-balance flows, filled to stand out: the General Fund Balance Drawdown
+// node and its outflow bands are RED; the General Fund Balance Growth node and
+// its inflow bands are GREEN. Filtered Out nodes are a neutral grey.
 export const FLOW_ACTUALS_CLASS = "flow-actuals";
 export const FLOW_BUDGET_CLASS = "flow-budget";
-export const FLOW_FUND_BALANCE_CLASS = "flow-fund-balance";
+export const FLOW_DRAWDOWN_CLASS = "flow-drawdown"; // red
+export const FLOW_GROWTH_CLASS = "flow-growth"; // green
+export const FLOW_FILTERED_CLASS = "flow-filtered"; // neutral grey
 
-// The Fund Balance Drawdown node id (emitted by the compute engine) and the CSS
-// classes for its DOWNSTREAM flow: every link (band) and node that
-// drawdown-sourced money passes through gets a thin light-red border.
-export const SANKEY_DRAWDOWN_NODE_ID = "fb:drawdown";
-export const SANKEY_DRAWDOWN_LINK_CLASS = "sankey-drawdown-link";
-export const SANKEY_DRAWDOWN_NODE_CLASS = "sankey-drawdown-node";
+// Node ids for the two synthetic fund-balance nodes (emitted by the engine).
+export const DRAWDOWN_NODE_ID = "fb:drawdown";
+export const GROWTH_NODE_ID = "fb:growth";
 
 export type FlowDataType = "actuals" | "budget";
 
@@ -60,15 +63,38 @@ export function flowBaseClass(dataType: FlowDataType): string {
   return dataType === "budget" ? FLOW_BUDGET_CLASS : FLOW_ACTUALS_CLASS;
 }
 
-// CSS class for a node: Fund Balance nodes (drawdown / growth) are always red;
-// every other node uses the budget/actuals base class.
+// CSS class for a node: the drawdown node is red, the growth node green,
+// Filtered Out nodes neutral grey, everything else the budget/actuals base.
 export function flowNodeClass(
-  level: Level | "fundBalance" | "filtered",
+  node: { id: string; custom: { level: Level | "fundBalance" | "filtered" } },
   dataType: FlowDataType,
 ): string {
-  return level === "fundBalance"
-    ? FLOW_FUND_BALANCE_CLASS
-    : flowBaseClass(dataType);
+  if (node.id === DRAWDOWN_NODE_ID) {
+    return FLOW_DRAWDOWN_CLASS;
+  }
+  if (node.id === GROWTH_NODE_ID) {
+    return FLOW_GROWTH_CLASS;
+  }
+  if (node.custom.level === "filtered") {
+    return FLOW_FILTERED_CLASS;
+  }
+  return flowBaseClass(dataType);
+}
+
+// CSS class for a link (band): bands flowing OUT of the drawdown node are red,
+// bands flowing INTO the growth node are green, everything else the base class.
+export function flowLinkClass(
+  from: string,
+  to: string,
+  dataType: FlowDataType,
+): string {
+  if (from === DRAWDOWN_NODE_ID) {
+    return FLOW_DRAWDOWN_CLASS;
+  }
+  if (to === GROWTH_NODE_ID) {
+    return FLOW_GROWTH_CLASS;
+  }
+  return flowBaseClass(dataType);
 }
 
 // Map a revenue category (or the category a revenue account rolls up to) to its

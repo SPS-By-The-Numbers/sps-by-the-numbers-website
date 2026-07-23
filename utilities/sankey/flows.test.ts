@@ -421,7 +421,7 @@ describe("computeFlows — never-combine sources and node names", () => {
     expect(nodes.some((n) => n.custom.level === "filtered")).toBe(false);
   });
 
-  it("diverts a never-combine source when its category is deselected", () => {
+  it("drops a never-combine source when its category is deselected", () => {
     const expRows = [exp(10, "Basic", 27, "Teaching", 100)];
     const revRows = [rev(2500, 2000, 0, 100)];
     const { nodes } = computeFlows(expRows, revRows, {
@@ -430,8 +430,10 @@ describe("computeFlows — never-combine sources and node names", () => {
       // Category 2000 (which 2500 belongs to) is NOT selected.
       filters: { sourceCodes: new Set([1000, 3000]) },
     });
+    // The source is dropped (not diverted): no src node and, crucially, no
+    // "Filtered Out" resource in the source column.
     expect(nodeById(nodes, "src:2500")).toBeUndefined();
-    expect(nodes.some((n) => n.custom.level === "filtered")).toBe(true);
+    expect(nodes.some((n) => n.custom.level === "filtered")).toBe(false);
   });
 
   it("names the drawdown node 'General Fund Balance Drawdown'", () => {
@@ -446,35 +448,38 @@ describe("computeFlows — never-combine sources and node names", () => {
   });
 });
 
-describe("computeFlows — Fund Balance Drawdown downstream outline", () => {
-  // In the deficit fixture, drawdown fills program 10's residual gap (30), so
-  // its money flows on to program 10's activities. Program 20 is funded by
-  // directed revenue, so its flow is NOT drawdown-sourced.
-  const { nodes, links } = computeFlows(deficitExp(), deficitRev(), {
-    mode: "account",
-    enabledLevels: BASE_LEVELS,
-    filters: {},
-  });
-  const linkDrawdown = (from: string, to: string) =>
-    links.find((l) => l.from === from && l.to === to)?.drawdown;
-  const nodeDrawdown = (id: string) => nodeById(nodes, id)?.drawdown;
+describe("computeFlows — the Resource column never contains Filtered Out", () => {
+  const sourceColumnHasFiltered = (nodes: SankeyNode[]) =>
+    nodes.some((n) => n.column === 0 && n.custom.level === "filtered");
 
-  it("marks every link carrying drawdown-sourced flow, and no others", () => {
-    expect(linkDrawdown("fb:drawdown", "prog:10")).toBe(true);
-    expect(linkDrawdown("prog:10", "act:27")).toBe(true);
-    expect(linkDrawdown("prog:10", "act:29")).toBe(true);
-    // Program 20's band is directed-revenue funded, not drawdown.
-    expect(linkDrawdown("prog:20", "act:27")).toBeFalsy();
+  it("has no Filtered Out resource under default filters", () => {
+    const { nodes } = computeFlows(deficitExp(), deficitRev(), {
+      mode: "account",
+      enabledLevels: BASE_LEVELS,
+      filters: {},
+    });
+    expect(sourceColumnHasFiltered(nodes)).toBe(false);
   });
 
-  it("marks downstream nodes but not the red drawdown source itself", () => {
-    expect(nodeDrawdown("prog:10")).toBe(true);
-    // act 27 is reached by drawdown flow via program 10 (even though program 20
-    // also feeds it), so it is downstream.
-    expect(nodeDrawdown("act:27")).toBe(true);
-    expect(nodeDrawdown("act:29")).toBe(true);
-    expect(nodeDrawdown("prog:20")).toBeFalsy();
-    // The drawdown source node is filled red, not outlined.
-    expect(nodeDrawdown("fb:drawdown")).toBeFalsy();
+  it("drops excluded sources instead of adding a Filtered Out resource", () => {
+    const { nodes } = computeFlows(deficitExp(), deficitRev(), {
+      mode: "account",
+      enabledLevels: BASE_LEVELS,
+      filters: { sourceCodes: new Set([1100]) }, // exclude directed account 4210
+    });
+    expect(sourceColumnHasFiltered(nodes)).toBe(false);
+    expect(nodes.some((n) => n.custom.level === "filtered")).toBe(false);
+    expect(nodeById(nodes, "src:4210")).toBeUndefined();
+  });
+
+  it("keeps the Resource column clean even with a downstream filter", () => {
+    const { nodes } = computeFlows(deficitExp(), deficitRev(), {
+      mode: "account",
+      enabledLevels: BASE_LEVELS,
+      filters: { programCodes: new Set([20]) }, // exclude program 10 downstream
+    });
+    expect(sourceColumnHasFiltered(nodes)).toBe(false);
+    // The downstream filter still diverts into a Filtered Out band (later column).
+    expect(nodes.some((n) => n.custom.level === "filtered")).toBe(true);
   });
 });
