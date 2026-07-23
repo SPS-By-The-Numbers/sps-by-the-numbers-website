@@ -404,6 +404,36 @@ describe("computeFlows — never-combine sources and node names", () => {
     expect(link(links, "src:2000", "prog:10")).toBeCloseTo(60, 6);
   });
 
+  it("does not divert a never-combine source under the default category filter", () => {
+    // Regression: account 2500's source cell carries code 2500, but the
+    // category filter holds category codes. It must map back to category 2000
+    // (selected here) and pass -- not fall into a "Filtered Out" resource.
+    const expRows = [exp(10, "Basic", 27, "Teaching", 100)];
+    const revRows = [rev(2500, 2000, 0, 100)];
+    const { nodes } = computeFlows(expRows, revRows, {
+      mode: "category",
+      enabledLevels: BASE_LEVELS,
+      // Category filter selects 2000 (and others) -- as the default all-selected
+      // filter would.
+      filters: { sourceCodes: new Set([1000, 2000, 3000]) },
+    });
+    expect(nodeById(nodes, "src:2500")).toBeDefined();
+    expect(nodes.some((n) => n.custom.level === "filtered")).toBe(false);
+  });
+
+  it("diverts a never-combine source when its category is deselected", () => {
+    const expRows = [exp(10, "Basic", 27, "Teaching", 100)];
+    const revRows = [rev(2500, 2000, 0, 100)];
+    const { nodes } = computeFlows(expRows, revRows, {
+      mode: "category",
+      enabledLevels: BASE_LEVELS,
+      // Category 2000 (which 2500 belongs to) is NOT selected.
+      filters: { sourceCodes: new Set([1000, 3000]) },
+    });
+    expect(nodeById(nodes, "src:2500")).toBeUndefined();
+    expect(nodes.some((n) => n.custom.level === "filtered")).toBe(true);
+  });
+
   it("names the drawdown node 'General Fund Balance Drawdown'", () => {
     const { nodes } = computeFlows(deficitExp(), deficitRev(), {
       mode: "account",

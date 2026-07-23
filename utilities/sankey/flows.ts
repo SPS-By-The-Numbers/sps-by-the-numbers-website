@@ -130,12 +130,20 @@ export function computeFlows(
   // sources (see `sourceKeyOf`): by category in category mode, by account in
   // account mode, and always by account for never-combine accounts.
   const sourceLabel = new Map<number, string>();
+  // For source filtering: in category mode the source filter holds CATEGORY
+  // codes, but a never-combine account is shown by its own account code, so map
+  // it back to its category for the filter check (otherwise it would always
+  // fail the category filter and divert to "Filtered Out").
+  const sourceFilterCode = new Map<number, number>();
   for (const r of revRows) {
     const key = sourceKeyOf(r, opts.mode);
     const combined =
       opts.mode === "category" &&
       !NEVER_COMBINE_REVENUE_CODES.has(r.revenue_code);
     sourceLabel.set(key, combined ? r.category : r.revenue);
+    if (opts.mode === "category" && NEVER_COMBINE_REVENUE_CODES.has(key)) {
+      sourceFilterCode.set(key, r.category_code);
+    }
   }
   // Program labels (for the program cell) plus the other expenditure-level
   // labels come from expenditure rows.
@@ -334,7 +342,16 @@ export function computeFlows(
     if (!set) {
       return true;
     }
-    return cell.code !== null && set.has(cell.code);
+    if (cell.code === null) {
+      return false;
+    }
+    // Source cells are checked against the source filter, mapping a
+    // never-combine account back to its category when in category mode.
+    const code =
+      cell.level === "source"
+        ? (sourceFilterCode.get(cell.code) ?? cell.code)
+        : cell.code;
+    return set.has(code);
   };
 
   const nodes = new Map<string, SankeyNode>();
