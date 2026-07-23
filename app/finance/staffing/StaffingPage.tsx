@@ -103,6 +103,9 @@ export default function StaffingPage() {
       defaultAllSettings={DEFAULT_STAFF_SETTINGS}
       allSettingsConfigGenerators={SERIALIZE_STAFFING_SETTINGS_GENERATORS}
       defaultContextSettings={DEFAULT_CONTEXT_SETTINGS}
+      contextSettingsConfigGenerators={
+        SERIALIZE_STAFFING_CONTEXT_SETTINGS_GENERATORS
+      }
       ContentComponent={StaffingDashboard}
     />
   );

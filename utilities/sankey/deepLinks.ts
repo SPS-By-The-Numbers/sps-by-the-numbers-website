@@ -243,7 +243,9 @@ export function linksForNode(
     const href =
       `${t.path}?d=${encodeURIComponent(parts.join("~"))}` +
       `&c=${encodeURIComponent(facet)}`;
-    return { href, label: `Explore ${node.name} in ${t.dashboard}` };
+    // Bare dashboard name; FlowDashboard renders it as "Explore in <a>…</a>",
+    // the same phrasing as a band's links.
+    return { href, label: t.dashboard };
   });
 }
 
@@ -283,9 +285,9 @@ const EXPENDITURES_FACET: Partial<Record<Level, string>> = {
 };
 // Which band endpoint levels can narrow Staffing (P-A-S), mapped to the facet
 // its link opens on. School maps to Duty Root (f.3), NOT the School facet (f.2):
-// the dashboard's School facet is broken, and an object->school band already
-// narrows Staffing to a single school, so faceting on school would be degenerate
-// anyway -- Duty Root (staffing's default) breaks the FTE out by role instead.
+// an object->school band already narrows Staffing to a single school, so
+// faceting on school would be degenerate -- Duty Root breaks the FTE out by
+// role within that school instead, which is more useful.
 const STAFFING_FACET: Partial<Record<Level, string>> = {
   activity: "f.0",
   program: "f.1",

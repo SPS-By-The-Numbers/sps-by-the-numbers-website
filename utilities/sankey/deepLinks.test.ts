@@ -82,7 +82,7 @@ describe("linksForNode", () => {
     const links = linksForNode(node, CTX_CATEGORY);
     expect(links).toHaveLength(1);
     expect(links[0].href.startsWith("/finance/revenues?d=")).toBe(true);
-    expect(links[0].label).toBe("Explore Local Taxes in Revenues");
+    expect(links[0].label).toBe("Revenues");
     expect(extractC(links[0].href)).toBe("f.0"); // category (own)
 
     const d = extractD(links[0].href);
@@ -117,8 +117,8 @@ describe("linksForNode", () => {
     const det = byPath(links, "/finance/detailedactuals");
     expect(extractC(exp.href)).toBe("f.1"); // program
     expect(extractC(det.href)).toBe("f.1");
-    expect(exp.label).toBe("Explore Basic in Bud/Act History");
-    expect(det.label).toBe("Explore Basic in Detailed Actuals");
+    expect(exp.label).toBe("Bud/Act History");
+    expect(det.label).toBe("Detailed Actuals");
 
     // Both narrow program to [1]; round-trip the Expenditures one through the
     // real generators.
@@ -322,7 +322,7 @@ describe("linksForBand", () => {
     expect(extractC(byPath(links, "/finance/detailedactuals").href)).toBe(
       "f.4",
     );
-    // School staffing facet is broken, so the link opens on Duty Root (f.3).
+    // object->school narrows to one school, so the link opens on Duty Root (f.3).
     const staff = byPath(links, "/finance/staffing");
     expect(extractC(staff.href)).toBe("f.3");
     const d = extractD(staff.href);

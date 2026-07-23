@@ -643,15 +643,11 @@ export default function FlowDashboard({
                   : "";
               return `<b>${p.name} (${members.length})</b><br/>${fmt(p.sum)}<br/>${shown}${more}`;
             }
-            // Node hover: links open the node's item faceted at its own level.
+            // Node hover: one view filtered to just this node, faceted on its
+            // OWN level -- same "Explore in <a>…</a> or <a>…</a>" phrasing as a
+            // band's links.
             const nodeLinks = linksForNode(p.options as SankeyNode, ctx);
-            const nodeLinksHtml = nodeLinks
-              .map(
-                (l) =>
-                  `<br/><a href="${l.href}" target="_blank" rel="noopener" style="pointer-events:all">${l.label} ↗</a>`,
-              )
-              .join("");
-            return `<b>${p.name}</b><br/>${fmt(p.sum)}${nodeLinksHtml}`;
+            return `<b>${p.name}</b><br/>${fmt(p.sum)}${bandLinksHtml(nodeLinks)}`;
           }
 
           // Band hover: one view filtered to exactly this band, faceted on the
