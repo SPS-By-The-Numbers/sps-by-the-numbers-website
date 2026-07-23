@@ -16,6 +16,7 @@
 //   - `y`   selected class_of (fiscal year end); omitted => latest available
 //   - `dt`  data type ("b" = budget, omitted = actuals)
 //   - `cs`  coalesce small nodes into "Other" ("1" = on, omitted = off)
+//   - `pt`  highlight the PTA-funding resource ("1" = on, omitted = off)
 // Defaults serialize to the empty string so they are omitted from the URL.
 
 import { DEFAULT_DATASET_SETTINGS } from "app/finance/_settings/dataset_settings";
@@ -66,6 +67,8 @@ export type FlowSettings = DatasetSettings &
     dataType: "actuals" | "budget";
     // Combine small nodes on each level into an "Other" node.
     coalesce: boolean;
+    // Highlight the resource node that includes PTA funding.
+    highlightPta: boolean;
   };
 
 // The two pinned levels and the four reorderable ones.
@@ -181,6 +184,7 @@ export const DEFAULT_FLOW_SETTINGS: Array<FlowSettings> =
     classOf: null,
     dataType: "actuals" as const,
     coalesce: false,
+    highlightPta: false,
   }));
 
 // Custom serializer config for the four flow-only URL vars. Kept separate from
@@ -236,6 +240,16 @@ export function makeFlowSerializeConfig(): SettingsConfig {
       {
         serializerType: "custom",
         urlVar: "cs",
+        // false is the default and serializes to "" (omitted from URL).
+        serialize: (settings, key) => (settings[key] ? "1" : ""),
+        deserialize: (settings, s) => s === "1",
+      },
+    ],
+    [
+      "highlightPta",
+      {
+        serializerType: "custom",
+        urlVar: "pt",
         // false is the default and serializes to "" (omitted from URL).
         serialize: (settings, key) => (settings[key] ? "1" : ""),
         deserialize: (settings, s) => s === "1",

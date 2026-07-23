@@ -74,6 +74,17 @@
 .highcharts-link.flow-filtered {
   fill: #bdbdbd;
 }
+// The PTA-funding highlight: a putrid mustard / bile — unmissable, conveying
+// the appropriate enthusiasm for this question, while staying well clear of the
+// drawdown red (distinct in both hue and lightness, so it holds up under
+// red-green color blindness).
+.highcharts-node.flow-pta {
+  fill: #b59a12;
+  stroke: #b59a12;
+}
+.highcharts-link.flow-pta {
+  fill: #b59a12;
+}
 
 // The accent-on-hover color, applied by Highcharts (via the highcharts-point-
 // hover class it adds in both styled and non-styled mode) to the hovered

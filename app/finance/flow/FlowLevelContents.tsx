@@ -279,6 +279,29 @@ export default function FlowLevelContents({
           />
         }
       />
+
+      <Box>
+        <FormControlLabel
+          label="Highlight resource w/ PTA funds"
+          control={
+            <Checkbox
+              size="small"
+              checked={settings.highlightPta}
+              onChange={(e) =>
+                setSettings({ ...settings, highlightPta: e.target.checked })
+              }
+            />
+          }
+        />
+        <Typography
+          variant="caption"
+          component="p"
+          sx={{ color: "text.secondary", ml: "0.25rem", mt: "-0.25rem" }}
+        >
+          Highlights the whole Gifts, Grants &amp; Donations resource. PTA gifts
+          are only a fraction of it — likely a small one.
+        </Typography>
+      </Box>
     </Box>
   );
 }

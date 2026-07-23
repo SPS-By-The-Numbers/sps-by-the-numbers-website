@@ -51,10 +51,17 @@ export const FLOW_BUDGET_CLASS = "flow-budget";
 export const FLOW_DRAWDOWN_CLASS = "flow-drawdown"; // red
 export const FLOW_GROWTH_CLASS = "flow-growth"; // green
 export const FLOW_FILTERED_CLASS = "flow-filtered"; // neutral grey
+// The "where does the PTA money go" highlight (a putrid mustard, see the scss).
+// It marks the whole "Gifts, Grants, and Donations" resource — PTA gifts are
+// only a fraction of it (likely a small one). Opt-in via the settings toggle.
+export const FLOW_PTA_CLASS = "flow-pta";
 
 // Node ids for the two synthetic fund-balance nodes (emitted by the engine).
 export const DRAWDOWN_NODE_ID = "fb:drawdown";
 export const GROWTH_NODE_ID = "fb:growth";
+// PTA gifts land in the "Gifts, Grants, and Donations (Local)" account (2500),
+// which is a never-combine source, so its node id is stable in either mode.
+export const PTA_SOURCE_NODE_ID = "src:2500";
 
 export type FlowDataType = "actuals" | "budget";
 
@@ -63,12 +70,17 @@ export function flowBaseClass(dataType: FlowDataType): string {
   return dataType === "budget" ? FLOW_BUDGET_CLASS : FLOW_ACTUALS_CLASS;
 }
 
-// CSS class for a node: the drawdown node is red, the growth node green,
-// Filtered Out nodes neutral grey, everything else the budget/actuals base.
+// CSS class for a node: (optional) the PTA-funding source, else the drawdown
+// node red, the growth node green, Filtered Out nodes neutral grey, everything
+// else the budget/actuals base.
 export function flowNodeClass(
   node: { id: string; custom: { level: Level | "fundBalance" | "filtered" } },
   dataType: FlowDataType,
+  highlightPta = false,
 ): string {
+  if (highlightPta && node.id === PTA_SOURCE_NODE_ID) {
+    return FLOW_PTA_CLASS;
+  }
   if (node.id === DRAWDOWN_NODE_ID) {
     return FLOW_DRAWDOWN_CLASS;
   }
@@ -81,13 +93,17 @@ export function flowNodeClass(
   return flowBaseClass(dataType);
 }
 
-// CSS class for a link (band): bands flowing OUT of the drawdown node are red,
-// bands flowing INTO the growth node are green, everything else the base class.
+// CSS class for a link (band): (optional) bands leaving the PTA-funding source,
+// else drawdown-outflow red, growth-inflow green, everything else the base.
 export function flowLinkClass(
   from: string,
   to: string,
   dataType: FlowDataType,
+  highlightPta = false,
 ): string {
+  if (highlightPta && from === PTA_SOURCE_NODE_ID) {
+    return FLOW_PTA_CLASS;
+  }
   if (from === DRAWDOWN_NODE_ID) {
     return FLOW_DRAWDOWN_CLASS;
   }

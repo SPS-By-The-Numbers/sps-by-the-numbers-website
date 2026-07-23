@@ -111,6 +111,7 @@ describe("FlowSettings level plan", () => {
     expect(serialized).not.toContain("y.");
     expect(serialized).not.toContain("dt.");
     expect(serialized).not.toContain("cs.");
+    expect(serialized).not.toContain("pt.");
   });
 
   it("full settings round-trip through the URL", () => {
@@ -131,6 +132,7 @@ describe("FlowSettings level plan", () => {
       dataType: "budget" as const,
       programCodes: programSubset,
       coalesce: true,
+      highlightPta: true,
     };
 
     const serialized = serializeDatasetSettings(
@@ -143,6 +145,7 @@ describe("FlowSettings level plan", () => {
     expect(serialized[0]).toContain("y.2025");
     expect(serialized[0]).toContain("dt.b");
     expect(serialized[0]).toContain("cs.1");
+    expect(serialized[0]).toContain("pt.1");
 
     const [restored] = deserializeDatasetSettings(
       serialized,
@@ -156,6 +159,7 @@ describe("FlowSettings level plan", () => {
     expect(restored.dataType).toEqual("budget");
     expect(restored.programCodes).toEqual(programSubset);
     expect(restored.coalesce).toBe(true);
+    expect(restored.highlightPta).toBe(true);
   });
 
   it("latest year (null classOf) and category mode round-trip as defaults", () => {

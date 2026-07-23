@@ -8,8 +8,10 @@ import {
   FLOW_DRAWDOWN_CLASS,
   FLOW_FILTERED_CLASS,
   FLOW_GROWTH_CLASS,
+  FLOW_PTA_CLASS,
   DRAWDOWN_NODE_ID,
   GROWTH_NODE_ID,
+  PTA_SOURCE_NODE_ID,
 } from "utilities/sankey/colors";
 
 import type { SankeyNode } from "utilities/sankey/types";
@@ -52,6 +54,24 @@ describe("flow presentation classes", () => {
     );
     expect(flowLinkClass("prog:10", "act:27", "budget")).toBe(
       FLOW_BUDGET_CLASS,
+    );
+  });
+
+  it("highlights the PTA-funding source only when the flag is on", () => {
+    const pta = node(PTA_SOURCE_NODE_ID, "source");
+    // Off (default): the PTA source is just a normal base node/band.
+    expect(flowNodeClass(pta, "actuals")).toBe(FLOW_ACTUALS_CLASS);
+    expect(flowLinkClass(PTA_SOURCE_NODE_ID, "prog:10", "actuals")).toBe(
+      FLOW_ACTUALS_CLASS,
+    );
+    // On: the PTA source node and its outflow bands get the highlight class.
+    expect(flowNodeClass(pta, "actuals", true)).toBe(FLOW_PTA_CLASS);
+    expect(flowLinkClass(PTA_SOURCE_NODE_ID, "prog:10", "budget", true)).toBe(
+      FLOW_PTA_CLASS,
+    );
+    // Other nodes are unaffected by the flag.
+    expect(flowNodeClass(node("prog:10", "program"), "actuals", true)).toBe(
+      FLOW_ACTUALS_CLASS,
     );
   });
 });

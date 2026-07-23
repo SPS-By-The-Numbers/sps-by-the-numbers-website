@@ -192,6 +192,13 @@ export default function FlowDashboard({
     // ~28px per node (nodePadding 18 + body + label line) plus title/margins.
     const height = Math.max(700, maxColumnCount * 28 + 120);
 
+    // Node labels are centered on the (thin) node, so the leftmost and rightmost
+    // columns' labels extend past the plot edges and clip. Reserve horizontal
+    // margin equal to about half the longest label's width on each side. (~6.5px
+    // per char at 0.7rem; the "(N)" the formatter adds is covered by padding.)
+    const maxNameLen = nodes.reduce((m, n) => Math.max(m, n.name.length), 0);
+    const sideMargin = Math.min(260, Math.round((maxNameLen * 6.5) / 2) + 18);
+
     const dataTypeLabel = dt === "budget" ? "Budget" : "Actuals";
 
     // Deficit years draw down the fund balance; surplus years grow it. Show
@@ -204,7 +211,7 @@ export default function FlowDashboard({
           : "Balanced";
 
     const chartOptions = {
-      chart: { height },
+      chart: { height, marginLeft: sideMargin, marginRight: sideMargin },
       credits: { enabled: false },
       title: {
         text: `${settings.name} — General Fund Expenditure Flow`,
@@ -223,17 +230,17 @@ export default function FlowDashboard({
             to: l.to,
             weight: l.weight,
             // Color by CSS class (see colors.ts): base (budget grey / actuals
-            // blue), except drawdown outflow bands (red) and growth inflow
-            // bands (green).
-            className: flowLinkClass(l.from, l.to, dt),
+            // blue), except drawdown outflow bands (red), growth inflow bands
+            // (green), and — when highlighting PTA — the PTA source's bands.
+            className: flowLinkClass(l.from, l.to, dt, settings.highlightPta),
           })),
           nodes: nodes.map((n) => ({
             id: n.id,
             name: n.name,
-            // Color by CSS class: base, except the drawdown node (red) and the
-            // growth node (green); Filtered Out nodes are neutral grey. The fill
-            // attribute would be overridden by styled-mode CSS.
-            className: flowNodeClass(n, dt),
+            // Color by CSS class: base, except the drawdown node (red), growth
+            // node (green), Filtered Out (grey), and — when highlighting PTA —
+            // the PTA-funding source node.
+            className: flowNodeClass(n, dt, settings.highlightPta),
             column: n.column,
             custom: n.custom,
           })),
