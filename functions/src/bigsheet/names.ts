@@ -1,20 +1,33 @@
-// Column-name helpers for the bigsheet SQL generator.
+// Naming vocabulary for the bigsheet SQL generator.
 //
-// MIGRATION POLICY (legacy names, mechanically sanitized). The Python
-// marts/bigsheet.py builds pivot column names by rotating the pivot tuple left
-// (value moves to the back), joining with "_", and keeps raw headers with
-// spaces/slashes. AVRO/BigQuery field names must match [A-Za-z_][A-Za-z0-9_]*,
-// so every generated name is passed through `sanitizeName`. The golden-diff
-// harness applies the SAME `sanitizeName` to the golden headers, so this file
-// and the harness MUST agree byte-for-byte (see scripts/bigsheet_inputs_lib.py
-// for the identical Python copy used to name the external-table columns).
+// Every output column is a clean snake_case identifier ([a-z][a-z0-9_]*)
+// carrying a data-source family prefix (enroll_, spend_, staff_, asmt_,
+// sqss_, map_hc_, map_nonhc_, bex_, bldg_, income_, churn_). The sources
+// refresh on independent cadences (report-card releases, F-196 closes, S-275
+// snapshots, SPS one-off files), so the prefix tells a consumer which columns
+// update together. See NAMING.md for the full design.
+//
+// Raw source labels (test administrations, student groups, …) are mapped to
+// canonical slugs. Distinct raw spellings of the same population ("Non
+// Migrant"/"Non-Migrant", "Hispanic/ Latino …"/"Hispanic/Latino …") map to
+// ONE slug on purpose: the pivot generator merges them into a single column,
+// fixing an upstream data-quality wart instead of reproducing it.
 
-/**
- * Sanitize an arbitrary header into a valid SQL/AVRO identifier: every run of
- * non-[A-Za-z0-9_] characters becomes a single "_"; a leading digit is
- * prefixed with "_". No trailing-underscore stripping (kept faithful to the
- * golden headers, which the harness sanitizes the same way).
- */
+/** Generic slug: lowercase, non-alphanumeric runs -> "_", trimmed; "x" prefix
+ * for a leading digit. Fallback for values with no canonical entry. */
+export function slugify(raw: string | number): string {
+  let s = String(raw).toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
+  if (s.length === 0) s = 'blank';
+  if (s[0] >= '0' && s[0] <= '9') s = 'x' + s;
+  return s;
+}
+
+/** Legacy mechanical sanitizer. The bigsheet_inputs external tables were
+ * created with column names produced by the identical Python function in
+ * data-tools scripts/bigsheet_inputs_lib.py, so the BEX column mapping in
+ * columns.ts keys off these names. Keep byte-identical to that copy. */
 export function sanitizeName(raw: string): string {
   let s = String(raw).replace(/[^A-Za-z0-9_]+/g, '_');
   if (s.length > 0 && s[0] >= '0' && s[0] <= '9') {
@@ -23,55 +36,105 @@ export function sanitizeName(raw: string): string {
   return s;
 }
 
-/**
- * Build a pivot output column name the way bigsheet.py does: rotate the tuple
- * (value, ...levels) left to (...levels, value), drop empty parts, join with
- * "_", prepend the family prefix, then sanitize.
- *
- * @param prefix "hc_" | "nonhc_" | "" (applied before the joined parts)
- * @param levels the pivot combo values, in pivot `columns=[...]` order
- * @param valueLabel the pandas `values=` label (e.g. "Average of RITScore")
- */
-export function pivotColumnName(
-    prefix: string, levels: Array<string | number>,
-    valueLabel: string): string {
-  const parts = [...levels, valueLabel]
-      .map((p) => (p === null || p === undefined ? '' : String(p)))
-      .filter((p) => p !== '');
-  return sanitizeName(prefix + parts.join('_'));
+// ---- Student groups ---------------------------------------------------------
+// Canonical slugs match the rc_enrollment column names where one exists
+// (low_income, students_with_disabilities, …) so the same population carries
+// the same identifier in enroll_, asmt_ and sqss_ columns. Multiple raw
+// spellings intentionally share a slug (variants drifted across report-card
+// years). slugify() already unifies space/hyphen variants; entries here handle
+// everything it can't.
+const STUDENT_GROUP_SLUGS = new Map<string, string>([
+  ['All Students', 'all'],
+  ['Black/ African American', 'black_african_american'],
+  ['Black/African American', 'black_african_american'],
+  ['Hispanic/ Latino of any race(s)', 'hispanic_latino_of_any_race'],
+  ['Hispanic/Latino of any race(s)', 'hispanic_latino_of_any_race'],
+  ['American Indian/ Alaskan Native', 'american_indian_alaskan_native'],
+  ['American Indian/Alaskan Native', 'american_indian_alaskan_native'],
+  ['Native Hawaiian/ Other Pacific Islander', 'native_hawaiian_other_pacific'],
+  ['Native Hawaiian/Other Pacific Islander', 'native_hawaiian_other_pacific'],
+  // The complement of students_with_disabilities appears as both phrasings.
+  ['Non-Students with Disabilities', 'students_without_disabilities'],
+  ['Students without Disabilities', 'students_without_disabilities'],
+]);
+
+export function studentGroupSlug(raw: string): string {
+  return STUDENT_GROUP_SLUGS.get(raw) ?? slugify(raw);
 }
 
-/**
- * Sanitize a list of raw names to unique identifiers, disambiguating genuine
- * collisions deterministically: the first occurrence (in list order) keeps the
- * base identifier; each later collider gets the lowest free `_<k>` suffix
- * (k>=2). Returns the parallel `names` array plus the list of disambiguated
- * `[raw, assignedName]` collisions.
- *
- * WHY (not fail-on-collision): the SQSS source genuinely carries two spellings
- * of the same group, "Non Migrant" and "Non-Migrant", which sanitize to one
- * identifier. The golden keeps both as distinct columns, so the migration must
- * too. BigQuery also requires unique column names within a SELECT. Because the
- * generator's pivot column order equals the golden's column order (full-tuple
- * first-appearance), applying this function in both places assigns identical
- * names, so values still line up. Collisions are logged by callers.
- */
-export function sanitizeUnique(
-    rawNames: string[]): { names: string[]; collisions: Array<[string, string]> } {
-  const used = new Set<string>();
-  const names: string[] = [];
-  const collisions: Array<[string, string]> = [];
-  for (const raw of rawNames) {
-    let s = sanitizeName(raw);
-    if (used.has(s)) {
-      const base = s;
-      let k = 2;
-      while (used.has(`${base}_${k}`)) k++;
-      s = `${base}_${k}`;
-      collisions.push([raw, s]);
+/** Column-order position for student groups: identity first, then race,
+ * program/status pairs, unknown last; novel groups sort after all known ones
+ * alphabetically. */
+export const STUDENT_GROUP_ORDER: string[] = [
+  'all', 'female', 'male', 'gender_x',
+  'american_indian_alaskan_native', 'asian', 'black_african_american',
+  'hispanic_latino_of_any_race', 'native_hawaiian_other_pacific',
+  'two_or_more_races', 'white',
+  'english_language_learners', 'non_english_language_learners',
+  'highly_capable', 'non_highly_capable',
+  'students_with_disabilities', 'students_without_disabilities',
+  'section_504', 'non_section_504',
+  'low_income', 'non_low_income',
+  'homeless', 'non_homeless',
+  'foster_care', 'non_foster_care',
+  'migrant', 'non_migrant',
+  'military_parent', 'non_military_parent',
+  'mobile', 'non_mobile',
+  'unknown',
+];
+
+// ---- Assessment administrations / subjects ----------------------------------
+export const TEST_ADMIN_ORDER: string[] =
+    ['sbac', 'wcas', 'eoc', 'msphspe', 'aim', 'elpa', 'widaacc'];
+export const TEST_SUBJECT_ORDER: string[] = ['ela', 'math', 'science', 'biology'];
+
+// ---- MAP --------------------------------------------------------------------
+const MAP_SUBJECT_SLUGS = new Map<string, string>([
+  ['Mathematics', 'math'],
+  ['Reading', 'reading'],
+]);
+export function mapSubjectSlug(raw: string): string {
+  return MAP_SUBJECT_SLUGS.get(raw) ?? slugify(raw);
+}
+export const MAP_SUBJECT_ORDER = ['math', 'reading'];
+export const SEASON_ORDER = ['fall', 'winter', 'spring'];
+
+// ---- SQSS -------------------------------------------------------------------
+// Measure whitelist; raw label -> slug. Rows with any other measure are
+// excluded from the pivot (matches the original mart, which mapped exactly
+// these three and dropped the rest).
+export const SQSS_MEASURES = new Map<string, string>([
+  ['Regular Attendance', 'attendance'],
+  ['Dual Credit', 'dual_credit'],
+  ['Ninth Grade on Track', 'ninth_grade_on_track'],
+]);
+export const SQSS_MEASURE_ORDER = ['attendance', 'dual_credit', 'ninth_grade_on_track'];
+
+/** Comparator position: index in `order`, else past-the-end and alphabetical
+ * among unknowns. */
+export function orderIndex(order: string[], slug: string): number {
+  const i = order.indexOf(slug);
+  return i === -1 ? order.length : i;
+}
+
+export function compareBySlugOrder(order: string[]) {
+  return (a: string, b: string): number => {
+    const ia = orderIndex(order, a);
+    const ib = orderIndex(order, b);
+    if (ia !== ib) return ia - ib;
+    return a < b ? -1 : a > b ? 1 : 0;
+  };
+}
+
+/** Every output column must be unique; a collision means two semantically
+ * different source values slugged to the same name — fail loudly so the
+ * vocabulary gets a proper entry instead of silently merging strangers. */
+export function assertUniqueNames(names: string[]): void {
+  const seen = new Set<string>();
+  for (const n of names) {
+    if (seen.has(n)) {
+      throw new Error(`bigsheet: duplicate output column name "${n}"`);
     }
-    used.add(s);
-    names.push(s);
+    seen.add(n);
   }
-  return { names, collisions };
 }

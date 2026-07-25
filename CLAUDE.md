@@ -29,7 +29,7 @@ Firebase Functions have a separate package.json in `functions/`:
 
 ### Data Flow
 
-1. **Cloud Functions** (`functions/src/finance.ts`) query BigQuery and cache results as AVRO in Cloud Storage. `functions/src/bigsheet.ts` + `functions/src/bigsheet/` is a second endpoint: it builds ONE BigQuery SQL string that joins ~1,240 columns of per-school data (a SQL port of data-tools `marts/bigsheet.py`, generalized to any WA district by `ccddd`) and `EXPORT DATA`s DEFLATE AVRO to the same cache bucket. Shared cache helpers live in `functions/src/cache.ts` (extracted from finance.ts). Fidelity is proven by `functions/scripts/golden_diff.ts` against a frozen Python golden (value-for-value).
+1. **Cloud Functions** (`functions/src/finance.ts`) query BigQuery and cache results as AVRO in Cloud Storage. `functions/src/bigsheet.ts` + `functions/src/bigsheet/` is a second endpoint: it builds ONE BigQuery SQL string joining ~1,170 columns of per-school data (originally a port of data-tools `marts/bigsheet.py`, generalized to any WA district by `ccddd`) and `EXPORT DATA`s DEFLATE AVRO to the same cache bucket. Shared cache helpers live in `functions/src/cache.ts` (extracted from finance.ts). Columns carry clean, data-source-prefixed names (see `functions/src/bigsheet/NAMING.md`); the dictionary (`dictionary.ts`) and the SQL render from the same column plan so they cannot drift.
 2. **Client** fetches cached AVRO via public Cloud Storage URLs (`utilities/client/FetchData.ts`)
 3. **DistrictData** (`utilities/DistrictData.tsx`) parses AVRO into typed data with domain-specific filters
 4. **ChartableMetrics** (`utilities/ChartableMetrics.ts`) aggregates multiple DistrictData objects for charting
@@ -61,7 +61,7 @@ Root layout (`app/layout.tsx`) wraps the app in MUI and Highcharts providers. `D
 - `utilities/highcharts/` — chart config generators and faceted layout
 - `utilities/` — shared business logic (DistrictData, ChartableMetrics, filters, normalizations)
 - `data/safs/` — static OSPI domain data (activities, objects, programs, schools)
-- `functions/` — Firebase Cloud Functions (separate TypeScript project). `src/cache.ts` (shared sha256/path/export helpers), `src/bigsheet/` (the SQL generator: `names.ts`, `staticSql.ts`, `pivots.ts`, `assemble.ts`, verbatim `sql/` provenance), `src/bigsheet.ts` (endpoint). Unit tests: `src/bigsheet/bigsheet.test.ts`, `src/cache.test.ts` (`npm run test:unit`). The golden-diff gate + non-SPS smoke are `scripts/golden_diff.ts` / `scripts/nonsps_smoke.ts` (tsx + ADC, not jest).
+- `functions/` — Firebase Cloud Functions (separate TypeScript project). `src/cache.ts` (shared sha256/path/export helpers), `src/bigsheet/` (the SQL generator: `names.ts` slug vocabularies, `columns.ts` scalar column plan, `pivots.ts`, `staticSql.ts`, `assemble.ts`, `dictionary.ts`, editable `sql/` sources embedded via `scripts/gen_sql_modules.js`; design in `NAMING.md`, legacy mapping in `COLUMN_MAPPING.csv`), `src/bigsheet.ts` (endpoint). Unit tests: `src/bigsheet/bigsheet.test.ts`, `src/cache.test.ts` (`npm run test:unit`). Live checks: `scripts/dryrun_check.ts` (zero-cost BQ dry run + schema-vs-plan) and `scripts/nonsps_smoke.ts` (tsx + ADC, not jest).
 - `config/constants.ts` — Firebase config, endpoints (conditional prod vs test), MUI theme
 
 ## Key Dependencies
