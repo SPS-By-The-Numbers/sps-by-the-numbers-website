@@ -292,6 +292,7 @@ describe("linksForBand", () => {
       "Bud/Act History",
       "Detailed Actuals",
       "Staffing (FTE)",
+      "Staffing (FTE) by Duty Root",
     ]);
     // Exp/Det facet the downstream object level.
     expect(extractC(byPath(links, "/finance/expenditures").href)).toBe("f.2");
@@ -309,6 +310,13 @@ describe("linksForBand", () => {
     expect(EmploymentClassFilter.fromFilterString(d.split("~ec.")[1])).toEqual(
       new Set([CERTIFICATED_CLASS_CODE]),
     );
+    // The "by Duty Root" variant is the same narrowed Staffing view but opened
+    // on the Duty Root facet (f.3) instead of Activity.
+    const staffByDuty = links.find(
+      (l) => l.label === "Staffing (FTE) by Duty Root",
+    )!;
+    expect(extractC(staffByDuty.href)).toBe("f.3");
+    expect(extractD(staffByDuty.href)).toBe(d);
   });
 
   it("compensation object -> school: Detailed Actuals + Staffing (by school)", () => {

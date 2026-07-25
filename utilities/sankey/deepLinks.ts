@@ -436,15 +436,27 @@ export function linksForBand(
           },
         ]
       : [];
+    const staffParams = [
+      params.program,
+      params.activity,
+      params.school,
+      ...contractParam,
+    ];
     links.push({
-      href: bandHref(
-        "/finance/staffing",
-        ctx.ccddd,
-        [params.program, params.activity, params.school, ...contractParam],
-        staffFacet,
-      ),
+      href: bandHref("/finance/staffing", ctx.ccddd, staffParams, staffFacet),
       label: "Staffing (FTE)",
     });
+    // The same Staffing view, but always broken out by Duty Root (role within
+    // the band). When the primary link already opens on Duty Root -- a School
+    // endpoint (whose own facet is broken and falls back to f.3) or no
+    // P/A/School endpoint at all -- this would be an identical URL, so add it
+    // only when the primary facets on something else (Program / Activity).
+    if (staffFacet !== "f.3") {
+      links.push({
+        href: bandHref("/finance/staffing", ctx.ccddd, staffParams, "f.3"),
+        label: "Staffing (FTE) by Duty Root",
+      });
+    }
   }
 
   return links;
