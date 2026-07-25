@@ -671,6 +671,18 @@ export function makeMultiSeriesLineChartConfig(
         verticalAlign: "bottom",
         floating: false,
         enabled: showLegend,
+        // Cap the legend height so a many-series chart -- e.g. Cohort Lines
+        // on, which fans each grade cohort into one line per diploma year
+        // (60+ series) -- PAGINATES (▲/▼ nav) instead of ballooning into a
+        // dozen rows that crush the plot into a sliver. Few-series charts are
+        // well under this and render as a single un-paginated row as before.
+        maxHeight: 90,
+        padding: 6,
+        // Tighter inter-item spacing so each page holds more without the
+        // items reading as cramped.
+        itemDistance: 14,
+        itemMarginTop: 1,
+        itemMarginBottom: 1,
       },
       caption: { useHTML: true, align: "right" },
     },

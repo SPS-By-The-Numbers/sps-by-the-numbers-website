@@ -307,9 +307,15 @@ export default function EnrollmentDashboard({
       const breakdownLabelByCode = new Map<string, string>();
       const studentGroupLabelByCode = new Map<string, string>();
       const extraLabelByCode = new Map<string, string>();
+      // Track the distinct student groups so we can drop the group name from
+      // every legend entry when only one is selected (the common case) --
+      // "All Students" repeated on every series just widens each item and
+      // makes the legend look squished without disambiguating anything.
+      const distinctStudentGroups = new Set<string>();
       for (let i = 0; i < firstFiltered.numRows(); i++) {
         const facetCode = String(facetArr[i]);
         const studentGroupCode = String(studentGroupArr[i]);
+        distinctStudentGroups.add(studentGroupCode);
         const breakdownCode = breakdownArr ? String(breakdownArr[i]) : null;
         const extraCode = extraArr ? String(extraArr[i]) : null;
         // Skip rows with a null/undefined extra-dim value (e.g. the
@@ -353,6 +359,26 @@ export default function EnrollmentDashboard({
             key: seriesKey,
             name: nameParts.join(" / "),
           });
+        }
+      }
+      // When exactly one student group is selected, its name (e.g. "All
+      // Students") is on every series and only pads the legend. Strip that
+      // shared trailing part -- but never blank a series whose ONLY part is
+      // the group (that can only happen when it's the lone series, which
+      // renders no legend anyway).
+      if (distinctStudentGroups.size === 1) {
+        const soleGroupLabel = studentGroupLabelByCode.get(
+          [...distinctStudentGroups][0],
+        );
+        if (soleGroupLabel) {
+          const suffix = ` / ${soleGroupLabel}`;
+          for (const defs of result.values()) {
+            for (const def of defs) {
+              if (def.name.endsWith(suffix)) {
+                def.name = def.name.slice(0, -suffix.length);
+              }
+            }
+          }
         }
       }
       for (const defs of result.values()) {
