@@ -1,62 +1,15 @@
 import { BigQuery } from '@google-cloud/bigquery';
-import { Storage } from '@google-cloud/storage';
 import { jsonOnRequest, makeResponseJson } from "./utils";
 import * as Constants from 'config/constants';
-import crypto from 'node:crypto';
-
-const CACHE_BUCKET = "sps-by-the-numbers-public";
-
-const EXPORT_FORMAT = 'AVRO';
-const EXPORT_COMPRESSION = 'DEFLATE';
-const EXPORT_FORMAT_EXTENSION = 'avro';
-const EXPORT_EXTRA_OPTIONS = ',use_avro_logical_types=True';
+import {
+  EXPORT_FORMAT,
+  EXPORT_COMPRESSION,
+  makeCachePaths,
+  prefixWithExport,
+  cacheExists,
+} from './cache';
 
 const bigqueryClient = new BigQuery();
-const storageClient = new Storage();
-
-// Change this to force cache invalidaiton of results for queries.
-const CACHE_BREAK_SALT = '2026-05-01';
-
-function sha256(str) {
-  return crypto.createHash('sha256').update(str + CACHE_BREAK_SALT).digest('hex');
-}
-
-function makeCachePaths(ccddd, dataset, query) {
-  const hash = sha256(query);
-
-  const bucket = CACHE_BUCKET;
-  const relativePathRoot = `cache/scratch/${ccddd}/${dataset}/${hash.substr(0, 8)}_`;
-  const gsUrlRoot = `gs://${bucket}`;
-  const exportWildcardPath = `${relativePathRoot}_*.${EXPORT_FORMAT_EXTENSION}`;
-  const publicUrlRoot = `https://storage.googleapis.com/${bucket}`;
-
-  // Assume there is only 1 file output from the dump.
-  const cacheFilePath = `${relativePathRoot}_000000000000.${EXPORT_FORMAT_EXTENSION}`;
-
-  const publicUrl = `${publicUrlRoot}/${cacheFilePath}`;
-  const gsExportPath = `${gsUrlRoot}/${exportWildcardPath}`;
-
-  return {
-    bucket,
-    cacheFilePath,
-    publicUrl,
-    gsExportPath
-  };
-}
-
-function prefixWithExport(path, query) {
-  return `
-    EXPORT DATA OPTIONS(
-    uri='${path}',
-    format='${EXPORT_FORMAT}',
-    compression='${EXPORT_COMPRESSION}',
-    overwrite=true
-    ${EXPORT_EXTRA_OPTIONS}
-    ) AS
-    ${query}
-    LIMIT 999999999999 -- Force to one worker to create 1 file.
-  `;
-}
 
 function getEnrollment(ccddd) {
   return `
@@ -328,11 +281,6 @@ function getBudgetedFte(ccddd) {
     activity_code,
     duty_root_code
   `;
-}
-
-async function cacheExists(cachePaths) {
-   const [exists] = await storageClient.bucket(cachePaths.bucket).file(cachePaths.cacheFilePath).exists();
-   return exists;
 }
 
 function getQueryForDataset(ccddd, dataset) {
