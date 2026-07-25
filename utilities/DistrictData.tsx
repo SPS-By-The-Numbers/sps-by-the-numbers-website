@@ -438,55 +438,49 @@ export default class DistrictData {
       .groupby("class_of")
       .rollup({ data_type: () => "budget", staffFte: op.sum("amount") });
 
-    const teachingFteActuals = this.s275_summary_df
-      .filter(aq.escape((d) => op.includes(TEACHING_CODES, d.activity_code)))
-      .groupby("class_of")
-      .rollup({
-        data_type: () => "actuals",
-        teachingFte: op.sum("fte"),
-      });
+    // Actuals (S-275) and budget (F-195) FTE for each activity-based breakout.
+    // Both frames carry activity_code combined to the same synthetic 9990/9991
+    // codes, so the groupings line up. F-195 has no school breakdown, which is
+    // fine: Vitals is district-level. Each breakout unions its actuals and budget
+    // rows (they never collide -- data_type always differs) so the Vitals FTE
+    // breakout charts render a Budget series next to Actuals.
+    const OTHER_FTE_CODES = [
+      ...TEACHING_CODES,
+      ...STUDENT_SUPPORT_CODES,
+      ...BUILDING_SUPPORT,
+    ];
+    const breakoutFte = (
+      column: string,
+      predicate: (activityCode: number) => boolean,
+    ) => {
+      const actuals = this.s275_summary_df
+        .filter(aq.escape((d) => predicate(d.activity_code)))
+        .groupby("class_of")
+        .rollup({ data_type: () => "actuals", [column]: op.sum("fte") });
+      const budget = this.budgeted_fte_df
+        .filter(aq.escape((d) => predicate(d.activity_code)))
+        .groupby("class_of")
+        .rollup({ data_type: () => "budget", [column]: op.sum("fte") });
+      return actuals.join_full(budget);
+    };
 
-    const studentSupportFte = this.s275_summary_df
-      .filter(
-        aq.escape((d) => op.includes(STUDENT_SUPPORT_CODES, d.activity_code)),
-      )
-      .groupby("class_of")
-      .rollup({
-        data_type: () => "actuals",
-        studentSupportFte: op.sum("fte"),
-      });
-
-    const buildingSupportFte = this.s275_summary_df
-      .filter(aq.escape((d) => op.includes(BUILDING_SUPPORT, d.activity_code)))
-      .groupby("class_of")
-      .rollup({
-        data_type: () => "actuals",
-        buildingSupportFte: op.sum("fte"),
-      });
-
-    const otherFte = this.s275_summary_df
-      .filter(
-        aq.escape(
-          (d) =>
-            !op.includes(
-              [
-                ...TEACHING_CODES,
-                ...STUDENT_SUPPORT_CODES,
-                ...BUILDING_SUPPORT,
-              ],
-              d.activity_code,
-            ),
-        ),
-      )
-      .groupby("class_of")
-      .rollup({
-        data_type: () => "actuals",
-        otherFte: op.sum("fte"),
-      });
+    const teachingFte = breakoutFte("teachingFte", (c) =>
+      op.includes(TEACHING_CODES, c),
+    );
+    const studentSupportFte = breakoutFte("studentSupportFte", (c) =>
+      op.includes(STUDENT_SUPPORT_CODES, c),
+    );
+    const buildingSupportFte = breakoutFte("buildingSupportFte", (c) =>
+      op.includes(BUILDING_SUPPORT, c),
+    );
+    const otherFte = breakoutFte(
+      "otherFte",
+      (c) => !op.includes(OTHER_FTE_CODES, c),
+    );
 
     return staffFteActuals
       .join_full(staffFteBudget)
-      .join_full(teachingFteActuals)
+      .join_full(teachingFte)
       .join_full(studentSupportFte)
       .join_full(buildingSupportFte)
       .join_full(otherFte);
