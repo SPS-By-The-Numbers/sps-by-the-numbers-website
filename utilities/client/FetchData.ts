@@ -103,12 +103,18 @@ export async function fetchDatasetUrl(ccddd: string, dataset: string) {
   return datasetResponse.data;
 }
 
-export async function avroToDf(dataUrl) {
-  const response = await fetch(dataUrl);
-  const data = new Array<object>();
+// Decodes a blob of AVRO container data into its raw row objects along with the
+// AVRO schema's field order. This registers the same DecimalToNumberType logical
+// type used everywhere else so decimals become plain numbers. `fields` is derived
+// from the writer schema (`metadata` event) so callers that need deterministic
+// column ordering (e.g. CSV export) get the AVRO field order rather than relying
+// on object key order.
+export async function avroToRowsAndFields(
+  blob: Blob,
+): Promise<{ fields: string[]; rows: Record<string, unknown>[] }> {
+  const rows = new Array<Record<string, unknown>>();
+  let fields: string[] = [];
 
-  let metadata: any;
-  const blob = await response.blob();
   await new Promise((resolve, reject) => {
     avro
       .createBlobDecoder(blob, {
@@ -117,10 +123,10 @@ export async function avroToDf(dataUrl) {
             logicalTypes: { decimal: DecimalToNumberType },
           }),
       })
-      .on("metadata", (v) => {
-        metadata = v;
+      .on("metadata", (writerType: any) => {
+        fields = (writerType.fields ?? []).map((f: any) => f.name);
       })
-      .on("data", (row) => data.push(row))
+      .on("data", (row) => rows.push(row))
       .on("end", () => resolve(true))
       .on("error", (err) => {
         console.error(err);
@@ -128,9 +134,17 @@ export async function avroToDf(dataUrl) {
       });
   });
 
+  return { fields, rows };
+}
+
+export async function avroToDf(dataUrl) {
+  const response = await fetch(dataUrl);
+  const blob = await response.blob();
+  const { rows } = await avroToRowsAndFields(blob);
+
   // HACK: This type conversion is completely wrong and arises because arquero fromJSON
   // does not correctly accept object[].
-  const df = aq.fromJSON(data as unknown as string, { type: "rows" });
+  const df = aq.fromJSON(rows as unknown as string, { type: "rows" });
   return df;
 }
 

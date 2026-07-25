@@ -81,7 +81,7 @@ export const FIREBASE_CLIENT_CONFIG = {
 export const RECAPTCHA_KEY = "6LfukwApAAAAAOysCMfJontBc36O2vly91NWpip8";
 
 // Generate URLs for use in fetch() calls based on envrionment type.
-const ENDPOINT_NAMES = ["finance"];
+const ENDPOINT_NAMES = ["finance", "bigsheet"];
 
 // List of production endpoint names.
 export const PRODUCTION_ENDPOINTS = Object.fromEntries(
