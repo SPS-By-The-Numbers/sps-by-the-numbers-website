@@ -113,10 +113,12 @@ export default function FlowLevelContents({
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
 
+  // Only offer years that actually have expenditure data (not every year in the
+  // district's overall span). Sorted newest-first.
   const years: number[] = districtData
-    ? [...(districtData.all_class_ofs().array("class_of") as number[])].sort(
-        (a, b) => b - a,
-      )
+    ? [
+        ...(districtData.expenditureClassOfs().array("class_of") as number[]),
+      ].sort((a, b) => b - a)
     : [];
 
   const setPlan = (plan: LevelPlan) =>
