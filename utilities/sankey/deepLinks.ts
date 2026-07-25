@@ -29,10 +29,10 @@
 import { NEVER_COMBINE_REVENUE_CODES } from "utilities/sankey/attribution";
 import ALL_NCES from "utilities/domain/nces";
 import ActivityFilter from "app/finance/_filteritems/activity";
-import DutySuffixFilter, {
-  CERTIFICATED_SUFFIX_CODES,
-  CLASSIFIED_SUFFIX_CODES,
-} from "app/finance/_filteritems/duty_suffix";
+import EmploymentClassFilter, {
+  CERTIFICATED_CLASS_CODES,
+  CLASSIFIED_CLASS_CODES,
+} from "app/finance/_filteritems/employment_class";
 import NcesFilter from "app/finance/_filteritems/nces";
 import ObjectFilter from "app/finance/_filteritems/object";
 import ProgramFilter from "app/finance/_filteritems/program";
@@ -416,19 +416,25 @@ export function linksForBand(
       ? STAFFING_FACET[staffEndpoint.custom.level]!
       : "f.3"; // Duty Root default
     // If the compensation object is a SALARY object, narrow staffing to the
-    // matching contract type: Certificated for object 2, Classified for object
-    // 3. Benefits (object 4) and salary-nces bands with no object span both, so
-    // no contract-type narrowing.
+    // matching employment class: Certificated for object 2, Classified for
+    // object 3. Benefits (object 4) and salary-nces bands with no object span
+    // both, so no employment-class narrowing.
     const objCode = [from, to].find((n) => n.custom.level === "object")?.custom
       .code;
-    const contractCodes =
+    const employmentClassCodes =
       objCode === 2
-        ? CERTIFICATED_SUFFIX_CODES
+        ? CERTIFICATED_CLASS_CODES
         : objCode === 3
-          ? CLASSIFIED_SUFFIX_CODES
+          ? CLASSIFIED_CLASS_CODES
           : undefined;
-    const contractParam: ParamSpec[] = contractCodes
-      ? [{ urlVar: "ct", filter: DutySuffixFilter, codes: contractCodes }]
+    const contractParam: ParamSpec[] = employmentClassCodes
+      ? [
+          {
+            urlVar: "ec",
+            filter: EmploymentClassFilter,
+            codes: employmentClassCodes,
+          },
+        ]
       : [];
     links.push({
       href: bandHref(

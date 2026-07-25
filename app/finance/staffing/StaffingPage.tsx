@@ -12,7 +12,7 @@ import type { CommonFacetContextSettings } from "app/finance/_settings/common_co
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 import type {
   DutyRootFilters,
-  DutySuffixFilters,
+  EmploymentClassFilters,
   PAFilters,
   SchoolFilters,
 } from "utilities/DistrictData";
@@ -21,16 +21,23 @@ export type StaffingSettings = DatasetSettings &
   PAFilters &
   SchoolFilters &
   DutyRootFilters &
-  DutySuffixFilters;
+  EmploymentClassFilters;
 export type StaffingContextSettings = CommonFacetContextSettings<Facet>;
 
-const ALL_FACETS = ["activity", "program", "school", "duty_root"] as const;
+const ALL_FACETS = [
+  "activity",
+  "program",
+  "school",
+  "duty_root",
+  "staff_category",
+] as const;
 export type Facet = (typeof ALL_FACETS)[number];
 export const FACET_OPTIONS: Record<Facet, string> = {
   activity: "Activity",
   program: "Program",
   school: "School",
   duty_root: "Duty Root",
+  staff_category: "Staff Category",
 };
 
 export function serializeFacet(facet: Facet): string {
@@ -46,6 +53,9 @@ export function serializeFacet(facet: Facet): string {
 
     case "duty_root":
       return "3";
+
+    case "staff_category":
+      return "4";
   }
 
   return "0";
@@ -64,6 +74,9 @@ export function deserializeFacet(s: string): Facet {
 
     case "3":
       return "duty_root";
+
+    case "4":
+      return "staff_category";
   }
 
   return "duty_root";
@@ -78,7 +91,7 @@ export const SERIALIZE_STAFFING_SETTINGS_GENERATORS = [
   CommonSettings.makeDatasetSerializeConfig,
   CommonSettings.makePaSerializeConfig,
   CommonSettings.makeDutyRootSerializeConfig,
-  CommonSettings.makeDutySuffixSerializeConfig,
+  CommonSettings.makeEmploymentClassSerializeConfig,
   CommonSettings.makeSchoolFilterConfig,
 ];
 
