@@ -76,6 +76,22 @@ function makeFacetColumnRoot(
   return [idPrefix, normalization, metricName, facet].join("_");
 }
 
+// op.min / op.max over a column that is entirely null (which now happens for a
+// facet that has an actuals value but no matching budget value -- e.g. a Staffing
+// duty root present in the S-275 actuals but absent from the F-195 budget)
+// return `undefined`, and Math.min/Math.max with `undefined` yield NaN. A single
+// NaN then poisons the running Math.max in makeFacetYBounds and blanks the whole
+// locked-scale chart. These helpers drop non-finite values before reducing.
+function finiteMin(values: Array<unknown>): number {
+  const nums = values.filter((v): v is number => Number.isFinite(v as number));
+  return nums.length ? Math.min(...nums) : 0;
+}
+
+function finiteMax(values: Array<unknown>): number {
+  const nums = values.filter((v): v is number => Number.isFinite(v as number));
+  return nums.length ? Math.max(...nums) : 0;
+}
+
 function get1ValueDataBounds(df, name) {
   const minMaxDf = df
     .params({ name })
@@ -85,36 +101,22 @@ function get1ValueDataBounds(df, name) {
     });
 
   return {
-    min: minMaxDf.get("min", 0),
-    max: minMaxDf.get("max", 0),
+    min: finiteMin([minMaxDf.get("min", 0)]),
+    max: finiteMax([minMaxDf.get("max", 0)]),
   };
 }
 
 function get2ValueDataBounds(df, a_name, b_name) {
-  const minMaxDf = df
-    .params({
-      a_name,
-      b_name,
-    })
-    .rollup({
-      min_a: (d, $) => op.min(d[$.a_name]),
-      max_a: (d, $) => op.max(d[$.a_name]),
-      min_b: (d, $) => op.min(d[$.b_name]),
-      max_b: (d, $) => op.max(d[$.b_name]),
-    })
-    .derive(
-      {
-        min: (d) => Math.min(d.min_b, d.min_a),
-        max: (d) => Math.max(d.max_b, d.max_a),
-      },
-      {
-        drop: true,
-      },
-    );
+  const minMaxDf = df.params({ a_name, b_name }).rollup({
+    min_a: (d, $) => op.min(d[$.a_name]),
+    max_a: (d, $) => op.max(d[$.a_name]),
+    min_b: (d, $) => op.min(d[$.b_name]),
+    max_b: (d, $) => op.max(d[$.b_name]),
+  });
 
   return {
-    min: minMaxDf.get("min", 0),
-    max: minMaxDf.get("max", 0),
+    min: finiteMin([minMaxDf.get("min_a", 0), minMaxDf.get("min_b", 0)]),
+    max: finiteMax([minMaxDf.get("max_a", 0), minMaxDf.get("max_b", 0)]),
   };
 }
 

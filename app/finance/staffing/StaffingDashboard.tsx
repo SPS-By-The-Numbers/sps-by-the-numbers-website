@@ -172,6 +172,30 @@ function componentsGenerator(
   return components;
 }
 
+// Budgeted FTE (F-195) is reported only by program / activity / duty root --
+// never by school, and never by contract type (duty suffix). So the budget
+// overlay is eligible only when the facet is not "school" and neither the
+// School nor the Duty Suffix filter has been narrowed below its full domain.
+// When it isn't eligible the dashboard hides the (empty) budget series and
+// surfaces an explanatory banner instead (see `budgetBanner` in the component).
+export function budgetOverlayEligible(
+  facet: string,
+  staffingSettings: StaffingSettings,
+): boolean {
+  if (facet === "school") {
+    return false;
+  }
+  const allSchools = makeSchoolFilter(staffingSettings.ccddd).allCodes().size;
+  const schoolsNarrowed =
+    staffingSettings.schoolCodes !== undefined &&
+    staffingSettings.schoolCodes.size < allSchools;
+  const allSuffix = DutySuffixFilter.allCodes().size;
+  const suffixNarrowed =
+    staffingSettings.dutySuffixCodes !== undefined &&
+    staffingSettings.dutySuffixCodes.size < allSuffix;
+  return !schoolsNarrowed && !suffixNarrowed;
+}
+
 function makeFacetedStaffingForDistrict(
   districtData,
   filteredS275Summary,
@@ -179,17 +203,47 @@ function makeFacetedStaffingForDistrict(
   staffingSettings,
 ) {
   const facetCodeColumn = `${facet}_code`;
-  const rawData = extractRawS275Staffing(filteredS275Summary, facet);
+  const rawColumns = [
+    "class_of",
+    facetCodeColumn,
+    "finalSalary",
+    "initialSalary",
+    "fte",
+    "data_type",
+  ];
+
+  // Actuals (S-275) in long form, tagged data_type="actuals".
+  let rawData = extractRawS275Staffing(filteredS275Summary, facet).derive({
+    data_type: () => "actuals",
+  });
+
+  // Overlay budgeted FTE (F-195) as data_type="budget" rows when eligible. It
+  // has no salary, so finalSalary / initialSalary are zero-filled to match the
+  // actuals shape for the union; the single data_type pivot in
+  // toChartableDataset then emits paired fte_<code>_actuals / _budget columns
+  // that light up the chart's already-present Budget series.
+  if (budgetOverlayEligible(facet, staffingSettings)) {
+    const budgetRaw = districtData
+      .filteredBudgetedFte(staffingSettings)
+      .groupby("class_of", facetCodeColumn)
+      .rollup({ fte: (d) => op.sum(d.fte) })
+      .derive({
+        finalSalary: () => 0,
+        initialSalary: () => 0,
+        data_type: () => "budget",
+      })
+      .select(...rawColumns);
+    rawData = rawData.select(...rawColumns).concat(budgetRaw);
+  }
 
   const formatedData = rawData
     .params({ name: METRIC_NAME })
-    .groupby("class_of")
+    .groupby("class_of", "data_type")
     .pivot([facetCodeColumn], {
       finalSalary: (d) => op.sum(d.finalSalary),
       fte: (d, $) => op.sum(d[$.name]),
     })
-    .select(aq.not("_pivot_name_hack_"))
-    .derive({ data_type: (d) => "actuals" });
+    .select(aq.not("_pivot_name_hack_"));
 
   const joinedData = formatedData.join_left(
     districtData.fundedEnrollmentSummary(),
@@ -238,6 +292,27 @@ export default function StaffingDashboard({
     });
   }, [contextSettings, districtDataMap, allSettings]);
 
+  // Budgeted FTE (F-195) has no school breakdown. When a view can't show it --
+  // faceting by School, a narrowed School filter, or a narrowed Duty Suffix
+  // (contract type) filter, none of which the budget carries -- explain why the
+  // Budget series is absent rather than leaving it silently missing. Keyed off
+  // the primary dataset's settings.
+  const budgetBanner = useMemo(() => {
+    const settings = allSettings[0];
+    if (!settings || budgetOverlayEligible(contextSettings.facet, settings)) {
+      return null;
+    }
+    if (
+      contextSettings.facet === "school" ||
+      (settings.schoolCodes !== undefined &&
+        settings.schoolCodes.size <
+          makeSchoolFilter(settings.ccddd).allCodes().size)
+    ) {
+      return "Budgeted FTE is not available at school granularity — the budget (F-195) reports FTE only district-wide by program, activity, and duty root. Select all schools and facet by Program, Activity, or Duty Root to overlay it.";
+    }
+    return "Budgeted FTE is not available by contract type — the budget (F-195) has no Duty Suffix breakdown. Clear the Duty Suffix filter to overlay it.";
+  }, [contextSettings.facet, allSettings]);
+
   return (
     <SettingsLayout
       settingsSerializer={{
@@ -273,6 +348,22 @@ export default function StaffingDashboard({
       <Typography className="analysis-title" component="h1" variant="h1">
         Staffing Dashboard
       </Typography>
+      {budgetBanner && (
+        <Typography
+          variant="caption"
+          component="p"
+          sx={{
+            px: 2,
+            py: 0.5,
+            color: "text.secondary",
+            borderLeft: "3px solid",
+            borderColor: "warning.main",
+            backgroundColor: "action.hover",
+          }}
+        >
+          {budgetBanner}
+        </Typography>
+      )}
       {config && <HcDashboard config={config} />}
     </SettingsLayout>
   );

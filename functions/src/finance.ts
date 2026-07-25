@@ -299,6 +299,37 @@ function getS275Summary(ccddd) {
   `;
 }
 
+// Budgeted (F-195 salary exhibit) FTE. This is the district's BUDGET filing, so
+// it has NO school breakdown -- FTE is only reported by program / activity /
+// duty. We roll General Fund `detail` rows (the `activity_total` / `program_total`
+// rows are redundant subtotals that would double-count) up to the same numeric
+// (program_code, activity_code, duty_root_code) space the S-275 actuals use, so
+// the staffing dashboard can overlay budget on actuals. The printed F-195
+// duty_code is the 3-digit S-275 code; its 2-digit prefix is the duty ROOT
+// (e.g. `310` -> 31 Elementary Homeroom Teacher). exhibit_kind (certificated /
+// classified) is summed over -- the duty root already distinguishes staff type.
+function getBudgetedFte(ccddd) {
+  return `
+  SELECT
+    class_of,
+    CAST(program_code AS INT64) program_code,
+    CAST(activity_code AS INT64) activity_code,
+    CAST(SUBSTR(duty_code, 1, 2) AS INT64) duty_root_code,
+    SUM(fte) fte
+  FROM
+    sps-btn-data.ospi_fiscal.fiscal_f195_salary_exhibits
+  WHERE
+    ccddd = ${ccddd} AND
+    fund = 'general' AND
+    row_kind = 'detail'
+  GROUP BY
+    class_of,
+    program_code,
+    activity_code,
+    duty_root_code
+  `;
+}
+
 async function cacheExists(cachePaths) {
    const [exists] = await storageClient.bucket(cachePaths.bucket).file(cachePaths.cacheFilePath).exists();
    return exists;
@@ -326,6 +357,8 @@ function getQueryForDataset(ccddd, dataset) {
       return getActualsItems(ccddd);
     } else if (dataset === 's275_summary') {
       return getS275Summary(ccddd);
+    } else if (dataset === 'budgeted_fte') {
+      return getBudgetedFte(ccddd);
     }
   }
   return null;

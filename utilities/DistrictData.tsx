@@ -215,6 +215,31 @@ function combineActivitiesS275(df, codes, synth_activity_code, synth_activity) {
   return result;
 }
 
+// Same activity-combining as the S-275 combiner, but for the budgeted-FTE
+// (F-195) frame, whose only measure is `fte` (no salary columns). Keeping the
+// synthetic activity codes aligned with S-275 lets the Staffing dashboard's
+// Activity facet line budget up with actuals.
+function combineActivitiesBudgetedFte(df, codes, synth_activity_code) {
+  const nonActivityColumns = df.columnNames(
+    (c) => !["activity_code", "fte"].includes(c),
+  );
+
+  const summed = df
+    .params({ codes, synth_activity_code })
+    .filter((d, $) => op.includes($.codes, d.activity_code))
+    .groupby(...nonActivityColumns)
+    .rollup({
+      fte: (d) => op.sum(d.fte),
+      activity_code: (_, $) => $.synth_activity_code,
+    });
+
+  const others = df
+    .params({ codes })
+    .filter((d, $) => !op.includes($.codes, d.activity_code));
+
+  return others.union(summed);
+}
+
 function combineCommonActivities(df, combiner) {
   df = combiner(
     df,
@@ -251,6 +276,7 @@ export default class DistrictData {
   private budget_items_df: ColumnTable;
   private actuals_items_df: ColumnTable;
   private s275_summary_df: ColumnTable;
+  private budgeted_fte_df: ColumnTable;
   private all_class_ofs_df: ColumnTable;
 
   constructor(
@@ -263,6 +289,7 @@ export default class DistrictData {
     budget_items_df,
     actuals_items_df,
     s275_summary_df,
+    budgeted_fte_df,
   ) {
     this.enrollment_df = enrollment_df;
     this.fundedEnrollment_df = fundedEnrollment_df;
@@ -273,6 +300,7 @@ export default class DistrictData {
     this.budget_items_df = budget_items_df;
     this.actuals_items_df = actuals_items_df;
     this.s275_summary_df = s275_summary_df;
+    this.budgeted_fte_df = budgeted_fte_df;
 
     // Create synthetic activities for categories that have split over the
     // years such as Teaching + Professional Learning. In this case, it
@@ -285,6 +313,10 @@ export default class DistrictData {
     this.s275_summary_df = combineCommonActivities(
       this.s275_summary_df,
       combineActivitiesS275,
+    );
+    this.budgeted_fte_df = combineCommonActivities(
+      this.budgeted_fte_df,
+      combineActivitiesBudgetedFte,
     );
 
     const minMaxDf = minMaxClassOf(this.fundedEnrollment_df)
@@ -314,6 +346,7 @@ export default class DistrictData {
       budget_items_df,
       actuals_items_df,
       s275_summary_df,
+      budgeted_fte_df,
     ] = await Promise.all([
       fetchDataset(ccddd, "enrollment"),
       fetchDataset(ccddd, "fundedEnrollment"),
@@ -324,6 +357,20 @@ export default class DistrictData {
       fetchDataset(ccddd, "budget_items"),
       fetchDataset(ccddd, "actuals_items"),
       fetchDataset(ccddd, "s275_summary"),
+      // Budgeted FTE (F-195) is a newer dataset. Degrade gracefully if it can't
+      // be fetched (e.g. the Cloud Function hasn't been deployed yet, or a
+      // district has no F-195 filing) with an empty, correctly-shaped frame so
+      // the rest of the finance data still loads -- the Staffing dashboard then
+      // simply shows no Budget overlay rather than breaking every dashboard.
+      fetchDataset(ccddd, "budgeted_fte").catch(() =>
+        aq.table({
+          class_of: [],
+          program_code: [],
+          activity_code: [],
+          duty_root_code: [],
+          fte: [],
+        }),
+      ),
     ]);
     return new DistrictData(
       enrollment_df,
@@ -335,6 +382,7 @@ export default class DistrictData {
       budget_items_df,
       actuals_items_df,
       s275_summary_df,
+      budgeted_fte_df,
     );
   }
 
@@ -559,6 +607,39 @@ export default class DistrictData {
         .filter((d, $) =>
           d.includes([...$.dutySuffixCodes], d.duty_suffix_code),
         );
+    }
+
+    return results;
+  }
+
+  budgetedFte() {
+    return this.budgeted_fte_df;
+  }
+
+  // Budgeted (F-195) FTE filtered by the dimensions the budget actually carries:
+  // program, activity, and duty root. School and duty-suffix are intentionally
+  // NOT applied -- the budget has no such breakdown, so the Staffing dashboard
+  // only shows the budget overlay when those two filters are at their full
+  // domain (see the eligibility check there) and otherwise surfaces a banner.
+  filteredBudgetedFte(staffingFilter: StaffingFilters) {
+    let results = this.budgeted_fte_df;
+
+    if (staffingFilter.programCodes !== undefined) {
+      results = results
+        .params(staffingFilter)
+        .filter((d, $) => d.includes([...$.programCodes], d.program_code));
+    }
+
+    if (staffingFilter.activityCodes !== undefined) {
+      results = results
+        .params(staffingFilter)
+        .filter((d, $) => d.includes([...$.activityCodes], d.activity_code));
+    }
+
+    if (staffingFilter.dutyRootCodes !== undefined) {
+      results = results
+        .params(staffingFilter)
+        .filter((d, $) => d.includes([...$.dutyRootCodes], d.duty_root_code));
     }
 
     return results;
