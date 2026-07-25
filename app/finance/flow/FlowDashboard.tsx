@@ -38,7 +38,7 @@ import RevenueFilter from "app/finance/_filteritems/revenue";
 import { makeSchoolFilter } from "app/finance/_filteritems/school";
 import { serializeDatasetSettings } from "app/finance/_settings/common_settings";
 import { useHighcharts } from "components/providers/HighchartsProvider";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityFilterContents,
   NcesFilterContents,
@@ -199,6 +199,25 @@ export default function FlowDashboard({
   const router = useRouter();
   const pathname = usePathname();
 
+  // Measure the scroll container's width so the chart can keep a minimum width
+  // per column on narrow / mobile viewports (see the `width` floor below): when
+  // the viewport is narrower than that floor the chart holds its width and the
+  // container scrolls horizontally rather than crushing the sankey to
+  // illegibility. Defaults to 0 (the floor wins) until the observer fires.
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [availWidth, setAvailWidth] = useState(0);
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) {
+      return;
+    }
+    const update = () => setAvailWidth(el.clientWidth);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   // The on-graph Actuals/Budget toggle changes the same `dataType` setting the
   // sidebar does, so the two stay in sync. It navigates to the URL with the new
   // dataType (mirroring SettingsLayout's own navigation) so the whole settings
@@ -218,7 +237,14 @@ export default function FlowDashboard({
     }
   };
 
-  const { options, empty, hasFilteredOut, schoolLegend } = useMemo(() => {
+  const {
+    options,
+    empty,
+    emptyReason,
+    chartWidth,
+    hasFilteredOut,
+    schoolLegend,
+  } = useMemo(() => {
     const settings = allSettings[0];
     const districtData = districtDataMap[settings.ccddd];
     // The deep links carry the flow's currently active filters (so they examine
@@ -306,6 +332,31 @@ export default function FlowDashboard({
     const enabledLevels = enabledLevelsFromPlan(settings.levelPlan).filter(
       (l) => dt !== "budget" || !ACTUALS_ONLY_LEVELS.includes(l),
     );
+
+    // All resources deselected: `narrowed` yields a present-but-empty source
+    // filter, so every real revenue source is filtered out. Only the always-pass
+    // Fund Balance Drawdown source would survive, collapsing the chart to an
+    // all-red "everything is a drawdown" picture -- which is misleading. Show an
+    // explicit empty state instead. (Only meaningful when the Resource column is
+    // shown; otherwise the source filter isn't applied.)
+    if (
+      enabledLevels.includes("source") &&
+      filters.sourceCodes &&
+      filters.sourceCodes.size === 0
+    ) {
+      return {
+        options: null,
+        empty: true,
+        emptyReason: "resources" as const,
+        chartWidth: 0,
+        hasFilteredOut: false,
+        schoolLegend: [] as Array<{
+          color: string;
+          min: number;
+          max: number;
+        }>,
+      };
+    }
     // When we take over School coalescing (`customSchoolCoalesce`), hold "school"
     // back from the engine and group schools ourselves below (by size / middle-
     // school area / region). Otherwise let the engine coalesce schools its
@@ -327,8 +378,14 @@ export default function FlowDashboard({
       return {
         options: null,
         empty: true,
+        emptyReason: "data" as const,
+        chartWidth: 0,
         hasFilteredOut: false,
-        schoolLegend: [] as Array<{ color: string; min: number; max: number }>,
+        schoolLegend: [] as Array<{
+          color: string;
+          min: number;
+          max: number;
+        }>,
       };
     }
 
@@ -399,7 +456,10 @@ export default function FlowDashboard({
         if (sizeMode) {
           const b = enrollBucket.get(n.id);
           if (b !== undefined) {
-            schoolGroup.set(n.id, { id: `sbucket:${b}`, name: enrollLabel(b) });
+            schoolGroup.set(n.id, {
+              id: `sbucket:${b}`,
+              name: enrollLabel(b),
+            });
           }
         } else if (settings.schoolCoalesceMode === "ms") {
           const info = infoByCode.get(code);
@@ -493,6 +553,16 @@ export default function FlowDashboard({
     );
     const marginRight = Math.min(460, Math.round(lastColMaxLen * 7.5) + 22);
 
+    // Keep a minimum drawable width: the label gutter (marginLeft + marginRight)
+    // plus room for each column's bands. On a phone-width container the raw
+    // marginRight alone can exceed the viewport, leaving zero plot width and a
+    // crushed, unreadable chart. When the measured container is narrower than
+    // this floor, the chart holds the floor width and the surrounding Box scrolls
+    // horizontally (matching this view's existing scroll-in-both-directions
+    // design) rather than shrinking the sankey into illegibility.
+    const columnCount = maxColumn + 1;
+    const width = Math.max(availWidth, 12 + marginRight + columnCount * 150);
+
     // Color EVERY school-column node -- individual school, size/ms/region
     // aggregate, engine "Other Schools", AND the District Office -- by its NODE
     // SIZE (through-flow magnitude), ranked onto the plasma ramp (see
@@ -540,7 +610,15 @@ export default function FlowDashboard({
           : "Balanced";
 
     const chartOptions = {
-      chart: { height, marginLeft: 12, marginRight },
+      // styledMode: colors, text, and background all come from CSS (see
+      // highcharts-base.scss + the loaded highcharts.css), which carries a
+      // prefers-color-scheme: dark block. Without it Highcharts writes title /
+      // subtitle / data-label colors as INLINE styles computed against its
+      // assumed white background, so in dark mode they render dark-on-dark
+      // (unreadable) while the CSS-driven background is actually dark. Every
+      // other finance chart already runs in styled mode; this one was the
+      // exception. width: see the floor above (mobile legibility).
+      chart: { height, width, marginLeft: 12, marginRight, styledMode: true },
       credits: { enabled: false },
       title: {
         text: `${settings.name} — General Fund Expenditure Flow`,
@@ -619,6 +697,12 @@ export default function FlowDashboard({
         // freezes it when the pointer moves onto the tooltip so its links stay
         // clickable (and the click-Popover is the backup).
         followPointer: true,
+        // On touch devices Highcharts defaults followTouchMove to true, which
+        // hijacks single-finger drags to move the tooltip -- so the wide sankey
+        // (see the width floor) can't be panned/scrolled horizontally, which is
+        // exactly how you read it on a phone. Turn it off: a one-finger drag now
+        // scrolls the container, and a tap still opens the tooltip / Popover.
+        followTouchMove: false,
         hideDelay: 300,
         // `this` is a Highcharts sankey Point; both node points and
         // from/to "link" (band) points land here.
@@ -718,10 +802,12 @@ export default function FlowDashboard({
     return {
       options: chartOptions,
       empty: false,
+      emptyReason: null as null | "resources" | "data",
+      chartWidth: width,
       hasFilteredOut,
       schoolLegend,
     };
-  }, [districtDataMap, allSettings]);
+  }, [districtDataMap, allSettings, availWidth]);
 
   // A signature that changes on any settings change, used to key (and thus
   // remount) the chart so it always reflects the current options.
@@ -759,10 +845,16 @@ export default function FlowDashboard({
       {/* The parent content region in SettingsLayout is a fixed-height
           (100vh) box with overflow: hidden, so a tall chart -- e.g. Seattle
           with the ~110-node School column enabled -- would be clipped with no
-          way to reach the bottom. This Box fills that region and scrolls in
-          BOTH directions: vertically for tall charts, horizontally for wide
-          ones. */}
-      <Box sx={{ height: "100%", overflow: "auto" }}>
+          way to reach the bottom. This Box fills that region and owns the
+          VERTICAL scroll for tall charts; the chart's own HORIZONTAL scroll
+          lives in a dedicated inner scroller (below) so a wide sankey can be
+          panned on mobile without this outer box also scrolling sideways (which
+          would drag the legend/caption along and, in practice, not scroll at
+          all -- there was no genuinely-wider child here to overflow). */}
+      <Box
+        ref={scrollRef}
+        sx={{ height: "100%", overflowY: "auto", overflowX: "hidden" }}
+      >
         {schoolLegend.length > 0 && (
           // Legend for the school-size color buckets, pinned to the top when
           // the School level is shown.
@@ -808,10 +900,15 @@ export default function FlowDashboard({
         )}
         {empty ? (
           <Typography sx={{ p: 2 }}>
-            No expenditure data for the selected year and data type.
+            {emptyReason === "resources"
+              ? "No resources selected. Select at least one resource to see the expenditure flow."
+              : "No expenditure data for the selected year and data type."}
           </Typography>
         ) : (
           <>
+            {/* Outer relative box stays viewport-width so the overlaid toggle
+                is pinned in view; the chart itself lives in the inner
+                horizontal scroller and can slide underneath it. */}
             <Box sx={{ position: "relative" }}>
               {/* Actuals/Budget toggle overlaid on the graph (top-left), synced
                   with the sidebar Data Type selector. */}
@@ -837,19 +934,35 @@ export default function FlowDashboard({
                 <ToggleButton value="actuals">Actuals</ToggleButton>
                 <ToggleButton value="budget">Budget</ToggleButton>
               </ToggleButtonGroup>
-              <HighchartsReact
-                // Remount the chart whenever any setting changes (the key is the
-                // serialized dataset settings). This guarantees a brand-new
-                // chart that reflects the current options — e.g. the budget
-                // (grey) vs actuals (blue) node/band colors — rather than
-                // relying on an in-place chart.update(), which can leave stale
-                // sankey colors. A full redraw is fine here (single chart, no
-                // per-chart state to preserve) and the "Updating" overlay masks
-                // it.
-                key={chartKey}
-                highcharts={highchartsObjs.highcharts}
-                options={options}
-              />
+              {/* Dedicated HORIZONTAL scroller. Its direct child has an explicit
+                  pixel width (chartWidth) that can exceed the viewport, so the
+                  overflow is real and touch-pans reliably (with the tooltip's
+                  followTouchMove off, a one-finger drag scrolls here instead of
+                  being captured by Highcharts). This is how a wide sankey is
+                  read on a phone. */}
+              <Box
+                sx={{
+                  overflowX: "auto",
+                  overflowY: "hidden",
+                  WebkitOverflowScrolling: "touch",
+                }}
+              >
+                <Box sx={{ width: `${chartWidth}px` }}>
+                  <HighchartsReact
+                    // Remount the chart whenever any setting changes (the key is
+                    // the serialized dataset settings). This guarantees a
+                    // brand-new chart that reflects the current options — e.g.
+                    // the budget (grey) vs actuals (blue) node/band colors —
+                    // rather than relying on an in-place chart.update(), which
+                    // can leave stale sankey colors. A full redraw is fine here
+                    // (single chart, no per-chart state to preserve) and the
+                    // "Updating" overlay masks it.
+                    key={chartKey}
+                    highcharts={highchartsObjs.highcharts}
+                    options={options}
+                  />
+                </Box>
+              </Box>
             </Box>
             <Typography
               variant="caption"
