@@ -80,9 +80,10 @@ field order generically — no column-name coupling).
    `scripts/publish_bigsheet_inputs.sh` then
    `scripts/create_bigsheet_input_tables.sh` (in that order — schemas are
    positional over the CSVs).
-3. The Python side (`marts/bigsheet.py` + frozen SQL) is now historical
-   provenance only; the golden CSV in `reference/regress/` constrains
-   nothing. Deleting them is the owner's call.
+3. The Python side is **deleted** (data-tools PR #4): `marts/` holds only a
+   pointer README; this repo is the single source of truth for the bigsheet.
+   The golden CSV under data-tools `reference/regress/` is untracked human
+   reference and constrains nothing.
 4. Emulator smoke (`cd functions && npm run test`) still never ran — port
    5001 was busy in the migration session; not retried here.
 
