@@ -404,7 +404,7 @@ export default function FlowDashboard({
 
     // For SIZE-mode GROUPING only: rank the individual schools by enrollment
     // (see enrollmentByCode) into buckets so they can merge into enrollment tiers
-    // ("Schools 294–450"). Excludes the District Office and any school the
+    // ("Schools · 294–450 headcount"). Excludes the District Office and any school the
     // enrollment data omits; empty when the size year has no enrollment
     // (`haveEnrollment` false). Node COLOR is handled separately, by node size,
     // below.
@@ -434,9 +434,14 @@ export default function FlowDashboard({
         enrollRange.set(b, { min: s, max: s });
       }
     }
+    // Label size tiers with the enrollment RANGE and its unit ("headcount") so
+    // the numbers don't read as school identifiers -- e.g. "Schools · 486–989
+    // headcount" rather than "Schools 486–989".
     const enrollLabel = (b: number) => {
       const r = enrollRange.get(b);
-      return r ? `Schools ${fmtCount(r.min)}–${fmtCount(r.max)}` : "Schools";
+      return r
+        ? `Schools · ${fmtCount(r.min)}–${fmtCount(r.max)} headcount`
+        : "Schools";
     };
 
     // When we take over School coalescing, decide which aggregate each school
