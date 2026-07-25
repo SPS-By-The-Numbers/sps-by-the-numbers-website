@@ -1,4 +1,4 @@
-// Non-SPS smoke test (T3.2): assemble + run for a given ccddd, then check that
+// Non-SPS smoke test: assemble + run for a given ccddd, then check that
 // SPS-only column families are absent and core columns are populated.
 //   npx tsx scripts/nonsps_smoke.ts 27010
 import { BigQuery } from '@google-cloud/bigquery';
@@ -18,23 +18,22 @@ async function main() {
   const sql = assembleBigsheetSql(ccddd, combos);
   const [rows] = await bq.query({ query: sql, location: LOCATION });
   const cols = rows.length ? Object.keys(rows[0]) : [];
-  const forbidden = ['hc_', 'nonhc_', 'bldg_staff_', 'r_', 'm_'];
+  const spsOnlyPrefixes = ['map_hc_', 'map_nonhc_', 'bex_', 'bldg_', 'income_',
+    'churn_', 'sqss_', 'region_', 'ms_meany'];
   const bad = cols.filter((c) =>
-    forbidden.some((p) => c.startsWith(p)) ||
-    /_percent$|_numerator$|_denominator$/.test(c) ||   // sqss
-    c === 'ms_assignment_code_normalized' ||
-    /Composite_Score|BEX_IV_Rank|es_zone/.test(c));    // bex/income
+    spsOnlyPrefixes.some((p) => c.startsWith(p)) ||
+    c === 'ms_assignment_code_normalized');
   const withVal = (name: string) =>
     (rows as Record<string, unknown>[]).filter((r) => r[name] != null).length;
 
   console.log(`ccddd ${ccddd}: ${rows.length} rows, ${cols.length} columns`);
   console.log(`  SPS-only columns present (should be 0): ${bad.length}` +
     (bad.length ? ' -> ' + bad.slice(0, 10).join(', ') : ''));
-  console.log(`  type dummies present: ${['OtherSchool', 'K_8', 'Highschool', 'Middle', 'Elementary'].filter((c) => cols.includes(c)).length}/5`);
-  console.log(`  rows with total_spend: ${withVal('total_spend')}`);
-  console.log(`  rows with fte: ${withVal('fte')}`);
-  console.log(`  rows with all_students: ${withVal('all_students')}`);
-  console.log(`  assessment cols (pct_noscore-suffixed): ${cols.filter((c) => c.endsWith('_pct_noscore')).length}`);
+  console.log(`  type dummies present: ${['type_other', 'type_k8', 'type_highschool', 'type_middle', 'type_elementary'].filter((c) => cols.includes(c)).length}/5`);
+  console.log(`  rows with spend_total: ${withVal('spend_total')}`);
+  console.log(`  rows with staff_all_fte: ${withVal('staff_all_fte')}`);
+  console.log(`  rows with enroll_total: ${withVal('enroll_total')}`);
+  console.log(`  assessment cols (asmt_-prefixed): ${cols.filter((c) => c.startsWith('asmt_')).length}`);
   console.log(bad.length === 0 ? 'NON-SPS SMOKE OK ✅' : 'NON-SPS SMOKE FAILED ❌');
   process.exitCode = bad.length === 0 ? 0 : 1;
 }

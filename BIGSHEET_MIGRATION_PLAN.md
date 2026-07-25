@@ -595,3 +595,27 @@ type dummies + spend/staffing populated, 184 assessment pivot columns.
   Optionally pre-warm Seattle: `curl -s 'https://bigsheet-rdcihhc4la-uw.a.run.app/?ccddd=17001'`.
 - **Root `npm run lint`** has ~8k pre-existing repo-wide prettier errors in
   unrelated files; the new files are lint-clean.
+
+---
+
+## 6. Phase 5 outcome (2026-07-25, branch `bigsheet-rename`)
+
+Phase 5 was executed as a **rename + de-goldening** in one pass; the golden
+gate is retired, not just passed. See `BIGSHEET_HANDOFF.md` (current state)
+and `functions/src/bigsheet/NAMING.md` (design) for details.
+
+- All legacy headers replaced by source-prefixed snake_case identifiers;
+  1,241 legacy columns → 1,170 new (66 spelling-variant pairs **merged** —
+  verified lossless against sqss.csv — and 5 junk columns dropped: pandas
+  index, `school`/`school_1` duplicates, constant `grade`/`grade_level`).
+  Legacy→new mapping: `functions/src/bigsheet/COLUMN_MAPPING.csv`.
+- Golden-fidelity machinery deleted: `golden_diff.ts`, `_csv_row` +
+  first-appearance pivot ordering, `sanitizeUnique`, rotate-left naming,
+  `staticSql.ts` regex surgery (the `sql/` files are owned sources now).
+- Data dictionary (`dictionary.ts`) generates from the same column plan as
+  the SQL; a test enforces 1:1.
+- `IEEE_DIVIDE` → `SAFE_DIVIDE` (NULL, not inf, at zero denominators) — the
+  one deliberate value-level change.
+- Verified: 25 unit tests; functions + root builds; BigQuery dry runs for
+  17001 (1,170 cols) and 27010 (711 cols) with result schema matching the
+  plan 1:1. `BIGSHEET_SQL_VERSION = 2026-07-25.2`.

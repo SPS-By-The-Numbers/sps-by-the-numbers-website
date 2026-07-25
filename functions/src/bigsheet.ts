@@ -1,12 +1,13 @@
-// bigsheet endpoint: the ~1,240-column per-school joined sheet (a port of
-// data-tools marts/bigsheet.py) built entirely as one BigQuery SQL string and
-// exported as DEFLATE AVRO to the public cache bucket, mirroring finance.ts.
+// bigsheet endpoint: the ~1,170-column per-school joined sheet built entirely
+// as one BigQuery SQL string and exported as DEFLATE AVRO to the public cache
+// bucket, mirroring finance.ts. Column naming/structure: bigsheet/NAMING.md.
 //
 // GET ?ccddd=NNNNN
 //   1. validate ccddd (integer, 4-5 digits) -- interpolate only the parsed
 //      integer into SQL, never the raw string.
 //   2. enumerate the pivot combos BigQuery PIVOT can't do dynamically (small
-//      SELECT DISTINCT queries with deterministic ORDER BY), in parallel.
+//      SELECT DISTINCT queries, in parallel; ordering + naming happen in the
+//      generator via the canonical vocabularies in bigsheet/names.ts).
 //   3. assemble the full SQL; SPS-only families included only for ccddd 17001.
 //   4. cache key = sha256(assembledSql); the SQL text embeds the enumerated
 //      pivot columns, so the cache self-invalidates when upstream years/groups
@@ -49,7 +50,7 @@ async function enumerateCombos(ccddd: number): Promise<BigsheetCombos> {
         [r.test_administration, r.test_subject, r.student_group] as Combo),
       mapHc: hc.map(mapCombo),
       mapNonhc: nonhc.map(mapCombo),
-      sqss: sqss.map((r) => [r.measure_clean, r.student_group] as Combo),
+      sqss: sqss.map((r) => [r.measure, r.student_group] as Combo),
     };
   }
   const asmt = await runCombo(comboQueryAssessment(ccddd));

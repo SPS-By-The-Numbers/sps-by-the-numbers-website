@@ -1,41 +1,26 @@
--- marts/vitals.sql
+-- Vitals CTE chain for the bigsheet endpoint: per-school enrollment &
+-- demographics (OSPI report card), per-program spend (SAFS F-196) and
+-- staffing/salary/experience (SAFS S-275), one row per (school_code,
+-- class_of) including the district-total rows (NULL school_code).
 --
--- The `--vitals` input consumed by marts/bigsheet.py, built from BigQuery.
+-- This is a CTE FRAGMENT: no leading WITH, no trailing ORDER BY; it ends with
+-- the vitals_org CTE and is spliced into the WITH clause by assemble.ts.
+-- Placeholders: {project} (GCP project), {ccddd} (county+district code).
+-- Columns keep their upstream names here; the final SELECT renames them (see
+-- columns.ts, the single source of output naming).
 --
--- It reproduces the pre-baked vitals.csv (preserved at attic/vitals.csv)
--- column for column, with two bugs fixed -- see below.  It is a direct
--- inlining of the three original queries, kept alongside it for reference:
---
---   vitals_org.sql               -- the final join
---   expenditures_by_school.sql   -- built scratch.exp_by_school
---   s275_school_summary.sql      -- built scratch.s275_school_summary
---
--- Those originals no longer run: the `scratch` dataset they read and write is
--- empty.  Everything they did is reproduced here as CTEs, in the same order
--- and with the same semantics, so the output matches the CSV column for
--- column, with two deliberate exceptions:
---
---   1. FIXED: vocational spend.  The original computed a `voc` category
---      (programs 31, 34, 38, 39, 45, 46, 47) and then DROPPED it -- its
---      PIVOT listed only the nine other categories -- so voc never reached
---      vitals.csv and was missing from comp_amount / non_comp_amount and
---      hence from total_spend.  It is kept here, adding comp_amount_voc,
---      non_comp_amount_voc, total_spend_voc and spend_voc_per_pupil, and
---      making comp_amount / non_comp_amount / total_spend / spend_per_pupil
---      larger than the CSV's by $97.3M over the covered years.
---   2. FIXED: the experience percentiles.  The original used
---      APPROX_QUANTILES, a sketch, which on school-years with exactly 14,
---      28 or 56 class teachers returns the neighbouring order statistic.
---      This query returns the raw sorted values and bigsheet.py takes the
---      exact order statistic in numpy, correcting 65 of 1110 rows.
---
--- GRAIN: one row per (school_code, class_of), from
---   ospi.rc_enrollment WHERE ccddd = 17001 AND grade = 'All Grades',
--- including 11 "District Total" rows with a NULL school_code (one per year).
--- 1185 rows for class_of 2015..2025; grows as newer years land.
+-- Provenance: descends from data-tools marts/vitals.sql (itself an inlining
+-- of vitals_org.sql, expenditures_by_school.sql, s275_school_summary.sql),
+-- with two deliberate fixes over the original queries:
+--   1. Vocational spend (programs 31, 34, 38, 39, 45, 46, 47) is included;
+--      the original dropped the category on the floor, understating
+--      comp_amount / non_comp_amount / total_spend.
+--   2. Experience percentiles are the exact order statistic — the
+--      ceil(q/100*n)-th smallest observation (the smallest value whose
+--      empirical CDF reaches q) — not APPROX_QUANTILES, whose sketch returns
+--      a neighbouring order statistic on some group sizes.
 
-WITH demographics_by_school AS (
-  -- vitals_org.sql: DemographicsBySchool
+demographics_by_school AS (
   SELECT
     t.*,
 
@@ -66,19 +51,17 @@ WITH demographics_by_school AS (
     t.hispanic_latino_of_any_race / NULLIF(t.all_students, 0) pct_hispanic_latino_of_any_race,
     t.asian / NULLIF(t.all_students, 0) pct_asian,
     t.two_or_more_races / NULLIF(t.all_students, 0) pct_two_or_more_races,
-  FROM `{project}.ospi.rc_enrollment` t
-  WHERE ccddd = 17001
+  FROM {project}.ospi.rc_enrollment t
+  WHERE ccddd = {ccddd}
     AND grade = 'All Grades'
 ),
 
--- ============================ scratch.exp_by_school ========================
--- expenditures_by_school.sql, inlined.
+-- ===================== per-program spend (SAFS F-196) ======================
 
 exp_simplified AS (
   SELECT
     class_of,
     school_code,
-    school,
     object_code,
     amount,
     CASE
@@ -93,24 +76,20 @@ exp_simplified AS (
       WHEN program_code in (31, 34, 38, 39, 45, 46, 47) THEN "voc"
       ELSE "other"
     END prog_category
-  FROM `{project}.safs_f19x.general_fund_expenditures`
-  WHERE ccddd = 17001
+  FROM {project}.safs_f19x.general_fund_expenditures
+  WHERE ccddd = {ccddd}
     AND data_type = "actuals"
     AND has_school = TRUE
     AND school_code IS NOT NULL
 ),
 
 exp_pivoted AS (
-  -- Equivalent to the original's ByProgCategory + PIVOT.  Within a category
-  -- that has rows, compensation is object_code 2/3/4 and everything else is
-  -- non-compensation, each defaulting to 0; a category with no rows at all
-  -- stays NULL, which is what the PIVOT produced.
-  --
-  -- NOTE: unlike the original, 'voc' IS included -- see the file header.
+  -- Within a category that has rows, compensation is object_code 2/3/4 and
+  -- everything else is non-compensation, each defaulting to 0; a category
+  -- with no rows at all stays NULL.
   SELECT
     class_of,
     school_code,
-    school,
     SUM(IF(prog_category = "gen_ed", IF(object_code IN (2,3,4), amount, 0), NULL)) comp_amount_gen_ed,
     SUM(IF(prog_category = "gen_ed", IF(object_code IN (2,3,4), 0, amount), NULL)) non_comp_amount_gen_ed,
     SUM(IF(prog_category = "spec_ed", IF(object_code IN (2,3,4), amount, 0), NULL)) comp_amount_spec_ed,
@@ -129,18 +108,10 @@ exp_pivoted AS (
     SUM(IF(prog_category = "district_support", IF(object_code IN (2,3,4), 0, amount), NULL)) non_comp_amount_district_support,
     SUM(IF(prog_category = "other", IF(object_code IN (2,3,4), amount, 0), NULL)) comp_amount_other,
     SUM(IF(prog_category = "other", IF(object_code IN (2,3,4), 0, amount), NULL)) non_comp_amount_other,
-
-    -- BUG FIX vs the original.  expenditures_by_school.sql computed a 'voc'
-    -- category (programs 31, 34, 38, 39, 45, 46, 47 -- Vocational Basic /
-    -- Federal / Other-Categorical, Middle School CTE, and Skill Center
-    -- Basic / Federal / Facility-Upgrades) and then silently discarded it,
-    -- because its PIVOT listed only the nine categories above.  Vocational
-    -- spend therefore never reached vitals.csv and was missing from
-    -- comp_amount, non_comp_amount and total_spend.  It is kept here.
     SUM(IF(prog_category = "voc", IF(object_code IN (2,3,4), amount, 0), NULL)) comp_amount_voc,
     SUM(IF(prog_category = "voc", IF(object_code IN (2,3,4), 0, amount), NULL)) non_comp_amount_voc
   FROM exp_simplified
-  GROUP BY class_of, school_code, school
+  GROUP BY class_of, school_code
 ),
 
 exp_by_school AS (
@@ -171,8 +142,7 @@ exp_by_school AS (
   FROM exp_pivoted
 ),
 
--- ======================= scratch.s275_school_summary =======================
--- s275_school_summary.sql, inlined.
+-- ================ staffing / salary / experience (SAFS S-275) ==============
 
 duty_summary AS (
   SELECT
@@ -184,39 +154,43 @@ duty_summary AS (
     sum(a.fte_in_assignment) fte,
     sum(pa.c_est_total_compensation) c_est_total_compensation,
     sum(pa.c_est_total_final_salary) c_est_total_final_salary
-  FROM `{project}.safs_s275.assignment` a
-  JOIN `{project}.safs_s275.report` r ON (r.report_id = a.report_id)
-  JOIN `{project}.safs_s275.private_assignment` pa ON (pa.assignment_id = a.assignment_id)
-  WHERE r.ccddd = 17001
+  FROM {project}.safs_s275.assignment a
+  JOIN {project}.safs_s275.report r ON (r.report_id = a.report_id)
+  JOIN {project}.safs_s275.private_assignment pa ON (pa.assignment_id = a.assignment_id)
+  WHERE r.ccddd = {ccddd}
   GROUP BY r.class_of, a.school_code, a.duty_root_code, a.duty_suffix_code
 ),
 
 distinct_teachers AS (
   SELECT DISTINCT r.class_of, a.school_code, a.report_employee_id
-  FROM `{project}.safs_s275.assignment` a
-  JOIN `{project}.safs_s275.report` r ON (r.report_id = a.report_id)
-  WHERE r.ccddd = 17001
+  FROM {project}.safs_s275.assignment a
+  JOIN {project}.safs_s275.report r ON (r.report_id = a.report_id)
+  WHERE r.ccddd = {ccddd}
     AND a.duty_root_code in (31, 32)
 ),
 
 classroom_teacher_stats AS (
+  -- Experience percentiles are the exact order statistic over the per-person
+  -- experience values: the ceil(q/100*n)-th smallest (empirical-CDF
+  -- definition). Deterministic; APPROX_QUANTILES is a sketch and is not.
   SELECT
     t.class_of,
     t.school_code,
-    -- The original used APPROX_QUANTILES(experience_years, 100)[OFFSET(n)],
-    -- a sketch, which returns the neighbouring order statistic on some group
-    -- sizes.  Return the raw sorted values instead; bigsheet.py takes the
-    -- exact order statistic in numpy and replaces this column with
-    -- class_teacher_exp_50pctile / class_teacher_exp_80pctile in place.
-    ARRAY_AGG(re.experience_years IGNORE NULLS
-              ORDER BY re.experience_years) AS class_teacher_exp_years,
+    IF(ARRAY_LENGTH(ARRAY_AGG(re.experience_years IGNORE NULLS ORDER BY re.experience_years)) = 0, NULL,
+       ARRAY_AGG(re.experience_years IGNORE NULLS ORDER BY re.experience_years)
+         [OFFSET(CAST(CEIL(50 / 100.0 * ARRAY_LENGTH(ARRAY_AGG(re.experience_years IGNORE NULLS ORDER BY re.experience_years))) AS INT64) - 1)]
+      ) AS class_teacher_exp_p50,
+    IF(ARRAY_LENGTH(ARRAY_AGG(re.experience_years IGNORE NULLS ORDER BY re.experience_years)) = 0, NULL,
+       ARRAY_AGG(re.experience_years IGNORE NULLS ORDER BY re.experience_years)
+         [OFFSET(CAST(CEIL(80 / 100.0 * ARRAY_LENGTH(ARRAY_AGG(re.experience_years IGNORE NULLS ORDER BY re.experience_years))) AS INT64) - 1)]
+      ) AS class_teacher_exp_p80,
     AVG(re.experience_years) class_teacher_exp_avg,
     count(t.report_employee_id) num_class_teachers,
     SUM(CASE WHEN re.highest_degree = "B" THEN 1 ELSE 0 END) num_class_teachers_bachelors,
     SUM(CASE WHEN re.highest_degree = "M" THEN 1 ELSE 0 END) num_class_teachers_masters,
     SUM(CASE WHEN re.highest_degree = "D" THEN 1 ELSE 0 END) num_class_teachers_doctors
   FROM distinct_teachers t
-  LEFT JOIN `{project}.safs_s275.report_employee` re
+  LEFT JOIN {project}.safs_s275.report_employee re
     ON (re.report_employee_id = t.report_employee_id)
   GROUP BY t.class_of, t.school_code
 ),
@@ -270,9 +244,9 @@ principal AS (
 
 distinct_principals AS (
   SELECT DISTINCT r.class_of, a.school_code, a.report_employee_id
-  FROM `{project}.safs_s275.assignment` a
-  JOIN `{project}.safs_s275.report` r ON (r.report_id = a.report_id)
-  WHERE r.ccddd = 17001
+  FROM {project}.safs_s275.assignment a
+  JOIN {project}.safs_s275.report r ON (r.report_id = a.report_id)
+  WHERE r.ccddd = {ccddd}
     AND a.duty_root_code in (21, 23)
 ),
 
@@ -280,17 +254,21 @@ principal_stats AS (
   SELECT
     t.class_of,
     t.school_code,
-    -- Same as class_teacher_exp_years above: raw sorted values, turned into
-    -- principal_exp_50pctile / principal_exp_80pctile in numpy.
-    ARRAY_AGG(re.experience_years IGNORE NULLS
-              ORDER BY re.experience_years) AS principal_exp_years,
+    IF(ARRAY_LENGTH(ARRAY_AGG(re.experience_years IGNORE NULLS ORDER BY re.experience_years)) = 0, NULL,
+       ARRAY_AGG(re.experience_years IGNORE NULLS ORDER BY re.experience_years)
+         [OFFSET(CAST(CEIL(50 / 100.0 * ARRAY_LENGTH(ARRAY_AGG(re.experience_years IGNORE NULLS ORDER BY re.experience_years))) AS INT64) - 1)]
+      ) AS principal_exp_p50,
+    IF(ARRAY_LENGTH(ARRAY_AGG(re.experience_years IGNORE NULLS ORDER BY re.experience_years)) = 0, NULL,
+       ARRAY_AGG(re.experience_years IGNORE NULLS ORDER BY re.experience_years)
+         [OFFSET(CAST(CEIL(80 / 100.0 * ARRAY_LENGTH(ARRAY_AGG(re.experience_years IGNORE NULLS ORDER BY re.experience_years))) AS INT64) - 1)]
+      ) AS principal_exp_p80,
     AVG(re.experience_years) principal_exp_avg,
     count(t.report_employee_id) num_principal,
     SUM(CASE WHEN re.highest_degree = "B" THEN 1 ELSE 0 END) num_principal_bachelors,
     SUM(CASE WHEN re.highest_degree = "M" THEN 1 ELSE 0 END) num_principal_masters,
     SUM(CASE WHEN re.highest_degree = "D" THEN 1 ELSE 0 END) num_principal_doctors
   FROM distinct_principals t
-  LEFT JOIN `{project}.safs_s275.report_employee` re
+  LEFT JOIN {project}.safs_s275.report_employee re
     ON (re.report_employee_id = t.report_employee_id)
   GROUP BY t.class_of, t.school_code
 ),
@@ -364,17 +342,17 @@ s275_school_summary AS (
   LEFT OUTER JOIN librarian l ON (t.class_of = l.class_of AND t.school_code = l.school_code)
   LEFT OUTER JOIN classroom_teacher_stats dts ON (dts.class_of = t.class_of AND dts.school_code = t.school_code)
   LEFT OUTER JOIN principal_stats ps ON (ps.class_of = t.class_of AND ps.school_code = t.school_code)
-)
+),
 
 -- ================================ vitals_org ===============================
 
+vitals_org AS (
 SELECT
   t.class_of,
   t.school_code,
   ds.type,
   ds.is_regular,
   ds.region,
-  ds.school,
   ds.ms_assignment_code,
   ds.ms_assignment,
 
@@ -411,6 +389,5 @@ FROM demographics_by_school t
 
 LEFT OUTER JOIN exp_by_school e ON (e.class_of = t.class_of AND e.school_code = t.school_code)
 LEFT OUTER JOIN s275_school_summary ss ON (ss.class_of = t.class_of AND ss.school_code = t.school_code)
-LEFT OUTER JOIN `{project}.safs_domains.d_school` ds ON (ds.ccddd = 17001 AND ds.school_code = t.school_code)
-
-ORDER BY school_code, class_of
+LEFT OUTER JOIN {project}.safs_domains.d_school ds ON (ds.ccddd = {ccddd} AND ds.school_code = t.school_code)
+)
