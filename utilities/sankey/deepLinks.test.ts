@@ -2,7 +2,11 @@ import { expect } from "@jest/globals";
 import { linksForBand, linksForNode } from "utilities/sankey/deepLinks";
 
 import ActivityFilter from "app/finance/_filteritems/activity";
-import DutySuffixFilter from "app/finance/_filteritems/duty_suffix";
+import EmploymentClassFilter from "app/finance/_filteritems/employment_class";
+import {
+  CERTIFICATED_CLASS_CODE,
+  CLASSIFIED_CLASS_CODE,
+} from "utilities/domain/duty_roots";
 import NcesFilter from "app/finance/_filteritems/nces";
 import ObjectFilter from "app/finance/_filteritems/object";
 import ProgramFilter from "app/finance/_filteritems/program";
@@ -301,9 +305,9 @@ describe("linksForBand", () => {
     ).toEqual(new Set([11]));
     expect(d).not.toContain("~o.");
     // Certificated-salary object (2) narrows staffing to the Certificated
-    // contract type.
-    expect(DutySuffixFilter.fromFilterString(d.split("~ct.")[1])).toEqual(
-      new Set([0, 1]),
+    // employment class.
+    expect(EmploymentClassFilter.fromFilterString(d.split("~ec.")[1])).toEqual(
+      new Set([CERTIFICATED_CLASS_CODE]),
     );
   });
 
@@ -329,10 +333,10 @@ describe("linksForBand", () => {
     expect(
       makeSchoolFilter(CCDDD).fromFilterString(d.split("~s.")[1].split("~")[0]),
     ).toEqual(new Set([1002]));
-    // Classified-salary object (3) narrows staffing to the Classified contract
-    // type.
-    expect(DutySuffixFilter.fromFilterString(d.split("~ct.")[1])).toEqual(
-      new Set([2, 3]),
+    // Classified-salary object (3) narrows staffing to the Classified
+    // employment class.
+    expect(EmploymentClassFilter.fromFilterString(d.split("~ec.")[1])).toEqual(
+      new Set([CLASSIFIED_CLASS_CODE]),
     );
   });
 

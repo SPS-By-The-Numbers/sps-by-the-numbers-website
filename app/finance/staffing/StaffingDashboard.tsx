@@ -5,12 +5,12 @@ import {
   ProgramFilterContents,
   SchoolFilterContents,
   DutyRootFilterContents,
-  DutySuffixFilterContents,
+  EmploymentClassFilterContents,
 } from "app/finance/_widgets/ExpenditureFilterContents";
 import ActivityFilter from "app/finance/_filteritems/activity";
 import ProgramFilter from "app/finance/_filteritems/program";
 import DutyRootFilter from "app/finance/_filteritems/duty_root";
-import DutySuffixFilter from "app/finance/_filteritems/duty_suffix";
+import EmploymentClassFilter from "app/finance/_filteritems/employment_class";
 import { makeHighchartConfig, getDataBounds } from "utilities/highcharts/utils";
 import { makeSchoolFilter } from "app/finance/_filteritems/school";
 import { useMemo } from "react";
@@ -153,7 +153,7 @@ function componentsGenerator(
   Prog(${ProgramFilter.toSummaryText(settings.programCodes)}) /
   Act(${ActivityFilter.toSummaryText(settings.activityCodes)}) /
   Duty(${DutyRootFilter.toSummaryText(settings.dutyRootCodes)}) /
-  Contract(${DutySuffixFilter.toSummaryText(settings.dutySuffixCodes)})
+  Class(${EmploymentClassFilter.toSummaryText(settings.employmentClassCodes)})
   `;
   const components = makeFacetComponents({
     idPrefix: settings.id.toString(),
@@ -173,11 +173,12 @@ function componentsGenerator(
 }
 
 // Budgeted FTE (F-195) is reported only by program / activity / duty root --
-// never by school, and never by contract type (duty suffix). So the budget
-// overlay is eligible only when the facet is not "school" and neither the
-// School nor the Duty Suffix filter has been narrowed below its full domain.
-// When it isn't eligible the dashboard hides the (empty) budget series and
-// surfaces an explanatory banner instead (see `budgetBanner` in the component).
+// never by school. Every other Staffing dimension (program, activity, duty root,
+// and the derived employment class / staff category) IS carried by the F-195
+// budget, so the budget overlay is eligible whenever the facet is not "school"
+// and the School filter is not narrowed below its full domain. When it isn't
+// eligible the dashboard hides the (empty) budget series and surfaces an
+// explanatory banner instead (see `budgetBanner` in the component).
 export function budgetOverlayEligible(
   facet: string,
   staffingSettings: StaffingSettings,
@@ -189,11 +190,7 @@ export function budgetOverlayEligible(
   const schoolsNarrowed =
     staffingSettings.schoolCodes !== undefined &&
     staffingSettings.schoolCodes.size < allSchools;
-  const allSuffix = DutySuffixFilter.allCodes().size;
-  const suffixNarrowed =
-    staffingSettings.dutySuffixCodes !== undefined &&
-    staffingSettings.dutySuffixCodes.size < allSuffix;
-  return !schoolsNarrowed && !suffixNarrowed;
+  return !schoolsNarrowed;
 }
 
 function makeFacetedStaffingForDistrict(
@@ -293,24 +290,15 @@ export default function StaffingDashboard({
   }, [contextSettings, districtDataMap, allSettings]);
 
   // Budgeted FTE (F-195) has no school breakdown. When a view can't show it --
-  // faceting by School, a narrowed School filter, or a narrowed Duty Suffix
-  // (contract type) filter, none of which the budget carries -- explain why the
-  // Budget series is absent rather than leaving it silently missing. Keyed off
-  // the primary dataset's settings.
+  // faceting by School or with a narrowed School filter -- the only dimension
+  // the budget lacks -- explain why the Budget series is absent rather than
+  // leaving it silently missing. Keyed off the primary dataset's settings.
   const budgetBanner = useMemo(() => {
     const settings = allSettings[0];
     if (!settings || budgetOverlayEligible(contextSettings.facet, settings)) {
       return null;
     }
-    if (
-      contextSettings.facet === "school" ||
-      (settings.schoolCodes !== undefined &&
-        settings.schoolCodes.size <
-          makeSchoolFilter(settings.ccddd).allCodes().size)
-    ) {
-      return "Budgeted FTE is not available at school granularity — the budget (F-195) reports FTE only district-wide by program, activity, and duty root. Select all schools and facet by Program, Activity, or Duty Root to overlay it.";
-    }
-    return "Budgeted FTE is not available by contract type — the budget (F-195) has no Duty Suffix breakdown. Clear the Duty Suffix filter to overlay it.";
+    return "Budgeted FTE is not available at school granularity — the budget (F-195) reports FTE only district-wide (by program, activity, duty root, and employment class). Select all schools and facet by something other than School to overlay it.";
   }, [contextSettings.facet, allSettings]);
 
   return (
@@ -342,7 +330,7 @@ export default function StaffingDashboard({
         ProgramFilterContents,
         SchoolFilterContents,
         DutyRootFilterContents,
-        DutySuffixFilterContents,
+        EmploymentClassFilterContents,
       ]}
     >
       <Typography className="analysis-title" component="h1" variant="h1">

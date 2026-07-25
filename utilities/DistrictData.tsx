@@ -6,6 +6,13 @@ import ALL_ENROLLMENT_STUDENT_GROUPS from "utilities/domain/enrollment_student_g
 import ALL_GRADE_LEVELS from "utilities/domain/grade_levels";
 import ALL_STUDENT_GROUPS from "utilities/domain/student_groups";
 import ALL_TEST_SUBJECTS from "utilities/domain/test_subjects";
+import {
+  EMPLOYMENT_CLASS_LABEL,
+  employmentClassCodeForDutyRoot,
+  employmentClassForDutyRoot,
+  staffCategoryCodeForDutyRoot,
+  staffCategoryLabelForDutyRoot,
+} from "utilities/domain/duty_roots";
 
 import type { ColumnTable } from "arquero";
 
@@ -60,8 +67,8 @@ export type DutyRootFilters = {
   dutyRootCodes: Set<number>;
 };
 
-export type DutySuffixFilters = {
-  dutySuffixCodes: Set<number>;
+export type EmploymentClassFilters = {
+  employmentClassCodes: Set<number>;
 };
 
 export type RevenueCategoryFilters = {
@@ -81,7 +88,7 @@ type RevenuesFilters = Partial<
   RevenueCategoryFilters & RevenueAccountFilters & PFilters
 >;
 type StaffingFilters = Partial<
-  PAFilters & DutyRootFilters & DutySuffixFilters & SchoolFilters
+  PAFilters & DutyRootFilters & EmploymentClassFilters & SchoolFilters
 >;
 type EnrollmentFilters = Partial<
   DemographicFilters & SchoolFilters & GradeLevelFilters & StudentGroupFilters
@@ -240,6 +247,26 @@ function combineActivitiesBudgetedFte(df, codes, synth_activity_code) {
   return others.union(summed);
 }
 
+// Stamp a frame that has a `duty_root_code` column with the two OSPI-derived
+// staffing dimensions: `employment_class[_code]` (2-way, the filter) and
+// `staff_category[_code]` (6-way, the facet). See utilities/domain/duty_roots.
+function deriveStaffClassColumns(df) {
+  return df.derive({
+    employment_class_code: aq.escape((d) =>
+      employmentClassCodeForDutyRoot(d.duty_root_code),
+    ),
+    employment_class: aq.escape(
+      (d) => EMPLOYMENT_CLASS_LABEL[employmentClassForDutyRoot(d.duty_root_code)],
+    ),
+    staff_category_code: aq.escape((d) =>
+      staffCategoryCodeForDutyRoot(d.duty_root_code),
+    ),
+    staff_category: aq.escape((d) =>
+      staffCategoryLabelForDutyRoot(d.duty_root_code),
+    ),
+  });
+}
+
 function combineCommonActivities(df, combiner) {
   df = combiner(
     df,
@@ -318,6 +345,15 @@ export default class DistrictData {
       this.budgeted_fte_df,
       combineActivitiesBudgetedFte,
     );
+
+    // Derive employment class (certificated/classified, 2-way -- the Staffing
+    // FILTER) and staff category (the finer 6-way OSPI breakdown -- the Staffing
+    // "Staff Category" FACET) from the duty ROOT code (OSPI's authoritative rule
+    // -- see utilities/domain/duty_roots). Both the S-275 actuals and the F-195
+    // budget carry duty_root_code, so these are filterable AND facetable
+    // dimensions on the Staffing dashboard for both.
+    this.s275_summary_df = deriveStaffClassColumns(this.s275_summary_df);
+    this.budgeted_fte_df = deriveStaffClassColumns(this.budgeted_fte_df);
 
     const minMaxDf = minMaxClassOf(this.fundedEnrollment_df)
       .concat(minMaxClassOf(this.gf_expenditure_df))
@@ -601,11 +637,11 @@ export default class DistrictData {
         .filter((d, $) => d.includes([...$.dutyRootCodes], d.duty_root_code));
     }
 
-    if (staffingFilter.dutySuffixCodes !== undefined) {
+    if (staffingFilter.employmentClassCodes !== undefined) {
       results = results
         .params(staffingFilter)
         .filter((d, $) =>
-          d.includes([...$.dutySuffixCodes], d.duty_suffix_code),
+          d.includes([...$.employmentClassCodes], d.employment_class_code),
         );
     }
 
@@ -617,10 +653,11 @@ export default class DistrictData {
   }
 
   // Budgeted (F-195) FTE filtered by the dimensions the budget actually carries:
-  // program, activity, and duty root. School and duty-suffix are intentionally
-  // NOT applied -- the budget has no such breakdown, so the Staffing dashboard
-  // only shows the budget overlay when those two filters are at their full
-  // domain (see the eligibility check there) and otherwise surfaces a banner.
+  // program, activity, duty root, and employment class (all derivable from the
+  // F-195 rows). Only SCHOOL is intentionally NOT applied -- the budget has no
+  // school breakdown, so the Staffing dashboard shows the budget overlay only
+  // when all schools are selected (see the eligibility check there) and
+  // otherwise surfaces a banner.
   filteredBudgetedFte(staffingFilter: StaffingFilters) {
     let results = this.budgeted_fte_df;
 
@@ -640,6 +677,14 @@ export default class DistrictData {
       results = results
         .params(staffingFilter)
         .filter((d, $) => d.includes([...$.dutyRootCodes], d.duty_root_code));
+    }
+
+    if (staffingFilter.employmentClassCodes !== undefined) {
+      results = results
+        .params(staffingFilter)
+        .filter((d, $) =>
+          d.includes([...$.employmentClassCodes], d.employment_class_code),
+        );
     }
 
     return results;

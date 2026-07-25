@@ -15,7 +15,7 @@ import {
 import ActivityFilter from "app/finance/_filteritems/activity";
 import AssessmentTypeFilter from "app/finance/_filteritems/assessment_type";
 import DutyRootFilter from "app/finance/_filteritems/duty_root";
-import DutySuffixFilter from "app/finance/_filteritems/duty_suffix";
+import EmploymentClassFilter from "app/finance/_filteritems/employment_class";
 import GradeLevelFilter from "app/finance/_filteritems/grade_level";
 import NcesFilter from "app/finance/_filteritems/nces";
 import ObjectFilter from "app/finance/_filteritems/object";
@@ -71,7 +71,7 @@ export function makeDefaultActualsSettings(ccddd: number) {
   return {
     schoolCodes: makeSchoolFilter(ccddd).allCodes(),
     dutyRootCodes: DutyRootFilter.allCodes(),
-    dutySuffixCodes: DutySuffixFilter.allCodes(),
+    employmentClassCodes: EmploymentClassFilter.allCodes(),
     ncesCodes: NcesFilter.allCodes(),
   };
 }
@@ -221,14 +221,14 @@ export function makeDutyRootSerializeConfig(context?): SettingsConfig {
   ];
 }
 
-export function makeDutySuffixSerializeConfig(context?): SettingsConfig {
+export function makeEmploymentClassSerializeConfig(context?): SettingsConfig {
   return [
     [
-      "dutySuffixCodes",
+      "employmentClassCodes",
       {
         serializerType: "filter",
-        urlVar: "ct",
-        filter: DutySuffixFilter,
+        urlVar: "ec",
+        filter: EmploymentClassFilter,
       },
     ],
   ];
