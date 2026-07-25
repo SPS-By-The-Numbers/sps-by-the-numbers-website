@@ -515,10 +515,18 @@ export default function FlowDashboard({
     // Highcharts orders a column top->bottom by node creation order (first
     // appearance in the links scan). We push certain nodes to the bottom by
     // sorting their links last, in tiers: normal nodes first (top, size-ranked),
-    // then the District Office (the lowest-ranked *school*), then Filtered Out
-    // (conceptually no longer in the chart -- always the very bottom).
+    // then the bottom-pinned tier -- the District Office (the lowest-ranked
+    // *school*) and the General Fund Balance nodes (`fb:` -- Drawdown in the
+    // Resource column, Growth in the Program column), which read as accounting
+    // artifacts rather than spending and belong out of the size ranking -- then
+    // Filtered Out (conceptually no longer in the chart -- always the very
+    // bottom).
     const nodeBottomRank = (id: string): number =>
-      id.startsWith("flt:") ? 2 : districtOfficeNodeIds.has(id) ? 1 : 0;
+      id.startsWith("flt:")
+        ? 2
+        : id.startsWith("fb:") || districtOfficeNodeIds.has(id)
+          ? 1
+          : 0;
     const linkBottomRank = (l: (typeof links)[number]) =>
       Math.max(nodeBottomRank(l.from), nodeBottomRank(l.to));
     const sortedLinks = [...links].sort((a, b) => {
@@ -580,7 +588,7 @@ export default function FlowDashboard({
     // included: it is (almost) always the largest node, so it lands in the top
     // bucket -- the brightest color. (The ramp is rank-based, so its outlier
     // magnitude doesn't distort the others.) Color is independent of ordering:
-    // the District Office is still pinned to the bottom (see isBottomNode).
+    // the District Office is still pinned to the bottom (see nodeBottomRank).
     const colorSizes = new Map<string, number>();
     for (const n of nodes) {
       if (n.custom.level === "school") {
