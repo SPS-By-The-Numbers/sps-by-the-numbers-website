@@ -460,6 +460,14 @@ export default class DistrictData {
     return this.all_class_ofs_df;
   }
 
+  // The DISTINCT fiscal years that actually have General Fund expenditure data,
+  // as opposed to `all_class_ofs()` which fills every year in the min..max span
+  // (including gaps with no data). Used by the Expenditure Flow view's year
+  // picker so it only offers years that can render a flow.
+  expenditureClassOfs() {
+    return this.gf_expenditure_df.select("class_of").dedupe();
+  }
+
   // Summary accessors
   staffingSummary() {
     const staffFteActuals = this.s275_summary_df.groupby(["class_of"]).rollup({

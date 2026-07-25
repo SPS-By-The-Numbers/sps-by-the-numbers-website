@@ -265,7 +265,12 @@ export default function FlowDashboard({
     };
 
     // Resolve the year: explicit selection, else the latest available.
-    const years = districtData.all_class_ofs().array("class_of") as number[];
+    // Resolve the latest year from years that actually have expenditure data
+    // (matching the year picker in FlowLevelContents), not the full min..max
+    // span, so the default "latest" never lands on an empty year.
+    const years = districtData
+      .expenditureClassOfs()
+      .array("class_of") as number[];
     const year =
       settings.classOf ?? (years.length > 0 ? Math.max(...years) : 0);
     const dt = settings.dataType;
