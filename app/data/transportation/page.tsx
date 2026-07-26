@@ -9,6 +9,8 @@ import SectionPage from "../_widgets/SectionPage";
 import manifest from "../_manifest/transportation.json";
 
 const BUCKET_PREFIX = "https://storage.googleapis.com/sps-btn-data-all-data/";
+const DATA_TOOLS_MAIN =
+  "https://github.com/SPS-By-The-Numbers/data-tools/blob/main";
 
 const CATEGORY_DEFS = [
   {
@@ -63,9 +65,29 @@ export default function Page() {
       </Section>
 
       <Section
-        heading="Processed STARS CSVs"
+        heading="Processed STARS tables (AVRO + CSV)"
         count={manifest.processed.length}
-        blurb="Flat CSVs joining every district and year — start here for analysis. Includes KPI, efficiency, quarterly district, operations allocation, and the supporting dimension tables (d_stars_*)."
+        blurb={
+          <>
+            Flat tables joining every district and year — start here for
+            analysis. Includes KPI, efficiency, quarterly district, operations
+            allocation, and the supporting dimension tables
+            (<code>d_stars_*</code>), each published as both AVRO and CSV.
+            Column-by-column documentation lives in the data-tools repository:{" "}
+            <Link href={`${DATA_TOOLS_MAIN}/extractors/stars/CSV_GUIDE.md`}>
+              STARS CSV guide
+            </Link>
+            ,{" "}
+            <Link href={`${DATA_TOOLS_MAIN}/extractors/stars/COVERAGE.md`}>
+              parse coverage
+            </Link>
+            , and the{" "}
+            <Link href={`${DATA_TOOLS_MAIN}/docs/DATA_DICTIONARY.md`}>
+              generated data dictionary
+            </Link>
+            .
+          </>
+        }
       >
         <FileList files={manifest.processed} />
       </Section>
@@ -114,6 +136,17 @@ export default function Page() {
             </li>
           )}
         </ul>
+        <Typography variant="body2" component="div">
+          The full raw report corpus (~1.4 GiB of PDFs/DOCX) is bulk-mirrorable
+          with{" "}
+          <Link href="https://cloud.google.com/storage/docs/gsutil_install">
+            gsutil
+          </Link>
+          :
+          <pre style={{ background: "#f6f6f6", padding: 8, overflowX: "auto" }}>
+            {`gsutil -m rsync -r gs://sps-btn-data-all-data/raw/stars ./stars`}
+          </pre>
+        </Typography>
       </Section>
     </SectionPage>
   );

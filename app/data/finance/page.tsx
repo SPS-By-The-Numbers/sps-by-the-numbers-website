@@ -60,6 +60,9 @@ export default function Page() {
           (actuals) series from OSPI SAFS, lookup tables for the accounting
           codes, and the joined cross-year files the{" "}
           <Link href="/finance/vitals">Finance Dashboard</Link> is built on.
+          The scanned PDF originals of the state fiscal reports (including
+          mid-year revised budgets) live in the{" "}
+          <Link href="/data/fiscal">Fiscal Reports (OSPI PDFs)</Link> section.
         </>
       }
     >

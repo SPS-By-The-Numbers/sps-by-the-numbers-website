@@ -28,6 +28,12 @@ const SECTIONS: Section[] = [
       counts.domains,
   },
   {
+    href: "/data/fiscal",
+    title: "Fiscal Reports (OSPI PDFs)",
+    blurb: `The OSPI fiscal-report PDF corpus — F-195/F-196 district packets plus monthly apportionment reports and their supporting schedules for every district, ESD, college, and state agency — ${counts.fiscal_raw_files.toLocaleString()} PDFs (~${Math.round(counts.fiscal_raw_bytes / 1024 ** 3)} GiB), with ${counts.fiscal_tables} extracted AVRO tables. Use the district chooser to browse packets.`,
+    count: counts.fiscal_raw_files + counts.fiscal_tables,
+  },
+  {
     href: "/data/enrollment",
     title: "Enrollment (P-223)",
     blurb:
@@ -79,7 +85,11 @@ const SECTIONS: Section[] = [
 ];
 
 export default function Page() {
-  const total = Object.values(counts).reduce((s, n) => s + n, 0);
+  // Sum only the file-count keys — *_bytes entries are sizes, not counts.
+  const total = Object.entries(counts).reduce(
+    (s, [k, n]) => (k.endsWith("_bytes") ? s : s + n),
+    0,
+  );
   return (
     <Container
       maxWidth="lg"
