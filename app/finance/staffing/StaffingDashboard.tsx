@@ -20,6 +20,7 @@ import {
   getDataColumnNames,
 } from "utilities/ChartableMetrics";
 import { makeContextCell } from "utilities/highcharts/ChartConfigGenerators";
+import { BUDGET_REVISED_ACTUALS_SERIES } from "utilities/highcharts/SeriesSpecs";
 import { extractFacets } from "utilities/ChartableVitals";
 import { makeFacetContents } from "app/finance/_widgets/FacetContents";
 import ChartsEnabledContents from "app/finance/_widgets/ChartsEnabledContents";
@@ -93,7 +94,10 @@ function augmentContextComponents(gui, components, data) {
     ],
   });
 
-  // Add Context cells.
+  // Add Context cells. All three series are declared; Revised Budget is
+  // dropped per-cell wherever the frame has no data for it (all the FTE
+  // metrics today).
+  const seriesOptions = { seriesSpecs: BUDGET_REVISED_ACTUALS_SERIES, data };
   components.push(
     makeContextCell(
       `context-fundedEnrollment`,
@@ -102,6 +106,8 @@ function augmentContextComponents(gui, components, data) {
       "Funded Enrollment",
       "fte" as const,
       fundedEnrollmentBounds,
+      undefined,
+      seriesOptions,
     ),
     makeContextCell(
       `context-teachingFte`,
@@ -110,6 +116,8 @@ function augmentContextComponents(gui, components, data) {
       "Teaching",
       "fte" as const,
       teachingBounds,
+      undefined,
+      seriesOptions,
     ),
     makeContextCell(
       `context-studentSupportFte`,
@@ -118,6 +126,8 @@ function augmentContextComponents(gui, components, data) {
       "Student Support",
       "fte" as const,
       fteBounds,
+      undefined,
+      seriesOptions,
     ),
     makeContextCell(
       `context-buildingSupportFte`,
@@ -126,6 +136,8 @@ function augmentContextComponents(gui, components, data) {
       "Building Support",
       "fte" as const,
       fteBounds,
+      undefined,
+      seriesOptions,
     ),
     makeContextCell(
       `context-otherFte`,
@@ -134,6 +146,8 @@ function augmentContextComponents(gui, components, data) {
       "Other FTE",
       "fte" as const,
       fteBounds,
+      undefined,
+      seriesOptions,
     ),
   );
 }

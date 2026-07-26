@@ -6,6 +6,7 @@ import { serializeDatasetSettings, serializeOneSetting } from "app/finance/_sett
 import { useMemo } from "react";
 import { getDataBounds, makeHighchartConfig } from "utilities/highcharts/utils";
 import { makeContextCell } from "utilities/highcharts/ChartConfigGenerators";
+import { BUDGET_REVISED_ACTUALS_SERIES } from "utilities/highcharts/SeriesSpecs";
 import {
   toFacetedCharatbleEnrollmentDataset,
 } from "utilities/ChartableMetrics";
@@ -472,6 +473,12 @@ export default function EnrollmentDashboard({
         ],
       });
 
+      // All three series are declared; Revised Budget is dropped per-cell
+      // wherever the frame has no data for it (everything but Cashflow).
+      const seriesOptions = {
+        seriesSpecs: BUDGET_REVISED_ACTUALS_SERIES,
+        data,
+      };
       components.push(
         makeContextCell(
           "context-totalEnrollment",
@@ -481,6 +488,7 @@ export default function EnrollmentDashboard({
           "decimal" as const,
           totalEnrollmentBounds,
           "Headcount",
+          seriesOptions,
         ),
         makeContextCell(
           "context-fundedEnrollment",
@@ -489,6 +497,8 @@ export default function EnrollmentDashboard({
           "Funded Enrollment",
           "fte" as const,
           fundedEnrollmentBounds,
+          undefined,
+          seriesOptions,
         ),
         makeContextCell(
           "context-cashflow",
@@ -497,6 +507,8 @@ export default function EnrollmentDashboard({
           "Cashflow",
           "currency" as const,
           cashflowBounds,
+          undefined,
+          seriesOptions,
         ),
       );
     }

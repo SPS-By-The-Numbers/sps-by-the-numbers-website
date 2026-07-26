@@ -11,6 +11,7 @@ import {
 import {
   makeContextCell,
 } from "utilities/highcharts/ChartConfigGenerators";
+import { BUDGET_REVISED_ACTUALS_SERIES } from "utilities/highcharts/SeriesSpecs";
 import { extractFacets } from "utilities/ChartableVitals";
 import {
   makeFacetComponents,
@@ -141,7 +142,9 @@ function augmentContextComponents(gui, components, data) {
     ],
   });
 
-  // Add Context cells.
+  // Add Context cells. All three series are declared; Revised Budget is
+  // dropped per-cell wherever the frame has no data for it.
+  const seriesOptions = { seriesSpecs: BUDGET_REVISED_ACTUALS_SERIES, data };
   components.push(
     makeContextCell(
       `context-fundedEnrollment`,
@@ -150,6 +153,8 @@ function augmentContextComponents(gui, components, data) {
       "Funded Enrollment",
       "fte" as const,
       fundedEnrollmentBounds,
+      undefined,
+      seriesOptions,
     ),
     makeContextCell(
       `context-cashflow`,
@@ -158,6 +163,8 @@ function augmentContextComponents(gui, components, data) {
       "Cashflow",
       "currency" as const,
       cashflowBounds,
+      undefined,
+      seriesOptions,
     ),
     makeContextCell(
       `context-revenues`,
@@ -166,6 +173,8 @@ function augmentContextComponents(gui, components, data) {
       "Revenues",
       "currency" as const,
       revExpBounds,
+      undefined,
+      seriesOptions,
     ),
     makeContextCell(
       `context-expenditures`,
@@ -174,6 +183,8 @@ function augmentContextComponents(gui, components, data) {
       "Expenditures",
       "currency" as const,
       revExpBounds,
+      undefined,
+      seriesOptions,
     ),
   );
 }

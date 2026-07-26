@@ -5,6 +5,7 @@ import { SERIALIZE_VITALS_SETTINGS_GENERATORS } from "./VitalsPage";
 import { serializeDatasetSettings, serializeOneSetting } from "app/finance/_settings/common_settings";
 import { SERIALIZE_VITALS_CONTEXT_SETTINGS_GENERATORS } from "./VitalsPage";
 import { makeBudgetActualsChartConfig } from "utilities/highcharts/ChartConfigGenerators";
+import { BUDGET_REVISED_ACTUALS_SERIES } from "utilities/highcharts/SeriesSpecs";
 import { makeChartableVitals } from "utilities/ChartableVitals";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
 import { useSearchParams } from "next/navigation";
@@ -138,13 +139,22 @@ function makeBudgetActualsChartOptions(
   ];
 }
 
-function componentsGenerator(vitalsSettings: VitalsSettings) {
+function componentsGenerator(vitalsSettings: VitalsSettings, data) {
   const budgetActualsChartOptions = makeBudgetActualsChartOptions(
     vitalsSettings.id,
     vitalsSettings.currencyNormalization,
     vitalsSettings.staffingNormalization,
   );
-  return budgetActualsChartOptions.map((c) => makeBudgetActualsChartConfig(c));
+  // Declare all three series on every cell; filterSpecsWithData drops
+  // Revised Budget from the cells whose metric it can't cover (staffing,
+  // enrollment, comp breakouts).
+  return budgetActualsChartOptions.map((c) =>
+    makeBudgetActualsChartConfig({
+      ...c,
+      seriesSpecs: BUDGET_REVISED_ACTUALS_SERIES,
+      data,
+    }),
+  );
 }
 
 export default function VitalsDashboard({
@@ -156,11 +166,15 @@ export default function VitalsDashboard({
 
   const config = (() => {
     if (contextSettings.chartsEnabled === false) return null;
-    const result = makeDatasetFacetedDashboard(allSettings, componentsGenerator);
+    // Build the dataframe first: the chart configs inspect it to decide
+    // which declared series actually have data.
+    const data = makeChartableVitals(districtDataMap, allSettings);
+    const result = makeDatasetFacetedDashboard(allSettings, (s) =>
+      componentsGenerator(s, data),
+    );
     if (result === undefined) return null;
     const { components, gui } = result;
 
-    const data = makeChartableVitals(districtDataMap, allSettings);
     const connectorOptions = data ? dfToJSONConnectorOptions(data) : {};
 
     return {
