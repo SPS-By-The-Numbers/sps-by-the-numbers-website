@@ -10,10 +10,12 @@
   */
   --highcharts-color-1: #006aa3;
   --highcharts-color-2: #cccccc;
-  // Revised Budget: a mid tone between the budget grey and actuals blue so
-  // the three nested bars read plan -> amended plan -> outcome. Must
-  // contrast against BOTH neighbors since the bars overlap.
-  --highcharts-color-3: #74a8c4;
+  // Revised Budget: a dusty orange -- the complement of the actuals blue,
+  // muted toward grey so it stays in the "plan" family with the budget
+  // grey. Must contrast against BOTH neighbors since the bars nest; keep
+  // enough chroma that it never reads as another grey (validated: worst
+  // adjacent-pair CVD dE 17.6 vs #cccccc, larger vs the blue).
+  --highcharts-color-3: #c78d55;
 }
 
 .highcharts-data-label-color-1 {
@@ -28,7 +30,7 @@
 
 .highcharts-data-label-color-3 {
   text-shadow: 0px 0px 6px white;
-  color: #33566b;
+  color: #6b4a24;
 }
 
 .highcharts-description {
