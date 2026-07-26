@@ -91,6 +91,24 @@ export function makeDefaultSettings(ccddd: number) {
   };
 }
 
+// Settings update for a district switch. Most filter domains are statewide
+// and carry over unchanged, but school codes are district-scoped: a carried
+// selection matched against the new district's domain selects nothing (or a
+// nonsense numeric overlap), leaving the school filter empty and poisoning
+// any deep link that serializes it. Reset it to the new district's full
+// domain ("all schools"). Settings without a school filter pass through.
+export function settingsForDistrictChange<T extends { ccddd: number }>(
+  settings: T,
+  ccddd: number,
+): T {
+  const next = { ...settings, ccddd };
+  if ("schoolCodes" in next) {
+    (next as T & { schoolCodes: Set<number> }).schoolCodes =
+      makeSchoolFilter(ccddd).allCodes();
+  }
+  return next;
+}
+
 ///////
 // Configurations for serializing to a URL.
 //

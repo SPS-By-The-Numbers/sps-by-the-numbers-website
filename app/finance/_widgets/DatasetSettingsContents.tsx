@@ -13,6 +13,7 @@ import StaffingNormalizationSelector from "app/finance/_widgets/StaffingNormaliz
 import { fetchEndpoint } from "utilities/client/endpoint";
 import { avroToRowsAndFields } from "utilities/client/FetchData";
 import { rowsToCsv } from "utilities/client/csv";
+import { settingsForDistrictChange } from "app/finance/_settings/common_settings";
 
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 
@@ -65,7 +66,7 @@ export default function DatasetSettingsContents({
       <DistrictSelector
         ccddd={settings.ccddd}
         onChange={(ccddd) =>
-          setSettings(Object.assign({}, settings, { ccddd }))
+          setSettings(settingsForDistrictChange(settings, ccddd))
         }
       />
       <Tooltip title="Downloads every row of data for this district as a CSV. The first download for a district can take a minute or two to generate.">
