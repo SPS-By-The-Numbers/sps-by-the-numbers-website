@@ -52,7 +52,9 @@ export type CaptionType = "variance" | "stats" | "none";
 
 export type BudgetActualsChartOptions = BaseChartConfigOptions & {
   metricColumn: string;
-  facet?: string;
+  // Facet codes can be the literal number 0 (e.g. an unassigned
+  // ms_assignment bucket), so both types are accepted.
+  facet?: string | number;
   captionType: CaptionType;
 
   xDataColumn: string;

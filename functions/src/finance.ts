@@ -283,6 +283,32 @@ function getBudgetedFte(ccddd) {
   `;
 }
 
+// Mid-year revised ("final") budget from the F-196 Budgetary Comparison
+// Schedule -- the only source of post-revision budget numbers. The table has
+// no program/activity/object codes (item_code is a label-derived slug), so
+// only the summary and fund_balance roll-ups are useful to the dashboards.
+// All funds ship so fund-level charts can be added without a redeploy.
+// Note: total_revenues here EXCLUDES other financing sources; the SAFS
+// general_fund_revenues rollup the site charts includes them, so clients
+// must add total_other_financing_sources_uses for apples-to-apples revenue.
+function getBudgetaryComparison(ccddd) {
+  return `
+  SELECT
+    school_year,
+    class_of,
+    fund,
+    section,
+    item_code,
+    value amount
+  FROM
+    sps-btn-data.ospi_fiscal.fiscal_f196_budgetary_comparison
+  WHERE
+    ccddd = ${ccddd} AND
+    column_kind = 'final_budget' AND
+    section IN ('summary', 'fund_balance')
+  `;
+}
+
 function getQueryForDataset(ccddd, dataset) {
   if (ccddd === 'domain') {
     return getDomain(dataset);
@@ -307,6 +333,8 @@ function getQueryForDataset(ccddd, dataset) {
       return getS275Summary(ccddd);
     } else if (dataset === 'budgeted_fte') {
       return getBudgetedFte(ccddd);
+    } else if (dataset === 'budgetary_comparison') {
+      return getBudgetaryComparison(ccddd);
     }
   }
   return null;

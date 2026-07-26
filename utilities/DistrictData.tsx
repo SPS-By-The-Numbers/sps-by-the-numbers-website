@@ -304,6 +304,7 @@ export default class DistrictData {
   private actuals_items_df: ColumnTable;
   private s275_summary_df: ColumnTable;
   private budgeted_fte_df: ColumnTable;
+  private budgetary_comparison_df: ColumnTable;
   private all_class_ofs_df: ColumnTable;
 
   constructor(
@@ -317,6 +318,7 @@ export default class DistrictData {
     actuals_items_df,
     s275_summary_df,
     budgeted_fte_df,
+    budgetary_comparison_df,
   ) {
     this.enrollment_df = enrollment_df;
     this.fundedEnrollment_df = fundedEnrollment_df;
@@ -328,6 +330,7 @@ export default class DistrictData {
     this.actuals_items_df = actuals_items_df;
     this.s275_summary_df = s275_summary_df;
     this.budgeted_fte_df = budgeted_fte_df;
+    this.budgetary_comparison_df = budgetary_comparison_df;
 
     // Create synthetic activities for categories that have split over the
     // years such as Teaching + Professional Learning. In this case, it
@@ -383,6 +386,7 @@ export default class DistrictData {
       actuals_items_df,
       s275_summary_df,
       budgeted_fte_df,
+      budgetary_comparison_df,
     ] = await Promise.all([
       fetchDataset(ccddd, "enrollment"),
       fetchDataset(ccddd, "fundedEnrollment"),
@@ -407,6 +411,18 @@ export default class DistrictData {
           fte: [],
         }),
       ),
+      // Mid-year revised budget (F-196 Budgetary Comparison) is a newer
+      // dataset. Same graceful degrade as budgeted_fte: an empty frame just
+      // means no Revised Budget series on the charts.
+      fetchDataset(ccddd, "budgetary_comparison").catch(() =>
+        aq.table({
+          class_of: [],
+          fund: [],
+          section: [],
+          item_code: [],
+          amount: [],
+        }),
+      ),
     ]);
     return new DistrictData(
       enrollment_df,
@@ -419,6 +435,7 @@ export default class DistrictData {
       actuals_items_df,
       s275_summary_df,
       budgeted_fte_df,
+      budgetary_comparison_df,
     );
   }
 
@@ -692,6 +709,59 @@ export default class DistrictData {
     return results;
   }
 
+  budgetaryComparison() {
+    return this.budgetary_comparison_df;
+  }
+
+  // General-fund revised (F-196 "final") budget summary, one wide row per
+  // class_of with the summary/fund_balance item_codes as columns
+  // (total_revenues, total_expenditures, total_other_financing_sources_uses,
+  // beginning_total_fund_balance, ending_total_fund_balance, ...). Empty
+  // frame when the dataset isn't available.
+  private revisedGfSummary() {
+    if (this.budgetary_comparison_df.numRows() === 0) {
+      return this.budgetary_comparison_df;
+    }
+    let wide = this.budgetary_comparison_df
+      .filter((d) => d.fund === "general")
+      .groupby("class_of")
+      .pivot("item_code", { amount: op.sum("amount") });
+    // A district can lack some line items (e.g. no other financing
+    // sources). Backfill the columns downstream derives read so they
+    // compile against a consistent shape.
+    for (const col of [
+      "total_revenues",
+      "total_expenditures",
+      "total_other_financing_sources_uses",
+      "beginning_total_fund_balance",
+      "ending_total_fund_balance",
+    ]) {
+      if (!wide.column(col)) {
+        wide = wide.derive({ [col]: () => null });
+      }
+    }
+    return wide;
+  }
+
+  // General-fund revised budget totals per class_of: {class_of, revenues,
+  // expenditures}, with other financing sources folded into revenues to
+  // match the SAFS general_fund_revenues rollup (the identity holds to the
+  // cent). Empty frame when the dataset isn't available.
+  revisedGfTotals() {
+    const wide = this.revisedGfSummary();
+    if (wide.numRows() === 0) {
+      return aq.table({ class_of: [], revenues: [], expenditures: [] });
+    }
+    return wide
+      .filter((d) => d.total_revenues != null && d.total_expenditures != null)
+      .derive({
+        revenues: (d) =>
+          d.total_revenues + (d.total_other_financing_sources_uses || 0),
+        expenditures: (d) => d.total_expenditures,
+      })
+      .select("class_of", "revenues", "expenditures");
+  }
+
   balances() {
     const beginningBalanceBudget = this.budget_items_df
       .filter(aq.escape((d) => d.item_code === "275" && d.fund_code === 1))
@@ -724,7 +794,29 @@ export default class DistrictData {
     );
     const endingBalance = endingBalanceBudget.join_full(endingBalanceActuals);
 
-    return beginningBalance.join_full(endingBalance);
+    const result = beginningBalance.join_full(endingBalance);
+
+    // Overlay the mid-year revised (F-196 final) budget as a third
+    // data_type.
+    const revised_wide = this.revisedGfSummary();
+    if (revised_wide.numRows() === 0) {
+      return result;
+    }
+    // Require both items so a one-sided null can't normalize into a
+    // misleading zero-height bar (null / norm === 0 in JS).
+    const revisedBalances = revised_wide
+      .filter(
+        (d) =>
+          d.beginning_total_fund_balance != null &&
+          d.ending_total_fund_balance != null,
+      )
+      .derive({
+        data_type: () => "revised",
+        beginningBalance: (d) => d.beginning_total_fund_balance,
+        endingBalance: (d) => d.ending_total_fund_balance,
+      })
+      .select("class_of", "data_type", "beginningBalance", "endingBalance");
+    return result.concat(revisedBalances);
   }
 
   cashflow() {
@@ -744,7 +836,20 @@ export default class DistrictData {
     const merged_df = expenditures_df
       .join_full(revenues_df)
       .derive({ cashflow: (d) => d.revenues - d.expenditures });
-    return merged_df;
+
+    // Overlay the mid-year revised (F-196 final) budget as a third
+    // data_type.
+    const revised_totals = this.revisedGfTotals();
+    if (revised_totals.numRows() === 0) {
+      return merged_df;
+    }
+    const revised_df = revised_totals
+      .derive({
+        data_type: () => "revised",
+        cashflow: (d) => d.revenues - d.expenditures,
+      })
+      .select("data_type", "class_of", "expenditures", "revenues", "cashflow");
+    return merged_df.concat(revised_df);
   }
 
   filteredAssessment(filter: AssessmentFilters) {

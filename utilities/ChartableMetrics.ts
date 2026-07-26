@@ -54,19 +54,44 @@ export function extractNormalizationDf(
   normalization: CurrencyNormalization | StaffingNormalization,
 ) {
   if (normalization === "amount" || normalization === "fte") {
-    const data_types = aq.table({ data_type: ["budget", "actuals"] });
+    const data_types = aq.table({
+      data_type: ["budget", "actuals", "revised"],
+    });
     return districtData.all_class_ofs().cross(data_types).derive({ norm: 1 });
   }
+  // The raw expenditure/revenue frames carry only budget/actuals rows, so
+  // pctexp/pctrev norms for the revised data_type come from the F-196
+  // revised totals -- revised bars normalize by the revised denominator.
+  // pctcomp/pctfte have no revised denominator; revised rows come out NaN
+  // there and the chart drops the series.
   if (normalization === "pctexp") {
     return districtData
       .expenditures()
       .groupby(["data_type", "class_of"])
-      .rollup({ norm: (d) => op.sum(d.amount) / 100 });
+      .rollup({ norm: (d) => op.sum(d.amount) / 100 })
+      .concat(
+        districtData
+          .revisedGfTotals()
+          .derive({
+            data_type: () => "revised",
+            norm: (d) => d.expenditures / 100,
+          })
+          .select("data_type", "class_of", "norm"),
+      );
   } else if (normalization === "pctrev") {
     return districtData
       .revenues()
       .groupby(["data_type", "class_of"])
-      .rollup({ norm: (d) => op.sum(d.amount) / 100 });
+      .rollup({ norm: (d) => op.sum(d.amount) / 100 })
+      .concat(
+        districtData
+          .revisedGfTotals()
+          .derive({
+            data_type: () => "revised",
+            norm: (d) => d.revenues / 100,
+          })
+          .select("data_type", "class_of", "norm"),
+      );
   } else if (normalization === "pctcomp") {
     return districtData
       .compensation()
