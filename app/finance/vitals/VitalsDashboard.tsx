@@ -82,10 +82,31 @@ function makeBudgetActualsChartOptions(
       ),
       yValueShowNegative: true,
     },
+    // Revenues/expenditures are amount-only vitals columns (normalizing a
+    // total by a percentage of itself is meaningless), so the metric
+    // prefix and format stay fixed regardless of currencyNormalization.
+    makeCell(
+      `${idPrefix}-revenues-chart`,
+      `${idPrefix}_amount_revenues`,
+      "Revenues",
+      "currency" as const,
+    ),
+    makeCell(
+      `${idPrefix}-expenditures-chart`,
+      `${idPrefix}_amount_expenditures`,
+      "Expenditures",
+      "currency" as const,
+    ),
     makeCell(
       `${idPrefix}-beginning-balance-chart`,
       `${idPrefix}_${currencyNormalization}_beginningBalance`,
       "Beginning Balance",
+      currencyFormat,
+    ),
+    makeCell(
+      `${idPrefix}-ending-balance-chart`,
+      `${idPrefix}_${currencyNormalization}_endingBalance`,
+      "Ending Balance",
       currencyFormat,
     ),
     makeCell(

@@ -29,6 +29,7 @@ function makeVitalsForDistrict(districtData, vitalsSettings): ColumnTable {
   const CURRENCY_COLUMN_NAMES = [
     "cashflow",
     "beginningBalance",
+    "endingBalance",
     "teachingComp",
     "studentSupportComp",
     "buildingSupportComp",
