@@ -1,0 +1,1401 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`makeActualsLineChartConfig builds a single actuals line 1`] = `
+{
+  "chartOptions": {
+    "caption": {
+      "align": "right",
+      "useHTML": true,
+    },
+    "chart": {
+      "animation": false,
+      "shadow": false,
+      "styledMode": true,
+      "type": "line",
+      "zooming": {
+        "resetButton": {
+          "position": {
+            "align": "left",
+            "verticalAlign": "top",
+            "x": 5,
+            "y": 5,
+          },
+          "relativeTo": "chart",
+          "theme": {
+            "height": 5,
+            "width": 70,
+          },
+        },
+        "type": "x",
+      },
+    },
+    "credits": {
+      "enabled": false,
+    },
+    "exporting": {
+      "allowHtml": true,
+      "chartOptions": {
+        "chart": {
+          "style": {
+            "fontFamily": "monospace",
+          },
+        },
+      },
+    },
+    "legend": {
+      "align": "left",
+      "enabled": true,
+      "floating": true,
+      "layout": "vertical",
+      "verticalAlign": "bottom",
+    },
+    "plotOptions": {
+      "series": {
+        "label": {
+          "enabled": true,
+          "useHTML": true,
+        },
+      },
+    },
+    "series": [
+      {
+        "colorIndex": 1,
+        "id": "actuals",
+        "marker": {
+          "enabled": true,
+        },
+        "name": "Actuals",
+      },
+    ],
+    "title": {
+      "text": "Test Chart",
+      "useHTML": true,
+    },
+    "tooltip": {
+      "outside": true,
+      "shared": true,
+      "stickOnContact": true,
+      "valueDecimals": 2,
+    },
+    "xAxis": {
+      "events": {
+        "afterSetExtremes": "function(event) { try { setCaptionFromType(this.chart, event, options.captionType, valueFormatter); } catch (e) { console.warn(\`Failed calculating stats for \${options.metricColumn}, \${options.facet}:\`, e); this.chart.setCaption({ text: \`<table class="ba-chartstats-table"><tr><td>[\${e}]</td></tr></table>\` }); } }",
+      },
+      "max": undefined,
+      "min": undefined,
+      "reversed": undefined,
+      "title": {
+        "text": "Fiscal Year End",
+      },
+      "type": "category",
+    },
+    "yAxis": {
+      "crosshair": true,
+      "max": undefined,
+      "min": undefined,
+      "minorTickInterval": "auto",
+      "tickAmount": 5,
+      "title": {
+        "text": "$",
+      },
+      "type": "linear",
+    },
+  },
+  "connector": {
+    "columnAssignment": [
+      {
+        "data": {
+          "marker.radius": "marker_radius",
+          "marker.symbol": "covid_shape",
+          "name": "class_of",
+          "y": "sps_amount_expenditures_27_actuals",
+        },
+        "seriesId": "actuals",
+      },
+    ],
+    "id": "test-connector",
+  },
+  "renderTo": "test-cell",
+  "sync": {
+    "extremes": true,
+    "highlight": true,
+    "visibility": true,
+  },
+  "type": "Highcharts",
+}
+`;
+
+exports[`makeBaseChartConfig builds the shared config skeleton 1`] = `
+{
+  "chartOptions": {
+    "chart": {
+      "animation": false,
+      "styledMode": true,
+      "zooming": {
+        "resetButton": {
+          "position": {
+            "align": "left",
+            "verticalAlign": "top",
+            "x": 5,
+            "y": 5,
+          },
+          "relativeTo": "chart",
+          "theme": {
+            "height": 5,
+            "width": 70,
+          },
+        },
+        "type": "x",
+      },
+    },
+    "credits": {
+      "enabled": false,
+    },
+    "exporting": {
+      "allowHtml": true,
+      "chartOptions": {
+        "chart": {
+          "style": {
+            "fontFamily": "monospace",
+          },
+        },
+      },
+    },
+    "legend": {
+      "align": "left",
+      "enabled": true,
+      "floating": true,
+      "layout": "vertical",
+      "verticalAlign": "bottom",
+    },
+    "plotOptions": {
+      "series": {
+        "label": {
+          "enabled": true,
+          "useHTML": true,
+        },
+      },
+    },
+    "title": {
+      "text": "Test Chart",
+      "useHTML": true,
+    },
+    "tooltip": {
+      "outside": true,
+      "shared": true,
+      "stickOnContact": true,
+      "valueDecimals": 2,
+    },
+    "xAxis": {
+      "max": undefined,
+      "min": undefined,
+      "reversed": undefined,
+      "title": {
+        "text": "Fiscal Year End",
+      },
+      "type": "category",
+    },
+    "yAxis": {
+      "crosshair": true,
+      "max": undefined,
+      "min": undefined,
+      "minorTickInterval": "auto",
+      "tickAmount": 5,
+      "title": {
+        "text": "$",
+      },
+      "type": "linear",
+    },
+  },
+  "connector": {
+    "id": "test-connector",
+  },
+  "renderTo": "test-cell",
+  "sync": {
+    "extremes": true,
+    "highlight": true,
+    "visibility": true,
+  },
+  "type": "Highcharts",
+}
+`;
+
+exports[`makeBudgetActualsChartConfig appends the facet to column names 1`] = `
+{
+  "chartOptions": {
+    "caption": {
+      "align": "right",
+      "useHTML": true,
+    },
+    "chart": {
+      "animation": false,
+      "shadow": false,
+      "styledMode": true,
+      "type": "column",
+      "zooming": {
+        "resetButton": {
+          "position": {
+            "align": "left",
+            "verticalAlign": "top",
+            "x": 5,
+            "y": 5,
+          },
+          "relativeTo": "chart",
+          "theme": {
+            "height": 5,
+            "width": 70,
+          },
+        },
+        "type": "x",
+      },
+    },
+    "credits": {
+      "enabled": false,
+    },
+    "exporting": {
+      "allowHtml": true,
+      "chartOptions": {
+        "chart": {
+          "style": {
+            "fontFamily": "monospace",
+          },
+        },
+      },
+    },
+    "legend": {
+      "align": "left",
+      "enabled": true,
+      "floating": true,
+      "layout": "vertical",
+      "verticalAlign": "bottom",
+    },
+    "plotOptions": {
+      "column": {
+        "groupPadding": 0.09,
+      },
+      "series": {
+        "borderWidth": 0,
+        "grouping": false,
+        "label": {
+          "enabled": true,
+          "useHTML": true,
+        },
+        "shadow": false,
+      },
+    },
+    "series": [
+      {
+        "colorIndex": 2,
+        "dataLabels": {
+          "enabled": true,
+          "formatter": "function() { return dataLabelFormatter(this); }",
+          "useHTML": true,
+        },
+        "id": "budget",
+        "name": "Budget",
+        "pointPadding": 0,
+        "useHTML": true,
+      },
+      {
+        "colorIndex": 1,
+        "dataLabels": {
+          "enabled": true,
+          "formatter": "function() { return dataLabelFormatter(this); }",
+          "useHTML": true,
+          "y": 30,
+        },
+        "id": "actuals",
+        "name": "Actuals",
+        "pointPadding": 0.26,
+        "useHTML": true,
+      },
+    ],
+    "title": {
+      "text": "Test Chart",
+      "useHTML": true,
+    },
+    "tooltip": {
+      "outside": true,
+      "shared": true,
+      "stickOnContact": true,
+      "valueDecimals": 2,
+    },
+    "xAxis": {
+      "events": {
+        "afterSetExtremes": "function(event) { try { setCaptionFromType(this.chart, event, options.captionType, valueFormatter); } catch (e) { console.warn(\`Failed calculating stats for \${options.metricColumn}, \${options.facet}:\`, e); this.chart.setCaption({ text: \`<table class="ba-chartstats-table"><tr><td>[\${e}]</td></tr></table>\` }); } }",
+      },
+      "max": undefined,
+      "min": undefined,
+      "reversed": undefined,
+      "title": {
+        "text": "Fiscal Year End",
+      },
+      "type": "category",
+    },
+    "yAxis": {
+      "crosshair": true,
+      "max": undefined,
+      "min": undefined,
+      "minorTickInterval": "auto",
+      "tickAmount": 5,
+      "title": {
+        "text": "$",
+      },
+      "type": "linear",
+    },
+  },
+  "connector": {
+    "columnAssignment": [
+      {
+        "data": {
+          "name": "class_of",
+          "y": "sps_amount_expenditures_27_budget",
+        },
+        "seriesId": "budget",
+      },
+      {
+        "data": {
+          "name": "class_of",
+          "y": "sps_amount_expenditures_27_actuals",
+        },
+        "seriesId": "actuals",
+      },
+    ],
+    "id": "test-connector",
+  },
+  "renderTo": "test-cell",
+  "sync": {
+    "extremes": true,
+    "highlight": true,
+    "visibility": true,
+  },
+  "type": "Highcharts",
+}
+`;
+
+exports[`makeBudgetActualsChartConfig builds a two-series column chart 1`] = `
+{
+  "chartOptions": {
+    "caption": {
+      "align": "right",
+      "useHTML": true,
+    },
+    "chart": {
+      "animation": false,
+      "shadow": false,
+      "styledMode": true,
+      "type": "column",
+      "zooming": {
+        "resetButton": {
+          "position": {
+            "align": "left",
+            "verticalAlign": "top",
+            "x": 5,
+            "y": 5,
+          },
+          "relativeTo": "chart",
+          "theme": {
+            "height": 5,
+            "width": 70,
+          },
+        },
+        "type": "x",
+      },
+    },
+    "credits": {
+      "enabled": false,
+    },
+    "exporting": {
+      "allowHtml": true,
+      "chartOptions": {
+        "chart": {
+          "style": {
+            "fontFamily": "monospace",
+          },
+        },
+      },
+    },
+    "legend": {
+      "align": "left",
+      "enabled": true,
+      "floating": true,
+      "layout": "vertical",
+      "verticalAlign": "bottom",
+    },
+    "plotOptions": {
+      "column": {
+        "groupPadding": 0.09,
+      },
+      "series": {
+        "borderWidth": 0,
+        "grouping": false,
+        "label": {
+          "enabled": true,
+          "useHTML": true,
+        },
+        "shadow": false,
+      },
+    },
+    "series": [
+      {
+        "colorIndex": 2,
+        "dataLabels": {
+          "enabled": true,
+          "formatter": "function() { return dataLabelFormatter(this); }",
+          "useHTML": true,
+        },
+        "id": "budget",
+        "name": "Budget",
+        "pointPadding": 0,
+        "useHTML": true,
+      },
+      {
+        "colorIndex": 1,
+        "dataLabels": {
+          "enabled": true,
+          "formatter": "function() { return dataLabelFormatter(this); }",
+          "useHTML": true,
+          "y": 30,
+        },
+        "id": "actuals",
+        "name": "Actuals",
+        "pointPadding": 0.26,
+        "useHTML": true,
+      },
+    ],
+    "title": {
+      "text": "Test Chart",
+      "useHTML": true,
+    },
+    "tooltip": {
+      "outside": true,
+      "shared": true,
+      "stickOnContact": true,
+      "valueDecimals": 2,
+    },
+    "xAxis": {
+      "events": {
+        "afterSetExtremes": "function(event) { try { setCaptionFromType(this.chart, event, options.captionType, valueFormatter); } catch (e) { console.warn(\`Failed calculating stats for \${options.metricColumn}, \${options.facet}:\`, e); this.chart.setCaption({ text: \`<table class="ba-chartstats-table"><tr><td>[\${e}]</td></tr></table>\` }); } }",
+      },
+      "max": undefined,
+      "min": undefined,
+      "reversed": undefined,
+      "title": {
+        "text": "Fiscal Year End",
+      },
+      "type": "category",
+    },
+    "yAxis": {
+      "crosshair": true,
+      "max": undefined,
+      "min": undefined,
+      "minorTickInterval": "auto",
+      "tickAmount": 5,
+      "title": {
+        "text": "$",
+      },
+      "type": "linear",
+    },
+  },
+  "connector": {
+    "columnAssignment": [
+      {
+        "data": {
+          "name": "class_of",
+          "y": "sps_amount_expenditures_budget",
+        },
+        "seriesId": "budget",
+      },
+      {
+        "data": {
+          "name": "class_of",
+          "y": "sps_amount_expenditures_actuals",
+        },
+        "seriesId": "actuals",
+      },
+    ],
+    "id": "test-connector",
+  },
+  "renderTo": "test-cell",
+  "sync": {
+    "extremes": true,
+    "highlight": true,
+    "visibility": true,
+  },
+  "type": "Highcharts",
+}
+`;
+
+exports[`makeBudgetActualsChartConfig handles pctexp axes and stats captions 1`] = `
+{
+  "chartOptions": {
+    "caption": {
+      "align": "right",
+      "useHTML": true,
+    },
+    "chart": {
+      "animation": false,
+      "shadow": false,
+      "styledMode": true,
+      "type": "column",
+      "zooming": {
+        "resetButton": {
+          "position": {
+            "align": "left",
+            "verticalAlign": "top",
+            "x": 5,
+            "y": 5,
+          },
+          "relativeTo": "chart",
+          "theme": {
+            "height": 5,
+            "width": 70,
+          },
+        },
+        "type": "x",
+      },
+    },
+    "credits": {
+      "enabled": false,
+    },
+    "exporting": {
+      "allowHtml": true,
+      "chartOptions": {
+        "chart": {
+          "style": {
+            "fontFamily": "monospace",
+          },
+        },
+      },
+    },
+    "legend": {
+      "align": "left",
+      "enabled": true,
+      "floating": true,
+      "layout": "vertical",
+      "verticalAlign": "bottom",
+    },
+    "plotOptions": {
+      "column": {
+        "groupPadding": 0.09,
+      },
+      "series": {
+        "borderWidth": 0,
+        "grouping": false,
+        "label": {
+          "enabled": true,
+          "useHTML": true,
+        },
+        "shadow": false,
+      },
+    },
+    "series": [
+      {
+        "colorIndex": 2,
+        "dataLabels": {
+          "enabled": true,
+          "formatter": "function() { return dataLabelFormatter(this); }",
+          "useHTML": true,
+        },
+        "id": "budget",
+        "name": "Budget",
+        "pointPadding": 0,
+        "useHTML": true,
+      },
+      {
+        "colorIndex": 1,
+        "dataLabels": {
+          "enabled": true,
+          "formatter": "function() { return dataLabelFormatter(this); }",
+          "useHTML": true,
+          "y": 30,
+        },
+        "id": "actuals",
+        "name": "Actuals",
+        "pointPadding": 0.26,
+        "useHTML": true,
+      },
+    ],
+    "title": {
+      "text": "Test Chart",
+      "useHTML": true,
+    },
+    "tooltip": {
+      "outside": true,
+      "shared": true,
+      "stickOnContact": true,
+      "valueDecimals": 2,
+    },
+    "xAxis": {
+      "events": {
+        "afterSetExtremes": "function(event) { try { setCaptionFromType(this.chart, event, options.captionType, valueFormatter); } catch (e) { console.warn(\`Failed calculating stats for \${options.metricColumn}, \${options.facet}:\`, e); this.chart.setCaption({ text: \`<table class="ba-chartstats-table"><tr><td>[\${e}]</td></tr></table>\` }); } }",
+      },
+      "max": undefined,
+      "min": undefined,
+      "reversed": undefined,
+      "title": {
+        "text": "Fiscal Year End",
+      },
+      "type": "category",
+    },
+    "yAxis": {
+      "crosshair": true,
+      "max": 99,
+      "min": 5,
+      "minorTickInterval": "auto",
+      "tickAmount": 5,
+      "title": {
+        "text": "% of expenditures",
+      },
+      "type": "linear",
+    },
+  },
+  "connector": {
+    "columnAssignment": [
+      {
+        "data": {
+          "name": "class_of",
+          "y": "sps_amount_expenditures_budget",
+        },
+        "seriesId": "budget",
+      },
+      {
+        "data": {
+          "name": "class_of",
+          "y": "sps_amount_expenditures_actuals",
+        },
+        "seriesId": "actuals",
+      },
+    ],
+    "id": "test-connector",
+  },
+  "renderTo": "test-cell",
+  "sync": {
+    "extremes": true,
+    "highlight": true,
+    "visibility": true,
+  },
+  "type": "Highcharts",
+}
+`;
+
+exports[`makeBudgetActualsContextChartConfig builds a stripped-down context chart 1`] = `
+{
+  "chartOptions": {
+    "caption": {
+      "align": "right",
+      "useHTML": true,
+    },
+    "chart": {
+      "animation": false,
+      "shadow": false,
+      "styledMode": true,
+      "type": "column",
+      "zooming": {
+        "resetButton": {
+          "position": {
+            "align": "left",
+            "verticalAlign": "top",
+            "x": 5,
+            "y": 5,
+          },
+          "relativeTo": "chart",
+          "theme": {
+            "height": 5,
+            "width": 70,
+          },
+        },
+        "type": "x",
+      },
+    },
+    "credits": {
+      "enabled": false,
+    },
+    "exporting": {
+      "allowHtml": true,
+      "chartOptions": {
+        "chart": {
+          "style": {
+            "fontFamily": "monospace",
+          },
+        },
+      },
+    },
+    "legend": {
+      "align": "left",
+      "enabled": false,
+      "floating": true,
+      "layout": "vertical",
+      "verticalAlign": "bottom",
+    },
+    "plotOptions": {
+      "column": {
+        "groupPadding": 0.09,
+      },
+      "series": {
+        "borderWidth": 0,
+        "grouping": false,
+        "label": {
+          "enabled": false,
+          "useHTML": true,
+        },
+        "shadow": false,
+      },
+    },
+    "series": [
+      {
+        "colorIndex": 2,
+        "id": "budget",
+        "name": "Budget",
+        "pointPadding": 0,
+        "useHTML": true,
+      },
+      {
+        "colorIndex": 1,
+        "id": "actuals",
+        "name": "Actuals",
+        "pointPadding": 0.26,
+        "useHTML": true,
+      },
+    ],
+    "title": {
+      "text": "<div class='chart-title'>
+    <h3>Test Chart ($)</h3>
+    
+  </div>",
+      "useHTML": true,
+    },
+    "tooltip": {
+      "outside": true,
+      "shared": true,
+      "stickOnContact": true,
+      "valueDecimals": 2,
+    },
+    "xAxis": {
+      "events": {},
+      "max": undefined,
+      "min": undefined,
+      "reversed": undefined,
+      "type": "category",
+    },
+    "yAxis": {
+      "crosshair": true,
+      "max": undefined,
+      "min": undefined,
+      "minorTickInterval": "auto",
+      "tickAmount": 5,
+      "title": {
+        "text": "",
+      },
+      "type": "linear",
+    },
+  },
+  "connector": {
+    "columnAssignment": [
+      {
+        "data": {
+          "name": "class_of",
+          "y": "sps_amount_expenditures_budget",
+        },
+        "seriesId": "budget",
+      },
+      {
+        "data": {
+          "name": "class_of",
+          "y": "sps_amount_expenditures_actuals",
+        },
+        "seriesId": "actuals",
+      },
+    ],
+    "id": "test-connector",
+  },
+  "renderTo": "test-cell",
+  "sync": {
+    "extremes": true,
+    "highlight": true,
+    "visibility": true,
+  },
+  "type": "Highcharts",
+}
+`;
+
+exports[`makeContextCell builds a context cell with bounds 1`] = `
+{
+  "chartOptions": {
+    "caption": {
+      "align": "right",
+      "useHTML": true,
+    },
+    "chart": {
+      "animation": false,
+      "shadow": false,
+      "styledMode": true,
+      "type": "column",
+      "zooming": {
+        "resetButton": {
+          "position": {
+            "align": "left",
+            "verticalAlign": "top",
+            "x": 5,
+            "y": 5,
+          },
+          "relativeTo": "chart",
+          "theme": {
+            "height": 5,
+            "width": 70,
+          },
+        },
+        "type": "x",
+      },
+    },
+    "credits": {
+      "enabled": false,
+    },
+    "exporting": {
+      "allowHtml": true,
+      "chartOptions": {
+        "chart": {
+          "style": {
+            "fontFamily": "monospace",
+          },
+        },
+      },
+    },
+    "legend": {
+      "align": "left",
+      "enabled": false,
+      "floating": true,
+      "layout": "vertical",
+      "verticalAlign": "bottom",
+    },
+    "plotOptions": {
+      "column": {
+        "groupPadding": 0.09,
+      },
+      "series": {
+        "borderWidth": 0,
+        "grouping": false,
+        "label": {
+          "enabled": false,
+          "useHTML": true,
+        },
+        "shadow": false,
+      },
+    },
+    "series": [
+      {
+        "colorIndex": 2,
+        "id": "budget",
+        "name": "Budget",
+        "pointPadding": 0,
+        "useHTML": true,
+      },
+      {
+        "colorIndex": 1,
+        "id": "actuals",
+        "name": "Actuals",
+        "pointPadding": 0.26,
+        "useHTML": true,
+      },
+    ],
+    "title": {
+      "text": "<div class='chart-title'>
+    <h3>Cashflow ($)</h3>
+    
+  </div>",
+      "useHTML": true,
+    },
+    "tooltip": {
+      "outside": true,
+      "shared": true,
+      "stickOnContact": true,
+      "valueDecimals": 2,
+    },
+    "xAxis": {
+      "events": {},
+      "max": undefined,
+      "min": undefined,
+      "reversed": undefined,
+      "type": "category",
+    },
+    "yAxis": {
+      "crosshair": true,
+      "max": 100,
+      "min": -5,
+      "minorTickInterval": "auto",
+      "tickAmount": 5,
+      "title": {
+        "text": "",
+      },
+      "type": "linear",
+    },
+  },
+  "connector": {
+    "columnAssignment": [
+      {
+        "data": {
+          "name": "class_of",
+          "y": "context_amount_cashflow_budget",
+        },
+        "seriesId": "budget",
+      },
+      {
+        "data": {
+          "name": "class_of",
+          "y": "context_amount_cashflow_actuals",
+        },
+        "seriesId": "actuals",
+      },
+    ],
+    "id": "test-connector",
+  },
+  "renderTo": "context-cashflow",
+  "sync": {
+    "extremes": false,
+    "highlight": true,
+    "visibility": true,
+  },
+  "type": "Highcharts",
+}
+`;
+
+exports[`makeContextCell builds a context cell without bounds 1`] = `
+{
+  "chartOptions": {
+    "caption": {
+      "align": "right",
+      "useHTML": true,
+    },
+    "chart": {
+      "animation": false,
+      "shadow": false,
+      "styledMode": true,
+      "type": "column",
+      "zooming": {
+        "resetButton": {
+          "position": {
+            "align": "left",
+            "verticalAlign": "top",
+            "x": 5,
+            "y": 5,
+          },
+          "relativeTo": "chart",
+          "theme": {
+            "height": 5,
+            "width": 70,
+          },
+        },
+        "type": "x",
+      },
+    },
+    "credits": {
+      "enabled": false,
+    },
+    "exporting": {
+      "allowHtml": true,
+      "chartOptions": {
+        "chart": {
+          "style": {
+            "fontFamily": "monospace",
+          },
+        },
+      },
+    },
+    "legend": {
+      "align": "left",
+      "enabled": false,
+      "floating": true,
+      "layout": "vertical",
+      "verticalAlign": "bottom",
+    },
+    "plotOptions": {
+      "column": {
+        "groupPadding": 0.09,
+      },
+      "series": {
+        "borderWidth": 0,
+        "grouping": false,
+        "label": {
+          "enabled": false,
+          "useHTML": true,
+        },
+        "shadow": false,
+      },
+    },
+    "series": [
+      {
+        "colorIndex": 2,
+        "id": "budget",
+        "name": "Budget",
+        "pointPadding": 0,
+        "useHTML": true,
+      },
+      {
+        "colorIndex": 1,
+        "id": "actuals",
+        "name": "Actuals",
+        "pointPadding": 0.26,
+        "useHTML": true,
+      },
+    ],
+    "title": {
+      "text": "<div class='chart-title'>
+    <h3>Staffing (FTE)</h3>
+    
+  </div>",
+      "useHTML": true,
+    },
+    "tooltip": {
+      "outside": true,
+      "shared": true,
+      "stickOnContact": true,
+      "valueDecimals": undefined,
+    },
+    "xAxis": {
+      "events": {},
+      "max": undefined,
+      "min": undefined,
+      "reversed": undefined,
+      "type": "category",
+    },
+    "yAxis": {
+      "crosshair": true,
+      "max": undefined,
+      "min": NaN,
+      "minorTickInterval": "auto",
+      "tickAmount": 5,
+      "title": {
+        "text": "",
+      },
+      "type": "linear",
+    },
+  },
+  "connector": {
+    "columnAssignment": [
+      {
+        "data": {
+          "name": "class_of",
+          "y": "context_fte_staffing_budget",
+        },
+        "seriesId": "budget",
+      },
+      {
+        "data": {
+          "name": "class_of",
+          "y": "context_fte_staffing_actuals",
+        },
+        "seriesId": "actuals",
+      },
+    ],
+    "id": "test-connector",
+  },
+  "renderTo": "context-fte",
+  "sync": {
+    "extremes": false,
+    "highlight": true,
+    "visibility": true,
+  },
+  "type": "Highcharts",
+}
+`;
+
+exports[`makeCorrelationChartConfig builds a scatter chart per series def 1`] = `
+{
+  "chartOptions": {
+    "chart": {
+      "animation": false,
+      "styledMode": true,
+      "type": "scatter",
+      "zooming": {
+        "resetButton": {
+          "position": {
+            "align": "left",
+            "verticalAlign": "top",
+            "x": 5,
+            "y": 5,
+          },
+          "relativeTo": "chart",
+          "theme": {
+            "height": 5,
+            "width": 70,
+          },
+        },
+        "type": "x",
+      },
+    },
+    "credits": {
+      "enabled": false,
+    },
+    "exporting": {
+      "allowHtml": true,
+      "chartOptions": {
+        "chart": {
+          "style": {
+            "fontFamily": "monospace",
+          },
+        },
+      },
+    },
+    "legend": {
+      "align": "left",
+      "enabled": true,
+      "floating": true,
+      "layout": "vertical",
+      "verticalAlign": "bottom",
+    },
+    "plotOptions": {
+      "scatter": {
+        "marker": {
+          "states": {
+            "hover": {
+              "enabled": true,
+              "lineColor": "rgb(100,100,100)",
+            },
+          },
+        },
+        "opacity": 0.5,
+      },
+      "series": {
+        "label": {
+          "enabled": true,
+          "useHTML": true,
+        },
+      },
+    },
+    "series": [
+      {
+        "colorIndex": 2,
+        "dataLabels": {
+          "allowOverlap": true,
+          "crop": false,
+          "enabled": true,
+          "format": "{point.name}",
+          "overflow": "allow",
+        },
+        "id": "budget",
+        "name": "Budget",
+      },
+      {
+        "colorIndex": 1,
+        "dataLabels": {
+          "allowOverlap": true,
+          "crop": false,
+          "enabled": true,
+          "format": "{point.name}",
+          "overflow": "allow",
+        },
+        "id": "actuals",
+        "name": "Actuals",
+      },
+    ],
+    "title": {
+      "text": "Test Chart",
+      "useHTML": true,
+    },
+    "tooltip": {
+      "outside": true,
+      "shared": true,
+      "stickOnContact": true,
+      "valueDecimals": 2,
+    },
+    "xAxis": {
+      "max": undefined,
+      "min": undefined,
+      "reversed": undefined,
+      "title": {
+        "text": "$",
+      },
+      "type": "linear",
+    },
+    "yAxis": {
+      "crosshair": true,
+      "max": undefined,
+      "min": undefined,
+      "minorTickInterval": "auto",
+      "tickAmount": 5,
+      "title": {
+        "text": "$",
+      },
+      "type": "linear",
+    },
+  },
+  "connector": {
+    "columnAssignment": [
+      {
+        "data": {
+          "marker.radius": "marker_radius",
+          "marker.symbol": "covid_shape",
+          "name": "class_of",
+          "x": "sps_amount_revenues_budget",
+          "y": "sps_amount_expenditures_budget",
+        },
+        "seriesId": "budget",
+      },
+      {
+        "data": {
+          "marker.radius": "marker_radius",
+          "marker.symbol": "covid_shape",
+          "name": "class_of",
+          "x": "sps_amount_revenues_actuals",
+          "y": "sps_amount_expenditures_actuals",
+        },
+        "seriesId": "actuals",
+      },
+    ],
+    "id": "test-connector",
+  },
+  "renderTo": "test-cell",
+  "sync": {
+    "extremes": true,
+    "highlight": true,
+    "visibility": true,
+  },
+  "type": "Highcharts",
+}
+`;
+
+exports[`makeMultiSeriesLineChartConfig builds one line per series def 1`] = `
+{
+  "chartOptions": {
+    "caption": {
+      "align": "right",
+      "useHTML": true,
+    },
+    "chart": {
+      "animation": false,
+      "shadow": false,
+      "styledMode": true,
+      "type": "line",
+      "zooming": {
+        "resetButton": {
+          "position": {
+            "align": "left",
+            "verticalAlign": "top",
+            "x": 5,
+            "y": 5,
+          },
+          "relativeTo": "chart",
+          "theme": {
+            "height": 5,
+            "width": 70,
+          },
+        },
+        "type": "x",
+      },
+    },
+    "credits": {
+      "enabled": false,
+    },
+    "exporting": {
+      "allowHtml": true,
+      "chartOptions": {
+        "chart": {
+          "style": {
+            "fontFamily": "monospace",
+          },
+        },
+      },
+    },
+    "legend": {
+      "align": "center",
+      "enabled": true,
+      "floating": false,
+      "itemDistance": 14,
+      "itemMarginBottom": 1,
+      "itemMarginTop": 1,
+      "layout": "horizontal",
+      "maxHeight": 90,
+      "padding": 6,
+      "verticalAlign": "bottom",
+    },
+    "plotOptions": {
+      "series": {
+        "label": {
+          "enabled": true,
+          "useHTML": true,
+        },
+      },
+    },
+    "series": [
+      {
+        "colorIndex": 0,
+        "id": "1_3",
+        "marker": {
+          "enabled": true,
+          "symbol": "circle",
+        },
+        "name": "Grade 3",
+      },
+      {
+        "colorIndex": 7,
+        "id": "1_4",
+        "marker": {
+          "enabled": true,
+          "symbol": "diamond",
+        },
+        "name": "Grade 4",
+      },
+    ],
+    "title": {
+      "text": "Test Chart",
+      "useHTML": true,
+    },
+    "tooltip": {
+      "outside": true,
+      "shared": true,
+      "stickOnContact": true,
+      "valueDecimals": 2,
+    },
+    "xAxis": {
+      "max": undefined,
+      "min": undefined,
+      "reversed": undefined,
+      "title": {
+        "text": "Fiscal Year End",
+      },
+      "type": "category",
+    },
+    "yAxis": {
+      "crosshair": true,
+      "max": undefined,
+      "min": undefined,
+      "minorTickInterval": "auto",
+      "tickAmount": 5,
+      "title": {
+        "text": "$",
+      },
+      "type": "linear",
+    },
+  },
+  "connector": {
+    "columnAssignment": [
+      {
+        "data": {
+          "marker.radius": "marker_radius",
+          "marker.symbol": "covid_shape",
+          "name": "class_of",
+          "y": "sps_amount_expenditures_5_1_3_actuals",
+        },
+        "seriesId": "1_3",
+      },
+      {
+        "data": {
+          "marker.radius": "marker_radius",
+          "marker.symbol": "covid_shape",
+          "name": "class_of",
+          "y": "sps_amount_expenditures_5_1_4_actuals",
+        },
+        "seriesId": "1_4",
+      },
+    ],
+    "id": "test-connector",
+  },
+  "renderTo": "test-cell",
+  "sync": {
+    "extremes": true,
+    "highlight": true,
+    "visibility": true,
+  },
+  "type": "Highcharts",
+}
+`;
