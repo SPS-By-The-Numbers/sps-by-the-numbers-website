@@ -296,6 +296,7 @@ async function main() {
   const stars = {
     kpi: {},
     efficiency: {},
+    efficiency_review: {},
     operations_allocation: {},
     quarterly_district: {},
   };
@@ -343,8 +344,9 @@ async function main() {
   indexStars("operations_allocation", "raw/stars/operations_allocation/");
   indexStars("quarterly_district", "raw/stars/quarterly_district/");
 
-  // Efficiency reviews — flat list with classification.
-  const efficiencyReviews = [];
+  // Efficiency reviews carry an extra classification segment in the filename,
+  // so they need their own parser, but they index into the chooser categories
+  // like every other report type: one file per district per year.
   for (const p of under("raw/stars/efficiency_review/", files)) {
     const file = basename(p);
     const meta = parseStarsReviewName(file);
@@ -354,20 +356,9 @@ async function main() {
       districtName: meta.districtName,
       short: meta.short,
     });
-    efficiencyReviews.push({
-      year: meta.year,
-      classification: meta.classification,
-      districtCode: meta.code,
-      districtName: meta.districtName,
-      file,
-    });
+    const byYear = (stars.efficiency_review[meta.code] ??= {});
+    if (shouldReplace(byYear[meta.year], file)) byYear[meta.year] = file;
   }
-  efficiencyReviews.sort(
-    (a, b) =>
-      a.year.localeCompare(b.year) ||
-      a.classification.localeCompare(b.classification) ||
-      a.districtName.localeCompare(b.districtName),
-  );
 
   // Sorted districts array.
   const districtsList = Array.from(districts.values()).sort((a, b) =>
@@ -377,7 +368,6 @@ async function main() {
   const transportation = {
     districts: districtsList,
     categories: stars,
-    efficiency_reviews: efficiencyReviews,
     processed: under("processed/stars/", files).map(toEntry).sort(byName),
     prr_transportation_zip: prrZip || null,
     readme:
@@ -420,15 +410,14 @@ async function main() {
     s275_years: staffing.raw_s275.length,
     odata: odata.length,
     stars_districts: districtsList.length,
-    stars_total:
-      Object.values(stars).reduce((sum, byDistrict) => {
-        for (const byYear of Object.values(byDistrict)) {
-          for (const v of Object.values(byYear)) {
-            sum += typeof v === "string" ? 1 : Object.keys(v).length;
-          }
+    stars_total: Object.values(stars).reduce((sum, byDistrict) => {
+      for (const byYear of Object.values(byDistrict)) {
+        for (const v of Object.values(byYear)) {
+          sum += typeof v === "string" ? 1 : Object.keys(v).length;
         }
-        return sum;
-      }, 0) + efficiencyReviews.length,
+      }
+      return sum;
+    }, 0),
     public_records: publicRecords.length,
     sqss: sqss.raw.length + sqss.processed.length,
     fiscal_tables: fiscal.tables.length,

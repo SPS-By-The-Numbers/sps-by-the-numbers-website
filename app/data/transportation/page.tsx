@@ -1,6 +1,4 @@
 import Link from "@mui/material/Link";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
 
 import DistrictReportChooser from "../_widgets/DistrictReportChooser";
 import FileList from "../_widgets/FileList";
@@ -24,6 +22,13 @@ const CATEGORY_DEFS = [
     dirPrefix: "raw/stars/efficiency/",
   },
   {
+    // Targeted reviews triggered by year-over-year efficiency-score moves
+    // across the 90% threshold, so most district-years have none.
+    key: "efficiency_review",
+    label: "Efficiency Review",
+    dirPrefix: "raw/stars/efficiency_review/",
+  },
+  {
     key: "operations_allocation",
     label: "Operations Allocation",
     dirPrefix: "raw/stars/operations_allocation/",
@@ -37,7 +42,6 @@ const CATEGORY_DEFS = [
 ];
 
 export default function Page() {
-  const reviews = manifest.efficiency_reviews;
   return (
     <SectionPage
       title="Transportation (STARS)"
@@ -45,9 +49,11 @@ export default function Page() {
         <>
           OSPI&apos;s Student Transportation Allocation and Reporting System
           (STARS) publishes per-district reports each school year. Use the
-          chooser below to pull up reports for a specific district, or grab
-          one of the rolled-up CSVs for cross-district analysis. The dashboards{" "}
-          <Link href="/analyses/yellow_bus_ledger.html">WA State Transportation Dashboard</Link>{" "}
+          chooser below to pull up reports for a specific district, or grab one
+          of the rolled-up CSVs for cross-district analysis. The dashboards{" "}
+          <Link href="/analyses/yellow_bus_ledger.html">
+            WA State Transportation Dashboard
+          </Link>{" "}
           and <Link href="/analyses/stars-exploiter.html">STARS Exploiter</Link>{" "}
           are both built on this data.
         </>
@@ -59,7 +65,11 @@ export default function Page() {
       >
         <DistrictReportChooser
           districts={manifest.districts}
-          categories={manifest.categories as Parameters<typeof DistrictReportChooser>[0]["categories"]}
+          categories={
+            manifest.categories as Parameters<
+              typeof DistrictReportChooser
+            >[0]["categories"]
+          }
           categoryDefs={CATEGORY_DEFS}
         />
       </Section>
@@ -71,8 +81,8 @@ export default function Page() {
           <>
             Flat tables joining every district and year — start here for
             analysis. Includes KPI, efficiency, quarterly district, operations
-            allocation, and the supporting dimension tables
-            (<code>d_stars_*</code>), each published as both AVRO and CSV.
+            allocation, and the supporting dimension tables (
+            <code>d_stars_*</code>), each published as both AVRO and CSV.
             Column-by-column documentation lives in the data-tools repository:{" "}
             <Link href={`${DATA_TOOLS_MAIN}/extractors/stars/CSV_GUIDE.md`}>
               STARS CSV guide
@@ -90,30 +100,6 @@ export default function Page() {
         }
       >
         <FileList files={manifest.processed} />
-      </Section>
-
-      <Section
-        heading="Efficiency Reviews"
-        count={reviews.length}
-        blurb="Targeted reviews triggered by year-over-year efficiency-score moves across the 90% threshold. Smaller universe than the other categories — flat list below."
-      >
-        <Stack spacing={0.5}>
-          {reviews.length === 0 && (
-            <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              No efficiency reviews on file.
-            </Typography>
-          )}
-          {reviews.map((r) => (
-            <Typography key={`${r.year}-${r.districtCode}-${r.classification}`} variant="body2">
-              <Link
-                href={`${BUCKET_PREFIX}raw/stars/efficiency_review/${r.file}`}
-              >
-                {r.year} &middot; {r.districtName} ({r.districtCode})
-              </Link>{" "}
-              <span style={{ color: "#666" }}>— {r.classification}</span>
-            </Typography>
-          ))}
-        </Stack>
       </Section>
 
       <Section
@@ -136,17 +122,6 @@ export default function Page() {
             </li>
           )}
         </ul>
-        <Typography variant="body2" component="div">
-          The full raw report corpus (~1.4 GiB of PDFs/DOCX) is bulk-mirrorable
-          with{" "}
-          <Link href="https://cloud.google.com/storage/docs/gsutil_install">
-            gsutil
-          </Link>
-          :
-          <pre style={{ background: "#f6f6f6", padding: 8, overflowX: "auto" }}>
-            {`gsutil -m rsync -r gs://sps-btn-data-all-data/raw/stars ./stars`}
-          </pre>
-        </Typography>
       </Section>
     </SectionPage>
   );
