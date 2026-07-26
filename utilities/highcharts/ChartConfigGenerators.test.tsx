@@ -1,4 +1,5 @@
 import {
+  computeVarianceStats,
   makeBaseChartConfig,
   makeBudgetActualsChartConfig,
   makeActualsLineChartConfig,
@@ -7,6 +8,7 @@ import {
   makeCorrelationChartConfig,
   makeContextCell,
 } from "utilities/highcharts/ChartConfigGenerators";
+import { BUDGET_REVISED_ACTUALS_SERIES } from "utilities/highcharts/SeriesSpecs";
 
 // The generators embed function values (formatters, afterSetExtremes
 // handlers) which jest snapshots collapse to an opaque [Function]. Replace
@@ -44,7 +46,9 @@ const BA_OPTIONS = {
 
 describe("makeBaseChartConfig", () => {
   it("builds the shared config skeleton", () => {
-    expect(serializeConfig(makeBaseChartConfig(BASE_OPTIONS))).toMatchSnapshot();
+    expect(
+      serializeConfig(makeBaseChartConfig(BASE_OPTIONS)),
+    ).toMatchSnapshot();
   });
 });
 
@@ -77,6 +81,56 @@ describe("makeBudgetActualsChartConfig", () => {
       disableLegend: true,
     });
     expect(config.chartOptions.legend.enabled).toBe(false);
+  });
+
+  it("builds a three-series chart from explicit specs", () => {
+    const config = makeBudgetActualsChartConfig({
+      ...BA_OPTIONS,
+      seriesSpecs: BUDGET_REVISED_ACTUALS_SERIES,
+    });
+    expect(config.connector.columnAssignment.map((c) => c.data.y)).toEqual([
+      "sps_amount_expenditures_budget",
+      "sps_amount_expenditures_revised",
+      "sps_amount_expenditures_actuals",
+    ]);
+    expect(
+      config.chartOptions.series.map((s) => [
+        s.id,
+        s.name,
+        s.colorIndex,
+        s.pointPadding,
+        s.dataLabels.y,
+      ]),
+    ).toEqual([
+      ["budget", "Budget", 2, 0, undefined],
+      ["revised", "Revised Budget", 3, 0.13, 30],
+      ["actuals", "Actuals", 1, 0.26, 60],
+    ]);
+  });
+
+  it("drops declared series the frame has no data for", () => {
+    // Duck-typed chartable frame: arquero is mocked out under jest, and
+    // filterSpecsWithData only needs column()/array().
+    const columns = {
+      sps_amount_expenditures_budget: [1, 2],
+      sps_amount_expenditures_revised: [null, NaN],
+      sps_amount_expenditures_actuals: [1, 2],
+    };
+    const config = makeBudgetActualsChartConfig({
+      ...BA_OPTIONS,
+      seriesSpecs: BUDGET_REVISED_ACTUALS_SERIES,
+      data: {
+        column: (name) => columns[name],
+        array: (name) => columns[name],
+      } as never,
+    });
+    expect(
+      config.chartOptions.series.map((s) => [s.id, s.pointPadding]),
+    ).toEqual([
+      ["budget", 0],
+      ["actuals", 0.26],
+    ]);
+    expect(config.chartOptions.series[1].dataLabels.y).toBe(30);
   });
 
   it("handles pctexp axes and stats captions", () => {
@@ -145,6 +199,72 @@ describe("makeCorrelationChartConfig", () => {
         }),
       ),
     ).toMatchSnapshot();
+  });
+});
+
+describe("computeVarianceStats", () => {
+  it("computes the classic single variance without a revised series", () => {
+    const rows = [
+      { x: 2022, budget: 100, actuals: 90 },
+      { x: 2023, budget: 110, actuals: 120 },
+    ];
+    expect(computeVarianceStats(rows, "Variance")).toEqual([
+      {
+        label: "Variance",
+        colored: true,
+        xVal: 2023,
+        latest: -10,
+        median: 0,
+        mean: 0,
+      },
+    ]);
+  });
+
+  it("computes Amendment and Execution deltas when revised is present", () => {
+    const rows = [
+      { x: 2022, budget: 100, revised: 110, actuals: 105 },
+      { x: 2023, budget: 200, revised: 240, actuals: 220 },
+    ];
+    const stats = computeVarianceStats(rows, "Variance");
+    expect(stats.map((s) => [s.label, s.colored, s.latest])).toEqual([
+      ["Amendment", false, 40],
+      ["Execution", true, 20],
+    ]);
+    expect(stats[0].median).toBe(25);
+    expect(stats[0].mean).toBe(25);
+  });
+
+  it("ignores years where the revised value is missing", () => {
+    // Typical current-year shape: budget filed, F-196 not yet.
+    const rows = [
+      { x: 2023, budget: 100, revised: 110, actuals: 105 },
+      { x: 2024, budget: 130, actuals: 128 },
+      { x: 2025, budget: 150 },
+    ];
+    const stats = computeVarianceStats(rows, "Variance");
+    expect(stats.map((s) => [s.label, s.xVal, s.latest])).toEqual([
+      ["Amendment", 2023, 10],
+      ["Execution", 2023, 5],
+    ]);
+  });
+
+  it("drops a delta with no finite points instead of erroring", () => {
+    // Revised exists but budget never does: Amendment can't be computed.
+    const rows = [{ x: 2023, revised: 110, actuals: 105 }];
+    expect(computeVarianceStats(rows, "Variance")).toEqual([
+      {
+        label: "Execution",
+        colored: true,
+        xVal: 2023,
+        latest: 5,
+        median: 5,
+        mean: 5,
+      },
+    ]);
+  });
+
+  it("returns nothing for an empty window", () => {
+    expect(computeVarianceStats([], "Variance")).toEqual([]);
   });
 });
 
