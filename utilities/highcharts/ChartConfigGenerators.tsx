@@ -1,10 +1,19 @@
 import { makeCurrencyFormatter } from "utilities/highcharts/utils";
+import {
+  ACTUALS_SERIES,
+  BUDGET_ACTUALS_SERIES,
+  filterSpecsWithData,
+  seriesColumnName,
+  seriesDataLabelOffset,
+  seriesPointPadding,
+} from "utilities/highcharts/SeriesSpecs";
 import { op } from "arquero";
 import * as aq from "arquero";
 import merge from "lodash.merge";
 
 import type Highcharts from "highcharts";
 import type { ColumnTable } from "arquero";
+import type { SeriesSpec } from "utilities/highcharts/SeriesSpecs";
 import type {
   CurrencyNormalization,
   StaffingNormalization,
@@ -60,6 +69,14 @@ export type BudgetActualsChartOptions = BaseChartConfigOptions & {
   xDataColumn: string;
 
   disableLegend?: boolean;
+
+  // Ordered back-to-front series list. Defaults to the classic
+  // budget/actuals pair.
+  seriesSpecs?: Array<SeriesSpec>;
+  // Chartable (pivoted) frame backing the chart. When provided, declared
+  // series whose column is absent or entirely non-finite are dropped, so
+  // e.g. Revised Budget silently disappears on metrics it can't cover.
+  data?: ColumnTable;
 };
 
 type SeriesDef = {
@@ -125,38 +142,139 @@ function generateColoredTd(value, valueFormatter) {
   return `<td class="${classes.join(" ")}">${valueFormatter(value)}</td>`;
 }
 
+// Merge each spec's series into plain per-x rows keyed by role:
+// [{x, budget?, revised?, actuals?}, ...] sorted by x. Roles beyond the
+// classic pair are optional on a chart, so they never throw when missing.
+function getSeriesRows(series, specs: Array<SeriesSpec>, minX, maxX) {
+  const byX = new Map();
+  for (const spec of specs) {
+    const noThrow = spec.role === "revised";
+    const df = getSeriesAsDf(series, spec.id, minX, maxX, noThrow);
+    if (df.numCols() === 0) {
+      continue;
+    }
+    for (const row of df.objects() as Array<Record<string, unknown>>) {
+      const entry = byX.get(row.class_of) ?? { x: row.class_of };
+      entry[spec.role] = row[spec.id];
+      byX.set(row.class_of, entry);
+    }
+  }
+  return [...byX.values()].sort((a, b) => a.x - b.x);
+}
+
+function pureMean(values: Array<number>) {
+  return values.reduce((a, b) => a + b, 0) / values.length;
+}
+
+function pureMedian(values: Array<number>) {
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2
+    ? sorted[mid]
+    : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+export type VarianceStatsRow = {
+  label: string;
+  // Whether the good/bad green/red coloring applies. The mid-year
+  // Amendment delta is directionally neutral, so it renders uncolored.
+  colored: boolean;
+  xVal: string | number;
+  latest: number;
+  median: number;
+  mean: number;
+};
+
+// Pure (arquero-free, so unit-testable) variance math over merged series
+// rows. When a revised series is present the caption shows the mid-year
+// amendment (revised - original) and the execution delta (revised -
+// actuals); otherwise the classic single budget - actuals variance,
+// labeled with defaultLabel.
+export function computeVarianceStats(
+  rows: Array<{ x; budget?; revised?; actuals? }>,
+  defaultLabel: string,
+): Array<VarianceStatsRow> {
+  const hasRevised = rows.some((r) => Number.isFinite(r.revised));
+  const deltas = hasRevised
+    ? [
+        {
+          label: "Amendment",
+          colored: false,
+          value: (r) => r.revised - r.budget,
+        },
+        {
+          label: "Execution",
+          colored: true,
+          value: (r) => r.revised - r.actuals,
+        },
+      ]
+    : [
+        {
+          label: defaultLabel,
+          colored: true,
+          value: (r) => r.budget - r.actuals,
+        },
+      ];
+
+  const result = new Array<VarianceStatsRow>();
+  for (const { label, colored, value } of deltas) {
+    const points = rows
+      .map((r) => ({ x: r.x, v: value(r) }))
+      .filter((p) => Number.isFinite(p.v));
+    if (points.length === 0) {
+      continue;
+    }
+    const values = points.map((p) => p.v);
+    result.push({
+      label,
+      colored,
+      xVal: points[points.length - 1].x,
+      latest: values[values.length - 1],
+      median: pureMedian(values),
+      mean: pureMean(values),
+    });
+  }
+  return result;
+}
+
 // To be used in the afterSetExtremes() call to generate a caption based on
 // the new x zoom level.
-function generateVarianceCaption(name, series, valueFormatter, minX, maxX) {
-  const budget_df = getSeriesAsDf(series, "budget", minX, maxX);
-  const actuals_df = getSeriesAsDf(series, "actuals", minX, maxX);
+function generateVarianceCaption(
+  name,
+  series,
+  valueFormatter,
+  minX,
+  maxX,
+  specs: Array<SeriesSpec>,
+) {
+  const rows = getSeriesRows(series, specs, minX, maxX);
+  const statsRows = computeVarianceStats(rows, name);
 
-  const variances_df = budget_df
-    .join(actuals_df)
-    .derive({ variance: (d) => d.budget - d.actuals })
-    .orderby("class_of");
-
-  const xVal = variances_df.array("class_of").at(-1);
-  const latest = variances_df.array("variance").at(-1);
-  const stats = getStats(variances_df, 'variance');
-  const median = stats.get("median", 0);
-  const mean = stats.get("mean", 0);
-
-  if ([xVal, latest, median, mean].some((v) => v === undefined)) {
+  if (statsRows.length === 0) {
     throw "incomplete data";
   }
 
+  const td = (statRow, value) =>
+    statRow.colored
+      ? generateColoredTd(value, valueFormatter)
+      : `<td>${valueFormatter(value)}</td>`;
+
+  const bodyRows = statsRows.map(
+    (statRow) => `<tr>
+      <td>${statRow.label}</td>
+      ${td(statRow, statRow.latest)}
+      ${td(statRow, statRow.median)}
+      ${td(statRow, statRow.mean)}
+    </tr>`,
+  );
+  const headerXVal = statsRows[statsRows.length - 1].xVal;
+
   return `
   <table class="ba-chartstats-table">
-    <tr>
-      <td>${name}</td>
-      ${generateColoredTd(latest, valueFormatter)}
-      ${generateColoredTd(median, valueFormatter)}
-      ${generateColoredTd(mean, valueFormatter)}
-    </tr>
+    ${bodyRows.join("\n")}
     <tr>
       <th></th>
-      <th>${xVal}</th>
+      <th>${headerXVal}</th>
       <th>median</th>
       <th>mean</th>
     </tr>
@@ -179,16 +297,20 @@ function getStats(df, columnName) {
   ));
 }
 
-function generateStatsCaption(name, series, valueFormatter, minX, maxX) {
-  const budget_df = getSeriesAsDf(series, "budget", minX, maxX, true);
-  const actuals_df = getSeriesAsDf(series, "actuals", minX, maxX, true);
-
+function generateStatsCaption(
+  name,
+  series,
+  valueFormatter,
+  minX,
+  maxX,
+  specs: Array<SeriesSpec>,
+) {
   const rows = new Array<[string, ColumnTable]>;
-  if (budget_df.size > 0) {
-    rows.push(["budget", budget_df]);
-  }
-  if (actuals_df.size > 0) {
-    rows.push(["actuals", actuals_df]);
+  for (const spec of specs) {
+    const df = getSeriesAsDf(series, spec.id, minX, maxX, true);
+    if (df.size > 0) {
+      rows.push([spec.id, df]);
+    }
   }
   const tableRowsHtml = new Array<string>;
   for (const [rowName, df] of rows) {
@@ -225,6 +347,7 @@ function setCaptionFromType(
   event: Highcharts.AxisSetExtremesEventObject,
   captionType: CaptionType,
   valueFormatter,
+  specs: Array<SeriesSpec>,
 ) : void {
   if (captionType === "variance") {
     chart.setCaption({
@@ -234,6 +357,7 @@ function setCaptionFromType(
         valueFormatter,
         event.min,
         event.max,
+        specs,
       ),
     });
   } else if (captionType === "stats") {
@@ -244,11 +368,35 @@ function setCaptionFromType(
         valueFormatter,
         event.min,
         event.max,
+        specs,
       ),
     });
   } else if (captionType === "none") {
     // Do nothing.
   }
+}
+
+// One shared afterSetExtremes handler for every caption-bearing chart type.
+// Closes over the chart's rendered spec list so captions know which series
+// exist.
+function makeAfterSetExtremesHandler(
+  options: BudgetActualsChartOptions,
+  valueFormatter,
+  specs: Array<SeriesSpec>,
+) {
+  return function (this: { chart: Highcharts.Chart }, event) {
+    try {
+      setCaptionFromType(this.chart, event, options.captionType, valueFormatter, specs);
+    } catch (e) {
+      console.warn(
+        `Failed calculating stats for ${options.metricColumn}, ${options.facet}:`,
+        e,
+      );
+      this.chart.setCaption({
+        text: `<table class="ba-chartstats-table"><tr><td>[${e}]</td></tr></table>`,
+      });
+    }
+  };
 }
 
 function inferLabel(valueFormat: ValueFormat) {
@@ -358,19 +506,6 @@ function getFormatter(format: ValueFormat, precision) : ValueFormatter {
     }
 
     return rawFormatter(v);
-  };
-}
-
-// Convert a metricColumn to names for the budget and actuals of that column.
-// TODO: Move the metricColumn + suffix out into the faceting code.
-function getBAColumns(metricColumn, facet) {
-  // Non-falsy check: facet codes can be the literal number 0 (e.g. an
-  // unassigned ms_assignment bucket), which a `truthy` check would
-  // collapse into an empty realFacet and break the column lookup.
-  const realFacet = (facet != null && facet !== "") ? `_${facet}` : "";
-  return {
-    budgetColumn: `${metricColumn}${realFacet}_budget`,
-    actualsColumn: `${metricColumn}${realFacet}_actuals`,
   };
 }
 
@@ -491,13 +626,16 @@ export function makeBaseChartConfig(options: BaseChartConfigOptions) {
   };
 }
 
-// Generates one ChartConfiguration
+// Generates one ChartConfiguration: an N-series nested-overlay column chart
+// (widest bar in back, narrowest in front) driven by options.seriesSpecs.
 export function makeBudgetActualsChartConfig(
   options: BudgetActualsChartOptions,
 ) {
-  const { budgetColumn, actualsColumn } = getBAColumns(
+  const specs = filterSpecsWithData(
+    options.data,
     options.metricColumn,
     options.facet,
+    options.seriesSpecs ?? BUDGET_ACTUALS_SERIES,
   );
 
   const baseChartConfig = makeBaseChartConfig(options);
@@ -510,24 +648,34 @@ export function makeBudgetActualsChartConfig(
     return valueFormatter(point.y);
   };
 
+  const columnAssignment = specs.map((spec) => ({
+    seriesId: spec.id,
+    data: {
+      name: options.xDataColumn,
+      y: seriesColumnName(options.metricColumn, options.facet, spec.columnSuffix),
+    },
+  }));
+
+  const series = specs.map((spec, i) => ({
+    id: spec.id,
+    name: spec.label,
+    useHTML: true,
+    dataLabels: {
+      useHTML: true,
+      enabled: true,
+      formatter: function () {
+        return dataLabelFormatter(this);
+      },
+      // Tier 0 (back bar) keeps the Highcharts default label position.
+      ...(i > 0 ? { y: seriesDataLabelOffset(i) } : {}),
+    },
+    colorIndex: spec.colorIndex,
+    pointPadding: seriesPointPadding(i, specs.length),
+  }));
+
   const config = merge(baseChartConfig, {
     connector: {
-      columnAssignment: [
-        {
-          seriesId: "budget",
-          data: {
-            name: options.xDataColumn,
-            y: budgetColumn,
-          },
-        },
-        {
-          seriesId: "actuals",
-          data: {
-            name: options.xDataColumn,
-            y: actualsColumn,
-          },
-        },
-      ],
+      columnAssignment,
     },
     chartOptions: {
       chart: {
@@ -536,52 +684,14 @@ export function makeBudgetActualsChartConfig(
       },
       xAxis: {
         events: {
-          afterSetExtremes: function (event) {
-            try {
-              setCaptionFromType(this.chart, event, options.captionType, valueFormatter);
-            } catch (e) {
-              console.warn(
-                `Failed calculating stats for ${options.metricColumn}, ${options.facet}:`,
-                e,
-              );
-              this.chart.setCaption({
-                text: `<table class="ba-chartstats-table"><tr><td>[${e}]</td></tr></table>`,
-              });
-            }
-          },
+          afterSetExtremes: makeAfterSetExtremesHandler(
+            options,
+            valueFormatter,
+            specs,
+          ),
         },
       },
-      series: [
-        {
-          id: "budget",
-          name: "Budget",
-          useHTML: true,
-          dataLabels: {
-            useHTML: true,
-            enabled: true,
-            formatter: function () {
-              return dataLabelFormatter(this);
-            },
-          },
-          colorIndex: 2,
-          pointPadding: 0,
-        },
-        {
-          id: "actuals",
-          name: "Actuals",
-          useHTML: true,
-          dataLabels: {
-            useHTML: true,
-            enabled: true,
-            formatter: function () {
-              return dataLabelFormatter(this);
-            },
-            y: 30,
-          },
-          colorIndex: 1,
-          pointPadding: 0.26,
-        },
-      ],
+      series,
       plotOptions: {
         column: {
           groupPadding: 0.09,
@@ -625,16 +735,16 @@ export function makeMultiSeriesLineChartConfig(
   },
 ) {
   const baseChartConfig = makeBaseChartConfig(options);
-  // Non-falsy check: facet codes can be the literal number 0 (e.g. an
-  // unassigned ms_assignment bucket), which a `truthy` check would
-  // collapse into an empty realFacet and break the column lookup.
-  const realFacet = (options.facet != null && options.facet !== "") ? `_${options.facet}` : "";
 
   const columnAssignment = options.seriesDefs.map((def) => ({
     seriesId: def.key,
     data: {
       name: options.xDataColumn,
-      y: `${options.metricColumn}${realFacet}_${def.key}_actuals`,
+      y: seriesColumnName(
+        options.metricColumn,
+        options.facet,
+        `${def.key}_actuals`,
+      ),
       ...(options.useCovidMarker ? {
         "marker.radius": "marker_radius",
         "marker.symbol": "covid_shape",
@@ -698,11 +808,7 @@ export function makeMultiSeriesLineChartConfig(
 export function makeActualsLineChartConfig(
   options: BudgetActualsChartOptions,
 ) {
-  const { actualsColumn } = getBAColumns(
-    options.metricColumn,
-    options.facet,
-  );
-
+  const specs = [ACTUALS_SERIES];
   const baseChartConfig = makeBaseChartConfig(options);
 
   const valueFormat = options.yValueFormat;
@@ -711,17 +817,19 @@ export function makeActualsLineChartConfig(
 
   const config = merge(baseChartConfig, {
     connector: {
-      columnAssignment: [
-        {
-          seriesId: "actuals",
-          data: {
-            name: options.xDataColumn,
-            y: actualsColumn,
-            "marker.radius": "marker_radius",
-            "marker.symbol": "covid_shape",
-          },
+      columnAssignment: specs.map((spec) => ({
+        seriesId: spec.id,
+        data: {
+          name: options.xDataColumn,
+          y: seriesColumnName(
+            options.metricColumn,
+            options.facet,
+            spec.columnSuffix,
+          ),
+          "marker.radius": "marker_radius",
+          "marker.symbol": "covid_shape",
         },
-      ],
+      })),
     },
     chartOptions: {
       chart: {
@@ -730,31 +838,21 @@ export function makeActualsLineChartConfig(
       },
       xAxis: {
         events: {
-          afterSetExtremes: function (event) {
-            try {
-              setCaptionFromType(this.chart, event, options.captionType, valueFormatter);
-            } catch (e) {
-              console.warn(
-                `Failed calculating stats for ${options.metricColumn}, ${options.facet}:`,
-                e,
-              );
-              this.chart.setCaption({
-                text: `<table class="ba-chartstats-table"><tr><td>[${e}]</td></tr></table>`,
-              });
-            }
-          },
+          afterSetExtremes: makeAfterSetExtremesHandler(
+            options,
+            valueFormatter,
+            specs,
+          ),
         },
       },
-      series: [
-        {
-          id: "actuals",
-          name: "Actuals",
-          colorIndex: 1,
-          marker: {
-            enabled: true,
-          },
+      series: specs.map((spec) => ({
+        id: spec.id,
+        name: spec.label,
+        colorIndex: spec.colorIndex,
+        marker: {
+          enabled: true,
         },
-      ],
+      })),
       caption: {
         useHTML: true,
         align: "right",
@@ -899,6 +997,7 @@ export function makeContextCell(
   yValueFormat,
   yBounds,
   yLabel?: string,
+  seriesOptions?: Pick<BudgetActualsChartOptions, "seriesSpecs" | "data">,
 ) {
   const cell = makeBudgetActualsContextChartConfig({
     renderTo,
@@ -917,6 +1016,8 @@ export function makeContextCell(
     // Ensure 0 min unless negative.
     yMin: Math.min(0, yBounds?.min),
     yMax: yBounds?.max,
+
+    ...(seriesOptions ?? {}),
   });
 
   cell.sync.extremes = false;

@@ -79,7 +79,7 @@ exports[`makeActualsLineChartConfig builds a single actuals line 1`] = `
     },
     "xAxis": {
       "events": {
-        "afterSetExtremes": "function(event) { try { setCaptionFromType(this.chart, event, options.captionType, valueFormatter); } catch (e) { console.warn(\`Failed calculating stats for \${options.metricColumn}, \${options.facet}:\`, e); this.chart.setCaption({ text: \`<table class="ba-chartstats-table"><tr><td>[\${e}]</td></tr></table>\` }); } }",
+        "afterSetExtremes": "function(event) { try { setCaptionFromType(this.chart, event, options.captionType, valueFormatter, specs); } catch (e) { console.warn(\`Failed calculating stats for \${options.metricColumn}, \${options.facet}:\`, e); this.chart.setCaption({ text: \`<table class="ba-chartstats-table"><tr><td>[\${e}]</td></tr></table>\` }); } }",
       },
       "max": undefined,
       "min": undefined,
@@ -322,7 +322,7 @@ exports[`makeBudgetActualsChartConfig appends the facet to column names 1`] = `
     },
     "xAxis": {
       "events": {
-        "afterSetExtremes": "function(event) { try { setCaptionFromType(this.chart, event, options.captionType, valueFormatter); } catch (e) { console.warn(\`Failed calculating stats for \${options.metricColumn}, \${options.facet}:\`, e); this.chart.setCaption({ text: \`<table class="ba-chartstats-table"><tr><td>[\${e}]</td></tr></table>\` }); } }",
+        "afterSetExtremes": "function(event) { try { setCaptionFromType(this.chart, event, options.captionType, valueFormatter, specs); } catch (e) { console.warn(\`Failed calculating stats for \${options.metricColumn}, \${options.facet}:\`, e); this.chart.setCaption({ text: \`<table class="ba-chartstats-table"><tr><td>[\${e}]</td></tr></table>\` }); } }",
       },
       "max": undefined,
       "min": undefined,
@@ -475,7 +475,7 @@ exports[`makeBudgetActualsChartConfig builds a two-series column chart 1`] = `
     },
     "xAxis": {
       "events": {
-        "afterSetExtremes": "function(event) { try { setCaptionFromType(this.chart, event, options.captionType, valueFormatter); } catch (e) { console.warn(\`Failed calculating stats for \${options.metricColumn}, \${options.facet}:\`, e); this.chart.setCaption({ text: \`<table class="ba-chartstats-table"><tr><td>[\${e}]</td></tr></table>\` }); } }",
+        "afterSetExtremes": "function(event) { try { setCaptionFromType(this.chart, event, options.captionType, valueFormatter, specs); } catch (e) { console.warn(\`Failed calculating stats for \${options.metricColumn}, \${options.facet}:\`, e); this.chart.setCaption({ text: \`<table class="ba-chartstats-table"><tr><td>[\${e}]</td></tr></table>\` }); } }",
       },
       "max": undefined,
       "min": undefined,
@@ -628,7 +628,7 @@ exports[`makeBudgetActualsChartConfig handles pctexp axes and stats captions 1`]
     },
     "xAxis": {
       "events": {
-        "afterSetExtremes": "function(event) { try { setCaptionFromType(this.chart, event, options.captionType, valueFormatter); } catch (e) { console.warn(\`Failed calculating stats for \${options.metricColumn}, \${options.facet}:\`, e); this.chart.setCaption({ text: \`<table class="ba-chartstats-table"><tr><td>[\${e}]</td></tr></table>\` }); } }",
+        "afterSetExtremes": "function(event) { try { setCaptionFromType(this.chart, event, options.captionType, valueFormatter, specs); } catch (e) { console.warn(\`Failed calculating stats for \${options.metricColumn}, \${options.facet}:\`, e); this.chart.setCaption({ text: \`<table class="ba-chartstats-table"><tr><td>[\${e}]</td></tr></table>\` }); } }",
       },
       "max": undefined,
       "min": undefined,

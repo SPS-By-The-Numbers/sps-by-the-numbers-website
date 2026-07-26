@@ -1,6 +1,7 @@
 import * as aq from "arquero";
 import { op } from "arquero";
 import { makeDatasetFacetedDashboard } from "utilities/highcharts/FacetedDashboard";
+import { SERIES_COLUMN_SUFFIXES } from "utilities/highcharts/SeriesSpecs";
 
 import type { ColumnTable } from "arquero";
 
@@ -106,35 +107,25 @@ function get1ValueDataBounds(df, name) {
   };
 }
 
-function get2ValueDataBounds(df, a_name, b_name) {
-  const minMaxDf = df.params({ a_name, b_name }).rollup({
-    min_a: (d, $) => op.min(d[$.a_name]),
-    max_a: (d, $) => op.max(d[$.a_name]),
-    min_b: (d, $) => op.min(d[$.b_name]),
-    max_b: (d, $) => op.max(d[$.b_name]),
-  });
-
+// Union of per-column bounds across every named column.
+function getNValueDataBounds(df, names: Array<string>) {
+  const bounds = names.map((name) => get1ValueDataBounds(df, name));
   return {
-    min: finiteMin([minMaxDf.get("min_a", 0), minMaxDf.get("min_b", 0)]),
-    max: finiteMax([minMaxDf.get("max_a", 0), minMaxDf.get("max_b", 0)]),
+    min: finiteMin(bounds.map((b) => b.min)),
+    max: finiteMax(bounds.map((b) => b.max)),
   };
 }
 
-// Returns the min/max value for columnRoot in a budget/actual name format. Used for setting
-// yAxis bounds.
+// Returns the min/max value for columnRoot across every series-suffixed
+// column present (`<root>_actuals` / `_budget` / `_revised`). Used for
+// setting yAxis bounds.
 export function getDataBounds(df, columnRoot) {
-  const a_name = `${columnRoot}_actuals`;
-  const b_name = `${columnRoot}_budget`;
+  const seriesColumns = SERIES_COLUMN_SUFFIXES.map(
+    (suffix) => `${columnRoot}_${suffix}`,
+  ).filter((name) => df.column(name));
 
-  if (df.column(a_name) && df.column(b_name)) {
-    // Budget Actuals case.
-    return get2ValueDataBounds(df, a_name, b_name);
-  } else if (df.column(a_name)) {
-    // Actuals only case.
-    return get1ValueDataBounds(df, a_name);
-  } else if (df.column(b_name)) {
-    // Budget only case.
-    return get1ValueDataBounds(df, b_name);
+  if (seriesColumns.length > 0) {
+    return getNValueDataBounds(df, seriesColumns);
   }
 
   if (df.column(columnRoot)) {
@@ -160,24 +151,26 @@ function makeFacetYBounds(facetOrder, metricName, expandedAllSettings, data) {
         metricName,
         f.code,
       );
-      const directActuals = `${columnRoot}_actuals`;
-      const directBudget = `${columnRoot}_budget`;
-      if (data.column(directActuals) || data.column(directBudget)) {
+      const suffixes = SERIES_COLUMN_SUFFIXES.map((s) => `_${s}`);
+      const hasDirect = suffixes.some((suffix) =>
+        data.column(`${columnRoot}${suffix}`),
+      );
+      if (hasDirect) {
         // Single-line chart — bounds come straight from the
-        // <columnRoot>_actuals / _budget pair.
+        // <columnRoot>_<series> columns.
         const facetBounds = getDataBounds(data, columnRoot);
         bounds.min = Math.min(bounds.min, facetBounds.min);
         bounds.max = Math.max(bounds.max, facetBounds.max);
       } else {
         // Multi-series chart — scan every column starting with
-        // <columnRoot>_ and ending with _actuals/_budget so each
+        // <columnRoot>_ and ending with a series suffix so each
         // (facet, series) pair contributes to the y-axis range.
         const prefix = `${columnRoot}_`;
         for (const col of allColumns) {
           if (!col.startsWith(prefix)) continue;
-          if (col.endsWith("_actuals") || col.endsWith("_budget")) {
-            const suffixLength = col.endsWith("_actuals") ? "_actuals".length : "_budget".length;
-            const seriesRoot = col.slice(0, -suffixLength);
+          const suffix = suffixes.find((s) => col.endsWith(s));
+          if (suffix) {
+            const seriesRoot = col.slice(0, -suffix.length);
             const seriesBounds = getDataBounds(data, seriesRoot);
             bounds.min = Math.min(bounds.min, seriesBounds.min);
             bounds.max = Math.max(bounds.max, seriesBounds.max);
