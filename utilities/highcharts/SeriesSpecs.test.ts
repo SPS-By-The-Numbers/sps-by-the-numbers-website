@@ -110,10 +110,10 @@ describe("seriesPointPadding", () => {
     expect(seriesPointPadding(1, 2)).toBe(0.26);
   });
 
-  it("spreads three series evenly", () => {
+  it("spreads three series evenly to the wider endpoint", () => {
     expect(seriesPointPadding(0, 3)).toBe(0);
-    expect(seriesPointPadding(1, 3)).toBe(0.13);
-    expect(seriesPointPadding(2, 3)).toBe(0.26);
+    expect(seriesPointPadding(1, 3)).toBe(0.16);
+    expect(seriesPointPadding(2, 3)).toBe(0.32);
   });
 
   it("renders a single series at full width", () => {

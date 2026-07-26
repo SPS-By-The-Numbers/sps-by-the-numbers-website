@@ -99,11 +99,18 @@ export function filterSpecsWithData(
   });
 }
 
-// Nested-overlay bar width tier: the back bar is widest (padding 0), the
-// front bar keeps the historical 0.26, intermediates spread evenly. A
-// two-series chart yields exactly the historical 0 / 0.26 pair.
+// Nested-overlay bar width tier: the back bar is widest (padding 0) and
+// tiers spread evenly toward the front. A two-series chart yields exactly
+// the historical 0 / 0.26 pair. Three or more spread to a wider 0.32
+// endpoint: at typical cell sizes (~19px per year) an even 0..0.26 spread
+// leaves the middle bar all but occluding the back bar, while 0.32 keeps a
+// visible ~2.5px rim around every tier.
 export function seriesPointPadding(index: number, count: number) {
-  return count < 2 ? 0 : (0.26 * index) / (count - 1);
+  if (count < 2) {
+    return 0;
+  }
+  const end = count === 2 ? 0.26 : 0.32;
+  return (end * index) / (count - 1);
 }
 
 // Vertical offset stacking the per-bar data labels so they don't overlap;

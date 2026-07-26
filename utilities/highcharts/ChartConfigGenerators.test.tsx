@@ -103,8 +103,8 @@ describe("makeBudgetActualsChartConfig", () => {
       ]),
     ).toEqual([
       ["budget", "Budget", 2, 0, undefined],
-      ["revised", "Revised Budget", 3, 0.13, 30],
-      ["actuals", "Actuals", 1, 0.26, 60],
+      ["revised", "Revised Budget", 3, 0.16, 30],
+      ["actuals", "Actuals", 1, 0.32, 60],
     ]);
   });
 
