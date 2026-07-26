@@ -93,6 +93,21 @@
   fill: #b59a12;
 }
 
+// A locked highlight (click-to-pin, shared via the URL fragment) dims every
+// node/band outside the highlighted flow. Dim via fill-/stroke-opacity, NOT the
+// `opacity` property: Highcharts drives element `opacity` for its own hover /
+// inactive states (see `states.inactive` in FlowDashboard), so an `opacity` rule
+// here would be reset the moment you hovered, un-pinning the locked view. These
+// two-class selectors (like the other .flow-* rules) beat the presentation
+// attributes Highcharts writes, so the dim holds through hover.
+.highcharts-node.flow-dim {
+  fill-opacity: 0.12;
+  stroke-opacity: 0.12;
+}
+.highcharts-link.flow-dim {
+  fill-opacity: 0.1;
+}
+
 // The accent-on-hover color, applied by Highcharts (via the highcharts-point-
 // hover class it adds in both styled and non-styled mode) to the hovered
 // node/band and its directly connected nodes/links. It matches the data type —

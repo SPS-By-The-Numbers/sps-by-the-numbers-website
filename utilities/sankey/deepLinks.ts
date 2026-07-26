@@ -284,14 +284,15 @@ const EXPENDITURES_FACET: Partial<Record<Level, string>> = {
   object: "f.2",
 };
 // Which band endpoint levels can narrow Staffing (P-A-S), mapped to the facet
-// its link opens on. School maps to Duty Root (f.3), NOT the School facet (f.2):
-// an object->school band already narrows Staffing to a single school, so
-// faceting on school would be degenerate -- Duty Root breaks the FTE out by
-// role within that school instead, which is more useful.
+// the primary "Staffing (FTE)" link opens on: each endpoint's OWN dimension
+// (School is f.2). A "Staffing (FTE) by Duty Root" variant (f.3) is added
+// alongside for every one of these (see below), so a School-endpoint band gets
+// both the School view and the role breakdown -- mirroring how a Program /
+// Activity endpoint gets its own view plus the Duty Root breakdown.
 const STAFFING_FACET: Partial<Record<Level, string>> = {
   activity: "f.0",
   program: "f.1",
-  school: "f.3",
+  school: "f.2",
 };
 
 // The expenditure dimensions that can appear as a band endpoint / narrow term.
@@ -399,7 +400,7 @@ export function linksForBand(
   // Program / Activity / School) plus active filters; the object/nces
   // compensation dimension is the relevance gate, not a narrow term (staffing
   // has neither filter). Facet on the P/A/School endpoint's own dimension, else
-  // Duty Root (also used for School, whose staffing facet is broken).
+  // Duty Root when neither endpoint is P/A/School.
   const isCompensationBand = [from, to].some(
     (n) =>
       n.custom.code !== null &&
@@ -447,10 +448,9 @@ export function linksForBand(
       label: "Staffing (FTE)",
     });
     // The same Staffing view, but always broken out by Duty Root (role within
-    // the band). When the primary link already opens on Duty Root -- a School
-    // endpoint (whose own facet is broken and falls back to f.3) or no
-    // P/A/School endpoint at all -- this would be an identical URL, so add it
-    // only when the primary facets on something else (Program / Activity).
+    // the band). When the primary link already opens on Duty Root (no P/A/School
+    // endpoint at all) this would be an identical URL, so add it only when the
+    // primary facets on something else (Program / Activity / School).
     if (staffFacet !== "f.3") {
       links.push({
         href: bandHref("/finance/staffing", ctx.ccddd, staffParams, "f.3"),

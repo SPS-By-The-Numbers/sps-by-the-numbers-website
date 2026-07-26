@@ -11,6 +11,7 @@
 // the Highcharts sankey series shape.
 
 import Box from "@mui/material/Box";
+import Chip from "@mui/material/Chip";
 import HighchartsReact from "highcharts-react-official";
 import Popover from "@mui/material/Popover";
 import ToggleButton from "@mui/material/ToggleButton";
@@ -38,7 +39,7 @@ import RevenueFilter from "app/finance/_filteritems/revenue";
 import { makeSchoolFilter } from "app/finance/_filteritems/school";
 import { serializeDatasetSettings } from "app/finance/_settings/common_settings";
 import { useHighcharts } from "components/providers/HighchartsProvider";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityFilterContents,
   NcesFilterContents,
@@ -189,6 +190,97 @@ type PopoverState = {
   links: Array<DeepLink>;
 };
 
+// A locked highlight: a single node, or a single band (from -> to). Clicking a
+// node/band locks it (the rest of the diagram dims and stays dimmed); it is
+// serialized into the URL fragment so the highlighted view can be shared/emailed
+// and reopened exactly. Node ids (`src:1000`, `prog:1`, `fb:drawdown`,
+// `other:2`, ...) never contain `|`, so `|` is a safe field delimiter.
+type Highlight =
+  | { kind: "node"; id: string }
+  | { kind: "band"; from: string; to: string };
+
+function formatHighlight(h: Highlight): string {
+  return h.kind === "node" ? `node|${h.id}` : `band|${h.from}|${h.to}`;
+}
+
+// Parse the highlight out of a URL hash (`#hl=node|<id>` / `#hl=band|<from>|<to>`).
+// Tolerates the value being percent-encoded (some clients encode `|`).
+function parseHighlight(hash: string): Highlight | null {
+  const m = /(?:^|[#&])hl=([^&]+)/.exec(hash);
+  if (!m) {
+    return null;
+  }
+  const parts = decodeURIComponent(m[1]).split("|");
+  if (parts[0] === "node" && parts[1]) {
+    return { kind: "node", id: parts[1] };
+  }
+  if (parts[0] === "band" && parts[1] && parts[2]) {
+    return { kind: "band", from: parts[1], to: parts[2] };
+  }
+  return null;
+}
+
+function sameHighlight(a: Highlight | null, b: Highlight | null): boolean {
+  if (a === null || b === null) {
+    return a === b;
+  }
+  if (a.kind === "node" && b.kind === "node") {
+    return a.id === b.id;
+  }
+  if (a.kind === "band" && b.kind === "band") {
+    return a.from === b.from && a.to === b.to;
+  }
+  return false;
+}
+
+const linkKeyOf = (from: string, to: string) => `${from} ${to}`;
+
+// Given the current highlight and the chart's node ids + link (from,to) pairs,
+// return the node ids and link keys that stay LIT (everything else dims), plus
+// whether the highlight's target is present at all. All null / present:false
+// when there is no active, still-present highlight -- nothing dims. Used by the
+// imperative highlight effect (which reads the live chart's nodes/links), so the
+// dim is applied by toggling a CSS class on existing SVG elements rather than by
+// rebuilding the chart.
+function litSetsFor(
+  highlight: Highlight | null,
+  nodeIds: Set<string>,
+  links: ReadonlyArray<{ from: string; to: string }>,
+): {
+  litNodes: Set<string> | null;
+  litLinks: Set<string> | null;
+  present: boolean;
+} {
+  const present =
+    highlight === null
+      ? false
+      : highlight.kind === "node"
+        ? nodeIds.has(highlight.id)
+        : links.some((l) => l.from === highlight.from && l.to === highlight.to);
+  if (!highlight || !present) {
+    return { litNodes: null, litLinks: null, present: false };
+  }
+  const litNodes = new Set<string>();
+  const litLinks = new Set<string>();
+  if (highlight.kind === "node") {
+    // Light the node plus every band touching it and each band's far end.
+    litNodes.add(highlight.id);
+    for (const l of links) {
+      if (l.from === highlight.id || l.to === highlight.id) {
+        litLinks.add(linkKeyOf(l.from, l.to));
+        litNodes.add(l.from);
+        litNodes.add(l.to);
+      }
+    }
+  } else {
+    // Light exactly the one band and its two endpoints.
+    litNodes.add(highlight.from);
+    litNodes.add(highlight.to);
+    litLinks.add(linkKeyOf(highlight.from, highlight.to));
+  }
+  return { litNodes, litLinks, present: true };
+}
+
 export default function FlowDashboard({
   districtDataMap,
   contextSettings,
@@ -198,6 +290,38 @@ export default function FlowDashboard({
   const [popover, setPopover] = useState<PopoverState | null>(null);
   const router = useRouter();
   const pathname = usePathname();
+
+  // The locked highlight (see the `Highlight` type). It lives in the URL hash so
+  // it round-trips through share/email/reload; state mirrors the hash. Initialize
+  // from the current hash on mount (client-only; the server can't read it) and
+  // keep in sync with back/forward and hand-edited links via `hashchange`.
+  const [highlight, setHighlightState] = useState<Highlight | null>(null);
+  useEffect(() => {
+    const sync = () => setHighlightState(parseHighlight(window.location.hash));
+    sync();
+    window.addEventListener("hashchange", sync);
+    return () => window.removeEventListener("hashchange", sync);
+  }, []);
+
+  // Set (or clear, with null) the highlight, writing it to the URL hash without a
+  // navigation (`replaceState` keeps the settings query intact and avoids a Next
+  // server round-trip). Stable identity so the chart `useMemo` can depend on it.
+  const applyHighlight = useCallback((h: Highlight | null) => {
+    setHighlightState(h);
+    const base = `${window.location.pathname}${window.location.search}`;
+    window.history.replaceState(
+      null,
+      "",
+      h ? `${base}#hl=${formatHighlight(h)}` : base,
+    );
+  }, []);
+
+  // Handle to the live chart, so the highlight can be applied imperatively
+  // (toggling `flow-dim` on existing SVG nodes/links) without rebuilding it.
+  const chartRef = useRef<HighchartsReact.RefObject>(null);
+  // The name of the currently-highlighted node/band, for the "Highlighting: …"
+  // chip. Derived in the highlight effect (which has the live node names).
+  const [highlightLabel, setHighlightLabel] = useState<string | null>(null);
 
   // Measure the scroll container's width so the chart can keep a minimum width
   // per column on narrow / mobile viewports (see the `width` floor below): when
@@ -656,7 +780,9 @@ export default function FlowDashboard({
             weight: l.weight,
             // Color by CSS class (see colors.ts): base (budget grey / actuals
             // blue), except drawdown outflow bands (red), growth inflow bands
-            // (green), and — when highlighting PTA — the PTA source's bands.
+            // (green), and — when highlighting PTA — the PTA source's bands. A
+            // locked highlight dims every band outside it by toggling `flow-dim`
+            // imperatively on the rendered element (see the highlight effect).
             className: flowLinkClass(l.from, l.to, dt, settings.highlightPta),
           })),
           nodes: nodes.map((n) => ({
@@ -780,12 +906,34 @@ export default function FlowDashboard({
           },
           point: {
             events: {
-              // Click-to-open fallback (see the `PopoverState` comment
-              // above): guarantees the two deep links are reachable even if
-              // `stickOnContact` doesn't keep the HTML tooltip open for a
-              // pointer to cross into on every platform/input device.
               click(this: any, event: any) {
                 const p = this;
+
+                // 1. Lock (or toggle off) the highlight on this node/band, and
+                // write it to the URL so the view can be shared. This runs for
+                // EVERY clickable point, including Fund Balance / Filtered Out
+                // (which have no deep links). Read the CURRENT highlight straight
+                // from the URL (the source of truth `applyHighlight` writes
+                // synchronously) rather than a captured/closed-over value: this
+                // handler is bound once at chart creation, so a closed-over
+                // `highlight` would be stale and clicking the already-locked
+                // target would never toggle off.
+                const target: Highlight | null = p.isNode
+                  ? { kind: "node", id: (p.options as SankeyNode).id }
+                  : p.from && p.to
+                    ? { kind: "band", from: p.from, to: p.to }
+                    : null;
+                if (target) {
+                  const current = parseHighlight(window.location.hash);
+                  applyHighlight(
+                    sameHighlight(target, current) ? null : target,
+                  );
+                }
+
+                // 2. Click-to-open fallback (see the `PopoverState` comment
+                // above): guarantees the two deep links are reachable even if
+                // `stickOnContact` doesn't keep the HTML tooltip open for a
+                // pointer to cross into on every platform/input device.
                 let title = "";
                 let links: Array<DeepLink> = [];
                 if (p.isNode) {
@@ -825,10 +973,78 @@ export default function FlowDashboard({
       hasFilteredOut,
       schoolLegend,
     };
-  }, [districtDataMap, allSettings, availWidth]);
+  }, [districtDataMap, allSettings, availWidth, applyHighlight]);
+
+  // Apply the locked highlight IMPERATIVELY to the already-rendered chart: dim
+  // every node/band outside the highlighted flow by toggling the `flow-dim`
+  // class on its existing SVG element (and fading its HTML label). This runs on
+  // every highlight change and after each chart rebuild (`options` dep) but
+  // never rebuilds the chart itself, so clicking to lock/unlock is instant with
+  // no flicker. `flow-dim` dims via fill-/stroke-opacity, which Highcharts'
+  // hover/inactive states (which drive element `opacity`) don't reset -- so the
+  // lock holds even as you mouse over the dimmed parts.
+  useEffect(() => {
+    const chart = chartRef.current?.chart;
+    const series = chart?.series?.[0] as any;
+    if (!series) {
+      return;
+    }
+    const nodePoints = (series.nodes ?? []) as any[];
+    const linkPoints = (series.points ?? []) as any[];
+    const nodeIds = new Set(nodePoints.map((n) => n.id));
+    const { litNodes, litLinks, present } = litSetsFor(
+      highlight,
+      nodeIds,
+      linkPoints.map((l) => ({ from: l.from, to: l.to })),
+    );
+
+    const setDim = (gfx: any, dim: boolean) => {
+      const el = gfx?.element as SVGElement | undefined;
+      el?.classList.toggle("flow-dim", dim);
+    };
+    const setLabelDim = (point: any, dim: boolean) => {
+      // useHTML labels: the text lives in `dataLabel.div` (HTML); fall back to
+      // the SVG element otherwise.
+      const el = (point?.dataLabel?.div ?? point?.dataLabel?.element) as
+        | HTMLElement
+        | SVGElement
+        | undefined;
+      if (el) {
+        el.style.opacity = dim ? "0.25" : "";
+      }
+    };
+    for (const n of nodePoints) {
+      const dim = litNodes !== null && !litNodes.has(n.id);
+      setDim(n.graphic, dim);
+      setLabelDim(n, dim);
+    }
+    for (const l of linkPoints) {
+      const dim = litLinks !== null && !litLinks.has(linkKeyOf(l.from, l.to));
+      setDim(l.graphic, dim);
+    }
+
+    // Chip label; also clear a now-stale highlight (its target got coalesced /
+    // filtered away by a settings change) so the URL stops naming a ghost.
+    if (highlight && !present) {
+      setHighlightLabel(null);
+      applyHighlight(null);
+      return;
+    }
+    const nameOf = (id: string) =>
+      nodePoints.find((n) => n.id === id)?.name ?? id;
+    setHighlightLabel(
+      !highlight
+        ? null
+        : highlight.kind === "node"
+          ? nameOf(highlight.id)
+          : `${nameOf(highlight.from)} → ${nameOf(highlight.to)}`,
+    );
+  }, [highlight, options, applyHighlight]);
 
   // A signature that changes on any settings change, used to key (and thus
-  // remount) the chart so it always reflects the current options.
+  // remount) the chart so it always reflects the current options. The locked
+  // highlight is deliberately NOT part of this key: it is applied imperatively
+  // (see the highlight effect below), so toggling it never rebuilds the chart.
   const chartKey = serializeDatasetSettings(
     allSettings,
     SERIALIZE_FLOW_SETTINGS_GENERATORS,
@@ -859,6 +1075,9 @@ export default function FlowDashboard({
         NcesFilterContents,
         SchoolFilterContents,
       ]}
+      // The Flow view is a single-dataset, per-district view (see FlowSettings),
+      // so the multi-dataset "Add Comparison" button doesn't apply.
+      hideAddComparison
     >
       {/* The parent content region in SettingsLayout is a fixed-height
           (100vh) box with overflow: hidden, so a tall chart -- e.g. Seattle
@@ -952,6 +1171,26 @@ export default function FlowDashboard({
                 <ToggleButton value="actuals">Actuals</ToggleButton>
                 <ToggleButton value="budget">Budget</ToggleButton>
               </ToggleButtonGroup>
+              {/* When a highlight is locked, a chip (top-right) names it and
+                  offers a one-click clear — the visible cue that the dimmed view
+                  is pinned (and the URL is shareable), plus an exit on touch. */}
+              {highlightLabel && (
+                <Chip
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                  label={`Highlighting: ${highlightLabel}`}
+                  onDelete={() => applyHighlight(null)}
+                  sx={{
+                    position: "absolute",
+                    top: 8,
+                    right: 12,
+                    zIndex: 2,
+                    maxWidth: 340,
+                    backgroundColor: "background.paper",
+                  }}
+                />
+              )}
               {/* Dedicated HORIZONTAL scroller. Its direct child has an explicit
                   pixel width (chartWidth) that can exceed the viewport, so the
                   overflow is real and touch-pans reliably (with the tooltip's
@@ -965,7 +1204,22 @@ export default function FlowDashboard({
                   WebkitOverflowScrolling: "touch",
                 }}
               >
-                <Box sx={{ width: `${chartWidth}px` }}>
+                <Box
+                  sx={{ width: `${chartWidth}px` }}
+                  // Clicking empty chart space (anything that isn't a node/band)
+                  // clears the locked highlight and dismisses the deep-link
+                  // popover. A node/band click bubbles here too, but its own
+                  // Highcharts handler owns it, so skip those. (The popover is
+                  // rendered click-through — see its slotProps — so this fires
+                  // even while the popover is open.)
+                  onClick={(e) => {
+                    if ((e.target as Element).closest?.(".highcharts-point")) {
+                      return;
+                    }
+                    applyHighlight(null);
+                    setPopover(null);
+                  }}
+                >
                   <HighchartsReact
                     // Remount the chart whenever any setting changes (the key is
                     // the serialized dataset settings). This guarantees a
@@ -974,8 +1228,11 @@ export default function FlowDashboard({
                     // rather than relying on an in-place chart.update(), which
                     // can leave stale sankey colors. A full redraw is fine here
                     // (single chart, no per-chart state to preserve) and the
-                    // "Updating" overlay masks it.
+                    // "Updating" overlay masks it. The locked highlight is NOT in
+                    // the key (it's applied imperatively via chartRef), so
+                    // locking/unlocking never triggers this rebuild.
                     key={chartKey}
+                    ref={chartRef}
                     highcharts={highchartsObjs.highcharts}
                     options={options}
                   />
@@ -1005,6 +1262,16 @@ export default function FlowDashboard({
           popover ? { top: popover.top, left: popover.left } : undefined
         }
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        // Render click-through: the (invisible) modal root ignores pointer
+        // events so a click on empty chart space passes THROUGH to the chart's
+        // background-click handler (which clears the lock) instead of being
+        // swallowed to just dismiss the popover. The Paper re-enables pointer
+        // events so its links stay clickable; Escape still closes it.
+        disableScrollLock
+        slotProps={{
+          root: { sx: { pointerEvents: "none" } },
+          paper: { sx: { pointerEvents: "auto" } },
+        }}
       >
         {popover && (
           <Box sx={{ p: 1.5, maxWidth: 320 }}>

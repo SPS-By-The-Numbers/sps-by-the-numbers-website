@@ -319,25 +319,32 @@ describe("linksForBand", () => {
     expect(extractD(staffByDuty.href)).toBe(d);
   });
 
-  it("compensation object -> school: Detailed Actuals + Staffing (by school)", () => {
+  it("compensation object -> school: Detailed Actuals + Staffing (School facet) + by Duty Root", () => {
     const links = linksForBand(
       makeNode("object", 3, "Classified Salaries"),
       makeNode("school", 1002, "Some School"),
       CTX_CATEGORY,
     );
-    // object -> school: Expenditures can't facet school, so only Det + Staffing.
+    // object -> school: Expenditures can't facet school, so Det + both Staffing.
     expect(links.map((l) => l.label)).toEqual([
       "Detailed Actuals",
       "Staffing (FTE)",
+      "Staffing (FTE) by Duty Root",
     ]);
     // Detailed Actuals always opens on the NCES facet (f.4).
     expect(extractC(byPath(links, "/finance/detailedactuals").href)).toBe(
       "f.4",
     );
-    // object->school narrows to one school, so the link opens on Duty Root (f.3).
+    // The primary Staffing link opens on the School facet (f.2); the variant on
+    // Duty Root (f.3). Both narrow to the one school (1002).
     const staff = byPath(links, "/finance/staffing");
-    expect(extractC(staff.href)).toBe("f.3");
+    expect(extractC(staff.href)).toBe("f.2");
+    const staffByDuty = links.find(
+      (l) => l.label === "Staffing (FTE) by Duty Root",
+    )!;
+    expect(extractC(staffByDuty.href)).toBe("f.3");
     const d = extractD(staff.href);
+    expect(extractD(staffByDuty.href)).toBe(d);
     expect(
       makeSchoolFilter(CCDDD).fromFilterString(d.split("~s.")[1].split("~")[0]),
     ).toEqual(new Set([1002]));
@@ -384,10 +391,11 @@ describe("linksForBand", () => {
     expect(links.map((l) => l.label)).toEqual([
       "Detailed Actuals",
       "Staffing (FTE)",
+      "Staffing (FTE) by Duty Root",
     ]);
   });
 
-  it("salary nces -> school: Staffing narrowed by school, Duty Root facet", () => {
+  it("salary nces -> school: Staffing on School facet + by Duty Root, narrowed by school", () => {
     const links = linksForBand(
       makeNode("nces", 120, "Salaries of Temporary EEs & Subs"),
       makeNode("school", 1002, "Some School"),
@@ -396,9 +404,17 @@ describe("linksForBand", () => {
     expect(links.map((l) => l.label)).toEqual([
       "Detailed Actuals",
       "Staffing (FTE)",
+      "Staffing (FTE) by Duty Root",
     ]);
+    // School endpoint: primary opens on the School facet (f.2), variant on Duty
+    // Root (f.3); both narrowed to the one school.
     const staff = byPath(links, "/finance/staffing");
-    expect(extractC(staff.href)).toBe("f.3"); // School facet broken -> Duty Root
+    expect(extractC(staff.href)).toBe("f.2");
+    expect(
+      extractC(
+        links.find((l) => l.label === "Staffing (FTE) by Duty Root")!.href,
+      ),
+    ).toBe("f.3");
     expect(
       makeSchoolFilter(CCDDD).fromFilterString(
         extractD(staff.href).split("~s.")[1].split("~")[0],

@@ -53,6 +53,10 @@ interface SettingsLayoutProps<
   allSettings: Array<SettingsType>;
   settingsContentsComponents: Array<SettingsRenderComponentType<any, any>>;
 
+  // Single-dataset views (e.g. the Flow/Sankey) pass true to hide the "Add
+  // Comparison" button, which only makes sense for the multi-dataset dashboards.
+  hideAddComparison?: boolean;
+
   children: ReactNode;
 }
 
@@ -160,6 +164,7 @@ export default function SettingsLayout<
     contextSettingsComponents,
     allSettings,
     settingsContentsComponents,
+    hideAddComparison,
     children,
   } = props;
   const router = useRouter();
@@ -270,16 +275,18 @@ export default function SettingsLayout<
         settingsContentsComponents={settingsContentsComponents}
         sx={{ overflowY: "scroll" }}
       />
-      <Toolbar sx={{ justifyContent: "space-around" }}>
-        <Button
-          size="medium"
-          variant="contained"
-          startIcon={<AddIcon fontSize="inherit" />}
-          onClick={addComparison}
-        >
-          Add Comparison
-        </Button>
-      </Toolbar>
+      {!hideAddComparison && (
+        <Toolbar sx={{ justifyContent: "space-around" }}>
+          <Button
+            size="medium"
+            variant="contained"
+            startIcon={<AddIcon fontSize="inherit" />}
+            onClick={addComparison}
+          >
+            Add Comparison
+          </Button>
+        </Toolbar>
+      )}
     </Stack>
   );
 
