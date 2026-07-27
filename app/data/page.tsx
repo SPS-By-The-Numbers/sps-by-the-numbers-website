@@ -16,22 +16,30 @@ type Section = {
 const SECTIONS: Section[] = [
   {
     href: "/data/finance",
-    title: "Finance",
+    title: "SPS Budget and Purple Books",
     blurb:
-      "SPS budget books, state F-195 budgets, F-196 actuals, OSPI domain/lookup tables, and the joined cross-year financial datasets that feed the Finance Dashboard.",
-    count:
-      counts.sps_budgets +
-      counts.f195_raw +
-      counts.f196_raw +
-      counts.f195_processed +
-      counts.f196_processed +
-      counts.domains,
+      "Seattle Public Schools' own budget documents — adopted budgets, budget books, and the supporting purple books — grouped by school year back to 2002.",
+    count: counts.sps_budgets,
   },
   {
     href: "/data/fiscal",
     title: "Fiscal Reports (OSPI PDFs)",
     blurb: `The OSPI fiscal-report PDF corpus — F-195/F-196 district packets plus monthly apportionment reports and their supporting schedules for every district, ESD, college, and state agency — ${counts.fiscal_raw_files.toLocaleString()} PDFs (~${Math.round(counts.fiscal_raw_bytes / 1024 ** 3)} GiB), with ${counts.fiscal_tables} extracted AVRO tables. Use the district chooser to browse packets.`,
     count: counts.fiscal_raw_files + counts.fiscal_tables,
+  },
+  {
+    href: "/data/safs",
+    title: "SAFS Financial Databases (F-195 / F-196)",
+    blurb:
+      "OSPI's machine-readable financial data for every district in the state: F-195 budget and F-196 actuals databases, per-section AVRO splits, joined cross-year files, per-school analysis CSVs, and the accounting-code lookup tables that feed the Finance Dashboard.",
+    count:
+      counts.f195_raw +
+      counts.f196_raw +
+      counts.f195_processed +
+      counts.f196_processed +
+      counts.f19x_processed +
+      counts.analysis +
+      counts.domains,
   },
   {
     href: "/data/enrollment",
@@ -97,7 +105,9 @@ export default function Page() {
       sx={{ display: "flex", flexDirection: "column", my: 2, gap: 4 }}
     >
       <Stack spacing={2}>
-        <Typography component="h1" variant="h2">Data Archive</Typography>
+        <Typography component="h1" variant="h2">
+          Data Archive
+        </Typography>
         <Typography variant="body1" sx={{ color: "text.secondary" }}>
           A mirror of publicly available data about Seattle Public Schools and
           Washington education in general &mdash; about{" "}
@@ -120,10 +130,10 @@ export default function Page() {
         <Typography variant="body2" sx={{ color: "text.secondary" }}>
           Files live in the public Cloud Storage bucket{" "}
           <code>gs://sps-btn-data-all-data</code>. Raw artifacts (PDFs, Word
-          docs, Access databases, AVRO from Socrata) are under <code>raw/</code>;
-          cleaned and joined outputs sit under <code>processed/</code>. The
-          listing on each subpage is generated at build time from a snapshot
-          (<code>all_data.txt</code>) of the bucket. If something is missing or
+          docs, Access databases, AVRO from Socrata) are under <code>raw/</code>
+          ; cleaned and joined outputs sit under <code>processed/</code>. The
+          listing on each subpage is generated at build time from a snapshot (
+          <code>all_data.txt</code>) of the bucket. If something is missing or
           stale, run <code>gsutil ls -r</code> against the bucket and refresh
           that file.
         </Typography>

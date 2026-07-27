@@ -403,6 +403,8 @@ async function main() {
     f196_raw: finance.f196_raw.length,
     f195_processed: finance.f195_processed.length,
     f196_processed: finance.f196_processed.length,
+    f19x_processed: finance.f19x_processed.length,
+    analysis: finance.analysis.length,
     domains: finance.domains.length,
     sps_p223_pdf: enrollment.sps_p223_pdf.length,
     ospi_p223_pdf: enrollment.ospi_p223_pdf.length,
