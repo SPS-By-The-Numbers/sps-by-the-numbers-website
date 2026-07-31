@@ -45,10 +45,12 @@ import {
   NcesFilterContents,
   ObjectFilterContents,
   ProgramFilterContents,
-  RevenueCategoryFilterContents,
-  RevenueFilterContents,
   SchoolFilterContents,
 } from "app/finance/_widgets/ExpenditureFilterContents";
+import {
+  FlowRevenueCategoryFilterContents,
+  FlowRevenueFilterContents,
+} from "./FlowResourceFilterContents";
 import FlowDatasetSettingsContents from "./FlowDatasetSettingsContents";
 import FlowLevelContents from "./FlowLevelContents";
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
@@ -65,6 +67,7 @@ import type { DeepLink, DeepLinkCtx } from "utilities/sankey/deepLinks";
 import type {
   ExpRow,
   FlowFilters,
+  Level,
   RevRow,
   SankeyLink,
   SankeyNode,
@@ -438,11 +441,31 @@ export default function FlowDashboard({
     ): Set<number> | undefined =>
       codes && codes.size < domain.size ? codes : undefined;
     const sourceIsAccount = settings.sourceMode === "account";
+
+    // Budget has no NCES / School breakdown, so drop those levels in Budget mode
+    // even if the level plan (carried over from Actuals) still has them enabled.
+    const levelAvailable = (l: Level) =>
+      dt !== "budget" || !ACTUALS_ONLY_LEVELS.includes(l);
+    const enabledLevels = enabledLevelsFromPlan(settings.levelPlan).filter(
+      levelAvailable,
+    );
+    // With the Resource column hidden there is no per-source split to test, so
+    // the Resource filter does not apply -- and the settings panel disables it
+    // (see FlowResourceFilterContents) so the two can never disagree.
+    const showSource = enabledLevels.includes("source");
+
     const filters: FlowFilters = {
-      sourceCodes: narrowed(
-        sourceIsAccount ? settings.revenueCodes : settings.revenueCategoryCodes,
-        (sourceIsAccount ? RevenueFilter : RevenueCategoryFilter).allCodes(),
-      ),
+      sourceCodes: showSource
+        ? narrowed(
+            sourceIsAccount
+              ? settings.revenueCodes
+              : settings.revenueCategoryCodes,
+            (sourceIsAccount
+              ? RevenueFilter
+              : RevenueCategoryFilter
+            ).allCodes(),
+          )
+        : undefined,
       programCodes: narrowed(settings.programCodes, ProgramFilter.allCodes()),
       activityCodes: narrowed(
         settings.activityCodes,
@@ -456,11 +479,25 @@ export default function FlowDashboard({
       ),
     };
 
-    // Budget has no NCES / School breakdown, so drop those levels in Budget mode
-    // even if the level plan (carried over from Actuals) still has them enabled.
-    const enabledLevels = enabledLevelsFromPlan(settings.levelPlan).filter(
-      (l) => dt !== "budget" || !ACTUALS_ONLY_LEVELS.includes(l),
-    );
+    // A narrowed filter on a HIDDEN level still applies: it gates the flow into
+    // the gray "Filtered Out" band at the column that level would have occupied
+    // (see ComputeFlowsOpts.gates), so hiding a column never silently discards
+    // its filter. Walk the plan in order counting displayed columns; a level
+    // with no data behind it in this mode (NCES / School under Budget) is
+    // skipped entirely, and Source is never gated (see `showSource` above).
+    const gates: Array<{ level: Exclude<Level, "source">; column: number }> =
+      [];
+    let displayColumn = 0;
+    for (const entry of settings.levelPlan) {
+      if (!levelAvailable(entry.level)) {
+        continue;
+      }
+      if (entry.enabled) {
+        displayColumn++;
+      } else if (entry.level !== "source") {
+        gates.push({ level: entry.level, column: displayColumn });
+      }
+    }
 
     // All resources deselected: `narrowed` yields a present-but-empty source
     // filter, so every real revenue source is filtered out. Only the always-pass
@@ -498,6 +535,7 @@ export default function FlowDashboard({
       mode: settings.sourceMode,
       enabledLevels,
       filters,
+      gates,
       coalesceLevels: [...settings.coalesceLevels].filter(
         (l) => l !== "school" || !customSchoolCoalesce,
       ),
@@ -1067,8 +1105,8 @@ export default function FlowDashboard({
       settingsContentsComponents={[
         FlowDatasetSettingsContents,
         FlowLevelContents,
-        RevenueCategoryFilterContents,
-        RevenueFilterContents,
+        FlowRevenueCategoryFilterContents,
+        FlowRevenueFilterContents,
         ProgramFilterContents,
         ActivityFilterContents,
         ObjectFilterContents,
@@ -1248,7 +1286,8 @@ export default function FlowDashboard({
               never change that math. When a filter is applied, the flow it
               removes is re-routed into a gray <strong>Filtered Out</strong>{" "}
               band that continues to the last column so every column still
-              totals the grand total.
+              totals the grand total. A filter on a hidden level still applies —
+              it diverts at the column that level would have occupied.
               {hasFilteredOut ? " A Filtered Out band is currently shown." : ""}
             </Typography>
           </>

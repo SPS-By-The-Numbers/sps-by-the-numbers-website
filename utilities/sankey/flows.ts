@@ -11,6 +11,8 @@
 //      enabled level whose filter fails, the record follows real nodes for the
 //      columns before it and one chained gray "Filtered Out" node per column
 //      from there to the last column. Grand total is conserved in every column.
+//      A filter on a HIDDEN level (opts.gates) diverts the same way, at the
+//      display column its level would have occupied.
 //   5. Emit deduped nodes (prefixed ids, colors, explicit columns) and links
 //      summed per (from, to), dropping links below `minWeight` to kill dust.
 
@@ -72,7 +74,10 @@ type Cell = {
 };
 
 // A flow record: an ordered path of cells (one per enabled column) plus weight.
-type FlowRecord = { path: Cell[]; weight: number };
+// `gateFail` is the display column at which the record fails a HIDDEN level's
+// filter (Infinity when it passes every gate); the partition step diverts it
+// into the gray band from there, exactly as a visible level's filter would.
+type FlowRecord = { path: Cell[]; weight: number; gateFail: number };
 
 function nodeIdForSource(code: number, sourceLabel: string): Cell {
   if (code === DRAWDOWN_SOURCE_CODE) {
@@ -134,6 +139,28 @@ export function computeFlows(
     (l) => l !== "program",
   ) as Exclude<Level, "source" | "program">[];
 
+  // Filters belonging to HIDDEN levels (see ComputeFlowsOpts.gates). Keep only
+  // the gates that are both genuinely hidden and carrying a filter -- the rest
+  // would only bloat the aggregation key below for no effect.
+  const gates = (opts.gates ?? []).filter(
+    (g) =>
+      !displayLevels.includes(g.level) &&
+      opts.filters[FILTER_KEY[g.level]] !== undefined,
+  );
+  // The hidden gate levels whose code has to join the aggregation key so the
+  // gate can be tested per tuple. Program is already part of that key
+  // (`Agg.program`), so it is excluded here.
+  const gateCodeLevels = [
+    ...new Set(gates.map((g) => g.level).filter((l) => l !== "program")),
+  ] as Exclude<Level, "source" | "program">[];
+  // Everything the expenditure aggregation keys on besides program: the
+  // displayed reorderable levels (which also get labels) plus the hidden gate
+  // levels (codes only -- they are never drawn).
+  const aggLevels: Exclude<Level, "source" | "program">[] = [
+    ...reorderableDisplay,
+    ...gateCodeLevels,
+  ];
+
   const { progTot, attributed } = attributeSources(expRows, revRows, opts.mode);
 
   // --- Label maps ---------------------------------------------------------
@@ -189,13 +216,15 @@ export function computeFlows(
     }
     const codes = new Map<Exclude<Level, "source" | "program">, number>();
     const keyParts: number[] = [program];
-    for (const l of reorderableDisplay) {
+    for (const l of aggLevels) {
       const code = e[EXP_CODE_FIELD[l]] as number;
       codes.set(l, code);
       keyParts.push(code);
-      const label = e[EXP_LABEL_FIELD[l]] as string;
-      if (!expLabels[l].has(code)) {
-        expLabels[l].set(code, cleanLabel(label));
+      // Only displayed levels have a label map; a hidden gate level is keyed by
+      // code alone.
+      const labels = expLabels[l];
+      if (labels && !labels.has(code)) {
+        labels.set(code, cleanLabel(e[EXP_LABEL_FIELD[l]] as string));
       }
     }
     const key = keyParts.join("|");
@@ -227,6 +256,24 @@ export function computeFlows(
       const name = expLabels[l].get(code) ?? String(code);
       return { level: l, code, id: `${LEVEL_ID_PREFIX[l]}:${code}`, name };
     });
+
+  // The earliest display column at which an aggregated tuple fails a hidden
+  // level's filter; Infinity when it passes them all (the common case, and
+  // always when there are no gates).
+  const gateFailColumn = (row: Agg): number => {
+    let col = Infinity;
+    for (const g of gates) {
+      const set = opts.filters[FILTER_KEY[g.level]]!;
+      const code =
+        g.level === "program"
+          ? row.program
+          : row.codes.get(g.level as Exclude<Level, "source" | "program">)!;
+      if (!set.has(code) && g.column < col) {
+        col = g.column;
+      }
+    }
+    return col;
+  };
 
   // Group aggregated tuples by program. A tuple whose NET amount is <= 0 (real
   // OSPI data carries negative correction/abatement lines) cannot be drawn as a
@@ -275,6 +322,7 @@ export function computeFlows(
         }
         const shares = prorate(rowAmount, srcWeights);
         const expCells = buildExpCells(progRows[ri]);
+        const gateFail = gateFailColumn(progRows[ri]);
         for (let i = 0; i < srcCodes.length; i++) {
           const w = shares[i];
           if (w <= 0) {
@@ -282,7 +330,7 @@ export function computeFlows(
           }
           const s = srcCodes[i];
           const srcCell = nodeIdForSource(s, sourceName(s));
-          records.push({ path: [srcCell, ...expCells], weight: w });
+          records.push({ path: [srcCell, ...expCells], weight: w, gateFail });
         }
       }
     } else {
@@ -297,7 +345,11 @@ export function computeFlows(
         if (expCells.length === 0) {
           continue;
         }
-        records.push({ path: expCells, weight: rowAmount });
+        records.push({
+          path: expCells,
+          weight: rowAmount,
+          gateFail: gateFailColumn(progRows[ri]),
+        });
       }
     }
   }
@@ -325,7 +377,13 @@ export function computeFlows(
           continue;
         }
         const srcCell = nodeIdForSource(s, sourceName(s));
-        records.push({ path: [srcCell, growthCell], weight: amount });
+        // Growth is a fund-level flow with no expenditure tuple behind it, so
+        // no hidden-level filter can apply to it.
+        records.push({
+          path: [srcCell, growthCell],
+          weight: amount,
+          gateFail: Infinity,
+        });
       }
     }
   }
@@ -407,6 +465,18 @@ export function computeFlows(
     // source is level "fundBalance" and always passes, so it is never dropped.
     if (failIdx < rec.path.length && rec.path[failIdx].level === "source") {
       continue;
+    }
+    // A HIDDEN level's filter diverts at the display column that level would
+    // have occupied, clamped to the LAST column: a hidden level sitting after
+    // every displayed column (e.g. Object hidden with Source/Program/Activity
+    // shown) still has to show its effect somewhere, and the last column is
+    // where the kept and removed flow first differ. Whichever failure comes
+    // first -- visible cell or gate -- decides where the gray band starts.
+    if (rec.gateFail < Infinity) {
+      const gateIdx = Math.max(0, Math.min(rec.gateFail, rec.path.length - 1));
+      if (gateIdx < failIdx) {
+        failIdx = gateIdx;
+      }
     }
     // Resolve each path column to a concrete cell (real or Filtered Out) and
     // register its node with the correct absolute column.

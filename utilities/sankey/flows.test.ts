@@ -382,6 +382,120 @@ describe("computeFlows — reorderable levels and disabling source/program", () 
   });
 });
 
+describe("computeFlows — filters on hidden levels (gates)", () => {
+  // Program 10, activity 27, split across two objects. One fungible account
+  // funds the whole 100.
+  const twoObjectExp = (): ExpRow[] => [
+    exp(10, "Basic", 27, "Teaching", 60, { object_code: 2, object: "Cert" }),
+    exp(10, "Basic", 27, "Teaching", 40, {
+      object_code: 4,
+      object: "Benefits",
+    }),
+  ];
+  const oneSourceRev = (): RevRow[] => [rev(1100, 1000, 0, 100)];
+
+  it("applies a hidden trailing level's filter at the last column", () => {
+    // Source / Program / Activity shown, Object hidden and narrowed to object 2.
+    // Object would be column 3, past the last displayed column, so the divert
+    // clamps to the Activity column: act:27 keeps 60, the rest goes gray.
+    const { nodes, links } = computeFlows(twoObjectExp(), oneSourceRev(), {
+      mode: "account",
+      enabledLevels: BASE_LEVELS,
+      filters: { objectCodes: new Set([2]) },
+      gates: [{ level: "object", column: 3 }],
+    });
+
+    expect(link(links, "src:1100", "prog:10")).toBeCloseTo(100, 6);
+    expect(link(links, "prog:10", "act:27")).toBeCloseTo(60, 6);
+    expect(link(links, "prog:10", "flt:2")).toBeCloseTo(40, 6);
+    // No object nodes are drawn -- the level is hidden, only its filter applies.
+    expect(nodes.some((n) => n.custom.level === "object")).toBe(false);
+    // The Activity column still totals the grand total.
+    expect(columnIncoming(nodes, links, 2)).toBeCloseTo(100, 6);
+  });
+
+  it("diverts at the hidden level's own column when it sits mid-plan", () => {
+    // Source / Program / Object shown with Activity hidden between Program and
+    // Object (gate column 2). Both tuples share object 2, so the gate is what
+    // splits the Object column.
+    const expRows = [
+      exp(10, "Basic", 27, "Teaching", 60, { object_code: 2, object: "Cert" }),
+      exp(10, "Basic", 29, "Other", 40, { object_code: 2, object: "Cert" }),
+    ];
+    const { nodes, links } = computeFlows(expRows, oneSourceRev(), {
+      mode: "account",
+      enabledLevels: ["source", "program", "object"],
+      filters: { activityCodes: new Set([29]) },
+      gates: [{ level: "activity", column: 2 }],
+    });
+
+    expect(link(links, "prog:10", "obj:2")).toBeCloseTo(40, 6);
+    expect(link(links, "prog:10", "flt:2")).toBeCloseTo(60, 6);
+    expect(nodeById(nodes, "flt:2")!.column).toBe(2);
+    expect(columnIncoming(nodes, links, 2)).toBeCloseTo(100, 6);
+  });
+
+  it("keeps the earliest failure when a visible level also fails", () => {
+    // Program filter (visible, column 1) excludes program 10 entirely; the
+    // hidden Object gate would only have diverted at column 2. The band must
+    // start at the Program column.
+    const { links } = computeFlows(twoObjectExp(), oneSourceRev(), {
+      mode: "account",
+      enabledLevels: BASE_LEVELS,
+      filters: { programCodes: new Set([20]), objectCodes: new Set([2]) },
+      gates: [{ level: "object", column: 3 }],
+    });
+
+    expect(link(links, "src:1100", "flt:1")).toBeCloseTo(100, 6);
+    expect(link(links, "flt:1", "flt:2")).toBeCloseTo(100, 6);
+  });
+
+  it("ignores a gate for a level that is actually displayed", () => {
+    // A stale gate for a shown level must not double-divert: the Object column
+    // itself does the filtering, so obj:2 survives and obj:4 goes gray there.
+    const { nodes, links } = computeFlows(twoObjectExp(), oneSourceRev(), {
+      mode: "account",
+      enabledLevels: ["source", "program", "activity", "object"],
+      filters: { objectCodes: new Set([2]) },
+      gates: [{ level: "object", column: 2 }],
+    });
+
+    expect(link(links, "prog:10", "act:27")).toBeCloseTo(100, 6);
+    expect(link(links, "act:27", "obj:2")).toBeCloseTo(60, 6);
+    expect(link(links, "act:27", "flt:3")).toBeCloseTo(40, 6);
+    expect(nodeById(nodes, "flt:2")).toBeUndefined();
+  });
+
+  it("ignores a gate whose level carries no filter", () => {
+    const { nodes, links } = computeFlows(twoObjectExp(), oneSourceRev(), {
+      mode: "account",
+      enabledLevels: BASE_LEVELS,
+      filters: {},
+      gates: [{ level: "object", column: 3 }],
+    });
+
+    expect(nodes.some((n) => n.custom.level === "filtered")).toBe(false);
+    expect(link(links, "prog:10", "act:27")).toBeCloseTo(100, 6);
+  });
+
+  it("gates the flow when the Source column is hidden too", () => {
+    // Program / Activity shown (no revenue side), Object hidden and filtered.
+    // Object's gate column is 2 -- past the last column -- so it clamps to the
+    // Activity column.
+    const { nodes, links } = computeFlows(twoObjectExp(), oneSourceRev(), {
+      mode: "account",
+      enabledLevels: ["program", "activity"],
+      filters: { objectCodes: new Set([2]) },
+      gates: [{ level: "object", column: 2 }],
+    });
+
+    expect(nodeById(nodes, "prog:10")!.column).toBe(0);
+    expect(link(links, "prog:10", "act:27")).toBeCloseTo(60, 6);
+    expect(link(links, "prog:10", "flt:1")).toBeCloseTo(40, 6);
+    expect(columnIncoming(nodes, links, 1)).toBeCloseTo(100, 6);
+  });
+});
+
 describe("computeFlows — never-combine sources and node names", () => {
   it("keeps Gifts/Grants/Donations (2500) separate even in category mode", () => {
     // Two fungible accounts in the same category 2000: the grants/gifts account
