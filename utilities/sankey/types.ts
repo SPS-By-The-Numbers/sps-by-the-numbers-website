@@ -101,12 +101,12 @@ export type ComputeFlowsOpts = {
   // `filters` like any other -- and `column`, the DISPLAY column index the
   // failing flow diverts at: the number of displayed columns that precede the
   // hidden level in the caller's level plan. A flow failing a gate follows real
-  // nodes up to `column` and then joins the same chained gray "Filtered Out"
+  // nodes up to `column` and then joins the same chained "Filtered Out"
   // band a visible level's filter would send it to, so every column still totals
   // the grand total. `column` is clamped to the LAST displayed column, so a
   // hidden level that sits after every displayed one (e.g. Object hidden with
   // Source/Program/Activity shown) still splits that last column into the flow
-  // it keeps and a gray remainder. Source is not gateable (with its column hidden there is no
+  // it keeps and a Filtered Out remainder. Source is not gateable (with its column hidden there is no
   // per-source split to test; callers disable the Resource filter instead).
   gates?: Array<{ level: Exclude<Level, "source">; column: number }>;
   // Links below this weight (in dollars) are dropped to kill float dust.

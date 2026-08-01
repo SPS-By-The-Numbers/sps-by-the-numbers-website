@@ -4,7 +4,7 @@
 //
 // Renders a single Highcharts sankey for the primary district: Revenue Source ->
 // Program -> Activity, plus the optional Object / NCES / School columns. The
-// heavy lifting (revenue->program attribution, filter diversion into gray
+// heavy lifting (revenue->program attribution, filter diversion into the
 // "Filtered Out" bands, node/link emission) lives in the arquero-free compute
 // engine `utilities/sankey/`. This component only bakes the arquero frames down
 // to one (class_of, data_type), calls `computeFlows`, and adapts its output to
@@ -480,7 +480,7 @@ export default function FlowDashboard({
     };
 
     // A narrowed filter on a HIDDEN level still applies: it gates the flow into
-    // the gray "Filtered Out" band at the column that level would have occupied
+    // the "Filtered Out" band at the column that level would have occupied
     // (see ComputeFlowsOpts.gates), so hiding a column never silently discards
     // its filter. Walk the plan in order counting displayed columns; a level
     // with no data behind it in this mode (NCES / School under Budget) is
@@ -653,7 +653,7 @@ export default function FlowDashboard({
         ? coalesceSchoolsByGroup(rawNodes, rawLinks, schoolGroup)
         : { nodes: rawNodes, links: rawLinks };
 
-    // A gray "Filtered Out" band only appears when a per-level filter diverts
+    // A "Filtered Out" band only appears when a per-level filter diverts
     // flow; surface an explanatory caption in that case (see the legend note
     // below the chart).
     const hasFilteredOut = nodes.some((n) => n.custom.level === "filtered");
@@ -1284,10 +1284,11 @@ export default function FlowDashboard({
             >
               Attribution of revenue to programs runs on the whole fund; filters
               never change that math. When a filter is applied, the flow it
-              removes is re-routed into a gray <strong>Filtered Out</strong>{" "}
-              band that continues to the last column so every column still
-              totals the grand total. A filter on a hidden level still applies —
-              it diverts at the column that level would have occupied.
+              removes is re-routed into a dark plum{" "}
+              <strong>Filtered Out</strong> band that continues to the last
+              column so every column still totals the grand total. A filter on a
+              hidden level still applies — it diverts at the column that level
+              would have occupied.
               {hasFilteredOut ? " A Filtered Out band is currently shown." : ""}
             </Typography>
           </>

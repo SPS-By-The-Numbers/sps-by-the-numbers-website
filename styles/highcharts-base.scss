@@ -2,7 +2,7 @@
 // CSS imports from app/finance/layout.tsx so this file can be Sass-only
 // (Dart Sass is phasing out @import).
 :root {
-      /* Colors for data series and points */
+  /* Colors for data series and points */
   /*--highcharts-color-1: #38b9ff; */
   /*
   --highcharts-color-1: #0093f6;
@@ -49,7 +49,7 @@
 // Base: Actuals = blue, Budget = grey (reusing the bar charts'
 // --highcharts-color-1/2). Exceptions, filled to stand out: General Fund
 // Balance Drawdown node + its outflow bands = RED; General Fund Balance Growth
-// node + its inflow bands = GREEN. Filtered Out nodes = neutral grey.
+// node + its inflow bands = GREEN. Filtered Out nodes = a dark plum.
 .highcharts-node.flow-actuals {
   fill: var(--highcharts-color-1);
   stroke: var(--highcharts-color-1);
@@ -67,12 +67,19 @@
   stroke: #2e7d32;
 }
 .highcharts-node.flow-filtered {
-  // Demoted to a very light, semi-transparent grey so "Filtered Out" recedes --
-  // in particular it must not read like a real band in the Budget palette, whose
-  // base flows are already grey (--highcharts-color-2).
-  fill: #eaeaea;
-  stroke: #d5d5d5;
-  fill-opacity: 0.6;
+  // A DARK plum. Three constraints pin this down. (1) Not grey: a light grey
+  // disappeared against the page and collided with the Budget palette, whose
+  // base flows are already grey (--highcharts-color-2). (2) Not a light plum
+  // either -- every other fill here is light (actuals blue L*70, budget grey
+  // L*91, drawdown red L*68, PTA mustard L*82, page white L*100), so a pale
+  // lavender has nowhere to sit and lands ~5 dE00 from the Budget grey.
+  // (3) Not a saturated violet: under protanopia/deuteranopia violet collapses
+  // toward blue and collides with the actuals blue (~3-5 dE00). What is left is
+  // low chroma + low lightness, where the separation comes from DARKNESS rather
+  // than hue -- and darkness survives every CVD simulation. Worst-case dE00
+  // across normal/protan/deutan/tritan vs every other node fill: 18.3.
+  fill: #4a3f52;
+  stroke: #332c3a;
 }
 .highcharts-link.flow-actuals {
   fill: var(--highcharts-color-1);
@@ -87,10 +94,13 @@
   fill: #2e7d32;
 }
 .highcharts-link.flow-filtered {
-  fill: #eaeaea;
-  // Filtered Out bands are strongly de-emphasized (well below the default link
-  // opacity) so they fade back, distinct from the grey Budget bands.
-  fill-opacity: 0.12;
+  // Same plum as the node (see above). At 0.55 over white it resolves to
+  // ~#9b95a0: darker than every real band, still translucent enough to read as
+  // secondary and to let crossing bands show through. Worst-case dE00 vs the
+  // other bands across normal + all three CVD simulations: 12.3 (against the
+  // actuals blue band); the old pale version scored 5.9 against Budget grey.
+  fill: #4a3f52;
+  fill-opacity: 0.55;
 }
 // The PTA-funding highlight: a putrid mustard / bile — unmissable, conveying
 // the appropriate enthusiasm for this question, while staying well clear of the
@@ -225,4 +235,3 @@
     width: 100% !important;
   }
 }
-

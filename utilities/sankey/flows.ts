@@ -9,7 +9,7 @@
 //      proportionally (share = attributed[p][src] / prog_tot[p]).
 //   4. Partition each resulting flow record per Locked decision 4: at the first
 //      enabled level whose filter fails, the record follows real nodes for the
-//      columns before it and one chained gray "Filtered Out" node per column
+//      columns before it and one chained "Filtered Out" node per column
 //      from there to the last column. Grand total is conserved in every column.
 //      A filter on a HIDDEN level (opts.gates) diverts the same way, at the
 //      display column its level would have occupied.
@@ -76,7 +76,7 @@ type Cell = {
 // A flow record: an ordered path of cells (one per enabled column) plus weight.
 // `gateFail` is the display column at which the record fails a HIDDEN level's
 // filter (Infinity when it passes every gate); the partition step diverts it
-// into the gray band from there, exactly as a visible level's filter would.
+// into the Filtered Out band from there, as a visible level's filter would.
 type FlowRecord = { path: Cell[]; weight: number; gateFail: number };
 
 function nodeIdForSource(code: number, sourceLabel: string): Cell {
@@ -460,7 +460,7 @@ export function computeFlows(
     }
     // A record whose SOURCE is filtered out is DROPPED entirely (the diagram
     // then shows a sub-flow of the selected sources) rather than diverted into a
-    // gray "Filtered Out" node -- which makes no sense in the leftmost
+    // "Filtered Out" node -- which makes no sense in the leftmost
     // (Resource) column. Downstream levels still divert (below). The drawdown
     // source is level "fundBalance" and always passes, so it is never dropped.
     if (failIdx < rec.path.length && rec.path[failIdx].level === "source") {
@@ -471,7 +471,7 @@ export function computeFlows(
     // every displayed column (e.g. Object hidden with Source/Program/Activity
     // shown) still has to show its effect somewhere, and the last column is
     // where the kept and removed flow first differ. Whichever failure comes
-    // first -- visible cell or gate -- decides where the gray band starts.
+    // first -- visible cell or gate -- decides where the band starts.
     if (rec.gateFail < Infinity) {
       const gateIdx = Math.max(0, Math.min(rec.gateFail, rec.path.length - 1));
       if (gateIdx < failIdx) {

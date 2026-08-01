@@ -28,7 +28,13 @@ export const SANKEY_COLORS = {
     9: "#E1BEE7",
     default: "#BA68C8",
   } as Record<number | "default", string>,
-  filteredOut: "#BDBDBD",
+  // A dark plum, not a grey: "Filtered Out" must stay findable (it is often the
+  // majority of the fund) without competing with the blue data, the drawdown
+  // red, the growth green or the PTA mustard -- and must hold up under color
+  // vision deficiency, which is why it is DARK rather than merely a different
+  // hue (see the .flow-filtered rules in styles/highcharts-base.scss for the
+  // measurements). Kept in step with those rules.
+  filteredOut: "#4a3f52",
 };
 
 // Presentation classes for the interactive flow view.
@@ -45,12 +51,12 @@ export const SANKEY_COLORS = {
 // the bar charts' --highcharts-color-1/2). The exceptions are the two
 // fund-balance flows, filled to stand out: the General Fund Balance Drawdown
 // node and its outflow bands are RED; the General Fund Balance Growth node and
-// its inflow bands are GREEN. Filtered Out nodes are a neutral grey.
+// its inflow bands are GREEN. Filtered Out nodes are a dark plum.
 export const FLOW_ACTUALS_CLASS = "flow-actuals";
 export const FLOW_BUDGET_CLASS = "flow-budget";
 export const FLOW_DRAWDOWN_CLASS = "flow-drawdown"; // red
 export const FLOW_GROWTH_CLASS = "flow-growth"; // green
-export const FLOW_FILTERED_CLASS = "flow-filtered"; // neutral grey
+export const FLOW_FILTERED_CLASS = "flow-filtered"; // dark plum
 // The "where does the PTA money go" highlight (a putrid mustard, see the scss).
 // It marks the whole "Gifts, Grants, and Donations" resource — PTA gifts are
 // only a fraction of it (likely a small one). Opt-in via the settings toggle.
@@ -112,7 +118,7 @@ export function flowBaseClass(dataType: FlowDataType): string {
 }
 
 // CSS class for a node: (optional) the PTA-funding source, else the drawdown
-// node red, the growth node green, Filtered Out nodes neutral grey, everything
+// node red, the growth node green, Filtered Out nodes a dark plum, everything
 // else the budget/actuals base.
 export function flowNodeClass(
   node: { id: string; custom: { level: Level | "fundBalance" | "filtered" } },
