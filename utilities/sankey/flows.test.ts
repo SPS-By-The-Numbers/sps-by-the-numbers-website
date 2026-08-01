@@ -1,5 +1,5 @@
 import { expect } from "@jest/globals";
-import { computeFlows } from "utilities/sankey/flows";
+import { coalesceSmall, computeFlows } from "utilities/sankey/flows";
 import { SANKEY_COLORS } from "utilities/sankey/colors";
 import type {
   ExpRow,
@@ -636,6 +636,82 @@ describe("computeFlows — coalesce small categories", () => {
     });
     expect(nodes.find((n) => n.id === "other:2")).toBeUndefined();
     expect(nodeById(nodes, "act:31")).toBeDefined();
+  });
+});
+
+describe("coalesceSmall — reusable on a caller-grouped column", () => {
+  // The flow view groups the School column itself (by enrollment size / area /
+  // region), which answers to no dollar rule, then runs the result back through
+  // coalesceSmall so groups left holding dust collapse like any other level's.
+  const groupNode = (
+    id: string,
+    weight: number,
+    members: Array<{ name: string; weight: number; code: number | null }>,
+  ): SankeyNode => ({
+    id,
+    name: id,
+    color: "#000",
+    column: 1,
+    custom: { level: "school", code: null, members },
+  });
+
+  it("merges dust groups and carries their leaf codes forward", () => {
+    const nodes: SankeyNode[] = [
+      {
+        id: "prog:10",
+        name: "Basic",
+        color: "#000",
+        column: 0,
+        custom: { level: "program", code: 10 },
+      },
+      groupNode("sbucket:0", 3, [
+        { name: "A", weight: 2, code: 101 },
+        { name: "B", weight: 1, code: 102 },
+      ]),
+      groupNode("sbucket:1", 2, [{ name: "C", weight: 2, code: 103 }]),
+      {
+        id: "sch:900",
+        name: "District Office",
+        color: "#000",
+        column: 1,
+        custom: { level: "school", code: 900 },
+      },
+    ];
+    const links: SankeyLink[] = [
+      { from: "prog:10", to: "sbucket:0", weight: 3 },
+      { from: "prog:10", to: "sbucket:1", weight: 2 },
+      { from: "prog:10", to: "sch:900", weight: 995 },
+    ];
+
+    const out = coalesceSmall(nodes, links, 1000, new Set<Level>(["school"]));
+
+    // The two dust groups (0.3% and 0.2% of 1000) merged; the big one did not.
+    expect(nodeById(out.nodes, "sbucket:0")).toBeUndefined();
+    expect(nodeById(out.nodes, "sch:900")).toBeDefined();
+    const other = nodeById(out.nodes, "other:1")!;
+    expect(other.name).toEqual("Other Schools");
+    expect(link(out.links, "prog:10", "other:1")).toBeCloseTo(5, 6);
+    // Each member keeps its display entry AND the leaf codes underneath it, so
+    // "focus on this" can still narrow to the individual schools.
+    expect(other.custom.members?.map((m) => m.codes)).toEqual([
+      [101, 102],
+      [103],
+    ]);
+  });
+
+  it("leaves groups that carry real weight alone", () => {
+    const nodes: SankeyNode[] = [
+      groupNode("sbucket:0", 400, [{ name: "A", weight: 400, code: 101 }]),
+      groupNode("sbucket:1", 600, [{ name: "C", weight: 600, code: 103 }]),
+    ];
+    const links: SankeyLink[] = [
+      { from: "sbucket:0", to: "sbucket:1", weight: 400 },
+    ];
+    const out = coalesceSmall(nodes, links, 1000, new Set<Level>(["school"]));
+    expect(out.nodes.map((n) => n.id).sort()).toEqual([
+      "sbucket:0",
+      "sbucket:1",
+    ]);
   });
 });
 

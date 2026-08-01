@@ -9,6 +9,9 @@ import {
   SERIALIZE_FLOW_SETTINGS_GENERATORS,
   deserializeLevelPlan,
   enabledLevelsFromPlan,
+  groupTokenForNodeId,
+  otherGroupToken,
+  schoolGroupToken,
   serializeLevelPlan,
 } from "app/finance/flow/FlowSettings";
 import ProgramFilter from "app/finance/_filteritems/program";
@@ -114,6 +117,35 @@ describe("FlowSettings level plan", () => {
     expect(serialized).not.toContain("pt.");
     expect(serialized).not.toContain("scm.");
     expect(serialized).not.toContain("sy.");
+    expect(serialized).not.toContain("xg.");
+  });
+
+  it("builds group tokens that survive the settings URL encoding", () => {
+    // Tokens may not contain "." or "~" (see utilities/settings.ts) -- the
+    // school ones are derived from node ids that do.
+    expect(otherGroupToken("activity")).toEqual("other-a");
+    expect(schoolGroupToken("sbucket:3")).toEqual("sbucket-3");
+    expect(schoolGroupToken("sregion:North East")).toEqual(
+      "sregion-North-East",
+    );
+    for (const t of [
+      otherGroupToken("school"),
+      schoolGroupToken("sregion:North East"),
+    ]) {
+      expect(t).toMatch(/^[A-Za-z0-9-]+$/);
+    }
+  });
+
+  it("maps a collapsed node id to its group token, and nothing else", () => {
+    // The engine's per-level "Other …" node -- keyed by LEVEL, since its own id
+    // carries a column that moves when levels are reordered.
+    expect(groupTokenForNodeId("other:2", "activity")).toEqual("other-a");
+    expect(groupTokenForNodeId("sbucket:3", "school")).toEqual("sbucket-3");
+    expect(groupTokenForNodeId("smsg:12", "school")).toEqual("smsg-12");
+    // Ordinary nodes are not groups.
+    expect(groupTokenForNodeId("act:27", "activity")).toBeNull();
+    expect(groupTokenForNodeId("flt:2", "filtered")).toBeNull();
+    expect(groupTokenForNodeId("other:0", "filtered")).toBeNull();
   });
 
   it("full settings round-trip through the URL", () => {
@@ -137,6 +169,7 @@ describe("FlowSettings level plan", () => {
       schoolCoalesceMode: "ms" as const,
       schoolSizeYear: 2019,
       highlightPta: true,
+      expandedGroups: new Set(["other-a", "smsg-12"]),
     };
 
     const serialized = serializeDatasetSettings(
@@ -154,6 +187,7 @@ describe("FlowSettings level plan", () => {
     expect(serialized[0]).toContain("pt.1");
     expect(serialized[0]).toContain("scm.m"); // ms mode
     expect(serialized[0]).toContain("sy.2019");
+    expect(serialized[0]).toContain("xg.other-a_smsg-12");
 
     const [restored] = deserializeDatasetSettings(
       serialized,
@@ -172,6 +206,7 @@ describe("FlowSettings level plan", () => {
     expect(restored.schoolCoalesceMode).toEqual("ms");
     expect(restored.schoolSizeYear).toEqual(2019);
     expect(restored.highlightPta).toBe(true);
+    expect(restored.expandedGroups).toEqual(new Set(["other-a", "smsg-12"]));
   });
 
   it("latest year (null classOf) and category mode round-trip as defaults", () => {

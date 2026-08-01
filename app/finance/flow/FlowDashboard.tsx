@@ -13,12 +13,13 @@
 import Box from "@mui/material/Box";
 import Chip from "@mui/material/Chip";
 import HighchartsReact from "highcharts-react-official";
+import Link from "@mui/material/Link";
 import Popover from "@mui/material/Popover";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Typography from "@mui/material/Typography";
 import { usePathname, useRouter } from "next/navigation";
-import { computeFlows } from "utilities/sankey/flows";
+import { coalesceSmall, computeFlows } from "utilities/sankey/flows";
 import { linksForBand, linksForNode } from "utilities/sankey/deepLinks";
 import {
   flowLinkClass,
@@ -57,8 +58,12 @@ import SettingsLayout from "app/finance/_widgets/SettingsLayout";
 import {
   ACTUALS_ONLY_LEVELS,
   enabledLevelsFromPlan,
+  groupTokenForNodeId,
+  otherGroupToken,
+  schoolGroupToken,
   SERIALIZE_FLOW_SETTINGS_GENERATORS,
 } from "./FlowSettings";
+import { focusUpdateForBand, focusUpdateForNode } from "utilities/sankey/focus";
 
 import type { DistrictDataContentProps } from "app/finance/_providers/DistrictDataProvider";
 import type { CommonContextSettings } from "app/finance/_settings/common_context_settings";
@@ -123,7 +128,10 @@ function coalesceSchoolsByGroup(
   }
   const rename = new Map<string, string>();
   const groupName = new Map<string, string>();
-  const members = new Map<string, Array<{ name: string; weight: number }>>();
+  const members = new Map<
+    string,
+    Array<{ name: string; weight: number; code: number | null }>
+  >();
   let column = 0;
   for (const n of nodes) {
     const g = group.get(n.id);
@@ -133,7 +141,13 @@ function coalesceSchoolsByGroup(
     rename.set(n.id, g.id);
     groupName.set(g.id, g.name);
     column = n.column;
-    const m = { name: n.name, weight: flow.get(n.id) ?? 0 };
+    // The member's own school code travels with it so "focus on this" can
+    // narrow the School filter to exactly this aggregate's schools.
+    const m = {
+      name: n.name,
+      weight: flow.get(n.id) ?? 0,
+      code: n.custom.code,
+    };
     const arr = members.get(g.id);
     if (arr) {
       arr.push(m);
@@ -191,7 +205,45 @@ type PopoverState = {
   left: number;
   title: string;
   links: Array<DeepLink>;
+  // In-place navigation helpers (see `NavAction`): re-filter the flow to this
+  // node/band, expand this collapsed group. Each carries the settings query it
+  // navigates to.
+  actions: Array<NavAction>;
 };
+
+// A helper that changes the flow's OWN settings rather than opening another
+// dashboard: `query` is the `d=…` query string of the settings to navigate to.
+// The same actions are offered as anchors inside the HTML tooltip, tagged with
+// `data-flow-nav` and intercepted by the delegated handler below (a bare href
+// would trigger a full page reload and re-download the district data).
+type NavAction = { label: string; query: string };
+const NAV_ATTR = "data-flow-nav";
+
+// Minimal escaping for a value interpolated into the tooltip's HTML string.
+function escapeAttr(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// Render the nav actions as one tooltip line: "Focus on this · Expand node".
+function navActionsHtml(actions: Array<NavAction>): string {
+  if (actions.length === 0) {
+    return "";
+  }
+  // Deliberately NO href: these navigate through the delegated handler, and an
+  // `href="#"` would additionally pick up the browser's :visited styling (the
+  // action turning purple after its first use, unlike the real links beside
+  // it). Without one, the anchor needs the link look spelled out -- #0000ee is
+  // the browser's own link blue, so it matches the deep links next to it.
+  const anchors = actions.map(
+    (a) =>
+      `<a ${NAV_ATTR}="${escapeAttr(a.query)}" style="pointer-events:all;cursor:pointer;text-decoration:underline;color:#0000ee">${a.label}</a>`,
+  );
+  return `<br/>${anchors.join(" · ")}`;
+}
 
 // A locked highlight: a single node, or a single band (from -> to). Clicking a
 // node/band locks it (the rest of the diagram dims and stays dimmed); it is
@@ -523,6 +575,12 @@ export default function FlowDashboard({
         }>,
       };
     }
+    // Groups the user expanded one at a time from the chart (tooltip "Expand
+    // node"). A level whose single engine "Other" node is expanded stops
+    // coalescing entirely -- there is only one such node per level -- while an
+    // expanded School aggregate only releases its own schools (below).
+    const expandedGroups = settings.expandedGroups;
+
     // When we take over School coalescing (`customSchoolCoalesce`), hold "school"
     // back from the engine and group schools ourselves below (by size / middle-
     // school area / region). Otherwise let the engine coalesce schools its
@@ -537,7 +595,9 @@ export default function FlowDashboard({
       filters,
       gates,
       coalesceLevels: [...settings.coalesceLevels].filter(
-        (l) => l !== "school" || !customSchoolCoalesce,
+        (l) =>
+          (l !== "school" || !customSchoolCoalesce) &&
+          !expandedGroups.has(otherGroupToken(l)),
       ),
     });
 
@@ -625,33 +685,54 @@ export default function FlowDashboard({
         if (code === null) {
           continue;
         }
+        // An aggregate the user expanded releases its schools: they stay
+        // individual nodes while the other aggregates remain merged.
+        const group = (id: string, name: string) => {
+          if (!expandedGroups.has(schoolGroupToken(id))) {
+            schoolGroup.set(n.id, { id, name });
+          }
+        };
         if (sizeMode) {
           const b = enrollBucket.get(n.id);
           if (b !== undefined) {
-            schoolGroup.set(n.id, {
-              id: `sbucket:${b}`,
-              name: enrollLabel(b),
-            });
+            group(`sbucket:${b}`, enrollLabel(b));
           }
         } else if (settings.schoolCoalesceMode === "ms") {
           const info = infoByCode.get(code);
-          schoolGroup.set(n.id, {
-            id: `smsg:${info?.ms_assignment_code ?? 0}`,
-            name: info?.ms_assignment ?? "Unknown area",
-          });
+          group(
+            `smsg:${info?.ms_assignment_code ?? 0}`,
+            info?.ms_assignment ?? "Unknown area",
+          );
         } else {
           const info = infoByCode.get(code);
-          schoolGroup.set(n.id, {
-            id: `sregion:${info?.region ?? "unknown"}`,
-            name: info?.region ?? "Unknown region",
-          });
+          group(
+            `sregion:${info?.region ?? "unknown"}`,
+            info?.region ?? "Unknown region",
+          );
         }
       }
     }
-    const { nodes, links } =
+    const grouped =
       schoolGroup.size > 0
         ? coalesceSchoolsByGroup(rawNodes, rawLinks, schoolGroup)
         : { nodes: rawNodes, links: rawLinks };
+    // Our school groups are formed by ENROLLMENT / area / region, so nothing
+    // about them responds to dollars -- and every other level's small nodes get
+    // rolled into "Other …" at 1% of the grand total. Under a narrow filter a
+    // group can be left holding a few thousand dollars of a billion-dollar
+    // fund, which draws as a zero-height node with a floating label and no
+    // visible band. Put the grouped column back through the engine's own rule so
+    // that dust collapses into one honest "Other Schools" node (expandable like
+    // any other group). Nothing merges when the groups carry real weight.
+    const { nodes, links } =
+      schoolGroup.size > 0 && !expandedGroups.has(otherGroupToken("school"))
+        ? coalesceSmall(
+            grouped.nodes,
+            grouped.links,
+            totals.grandTotal,
+            new Set<Level>(["school"]),
+          )
+        : grouped;
 
     // A "Filtered Out" band only appears when a per-level filter diverts
     // flow; surface an explanatory caption in that case (see the legend note
@@ -778,6 +859,66 @@ export default function FlowDashboard({
         max: r.max,
       }));
 
+    // --- In-place navigation helpers (tooltip + popover) --------------------
+    // Both helpers are "the same view with different settings", so each one is
+    // just a serialized settings query; the delegated click handler (and the
+    // Popover's buttons) hand it to the router.
+    const settingsQuery = (update: Partial<FlowSettings>): string =>
+      serializeDatasetSettings(
+        allSettings.map((s, i) => (i === 0 ? { ...s, ...update } : s)),
+        SERIALIZE_FLOW_SETTINGS_GENERATORS,
+      )
+        .filter((q) => !!q)
+        .map((q) => `d=${q}`)
+        .join("&");
+
+    // "Expand node": release just this collapsed group (an engine "Other …"
+    // node, or one School aggregate). Absent on ordinary nodes and on a group
+    // that is already expanded.
+    const expandAction = (node: SankeyNode): NavAction | null => {
+      const token = groupTokenForNodeId(node.id, node.custom.level);
+      if (token === null || expandedGroups.has(token)) {
+        return null;
+      }
+      return {
+        label: "Expand node",
+        query: settingsQuery({
+          expandedGroups: new Set([...expandedGroups, token]),
+        }),
+      };
+    };
+
+    // "Focus on this": narrow the flow's own filters to this node (one arg) or
+    // this band (two) -- see utilities/sankey/focus.ts. Focusing a collapsed
+    // group expands it as well, otherwise its members -- still small against
+    // the unchanged grand total -- would simply re-coalesce into the same
+    // "Other" node and the click would look like it did nothing.
+    const focusAction = (nodes: SankeyNode[]): NavAction | null => {
+      const update =
+        nodes.length === 1
+          ? focusUpdateForNode(nodes[0], settings.sourceMode)
+          : focusUpdateForBand(nodes[0], nodes[1], settings.sourceMode);
+      if (update === null) {
+        return null;
+      }
+      const tokens = nodes
+        .map((n) => groupTokenForNodeId(n.id, n.custom.level))
+        .filter((t): t is string => t !== null);
+      return {
+        label: "Focus on this",
+        query: settingsQuery({
+          ...update,
+          expandedGroups: new Set([...expandedGroups, ...tokens]),
+        }),
+      };
+    };
+
+    const isAction = (a: NavAction | null): a is NavAction => a !== null;
+    const nodeActions = (node: SankeyNode): NavAction[] =>
+      [focusAction([node]), expandAction(node)].filter(isAction);
+    const bandActions = (from: SankeyNode, to: SankeyNode): NavAction[] =>
+      [focusAction([from, to])].filter(isAction);
+
     const dataTypeLabel = dt === "budget" ? "Budget" : "Actuals";
 
     // Deficit years draw down the fund balance; surplus years grow it. Show
@@ -897,6 +1038,9 @@ export default function FlowDashboard({
             const members = p.options?.custom?.members as
               | Array<{ name: string; weight: number }>
               | undefined;
+            const actions = navActionsHtml(
+              nodeActions(p.options as SankeyNode),
+            );
             if (members && members.length) {
               const MAX = 15;
               const shown = members
@@ -907,13 +1051,16 @@ export default function FlowDashboard({
                 members.length > MAX
                   ? `<br/>…and ${members.length - MAX} more`
                   : "";
-              return `<b>${p.name} (${members.length})</b><br/>${fmt(p.sum)}<br/>${shown}${more}`;
+              // Actions sit directly under the value, ABOVE the member list --
+              // the list runs to 15 lines, and an action below it reads as part
+              // of the list rather than as a control.
+              return `<b>${p.name} (${members.length})</b><br/>${fmt(p.sum)}${actions}<br/>${shown}${more}`;
             }
             // Node hover: one view filtered to just this node, faceted on its
             // OWN level -- same "Explore in <a>…</a> or <a>…</a>" phrasing as a
             // band's links.
             const nodeLinks = linksForNode(p.options as SankeyNode, ctx);
-            return `<b>${p.name}</b><br/>${fmt(p.sum)}${bandLinksHtml(nodeLinks)}`;
+            return `<b>${p.name}</b><br/>${fmt(p.sum)}${actions}${bandLinksHtml(nodeLinks)}`;
           }
 
           // Band hover: one view filtered to exactly this band, faceted on the
@@ -924,8 +1071,17 @@ export default function FlowDashboard({
             p.toNode.options as SankeyNode,
             ctx,
           );
+          // In-place actions first, then the links out to other dashboards --
+          // same order as the click-popover, and the reason for the ordering is
+          // that "stay here, narrowed" is the lighter-weight move of the two.
           return (
             `<b>${p.fromNode.name} → ${p.toNode.name}</b><br/>${fmt(p.weight)}` +
+            navActionsHtml(
+              bandActions(
+                p.fromNode.options as SankeyNode,
+                p.toNode.options as SankeyNode,
+              ),
+            ) +
             bandLinksHtml(links)
           );
         },
@@ -974,9 +1130,11 @@ export default function FlowDashboard({
                 // pointer to cross into on every platform/input device.
                 let title = "";
                 let links: Array<DeepLink> = [];
+                let actions: Array<NavAction> = [];
                 if (p.isNode) {
                   title = p.name;
                   links = linksForNode(p.options as SankeyNode, ctx);
+                  actions = nodeActions(p.options as SankeyNode);
                 } else if (p.fromNode && p.toNode) {
                   title = `${p.fromNode.name} → ${p.toNode.name}`;
                   links = linksForBand(
@@ -984,9 +1142,14 @@ export default function FlowDashboard({
                     p.toNode.options as SankeyNode,
                     ctx,
                   );
+                  actions = bandActions(
+                    p.fromNode.options as SankeyNode,
+                    p.toNode.options as SankeyNode,
+                  );
                 }
 
-                if (links.length === 0) {
+                // Nothing to offer (e.g. a Filtered Out band): no popover.
+                if (links.length === 0 && actions.length === 0) {
                   return;
                 }
 
@@ -995,6 +1158,7 @@ export default function FlowDashboard({
                   left: event.pageX ?? 0,
                   title,
                   links,
+                  actions,
                 });
               },
             },
@@ -1012,6 +1176,54 @@ export default function FlowDashboard({
       schoolLegend,
     };
   }, [districtDataMap, allSettings, availWidth, applyHighlight]);
+
+  // Highcharts sanitizes the HTML it renders for `useHTML` tooltips through its
+  // AST, dropping every attribute outside a fixed allow-list -- which silently
+  // ate `data-flow-nav` (the anchors rendered, the clicks did nothing). Add it
+  // to the allow-list. It only ever carries a settings query we generated
+  // ourselves and is read back by the delegated handler below, never evaluated.
+  useEffect(() => {
+    const allowed = (highchartsObjs?.highcharts as any)?.AST?.allowedAttributes;
+    if (Array.isArray(allowed) && !allowed.includes(NAV_ATTR)) {
+      allowed.push(NAV_ATTR);
+    }
+  }, [highchartsObjs]);
+
+  // Navigate to a settings query produced by a NavAction (see its type): same
+  // route, different `d=` value. `push` rather than `replace` so a focus, which
+  // discards the previous filter selection, is undoable with the Back button.
+  const applyNavQuery = useCallback(
+    (query: string) => {
+      setPopover(null);
+      // Drop any locked highlight: the new view is a different set of nodes, and
+      // the `#hl=` hash does not survive the push -- so keeping the state would
+      // leave the "Highlighting: …" chip claiming a lock the URL no longer
+      // carries.
+      applyHighlight(null);
+      router.push(`${pathname}?${query}`);
+    },
+    [router, pathname, applyHighlight],
+  );
+
+  // The tooltip's nav actions are plain anchors inside a Highcharts HTML
+  // tooltip, so they are outside React's tree and cannot carry an onClick.
+  // Intercept them here instead, in the CAPTURE phase so this beats both the
+  // anchor's own default navigation (which would hard-reload the route and
+  // re-download the district data) and the chart's background-click handler.
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const el = (e.target as Element | null)?.closest?.(`[${NAV_ATTR}]`);
+      const query = el?.getAttribute(NAV_ATTR);
+      if (!query) {
+        return;
+      }
+      e.preventDefault();
+      e.stopPropagation();
+      applyNavQuery(query);
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, [applyNavQuery]);
 
   // Apply the locked highlight IMPERATIVELY to the already-rendered chart: dim
   // every node/band outside the highlighted flow by toggling the `flow-dim`
@@ -1318,6 +1530,31 @@ export default function FlowDashboard({
             <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
               {popover.title}
             </Typography>
+            {popover.actions.map((a) => (
+              <Typography key={a.label} variant="body2">
+                <Link
+                  component="button"
+                  type="button"
+                  underline="always"
+                  // A <button> under the hood, so it inherits none of the
+                  // surrounding type and gets no link color of its own. Spell
+                  // both out to match the plain <a> deep links listed right
+                  // below it (browser link blue, always underlined) -- as a
+                  // hover-only underline it read as inert text in the pinned
+                  // popover.
+                  sx={{
+                    font: "inherit",
+                    color: "#0000ee",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    verticalAlign: "baseline",
+                  }}
+                  onClick={() => applyNavQuery(a.query)}
+                >
+                  {a.label}
+                </Link>
+              </Typography>
+            ))}
             {popover.links.map((l) => (
               <Typography key={l.href} variant="body2">
                 <a href={l.href} target="_blank" rel="noopener">

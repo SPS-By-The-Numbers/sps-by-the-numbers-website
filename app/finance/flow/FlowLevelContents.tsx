@@ -34,7 +34,9 @@ import { useId, useState } from "react";
 import {
   ACTUALS_ONLY_LEVELS,
   ALWAYS_ENABLED_LEVELS,
+  otherGroupToken,
   PINNED_LEVELS,
+  SCHOOL_GROUP_PREFIX,
 } from "./FlowSettings";
 
 import type { FlowSettings, LevelPlan } from "./FlowSettings";
@@ -95,6 +97,27 @@ function filledIconSx(active: boolean) {
   };
 }
 
+// The compress control is TRI-state (see `CoalesceState`): fully coalescing is
+// the solid primary of the other filled buttons; fully expanded is the same
+// muted grey as an "off" eye; the partially-expanded middle is drawn as an
+// outline -- primary hue, so it reads as active, but hollow, so it reads as
+// "not all of it".
+function coalesceIconSx(state: "off" | "partial" | "on") {
+  if (state !== "partial") {
+    return filledIconSx(state === "on");
+  }
+  return {
+    ...filledIconSx(false),
+    backgroundColor: "transparent",
+    color: "primary.main",
+    border: "1px solid",
+    borderColor: "primary.main",
+    // Keep the glyph aligned with the filled buttons despite the border.
+    padding: "3px",
+    "&:hover": { backgroundColor: "action.hover" },
+  };
+}
+
 export default function FlowLevelContents({
   settings,
   setSettings,
@@ -135,14 +158,62 @@ export default function FlowLevelContents({
     );
   };
 
-  const toggleCoalesce = (level: Level, on: boolean) => {
-    const next = new Set(settings.coalesceLevels);
-    if (on) {
-      next.add(level);
-    } else {
-      next.delete(level);
+  // The coalescing state of one level. "partial" means the level is coalescing
+  // but the user has expanded some of its groups from the chart (tooltip
+  // "Expand node") -- only reachable for School, which has several aggregates
+  // per column; every other level has exactly one "Other …" node, so expanding
+  // it expands the whole level ("off").
+  type CoalesceState = "off" | "partial" | "on";
+
+  // This level's expansion tokens: its engine "Other …" node, plus -- for
+  // School -- the aggregates of the ACTIVE grouping mode, so a token left over
+  // from a different mode (matching no group on screen) never reads as
+  // "partial".
+  const expandedTokensFor = (level: Level): string[] =>
+    [...settings.expandedGroups].filter(
+      (t) =>
+        t === otherGroupToken(level) ||
+        (level === "school" &&
+          t.startsWith(SCHOOL_GROUP_PREFIX[settings.schoolCoalesceMode])),
+    );
+
+  const coalesceStateFor = (level: Level): CoalesceState => {
+    if (!settings.coalesceLevels.has(level)) {
+      return "off";
     }
-    setSettings({ ...settings, coalesceLevels: next });
+    // School is grouped by the dashboard (size / area / region) and its dust is
+    // then rolled into an "Other Schools" node, so it has SEVERAL collapsed
+    // groups: expanding any of them -- that "Other Schools" included -- is a
+    // partial expansion. Every other level has exactly one "Other …" node, so
+    // expanding it expands the whole level; report that as "off" rather than a
+    // partial state there is no way to leave.
+    if (
+      level !== "school" &&
+      settings.expandedGroups.has(otherGroupToken(level))
+    ) {
+      return "off";
+    }
+    return expandedTokensFor(level).length > 0 ? "partial" : "on";
+  };
+
+  // Cycle the compress control. From "on" it stops coalescing; from "off" it
+  // starts; from "partial" it re-collapses the groups that were expanded one at
+  // a time (the state you most likely want back). Every transition drops this
+  // level's expansion tokens: they are meaningless once the level is fully
+  // collapsed or fully expanded.
+  const cycleCoalesce = (level: Level) => {
+    const state = coalesceStateFor(level);
+    const coalesceLevels = new Set(settings.coalesceLevels);
+    if (state === "on") {
+      coalesceLevels.delete(level);
+    } else {
+      coalesceLevels.add(level);
+    }
+    const drop = new Set(expandedTokensFor(level));
+    const expandedGroups = new Set(
+      [...settings.expandedGroups].filter((t) => !drop.has(t)),
+    );
+    setSettings({ ...settings, coalesceLevels, expandedGroups });
   };
 
   // Move the reorderable row at `from` to `to`. Pinned rows (indices 0/1) never
@@ -232,7 +303,7 @@ export default function FlowLevelContents({
               settings.dataType === "budget" &&
               ACTUALS_ONLY_LEVELS.includes(entry.level);
             const shown = entry.enabled && !unavailable;
-            const coalesceOn = settings.coalesceLevels.has(entry.level);
+            const coalesceState = coalesceStateFor(entry.level);
             return (
               <Box
                 key={entry.level}
@@ -347,15 +418,22 @@ export default function FlowLevelContents({
                   </IconButton>
                   <IconButton
                     size="small"
-                    sx={filledIconSx(coalesceOn)}
+                    sx={coalesceIconSx(coalesceState)}
                     disabled={!entry.enabled || unavailable}
-                    onClick={() => toggleCoalesce(entry.level, !coalesceOn)}
+                    onClick={() => cycleCoalesce(entry.level)}
                     title={
-                      coalesceOn
+                      coalesceState === "on"
                         ? `Stop coalescing small ${LEVEL_LABEL[entry.level]} nodes`
-                        : `Coalesce small ${LEVEL_LABEL[entry.level]} nodes into "Other"`
+                        : coalesceState === "partial"
+                          ? `Some ${LEVEL_LABEL[entry.level]} groups are expanded — re-collapse them`
+                          : `Coalesce small ${LEVEL_LABEL[entry.level]} nodes into "Other"`
                     }
-                    aria-pressed={coalesceOn}
+                    // Tri-state: "mixed" is the partially-expanded middle.
+                    aria-pressed={
+                      coalesceState === "partial"
+                        ? "mixed"
+                        : coalesceState === "on"
+                    }
                     aria-label={`Coalesce small ${LEVEL_LABEL[entry.level]} nodes`}
                   >
                     <CompressIcon fontSize="small" />

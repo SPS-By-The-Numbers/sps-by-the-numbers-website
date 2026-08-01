@@ -17,6 +17,8 @@
 //   - `dt`  data type ("b" = budget, omitted = actuals)
 //   - `cs`  EXPANDED (not-coalesced) levels as letters; default is all-collapsed
 //           so omitted = every level coalesced
+//   - `xg`  the individually EXPANDED collapsed groups (see "Expanded groups"
+//           below), as `_`-joined tokens; omitted = none
 //   - `pt`  highlight the PTA-funding resource ("1" = on, omitted = off)
 //   - `scm` school-coalesce mode ("m" = middle-school area, "r" = region,
 //           omitted = enrollment size)
@@ -76,6 +78,11 @@ export type FlowSettings = DatasetSettings &
     dataType: "actuals" | "budget";
     // The levels whose small nodes are combined into an "Other" node.
     coalesceLevels: Set<Level>;
+    // Collapsed groups the user expanded individually from the chart (the
+    // tooltip's "Expand node"), as group TOKENS -- see `groupTokenForNodeId`.
+    // A level can therefore be coalescing AND have some of its groups expanded,
+    // which is the middle state of the Levels panel's compress button.
+    expandedGroups: Set<string>;
     // When School coalescing is on, how schools are grouped (see the header).
     schoolCoalesceMode: SchoolCoalesceMode;
     // For size mode: the class_of whose enrollment sizes schools. null => the
@@ -144,6 +151,65 @@ export function deserializeCoalesceLevels(s: string): Set<Level> {
     }
   }
   return new Set<Level>(CANONICAL_LEVEL_ORDER.filter((l) => !expanded.has(l)));
+}
+
+// --- Expanded groups ------------------------------------------------------
+//
+// A collapsed node is identified in settings by a TOKEN rather than by its node
+// id, because node ids are not stable: the engine's "Other" node is `other:<col>`
+// and its column moves when levels are reordered or hidden. Two families:
+//   `other-<letter>`  the engine's single "Other <Level>" node for that level
+//                     (one per level, so expanding it expands that whole level)
+//   `sbucket-<n>` / `smsg-<n>` / `sregion-<name>`
+//                     one School aggregate under the dashboard's own school
+//                     coalescing -- there are several per column, so these
+//                     expand just the one group
+// Tokens are restricted to [A-Za-z0-9-] so they survive the settings URL
+// encoding (which forbids "." and "~"), and are joined with "_". A school token
+// names the group as the CURRENT settings define it -- change the grouping mode
+// or the size year and a saved token may address a different set of schools (or
+// none at all, in which case it is simply inert).
+export const SCHOOL_GROUP_PREFIX: Record<SchoolCoalesceMode, string> = {
+  size: "sbucket-",
+  ms: "smsg-",
+  region: "sregion-",
+};
+
+// The token for the engine's "Other <Level>" node.
+export function otherGroupToken(level: Level): string {
+  return `other-${LEVEL_LETTER[level]}`;
+}
+
+// The token for a school aggregate, from the node id the dashboard mints
+// (`sbucket:3`, `smsg:12`, `sregion:Northeast`): the id with every run of
+// non-alphanumerics flattened to a dash.
+export function schoolGroupToken(nodeId: string): string {
+  return nodeId.replace(/[^A-Za-z0-9]+/g, "-");
+}
+
+// The token for any collapsed node, from its id and level -- or null when the
+// node is not a collapsed group.
+export function groupTokenForNodeId(
+  nodeId: string,
+  level: Level | "fundBalance" | "filtered",
+): string | null {
+  if (nodeId.startsWith("other:")) {
+    return level === "fundBalance" || level === "filtered"
+      ? null
+      : otherGroupToken(level);
+  }
+  return nodeId.startsWith("sbucket:") ||
+    nodeId.startsWith("smsg:") ||
+    nodeId.startsWith("sregion:")
+    ? schoolGroupToken(nodeId)
+    : null;
+}
+
+export function serializeExpandedGroups(groups: Set<string>): string {
+  return [...groups].sort().join("_");
+}
+export function deserializeExpandedGroups(s: string): Set<string> {
+  return new Set(s.split("_").filter((t) => t.length > 0));
 }
 
 // The out-of-the-box plan: Resource, Program, Activity, Object shown; NCES,
@@ -228,8 +294,10 @@ export const DEFAULT_FLOW_SETTINGS: Array<FlowSettings> =
     sourceMode: "category" as const,
     classOf: null,
     dataType: "actuals" as const,
-    // Default: all levels collapsed (small nodes coalesced).
+    // Default: all levels collapsed (small nodes coalesced), nothing
+    // individually expanded.
     coalesceLevels: new Set<Level>(CANONICAL_LEVEL_ORDER),
+    expandedGroups: new Set<string>(),
     schoolCoalesceMode: "size" as const,
     schoolSizeYear: null,
     highlightPta: false,
@@ -291,6 +359,16 @@ export function makeFlowSerializeConfig(): SettingsConfig {
         // empty set is the default and serializes to "" (omitted from URL).
         serialize: (settings, key) => serializeCoalesceLevels(settings[key]),
         deserialize: (settings, s) => deserializeCoalesceLevels(s),
+      },
+    ],
+    [
+      "expandedGroups",
+      {
+        serializerType: "custom",
+        urlVar: "xg",
+        // empty set is the default and serializes to "" (omitted from URL).
+        serialize: (settings, key) => serializeExpandedGroups(settings[key]),
+        deserialize: (settings, s) => deserializeExpandedGroups(s),
       },
     ],
     [
