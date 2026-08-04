@@ -20,8 +20,8 @@
 //   - `xg`  the individually EXPANDED collapsed groups (see "Expanded groups"
 //           below), as `_`-joined tokens; omitted = none
 //   - `pt`  highlight the PTA-funding resource ("1" = on, omitted = off)
-//   - `scm` school-coalesce mode ("m" = middle-school area, "r" = region,
-//           omitted = enrollment size)
+//   - `scm` school-coalesce mode ("a" = funding amount, "m" = middle-school
+//           area, "r" = region, omitted = enrollment size)
 //   - `sy`  the class_of whose enrollment sizes schools in size mode; omitted =>
 //           the chart's own year
 // Defaults serialize to the empty string so they are omitted from the URL.
@@ -50,9 +50,15 @@ import type {
 } from "utilities/DistrictData";
 import type { Level, SourceMode } from "utilities/sankey/types";
 
-// How schools are grouped when the School level's coalescing is on: by
-// enrollment-size bucket, by middle-school attendance area, or by region.
-export type SchoolCoalesceMode = "size" | "ms" | "region";
+// How schools are grouped when the School level's coalescing is on: by the
+// dollars flowing to them, by enrollment-size bucket, by middle-school
+// attendance area, or by region. The two ranked modes ("amount", "size") build
+// groups of about SCHOOL_GROUP_TARGET schools each.
+export type SchoolCoalesceMode = "amount" | "size" | "ms" | "region";
+
+// How many schools a ranked group aims to hold. Small enough that expanding one
+// group from the chart adds a readable handful of nodes rather than a wall.
+export const SCHOOL_GROUP_TARGET = 10;
 
 // One row of the level plan: a sankey column and whether it is currently shown.
 export type LevelPlanEntry = { level: Level; enabled: boolean };
@@ -170,6 +176,7 @@ export function deserializeCoalesceLevels(s: string): Set<Level> {
 // or the size year and a saved token may address a different set of schools (or
 // none at all, in which case it is simply inert).
 export const SCHOOL_GROUP_PREFIX: Record<SchoolCoalesceMode, string> = {
+  amount: "samt-",
   size: "sbucket-",
   ms: "smsg-",
   region: "sregion-",
@@ -198,7 +205,8 @@ export function groupTokenForNodeId(
       ? null
       : otherGroupToken(level);
   }
-  return nodeId.startsWith("sbucket:") ||
+  return nodeId.startsWith("samt:") ||
+    nodeId.startsWith("sbucket:") ||
     nodeId.startsWith("smsg:") ||
     nodeId.startsWith("sregion:")
     ? schoolGroupToken(nodeId)
@@ -388,9 +396,21 @@ export function makeFlowSerializeConfig(): SettingsConfig {
         urlVar: "scm",
         // "size" is the default and serializes to "" (omitted from URL).
         serialize: (settings, key) =>
-          settings[key] === "ms" ? "m" : settings[key] === "region" ? "r" : "",
+          settings[key] === "amount"
+            ? "a"
+            : settings[key] === "ms"
+              ? "m"
+              : settings[key] === "region"
+                ? "r"
+                : "",
         deserialize: (settings, s) =>
-          s === "m" ? "ms" : s === "r" ? "region" : "size",
+          s === "a"
+            ? "amount"
+            : s === "m"
+              ? "ms"
+              : s === "r"
+                ? "region"
+                : "size",
       },
     ],
     [

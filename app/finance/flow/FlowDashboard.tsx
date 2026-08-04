@@ -19,9 +19,10 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Typography from "@mui/material/Typography";
 import { usePathname, useRouter } from "next/navigation";
-import { coalesceSmall, computeFlows } from "utilities/sankey/flows";
+import { computeFlows } from "utilities/sankey/flows";
 import { linksForBand, linksForNode } from "utilities/sankey/deepLinks";
 import {
+  evenRankBuckets,
   flowLinkClass,
   flowNodeClass,
   schoolBucketClass,
@@ -60,6 +61,7 @@ import {
   enabledLevelsFromPlan,
   groupTokenForNodeId,
   otherGroupToken,
+  SCHOOL_GROUP_TARGET,
   schoolGroupToken,
   SERIALIZE_FLOW_SETTINGS_GENERATORS,
 } from "./FlowSettings";
@@ -109,8 +111,8 @@ function bandLinksHtml(links: Array<DeepLink>): string {
 
 // When the School level coalesces, merge school nodes into aggregate group
 // nodes per the caller-supplied `group` map (school node id -> {aggregate id,
-// display name}) -- e.g. one node per enrollment-size bucket, middle-school
-// attendance area, or region. Schools absent from the map (District Office; a
+// display name}) -- e.g. one node per funding-amount tier, enrollment-size
+// tier, middle-school attendance area, or region. Schools absent from the map (District Office; a
 // school with no size in size mode) stay their own nodes. Each aggregate carries
 // its merged schools as `members` (for the tooltip). Reroutes and re-sums every
 // link touching a merged school. Color is driven by the aggregate id's prefix
@@ -624,46 +626,62 @@ export default function FlowDashboard({
         .map((s) => `sch:${s.school_code}`),
     );
 
-    // For SIZE-mode GROUPING only: rank the individual schools by enrollment
-    // (see enrollmentByCode) into buckets so they can merge into enrollment tiers
-    // ("Schools · 294–450 headcount"). Excludes the District Office and any school the
-    // enrollment data omits; empty when the size year has no enrollment
-    // (`haveEnrollment` false). Node COLOR is handled separately, by node size,
-    // below.
-    const enrollSizes = new Map<string, number>();
-    if (haveEnrollment) {
+    // The two RANKED grouping modes measure each school and cut the ranking into
+    // groups of about SCHOOL_GROUP_TARGET schools (see `evenRankBuckets`), so a
+    // group stays small enough to expand into the chart. "amount" ranks by the
+    // dollars reaching the school -- available for every school, always; "size"
+    // ranks by enrollment, which excludes any school the enrollment data omits
+    // and is unavailable outright when the size year has none (`haveEnrollment`
+    // false). Both exclude the District Office, which stays its own
+    // bottom-pinned node. Node COLOR is a separate ranking, by dollars onto the
+    // fixed palette, further below.
+    const amountMode = settings.schoolCoalesceMode === "amount";
+    const schoolFlow = new Map<string, number>();
+    for (const l of rawLinks) {
+      schoolFlow.set(l.to, (schoolFlow.get(l.to) ?? 0) + l.weight);
+    }
+    const rankMetric = new Map<string, number>();
+    if (amountMode || haveEnrollment) {
       for (const n of rawNodes) {
-        if (n.custom.level === "school" && !districtOfficeNodeIds.has(n.id)) {
-          const e =
-            n.custom.code !== null
-              ? enrollmentByCode.get(n.custom.code)
-              : undefined;
-          if (e !== undefined) {
-            enrollSizes.set(n.id, e);
-          }
+        if (n.custom.level !== "school" || districtOfficeNodeIds.has(n.id)) {
+          continue;
+        }
+        if (amountMode) {
+          rankMetric.set(n.id, schoolFlow.get(n.id) ?? 0);
+          continue;
+        }
+        const e =
+          n.custom.code !== null
+            ? enrollmentByCode.get(n.custom.code)
+            : undefined;
+        if (e !== undefined) {
+          rankMetric.set(n.id, e);
         }
       }
     }
-    const enrollBucket = sizeBuckets(enrollSizes, SCHOOL_BUCKET_COUNT);
-    const enrollRange = new Map<number, { min: number; max: number }>();
-    for (const [id, b] of enrollBucket.entries()) {
-      const s = enrollSizes.get(id) ?? 0;
-      const r = enrollRange.get(b);
+    const rankBucket = evenRankBuckets(rankMetric, SCHOOL_GROUP_TARGET);
+    const rankRange = new Map<number, { min: number; max: number }>();
+    for (const [id, b] of rankBucket.entries()) {
+      const s = rankMetric.get(id) ?? 0;
+      const r = rankRange.get(b);
       if (r) {
         r.min = Math.min(r.min, s);
         r.max = Math.max(r.max, s);
       } else {
-        enrollRange.set(b, { min: s, max: s });
+        rankRange.set(b, { min: s, max: s });
       }
     }
-    // Label size tiers with the enrollment RANGE and its unit ("headcount") so
-    // the numbers don't read as school identifiers -- e.g. "Schools · 486–989
-    // headcount" rather than "Schools 486–989".
-    const enrollLabel = (b: number) => {
-      const r = enrollRange.get(b);
-      return r
-        ? `Schools · ${fmtCount(r.min)}–${fmtCount(r.max)} headcount`
-        : "Schools";
+    // Label a ranked tier with its RANGE and the unit that produced it, so the
+    // numbers don't read as school identifiers -- "Schools · 486–989 headcount",
+    // "Schools · $1.20M–$3.40M".
+    const rankLabel = (b: number) => {
+      const r = rankRange.get(b);
+      if (!r) {
+        return "Schools";
+      }
+      return amountMode
+        ? `Schools · ${fmt(r.min)}–${fmt(r.max)}`
+        : `Schools · ${fmtCount(r.min)}–${fmtCount(r.max)} headcount`;
     };
 
     // When we take over School coalescing, decide which aggregate each school
@@ -692,10 +710,10 @@ export default function FlowDashboard({
             schoolGroup.set(n.id, { id, name });
           }
         };
-        if (sizeMode) {
-          const b = enrollBucket.get(n.id);
+        if (amountMode || sizeMode) {
+          const b = rankBucket.get(n.id);
           if (b !== undefined) {
-            group(`sbucket:${b}`, enrollLabel(b));
+            group(`${amountMode ? "samt" : "sbucket"}:${b}`, rankLabel(b));
           }
         } else if (settings.schoolCoalesceMode === "ms") {
           const info = infoByCode.get(code);
@@ -712,27 +730,10 @@ export default function FlowDashboard({
         }
       }
     }
-    const grouped =
+    const { nodes, links } =
       schoolGroup.size > 0
         ? coalesceSchoolsByGroup(rawNodes, rawLinks, schoolGroup)
         : { nodes: rawNodes, links: rawLinks };
-    // Our school groups are formed by ENROLLMENT / area / region, so nothing
-    // about them responds to dollars -- and every other level's small nodes get
-    // rolled into "Other …" at 1% of the grand total. Under a narrow filter a
-    // group can be left holding a few thousand dollars of a billion-dollar
-    // fund, which draws as a zero-height node with a floating label and no
-    // visible band. Put the grouped column back through the engine's own rule so
-    // that dust collapses into one honest "Other Schools" node (expandable like
-    // any other group). Nothing merges when the groups carry real weight.
-    const { nodes, links } =
-      schoolGroup.size > 0 && !expandedGroups.has(otherGroupToken("school"))
-        ? coalesceSmall(
-            grouped.nodes,
-            grouped.links,
-            totals.grandTotal,
-            new Set<Level>(["school"]),
-          )
-        : grouped;
 
     // A "Filtered Out" band only appears when a per-level filter diverts
     // flow; surface an explanatory caption in that case (see the legend note

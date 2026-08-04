@@ -35,21 +35,6 @@ describe("codesForNode", () => {
     expect(codesForNode(other)).toEqual(new Set([31, 32]));
   });
 
-  it("flattens a member that is itself a group", () => {
-    // "Other Schools" built from school AGGREGATES (which have no code of their
-    // own) plus one ordinary school: focus must reach every leaf.
-    const other = node("other:3", "school", null, [
-      {
-        name: "Schools · 47–172 headcount",
-        weight: 10,
-        code: null,
-        codes: [101, 102],
-      },
-      { name: "Residential Consortium", weight: 5, code: 200 },
-    ]);
-    expect(codesForNode(other)).toEqual(new Set([101, 102, 200]));
-  });
-
   it("returns null when there is nothing behind the node", () => {
     expect(codesForNode(node("fb:drawdown", "fundBalance", null))).toBeNull();
     expect(codesForNode(node("flt:2", "filtered", null))).toBeNull();

@@ -81,6 +81,31 @@ export function schoolBucketClass(bucket: number): string {
   return `flow-school-b${bucket}`;
 }
 
+// Assigns each id a bucket by ASCENDING size RANK, sized so each bucket holds
+// about `perBucket` ids -- the GROUPING counterpart to `sizeBuckets` below,
+// which spreads a fixed number of buckets across a color ramp instead. The
+// bucket count follows the population (ceil(n / perBucket)), so a group stays
+// small enough to expand into the chart without swamping it. Ties break by id
+// for determinism.
+export function evenRankBuckets(
+  sizeById: Map<string, number>,
+  perBucket: number,
+): Map<string, number> {
+  const ids = [...sizeById.keys()].sort((a, b) => {
+    const d = (sizeById.get(a) ?? 0) - (sizeById.get(b) ?? 0);
+    return d !== 0 ? d : a < b ? -1 : a > b ? 1 : 0;
+  });
+  const n = ids.length;
+  const buckets = Math.max(1, Math.ceil(n / Math.max(1, perBucket)));
+  const out = new Map<string, number>();
+  ids.forEach((id, i) => {
+    // floor(i * buckets / n) fills every bucket equally (± 1), unlike a
+    // rank-spread, which leaves the first and last buckets half empty.
+    out.set(id, Math.min(buckets - 1, Math.floor((i * buckets) / n)));
+  });
+  return out;
+}
+
 // Assigns each id a bucket in [0, buckets-1] by ASCENDING size RANK, spread
 // across the full palette: the smallest gets 0, the largest gets buckets-1, the
 // rest evenly in between. Ties break by id for determinism.

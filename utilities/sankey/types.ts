@@ -79,16 +79,7 @@ export type SankeyNode = {
     // their through-flow, and their own level code), for the tooltip and for
     // "focus on this", which narrows the level's filter to exactly these codes.
     // Absent on ordinary nodes.
-    members?: Array<{
-      name: string;
-      weight: number;
-      code: number | null;
-      // Set when the member is ITSELF a collapsed group (a school aggregate
-      // that was in turn rolled into "Other Schools"): the leaf codes it
-      // stands for, so "focus on this" can still narrow to them even though
-      // the member has no single code of its own.
-      codes?: number[];
-    }>;
+    members?: Array<{ name: string; weight: number; code: number | null }>;
   };
 };
 

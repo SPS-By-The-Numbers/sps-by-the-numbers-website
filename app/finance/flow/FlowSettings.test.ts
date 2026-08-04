@@ -141,11 +141,30 @@ describe("FlowSettings level plan", () => {
     // carries a column that moves when levels are reordered.
     expect(groupTokenForNodeId("other:2", "activity")).toEqual("other-a");
     expect(groupTokenForNodeId("sbucket:3", "school")).toEqual("sbucket-3");
+    expect(groupTokenForNodeId("samt:7", "school")).toEqual("samt-7");
     expect(groupTokenForNodeId("smsg:12", "school")).toEqual("smsg-12");
     // Ordinary nodes are not groups.
     expect(groupTokenForNodeId("act:27", "activity")).toBeNull();
     expect(groupTokenForNodeId("flt:2", "filtered")).toBeNull();
     expect(groupTokenForNodeId("other:0", "filtered")).toBeNull();
+  });
+
+  it("round-trips the funding-amount school grouping", () => {
+    const modified = {
+      ...DEFAULT_FLOW_SETTINGS[0],
+      schoolCoalesceMode: "amount" as const,
+    };
+    const serialized = serializeDatasetSettings(
+      [modified],
+      SERIALIZE_FLOW_SETTINGS_GENERATORS,
+    );
+    expect(serialized[0]).toContain("scm.a");
+    const [restored] = deserializeDatasetSettings(
+      serialized,
+      DEFAULT_FLOW_SETTINGS,
+      SERIALIZE_FLOW_SETTINGS_GENERATORS,
+    );
+    expect(restored.schoolCoalesceMode).toEqual("amount");
   });
 
   it("full settings round-trip through the URL", () => {

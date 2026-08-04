@@ -62,6 +62,7 @@ const DATA_TYPE_OPTIONS: Record<string, string> = {
 };
 
 const SCHOOL_COALESCE_MODE_OPTIONS: Record<string, string> = {
+  amount: "Funding amount",
   size: "Enrollment size",
   ms: "Middle school area",
   region: "Region",
@@ -181,19 +182,16 @@ export default function FlowLevelContents({
     if (!settings.coalesceLevels.has(level)) {
       return "off";
     }
-    // School is grouped by the dashboard (size / area / region) and its dust is
-    // then rolled into an "Other Schools" node, so it has SEVERAL collapsed
-    // groups: expanding any of them -- that "Other Schools" included -- is a
-    // partial expansion. Every other level has exactly one "Other …" node, so
-    // expanding it expands the whole level; report that as "off" rather than a
-    // partial state there is no way to leave.
-    if (
-      level !== "school" &&
-      settings.expandedGroups.has(otherGroupToken(level))
-    ) {
+    // Expanding a level's one and only "Other …" node expands the whole level,
+    // so report that as "off" rather than a partial state you cannot leave.
+    // Only School has several collapsed groups (its size / area / region
+    // aggregates), so only School can sit in the partial middle.
+    if (settings.expandedGroups.has(otherGroupToken(level))) {
       return "off";
     }
-    return expandedTokensFor(level).length > 0 ? "partial" : "on";
+    return level === "school" && expandedTokensFor(level).length > 0
+      ? "partial"
+      : "on";
   };
 
   // Cycle the compress control. From "on" it stops coalescing; from "off" it

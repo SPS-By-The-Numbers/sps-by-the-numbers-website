@@ -1,6 +1,7 @@
 import { expect } from "@jest/globals";
 
 import {
+  evenRankBuckets,
   flowLinkClass,
   flowNodeClass,
   sizeBuckets,
@@ -111,5 +112,37 @@ describe("flow presentation classes", () => {
     // Single id -> top bucket; empty -> empty.
     expect(sizeBuckets(new Map([["only", 1]]), 7).get("only")).toBe(6);
     expect(sizeBuckets(new Map(), 7).size).toBe(0);
+  });
+});
+
+describe("evenRankBuckets", () => {
+  const sizes = (n: number) =>
+    new Map([...Array(n).keys()].map((i) => [`s${i}`, i]));
+
+  it("cuts the ranking into groups of about perBucket", () => {
+    // 110 schools, target 10 => 11 groups, none of them lopsided (the whole
+    // point: expanding one group adds a readable handful of nodes).
+    const b = evenRankBuckets(sizes(110), 10);
+    const counts = new Map<number, number>();
+    for (const v of b.values()) {
+      counts.set(v, (counts.get(v) ?? 0) + 1);
+    }
+    expect(counts.size).toBe(11);
+    expect([...counts.values()].every((c) => c === 10)).toBe(true);
+  });
+
+  it("orders groups by ascending metric", () => {
+    const b = evenRankBuckets(sizes(20), 10);
+    expect(b.get("s0")).toBe(0); // smallest
+    expect(b.get("s19")).toBe(1); // largest
+  });
+
+  it("handles a partial last group and tiny populations", () => {
+    const b = evenRankBuckets(sizes(25), 10);
+    expect(new Set(b.values()).size).toBe(3); // 10 / 10 / 5
+    expect(new Set(evenRankBuckets(sizes(3), 10).values())).toEqual(
+      new Set([0]),
+    );
+    expect(evenRankBuckets(new Map(), 10).size).toBe(0);
   });
 });

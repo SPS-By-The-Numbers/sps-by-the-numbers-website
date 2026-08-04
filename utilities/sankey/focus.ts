@@ -45,11 +45,9 @@ export function codesForNode(node: SankeyNode): Set<number> | null {
   if (node.custom.code !== null) {
     return new Set([node.custom.code]);
   }
-  // A member that is itself a group (a school aggregate rolled into "Other
-  // Schools") has no code of its own but carries its leaves' codes.
-  const codes = (node.custom.members ?? []).flatMap((m) =>
-    m.code !== null && m.code !== undefined ? [m.code] : (m.codes ?? []),
-  );
+  const codes = (node.custom.members ?? [])
+    .map((m) => m.code)
+    .filter((c): c is number => c !== null && c !== undefined);
   return codes.length > 0 ? new Set(codes) : null;
 }
 

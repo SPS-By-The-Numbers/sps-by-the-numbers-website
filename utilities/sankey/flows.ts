@@ -582,13 +582,7 @@ function isCoalescable(n: SankeyNode, coalesceLevels: Set<Level>): boolean {
 // re-summing. The "Other" node lists the combined members (name + through-flow)
 // in its `custom.members` for the tooltip. Columns with fewer than two small
 // nodes are left untouched.
-//
-// Exported because a caller can coalesce a column the engine could not: the
-// flow view groups the School column itself (by enrollment size / attendance
-// area / region), and those groups answer to none of the dollar rules here --
-// so it runs its grouped result back through this to catch groups left carrying
-// a rounding error's worth of the fund.
-export function coalesceSmall(
+function coalesceSmall(
   nodes: SankeyNode[],
   links: SankeyLink[],
   grandTotal: number,
@@ -634,16 +628,6 @@ export function coalesceSmall(
         name: n.name,
         weight: nodeTotal(n.id),
         code: n.custom.code,
-        // A member that is itself a group carries its leaves' codes forward
-        // (see SankeyNode.custom.members), so focusing the combined node still
-        // knows every code underneath it.
-        ...(n.custom.members
-          ? {
-              codes: n.custom.members.flatMap((m) =>
-                m.code !== null ? [m.code] : (m.codes ?? []),
-              ),
-            }
-          : {}),
       }))
       .sort((a, b) => b.weight - a.weight);
     for (const n of small) {
