@@ -126,8 +126,8 @@ export default function Page() {
             <Typography variant="body1" sx={{ color: 'text.secondary' }}>
               Everyone says to cut central office or contracts and hand the
               money to staff. Here is your chance to try it. Axe any group of
-              staff or line of spending and watch what it does to the $31.7M
-              deficit — and what a raise per SEA member would actually be.
+              staff or line of spending and watch what it does to the deficit
+              — and what a raise per SEA member would actually be.
             </Typography>
           </>
         </ActionAreaCard>
