@@ -116,6 +116,23 @@ export default function Page() {
         </ActionAreaCard>
 
         <ActionAreaCard
+          imageUrl="/assets/who-what-to-axe-app.png"
+          href="/analyses/who_what_to_axe.html"
+          altText="Link to the Who (or what) would you axe budget cut simulator">
+          <>
+            <Typography gutterBottom variant="h4" component="div">
+              Who (or What) Would You Axe?
+            </Typography>
+            <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+              Everyone says to cut central office or contracts and hand the
+              money to staff. Here is your chance to try it. Axe any group of
+              staff or line of spending and watch what it does to the $31.7M
+              deficit — and what a raise per SEA member would actually be.
+            </Typography>
+          </>
+        </ActionAreaCard>
+
+        <ActionAreaCard
           imageUrl="/assets/analyses-app.png"
           href="/analyses"
           altText="Links to major analyses and insteresting articles">
