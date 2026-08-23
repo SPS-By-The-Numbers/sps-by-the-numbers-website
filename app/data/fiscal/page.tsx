@@ -1,9 +1,11 @@
 import Link from "@mui/material/Link";
 
-import DistrictPacketChooser from "../_widgets/DistrictPacketChooser";
+import FiscalOrgChooser from "../_widgets/FiscalOrgChooser";
+import FiscalStatewideBrowser from "../_widgets/FiscalStatewideBrowser";
 import FileList from "../_widgets/FileList";
 import Section from "../_widgets/Section";
 import SectionPage from "../_widgets/SectionPage";
+import { fmtBytes, type FiscalCorpus } from "../_widgets/fiscalCorpus";
 import manifest from "../_manifest/fiscal.json";
 
 const DATA_TOOLS_MAIN =
@@ -42,24 +44,37 @@ const SUBCORPUS_DEFS: Record<string, { label: string; desc: string }> = {
   },
 };
 
-function fmtBytes(bytes: number) {
-  const gib = bytes / 1024 ** 3;
-  if (gib >= 1) return `${gib.toFixed(1)} GiB`;
-  const mib = bytes / 1024 ** 2;
-  return `${mib.toFixed(0)} MiB`;
-}
+// The subcorpora filed statewide rather than per-org, in tab order.
+const STATEWIDE_LABELS: Record<string, string> = {
+  state_institutions: "State institutions",
+  esd_allocations: "ESD allocations",
+  county_treasurer: "County treasurer",
+  state_agencies_schools_colleges: "State agencies & colleges",
+  technical_colleges: "Technical colleges",
+};
 
-type SummaryRow = { dir: string; files: number; bytes: number };
-type YearRow = { year: string; files: number; bytes: number };
+// Subcorpora OSPI published as unnamed "PDF (n)" / "XLS (n)" downloads.
+const UNNAMED_SUBCORPORA = [
+  "county_treasurer",
+  "state_agencies_schools_colleges",
+  "technical_colleges",
+];
 
 export default function Page() {
-  const raw = manifest.raw as null | {
-    generated: string;
-    total_files: number;
-    total_bytes: number;
-    subcorpora: SummaryRow[];
-    fiscal_years: YearRow[];
-  };
+  // JSON imports widen the [setId, dirId] pairs to number[], so the tuple
+  // shape has to be reasserted rather than narrowed.
+  const corpus = manifest.corpus as unknown as FiscalCorpus | null;
+
+  const orgFiles = corpus
+    ? corpus.subcorpora
+        .filter((s) => s.dir === "fiscal" || s.dir === "apportionment")
+        .reduce((n, s) => n + s.files, 0)
+    : 0;
+  const statewideFiles = corpus
+    ? corpus.subcorpora
+        .filter((s) => STATEWIDE_LABELS[s.dir])
+        .reduce((n, s) => n + s.files, 0)
+    : 0;
 
   return (
     <SectionPage
@@ -113,102 +128,116 @@ export default function Page() {
         <FileList files={manifest.tables} />
       </Section>
 
-      <Section
-        heading="District F-195 / F-196 packets"
-        blurb={`${manifest.districts.length.toLocaleString()} districts × up to ${
-          raw?.fiscal_years.length ?? 13
-        } school years. Pick a district to browse its budget (F-195) and year-end (F-196) packet PDFs.`}
-      >
-        <DistrictPacketChooser
-          districts={manifest.districts}
-          packets={
-            manifest.packets as Parameters<
-              typeof DistrictPacketChooser
-            >[0]["packets"]
+      {corpus && (
+        <Section
+          heading="Browse by district, college or agency"
+          count={orgFiles}
+          blurb={
+            <>
+              {corpus.orgs.length.toLocaleString()} organizations × up to{" "}
+              {corpus.fiscal_years.length} school years. Pick one to get its
+              budget (F-195) and year-end (F-196) packets alongside its
+              apportionment reports — monthly apportionment, 1251/1251H
+              enrollment, 1735T special education, F-780 levy authority, and the
+              rest. Districts also appear under their ESD, which files a
+              parallel set of apportionment reports for its members.
+            </>
           }
-        />
-      </Section>
+        >
+          <FiscalOrgChooser corpus={corpus} />
+        </Section>
+      )}
+
+      {corpus && (
+        <Section
+          heading="Statewide & other reports"
+          count={statewideFiles}
+          blurb="The subcorpora OSPI files by year rather than by district: state institution 1191SI reports, ESD allocations, county treasurer statements, and the state agency, college and technical college reports."
+        >
+          <FiscalStatewideBrowser
+            corpus={corpus}
+            labels={STATEWIDE_LABELS}
+            unnamed={UNNAMED_SUBCORPORA}
+          />
+        </Section>
+      )}
 
       <Section
         heading="Raw PDF corpus"
         blurb={
-          raw ? (
+          corpus ? (
             <>
-              {raw.total_files.toLocaleString()} PDFs,{" "}
-              {fmtBytes(raw.total_bytes)} in total (listing refreshed{" "}
-              {raw.generated}).
+              {corpus.total_files.toLocaleString()} PDFs,{" "}
+              {fmtBytes(corpus.total_bytes)} in total (listing refreshed{" "}
+              {corpus.generated}).
             </>
           ) : (
-            <>Summary unavailable — regenerate fiscal_raw_summary.json.</>
+            <>Summary unavailable — regenerate fiscal_corpus_index.json.</>
           )
         }
       >
-        {raw && (
-          <>
-            <table style={{ borderCollapse: "collapse" }}>
-              <thead>
-                <tr
-                  style={{ textAlign: "left", borderBottom: "1px solid #ccc" }}
-                >
-                  <th style={{ padding: "4px 12px 4px 0" }}>Subcorpus</th>
-                  <th style={{ padding: "4px 12px 4px 0", textAlign: "right" }}>
-                    Files
-                  </th>
-                  <th style={{ padding: "4px 12px 4px 0", textAlign: "right" }}>
-                    Size
-                  </th>
-                  <th style={{ padding: "4px 0" }}>What it is</th>
-                </tr>
-              </thead>
-              <tbody>
-                {raw.subcorpora.map((s) => {
-                  const def = SUBCORPUS_DEFS[s.dir];
-                  return (
-                    <tr
-                      key={s.dir}
+        {corpus && (
+          <table style={{ borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ textAlign: "left", borderBottom: "1px solid #ccc" }}>
+                <th style={{ padding: "4px 12px 4px 0" }}>Subcorpus</th>
+                <th style={{ padding: "4px 12px 4px 0", textAlign: "right" }}>
+                  Files
+                </th>
+                <th style={{ padding: "4px 12px 4px 0", textAlign: "right" }}>
+                  Size
+                </th>
+                <th style={{ padding: "4px 0" }}>What it is</th>
+              </tr>
+            </thead>
+            <tbody>
+              {corpus.subcorpora.map((s) => {
+                const def = SUBCORPUS_DEFS[s.dir];
+                return (
+                  <tr
+                    key={s.dir}
+                    style={{
+                      borderBottom: "1px solid #eee",
+                      verticalAlign: "top",
+                    }}
+                  >
+                    <td
                       style={{
-                        borderBottom: "1px solid #eee",
-                        verticalAlign: "top",
+                        padding: "4px 12px 4px 0",
+                        whiteSpace: "nowrap",
                       }}
                     >
-                      <td
-                        style={{
-                          padding: "4px 12px 4px 0",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        <code>{s.dir}/</code>
-                      </td>
-                      <td
-                        style={{
-                          padding: "4px 12px 4px 0",
-                          textAlign: "right",
-                        }}
-                      >
-                        {s.files.toLocaleString()}
-                      </td>
-                      <td
-                        style={{
-                          padding: "4px 12px 4px 0",
-                          textAlign: "right",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {fmtBytes(s.bytes)}
-                      </td>
-                      <td style={{ padding: "4px 0", color: "#555" }}>
-                        {def ? (
-                          <>
-                            <strong>{def.label}.</strong> {def.desc}
-                          </>
-                        ) : null}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </>
+                      <code>{s.dir}/</code>
+                    </td>
+                    <td
+                      style={{
+                        padding: "4px 12px 4px 0",
+                        textAlign: "right",
+                      }}
+                    >
+                      {s.files.toLocaleString()}
+                    </td>
+                    <td
+                      style={{
+                        padding: "4px 12px 4px 0",
+                        textAlign: "right",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {fmtBytes(s.bytes)}
+                    </td>
+                    <td style={{ padding: "4px 0", color: "#555" }}>
+                      {def ? (
+                        <>
+                          <strong>{def.label}.</strong> {def.desc}
+                        </>
+                      ) : null}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         )}
       </Section>
     </SectionPage>

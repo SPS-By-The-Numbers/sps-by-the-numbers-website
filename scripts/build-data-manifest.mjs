@@ -3,17 +3,16 @@
 // and emits per-section JSON manifests into app/data/_manifest/, consumed by
 // the /data/* pages. Runs on prebuild and predev.
 //
-// raw/fiscal/ (the OSPI fiscal PDF corpus, ~167k files / ~140 GB) is mostly
-// EXCLUDED from all_data.txt — it would dwarf everything else and can't ship
-// to the client as a file list anyway. It is summarized by
-// fiscal_raw_summary.json instead (see scripts/build-fiscal-raw-summary.mjs).
-// The exception is raw/fiscal/fiscal/ (the per-district F-195/F-196 packets,
-// ~17k files), which IS listed so the /data/fiscal district chooser can link
-// each packet.
+// raw/fiscal/ (the OSPI fiscal PDF corpus, ~167k files / ~140 GB) is EXCLUDED
+// from all_data.txt — it would dwarf everything else and can't ship to the
+// client as a flat file list anyway. It is indexed by fiscal_corpus_index.json
+// instead (see scripts/build-fiscal-corpus-index.mjs), which folds the whole
+// corpus into roll-ups, an org directory, and a deduped document-set
+// vocabulary small enough for the /data/fiscal choosers to ship.
 //
 // To refresh from the bucket:
-//   { gsutil ls -r gs://sps-btn-data-all-data | grep -v '^gs://sps-btn-data-all-data/raw/fiscal/'; \
-//     gsutil ls -r gs://sps-btn-data-all-data/raw/fiscal/fiscal; } > all_data.txt
+//   gsutil ls -r gs://sps-btn-data-all-data \
+//     | grep -v '^gs://sps-btn-data-all-data/raw/fiscal/' > all_data.txt
 //   git add all_data.txt && git commit
 
 import { readFile, writeFile, mkdir, rm } from "node:fs/promises";
@@ -23,7 +22,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 const INPUT = resolve(ROOT, "all_data.txt");
-const FISCAL_RAW_SUMMARY = resolve(ROOT, "fiscal_raw_summary.json");
+const FISCAL_CORPUS_INDEX = resolve(ROOT, "fiscal_corpus_index.json");
 const OUT_DIR = resolve(ROOT, "app/data/_manifest");
 const GS_PREFIX = "gs://sps-btn-data-all-data/";
 
@@ -217,57 +216,20 @@ async function main() {
   };
 
   // ---------- Fiscal (OSPI fiscal-report PDF corpus + extracted tables) ----
-  // The raw corpus is summarized (see the header comment); the extracted
-  // per-table AVROs are small enough to list.
-  let fiscalRawSummary = null;
+  // The raw corpus is indexed separately (see the header comment); the
+  // extracted per-table AVROs are small enough to list file-by-file.
+  let fiscalCorpus = null;
   try {
-    fiscalRawSummary = JSON.parse(await readFile(FISCAL_RAW_SUMMARY, "utf8"));
+    fiscalCorpus = JSON.parse(await readFile(FISCAL_CORPUS_INDEX, "utf8"));
   } catch {
     console.warn(
-      "[build-data-manifest] fiscal_raw_summary.json missing — /data/fiscal raw section will be empty",
+      "[build-data-manifest] fiscal_corpus_index.json missing — /data/fiscal PDF sections will be empty",
     );
-  }
-  // Per-district F-195/F-196 packets, indexed for the district chooser:
-  // raw/fiscal/fiscal/<year>/<code>_<district_slug>/<packet>.pdf
-  // -> packets[code][year] = { dir, files: [packet, ...] }.
-  const fiscalDistricts = new Map();
-  const fiscalPackets = {};
-  const FISCAL_PACKET_RE =
-    /^raw\/fiscal\/fiscal\/(\d{4}-\d{4})\/((\d{5})_([a-z0-9_]+))\/([^/]+)$/;
-  const SMALL_WORDS = new Set(["of", "the", "and"]);
-  for (const p of under("raw/fiscal/fiscal/", files)) {
-    const m = p.match(FISCAL_PACKET_RE);
-    if (!m) continue;
-    const [, year, dir, code, slug, file] = m;
-    if (!fiscalDistricts.has(code)) {
-      const name = slug
-        .split("_")
-        .map((w, i) =>
-          !i || !SMALL_WORDS.has(w)
-            ? w.charAt(0).toUpperCase() + w.slice(1)
-            : w,
-        )
-        .join(" ");
-      fiscalDistricts.set(code, { code, name });
-    }
-    if (!fiscalPackets[code]) fiscalPackets[code] = {};
-    if (!fiscalPackets[code][year])
-      fiscalPackets[code][year] = { dir, files: [] };
-    fiscalPackets[code][year].files.push(file);
-  }
-  for (const byYear of Object.values(fiscalPackets)) {
-    for (const entry of Object.values(byYear)) {
-      entry.files.sort();
-    }
   }
 
   const fiscal = {
-    raw: fiscalRawSummary,
+    corpus: fiscalCorpus,
     tables: under("processed/fiscal/", files).map(toEntry).sort(byName),
-    districts: Array.from(fiscalDistricts.values()).sort((a, b) =>
-      a.name.localeCompare(b.name),
-    ),
-    packets: fiscalPackets,
   };
 
   // ---------- ODATA ----------
@@ -423,8 +385,8 @@ async function main() {
     public_records: publicRecords.length,
     sqss: sqss.raw.length + sqss.processed.length,
     fiscal_tables: fiscal.tables.length,
-    fiscal_raw_files: fiscalRawSummary?.total_files ?? 0,
-    fiscal_raw_bytes: fiscalRawSummary?.total_bytes ?? 0,
+    fiscal_raw_files: fiscalCorpus?.total_files ?? 0,
+    fiscal_raw_bytes: fiscalCorpus?.total_bytes ?? 0,
   };
   await writeFile(`${OUT_DIR}/counts.json`, JSON.stringify(counts));
   console.log(`[build-data-manifest] counts.json`);

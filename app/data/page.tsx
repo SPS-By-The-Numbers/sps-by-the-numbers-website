@@ -24,7 +24,7 @@ const SECTIONS: Section[] = [
   {
     href: "/data/fiscal",
     title: "Fiscal Reports (OSPI PDFs)",
-    blurb: `The OSPI fiscal-report PDF corpus — F-195/F-196 district packets plus monthly apportionment reports and their supporting schedules for every district, ESD, college, and state agency — ${counts.fiscal_raw_files.toLocaleString()} PDFs (~${Math.round(counts.fiscal_raw_bytes / 1024 ** 3)} GiB), with ${counts.fiscal_tables} extracted AVRO tables. Use the district chooser to browse packets.`,
+    blurb: `The OSPI fiscal-report PDF corpus — F-195/F-196 district packets plus monthly apportionment reports and their supporting schedules for every district, ESD, college, and state agency — ${counts.fiscal_raw_files.toLocaleString()} PDFs (~${Math.round(counts.fiscal_raw_bytes / 1024 ** 3)} GiB), with ${counts.fiscal_tables} extracted AVRO tables. Browse every document by organization and school year.`,
     count: counts.fiscal_raw_files + counts.fiscal_tables,
   },
   {
