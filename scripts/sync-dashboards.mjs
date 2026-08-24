@@ -7,6 +7,12 @@
 // Drop new dashboards into dashboards_raw/ untouched; this script bakes in
 // the chrome at build time so deep links keep working (the output stays a
 // flat static HTML file at /analyses/<name>.html).
+//
+// "Untouched" includes bare fragments. Some dashboards are exported without a
+// doctype, <html>, <head> or <body> -- they open straight onto <title> and a
+// <style> block -- because the tool that produced them supplies that skeleton
+// at publish time. Those get wrapped here (see wrapFragment) rather than by
+// hand, so re-exporting one cannot silently break the build.
 
 import { readdir, readFile, writeFile, mkdir } from "node:fs/promises";
 import { dirname, join, relative, resolve } from "node:path";
@@ -26,6 +32,58 @@ const GA_HTML = `<script async src="https://www.googletagmanager.com/gtag/js?id=
 
 const HEAD_OPEN_RE = /<head\b[^>]*>/i;
 const BODY_OPEN_RE = /<body\b[^>]*>/i;
+const HTML_OPEN_RE = /<html\b[^>]*>/i;
+
+// The head-only elements a fragment may lead with, in whatever order it puts
+// them. Deliberately excludes <script>: a leading script is ambiguous, and
+// hoisting one into <head> would run it before the body exists.
+const HEAD_LEAD_RE = new RegExp(
+  "^\\s*(?:" +
+    "<!--[\\s\\S]*?-->" + // comment
+    "|<(title|style)\\b[^>]*>[\\s\\S]*?</\\1\\s*>" + // container
+    "|<(?:meta|link|base)\\b[^>]*>" + // void
+    ")",
+  "i",
+);
+
+const CHARSET_RE = /<meta\b[^>]*\bcharset\b/i;
+const VIEWPORT_RE = /<meta\b[^>]*name\s*=\s*["']?viewport/i;
+
+// Split a fragment into head and body at the end of its leading run of
+// head-only elements. Everything from the first element that cannot live in
+// <head> onward is body content.
+function splitFragment(html) {
+  let cut = 0;
+  for (;;) {
+    const match = html.slice(cut).match(HEAD_LEAD_RE);
+    if (!match) break;
+    cut += match[0].length;
+  }
+  return { head: html.slice(0, cut).trim(), body: html.slice(cut).trim() };
+}
+
+function wrapFragment(html, sourceFile) {
+  const { head, body } = splitFragment(html);
+  if (!body) {
+    throw new Error(
+      `${sourceFile} has no <body> and nothing that could become one`,
+    );
+  }
+  const meta = [
+    CHARSET_RE.test(head) ? null : '<meta charset="utf-8">',
+    VIEWPORT_RE.test(head)
+      ? null
+      : '<meta name="viewport" content="width=device-width, initial-scale=1">',
+    head || null,
+  ].filter(Boolean);
+  return (
+    '<!doctype html>\n<html lang="en">\n<head>\n' +
+    meta.join("\n") +
+    "\n</head>\n<body>\n" +
+    body +
+    "\n</body>\n</html>\n"
+  );
+}
 
 function injectAfter(html, regex, snippet, label, sourceFile) {
   const match = html.match(regex);
@@ -37,6 +95,19 @@ function injectAfter(html, regex, snippet, label, sourceFile) {
 }
 
 function injectChrome(html, sourceFile) {
+  const hasBody = BODY_OPEN_RE.test(html);
+  const hasShell = HTML_OPEN_RE.test(html) || HEAD_OPEN_RE.test(html);
+  if (!hasBody) {
+    // No <body> at all and no shell around it: a fragment, so build the
+    // skeleton the exporter left off. A file with one but not the other is
+    // malformed in a way worth failing on rather than guessing at.
+    if (hasShell) {
+      throw new Error(
+        `${sourceFile} has <html>/<head> but no <body>; cannot place the chrome`,
+      );
+    }
+    html = wrapFragment(html, sourceFile);
+  }
   let out = injectAfter(html, HEAD_OPEN_RE, GA_HTML, "<head>", sourceFile);
   out = injectAfter(out, BODY_OPEN_RE, CHROME_HTML, "<body>", sourceFile);
   return out;
