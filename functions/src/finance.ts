@@ -299,7 +299,7 @@ function getS275Salaries(ccddd) {
   )
   SELECT
     r.school_year,
-    CAST(SPLIT(r.school_year, '-')[1] as int) class_of,
+    r.class_of,
     p.dr duty_root_code,
     d_dr.duty_name duty_root,
     pre.total_final_salary,
