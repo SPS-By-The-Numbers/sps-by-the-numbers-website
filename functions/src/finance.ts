@@ -252,6 +252,74 @@ function getS275Summary(ccddd) {
   `;
 }
 
+// One row per employee per S-275 final report: their total_final_salary, their
+// total FTE, and the duty root they are counted under. This is the per-person
+// grain the Salaries dashboard draws -- getS275Summary() above answers "what
+// does this duty cost in total", which cannot be un-summed back into people.
+//
+// Three things are easy to get wrong here, all of them multi-counting:
+//   * total_final_salary lives on the *employee* (private_report_employee), not
+//     the assignment. Joining it per assignment repeats one person's whole
+//     salary once per assignment they hold.
+//   * fte_in_assignment is the only additive FTE column. The certificated /
+//     classified columns on assignment_fte are per-employee markers and
+//     over-count by roughly 5x if summed.
+//   * a person can hold assignments under several duty roots. They are counted
+//     once, under the duty of their major assignment, matching how the printed
+//     apportionment reports attribute staff.
+// Verified against the SEA-critique extract: SPS 2024-25 comes back 7,156
+// people / $684.0M, the same as tools/sea_chart_critique/staff_2425.csv.
+function getS275Salaries(ccddd) {
+  return `
+  WITH per_duty AS (
+    SELECT
+      a.report_employee_id emp,
+      a.duty_root_code dr,
+      SUM(a.fte_in_assignment) fte,
+      COUNTIF(a.is_major) nmaj,
+      SUM(COALESCE(pa.assignment_salary, 0)) sal
+    FROM
+      sps-btn-data.safs_s275.assignment a
+      JOIN sps-btn-data.safs_s275.report r ON (a.report_id = r.report_id)
+      LEFT JOIN sps-btn-data.safs_s275.private_assignment pa
+        ON (pa.assignment_id = a.assignment_id)
+    WHERE
+      r.report_type = 'final' AND
+      r.ccddd = ${ccddd}
+    GROUP BY emp, dr
+  ),
+  pick AS (
+    SELECT emp, dr,
+      ROW_NUMBER() OVER (
+        PARTITION BY emp ORDER BY nmaj DESC, fte DESC, sal DESC, dr) rn
+    FROM per_duty
+  ),
+  tot AS (
+    SELECT emp, SUM(fte) fte FROM per_duty GROUP BY emp
+  )
+  SELECT
+    r.school_year,
+    CAST(SPLIT(r.school_year, '-')[1] as int) class_of,
+    p.dr duty_root_code,
+    d_dr.duty_name duty_root,
+    pre.total_final_salary,
+    t.fte
+  FROM
+    pick p
+    JOIN tot t ON (t.emp = p.emp)
+    JOIN sps-btn-data.safs_s275.report_employee re
+      ON (re.report_employee_id = p.emp)
+    JOIN sps-btn-data.safs_s275.report r ON (r.report_id = re.report_id)
+    JOIN sps-btn-data.safs_s275.private_report_employee pre
+      ON (pre.report_employee_id = p.emp)
+    LEFT JOIN sps-btn-data.safs_domains.d_duty_root d_dr
+      ON (d_dr.duty_root = p.dr)
+  WHERE
+    p.rn = 1 AND
+    pre.total_final_salary IS NOT NULL
+  `;
+}
+
 // Budgeted (F-195 salary exhibit) FTE. This is the district's BUDGET filing, so
 // it has NO school breakdown -- FTE is only reported by program / activity /
 // duty. We roll General Fund `detail` rows (the `activity_total` / `program_total`
@@ -331,6 +399,8 @@ function getQueryForDataset(ccddd, dataset) {
       return getActualsItems(ccddd);
     } else if (dataset === 's275_summary') {
       return getS275Summary(ccddd);
+    } else if (dataset === 's275_salaries') {
+      return getS275Salaries(ccddd);
     } else if (dataset === 'budgeted_fte') {
       return getBudgetedFte(ccddd);
     } else if (dataset === 'budgetary_comparison') {
