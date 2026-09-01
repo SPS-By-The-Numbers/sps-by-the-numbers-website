@@ -11,6 +11,13 @@ import {
 
 const bigqueryClient = new BigQuery();
 
+// Each dataset below is one BigQuery query, exported to a cached AVRO the
+// client fetches directly. Note that makeCachePaths() keys the cache on a
+// sha256 of the query *text*: editing a query here, even by a character,
+// moves its cache path, so the next request re-exports it and the objects
+// under the old hash are orphaned in the bucket. Worth a sweep of
+// gs://sps-by-the-numbers-public/cache/scratch/ after changing one.
+
 function getEnrollment(ccddd) {
   return `
   SELECT
@@ -210,7 +217,7 @@ function getS275Summary(ccddd) {
   return `
   SELECT
     r.school_year,
-    CAST(SPLIT(r.school_year, '-')[1] as int) class_of,
+    r.class_of,
     a.school_code,
     d_s.school,
     a.program_code,
