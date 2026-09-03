@@ -16,7 +16,11 @@ import Typography from "@mui/material/Typography";
 import { useEffect, useMemo, useState } from "react";
 
 import SettingsLayout from "app/finance/_widgets/SettingsLayout";
-import { DutyRootFilterContents } from "app/finance/_widgets/ExpenditureFilterContents";
+import {
+  ActivityFilterContents,
+  DutyRootFilterContents,
+  ProgramFilterContents,
+} from "app/finance/_widgets/ExpenditureFilterContents";
 import {
   serializeDatasetSettings,
   serializeOneSetting,
@@ -42,6 +46,11 @@ type Row = {
   school_year: string;
   duty_root: string | null;
   duty_root_code: number | null;
+  // Program and activity were added to the dataset after the first deploy, so
+  // treat them as optional: an older cached export simply has no such column,
+  // and the filters below pass everything through rather than empty the chart.
+  program_code?: number | null;
+  activity_code?: number | null;
   total_final_salary: unknown;
   fte: unknown;
 };
@@ -106,12 +115,15 @@ export default function SalariesDashboard({
 
   const people: Person[] = useMemo(() => {
     if (!rows || !year) return [];
+    const passes = (code: number | null | undefined, codes: Set<number>) =>
+      code === null || code === undefined || codes.has(code);
     return rows
       .filter(
         (r) =>
           r.school_year === year &&
-          (r.duty_root_code === null ||
-            settings.dutyRootCodes.has(r.duty_root_code)),
+          passes(r.duty_root_code, settings.dutyRootCodes) &&
+          passes(r.program_code, settings.programCodes) &&
+          passes(r.activity_code, settings.activityCodes),
       )
       .map((r) => ({
         duty: r.duty_root ?? `Duty ${r.duty_root_code ?? "unknown"}`,
@@ -119,7 +131,13 @@ export default function SalariesDashboard({
         fte: num(r.fte),
       }))
       .filter((p) => p.salary > 0);
-  }, [rows, year, settings.dutyRootCodes]);
+  }, [
+    rows,
+    year,
+    settings.dutyRootCodes,
+    settings.programCodes,
+    settings.activityCodes,
+  ]);
 
   const plan = useMemo(
     () => planRows(people, contextSettings.peoplePerRow),
@@ -166,6 +184,8 @@ export default function SalariesDashboard({
       settingsContentsComponents={[
         SalariesDatasetContents,
         DutyRootFilterContents,
+        ProgramFilterContents,
+        ActivityFilterContents,
       ]}
       // One skyline at a time: two districts' payrolls overlaid on one axis
       // would not be readable, and the rows are already the comparison unit.

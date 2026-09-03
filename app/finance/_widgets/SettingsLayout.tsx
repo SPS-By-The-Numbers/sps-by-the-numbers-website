@@ -339,11 +339,18 @@ export default function SettingsLayout<
           // Default flex-item min-width is auto (= min-content), which
           // would let the dashboard's intrinsic content width (e.g. a
           // wide context band) push this Box past the viewport on
-          // mobile. minWidth: 0 + overflow: hidden caps the Box at the
+          // mobile. minWidth: 0 + overflowX: hidden caps the Box at the
           // available row width and contains any horizontal overflow
           // inside the inner scroll containers.
+          //
+          // The vertical axis has to scroll, though: this Box is 100% of a
+          // 100vh parent, so a page taller than the viewport (the Salaries
+          // skyline is one chart row per ~1,500 people) would otherwise be
+          // clipped with no way to reach the bottom. Scrolling here rather
+          // than on the window keeps the settings drawer pinned.
           minWidth: 0,
-          overflow: "hidden",
+          overflowX: "hidden",
+          overflowY: "auto",
           p: 0,
           width: { sm: `calc(100% - ${drawerWidthPx}px)` },
         }}

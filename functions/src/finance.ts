@@ -273,7 +273,9 @@ function getS275Summary(ccddd) {
 //     over-count by roughly 5x if summed.
 //   * a person can hold assignments under several duty roots. They are counted
 //     once, under the duty of their major assignment, matching how the printed
-//     apportionment reports attribute staff.
+//     apportionment reports attribute staff. Program and activity come from
+//     that same assignment, so they describe where the person is mainly
+//     posted -- they are NOT a split of their salary across programs.
 // Verified against the SEA-critique extract: SPS 2024-25 comes back 7,156
 // people / $684.0M, the same as tools/sea_chart_critique/staff_2425.csv.
 function getS275Salaries(ccddd) {
@@ -303,17 +305,39 @@ function getS275Salaries(ccddd) {
   ),
   tot AS (
     SELECT emp, SUM(fte) fte FROM per_duty GROUP BY emp
+  ),
+  pa_pick AS (
+    SELECT
+      a.report_employee_id emp,
+      a.duty_root_code dr,
+      a.program_code pc,
+      a.activity_code ac,
+      ROW_NUMBER() OVER (
+        PARTITION BY a.report_employee_id, a.duty_root_code
+        ORDER BY a.is_major DESC, a.fte_in_assignment DESC,
+                 a.program_code, a.activity_code) rn
+    FROM
+      sps-btn-data.safs_s275.assignment a
+      JOIN sps-btn-data.safs_s275.report r ON (a.report_id = r.report_id)
+    WHERE
+      r.report_type = 'final' AND
+      r.ccddd = ${ccddd}
   )
   SELECT
     r.school_year,
     r.class_of,
     p.dr duty_root_code,
     d_dr.duty_name duty_root,
+    q.pc program_code,
+    d_p.program,
+    q.ac activity_code,
+    d_a.activity,
     pre.total_final_salary,
     t.fte
   FROM
     pick p
     JOIN tot t ON (t.emp = p.emp)
+    JOIN pa_pick q ON (q.emp = p.emp AND q.dr = p.dr AND q.rn = 1)
     JOIN sps-btn-data.safs_s275.report_employee re
       ON (re.report_employee_id = p.emp)
     JOIN sps-btn-data.safs_s275.report r ON (r.report_id = re.report_id)
@@ -321,6 +345,10 @@ function getS275Salaries(ccddd) {
       ON (pre.report_employee_id = p.emp)
     LEFT JOIN sps-btn-data.safs_domains.d_duty_root d_dr
       ON (d_dr.duty_root = p.dr)
+    LEFT JOIN sps-btn-data.safs_domains.d_program d_p
+      ON (d_p.program_code = q.pc)
+    LEFT JOIN sps-btn-data.safs_domains.d_activity d_a
+      ON (d_a.activity_code = q.ac)
   WHERE
     p.rn = 1 AND
     pre.total_final_salary IS NOT NULL

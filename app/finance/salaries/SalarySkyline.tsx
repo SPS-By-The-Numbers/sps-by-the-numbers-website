@@ -37,6 +37,10 @@ const PALETTE = [
 ];
 
 const ROW_HEIGHT = 190;
+// Duties at or below this many people are drawn as columns. Worst case is one
+// SVG path per person across the small duties only, which stays in the low
+// hundreds even for a district with a long tail of one-person titles.
+const COLUMN_MAX_PEOPLE = 60;
 // Plot-area insets; the HTML label strip has to line up with these.
 const PLOT_LEFT = 62;
 const PLOT_RIGHT = 12;
@@ -65,7 +69,19 @@ function rowOptions(
   // SalarySkyline rebinding --highcharts-color-N to the same palette, gives
   // the same result whichever one takes effect.
   const series = row.segments.map((seg) => ({
-    type: "area" as const,
+    // Small duties are drawn as columns, big ones as a stepped area.
+    //
+    // A step-area only has horizontal extent between consecutive points, so a
+    // one-person duty -- Superintendent, and most of the long tail -- covers
+    // zero width and renders as nothing at all. Columns size each point
+    // exactly and do not have that problem; they were only ever a problem in
+    // bulk, where one SVG path per person locks up the renderer. Below the
+    // threshold the element count is negligible, above it the two are
+    // pixel-identical at under a pixel per person.
+    type:
+      seg.people.length <= COLUMN_MAX_PEOPLE
+        ? ("column" as const)
+        : ("area" as const),
     step: "left" as const,
     name: seg.label,
     color: PALETTE[(colorOf.get(seg.duty) ?? 0) % PALETTE.length],
@@ -119,6 +135,17 @@ function rowOptions(
       },
     },
     plotOptions: {
+      column: {
+        // Match the area's flush silhouette: no gaps, no rounded corners, and
+        // no sub-slot splitting between the series sharing this row.
+        grouping: false,
+        pointPadding: 0,
+        groupPadding: 0,
+        borderWidth: 0,
+        borderRadius: 0,
+        crisp: false,
+        animation: false,
+      },
       area: {
         // Fill to the axis, no outline and no markers: the silhouette is the
         // chart, and a marker per person would put the 7k elements back. The
