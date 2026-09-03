@@ -71,6 +71,7 @@ const FINANCE_NAV_CONFIGS: Array<NavConfig> = [
   { name: "Revenues", isAppPath: true, pathPrefix: "revenues" },
   { name: "Detailed Actuals", isAppPath: true, pathPrefix: "detailedactuals" },
   { name: "Staffing", isAppPath: true, pathPrefix: "staffing" },
+  { name: "Salaries", isAppPath: true, pathPrefix: "salaries" },
   { name: "Enrollment", isAppPath: true, pathPrefix: "enrollment" },
   { name: "Assessments", isAppPath: true, pathPrefix: "assessments" },
   { name: "Correlations", isAppPath: true, pathPrefix: "correlations" },

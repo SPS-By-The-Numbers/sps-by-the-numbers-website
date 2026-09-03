@@ -29,7 +29,6 @@ export default function FinanceSubNav({ sx = [] }: Params) {
         <NavLink href={"/finance/revenues"}>Revenues</NavLink>
         <NavLink href={"/finance/detailedactuals"}>Detailed Actuals</NavLink>
         <NavLink href={"/finance/staffing"}>Staffing</NavLink>
-        <NavLink href={"/finance/salaries"}>Salaries</NavLink>
         <NavLink href={"/finance/correlations"}>Correlations</NavLink>
       </Stack>
     </Toolbar>

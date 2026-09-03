@@ -19,7 +19,6 @@ import Typography from "@mui/material/Typography";
 import { useEffect, useMemo, useState } from "react";
 
 import DistrictSelector from "app/finance/_widgets/DistrictSelector";
-import FinanceSubNav from "app/finance/_widgets/FinanceSubNav";
 import { fetchDataset } from "utilities/client/FetchData";
 
 import SalarySkyline from "./SalarySkyline";
@@ -113,77 +112,72 @@ export default function SalariesPage() {
   const fte = people.reduce((sum, p) => sum + p.fte, 0);
 
   return (
-    <>
-      <FinanceSubNav />
-      <Box sx={{ p: 3 }}>
-        <Typography component="h1" variant="h4" gutterBottom>
-          Salaries
-        </Typography>
-        <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
-          Every S-275 <code>total_final_salary</code> for the year, one column
-          per person, grouped by the duty title of their major assignment and
-          sorted by salary within each duty. Rows wrap; every row shares the
-          same salary scale and the same number of slots, so heights and
-          horizontal positions are comparable between them. A variant of the{" "}
-          <Link href="/analyses/seattle_sea_pay_gap.html">
-            SEA pay-gap analysis
-          </Link>{" "}
-          chart.
-        </Typography>
+    <Box sx={{ p: 3 }}>
+      <Typography component="h1" variant="h4" gutterBottom>
+        Salaries
+      </Typography>
+      <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
+        Every S-275 <code>total_final_salary</code> for the year, one column per
+        person, grouped by the duty title of their major assignment and sorted
+        by salary within each duty. Rows wrap; every row shares the same salary
+        scale and the same number of slots, so heights and horizontal positions
+        are comparable between them. A variant of the{" "}
+        <Link href="/analyses/seattle_sea_pay_gap.html">
+          SEA pay-gap analysis
+        </Link>{" "}
+        chart.
+      </Typography>
 
-        <Stack direction="row" spacing={2} sx={{ mb: 2, flexWrap: "wrap" }}>
-          <DistrictSelector
-            ccddd={ccddd}
-            onChange={setCcddd}
-            sx={{ minWidth: 320 }}
-          />
-          <TextField
-            select
-            size="small"
-            label="School year"
-            value={year}
-            onChange={(e) => setYearChoice(e.target.value)}
-            disabled={years.length === 0}
-            sx={{ minWidth: 160 }}
-          >
-            {years.map((y) => (
-              <MenuItem key={y} value={y}>
-                {y}
-              </MenuItem>
-            ))}
-          </TextField>
+      <Stack direction="row" spacing={2} sx={{ mb: 2, flexWrap: "wrap" }}>
+        <DistrictSelector
+          ccddd={ccddd}
+          onChange={setCcddd}
+          sx={{ minWidth: 320 }}
+        />
+        <TextField
+          select
+          size="small"
+          label="School year"
+          value={year}
+          onChange={(e) => setYearChoice(e.target.value)}
+          disabled={years.length === 0}
+          sx={{ minWidth: 160 }}
+        >
+          {years.map((y) => (
+            <MenuItem key={y} value={y}>
+              {y}
+            </MenuItem>
+          ))}
+        </TextField>
+      </Stack>
+
+      {failed && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          The per-employee salary dataset is not available for this district
+          yet. The <code>s275_salaries</code> dataset needs the Cloud Function
+          deployed (<code>cd functions && npm run deploy</code>); until then
+          this page has nothing per-person to draw.
+        </Alert>
+      )}
+
+      {!current && (
+        <Stack direction="row" spacing={1} alignItems="center">
+          <CircularProgress size={18} />
+          <Typography variant="body2">Loading salaries…</Typography>
         </Stack>
+      )}
 
-        {failed && (
-          <Alert severity="info" sx={{ mb: 2 }}>
-            The per-employee salary dataset is not available for this district
-            yet. The <code>s275_salaries</code> dataset needs the Cloud Function
-            deployed (<code>cd functions && npm run deploy</code>); until then
-            this page has nothing per-person to draw.
-          </Alert>
-        )}
-
-        {!current && (
-          <Stack direction="row" spacing={1} alignItems="center">
-            <CircularProgress size={18} />
-            <Typography variant="body2">Loading salaries…</Typography>
-          </Stack>
-        )}
-
-        {rows && people.length > 0 && (
-          <>
-            <Typography variant="body2" sx={{ mb: 1.5 }}>
-              <b>{people.length.toLocaleString()}</b> people ·{" "}
-              <b>
-                {fte.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-              </b>{" "}
-              FTE · <b>${(payroll / 1e6).toFixed(1)}M</b> in salaries ·{" "}
-              {colorOf.size} duty titles
-            </Typography>
-            <SalarySkyline plan={plan} colorOf={colorOf} year={year} />
-          </>
-        )}
-      </Box>
-    </>
+      {rows && people.length > 0 && (
+        <>
+          <Typography variant="body2" sx={{ mb: 1.5 }}>
+            <b>{people.length.toLocaleString()}</b> people ·{" "}
+            <b>{fte.toLocaleString(undefined, { maximumFractionDigits: 0 })}</b>{" "}
+            FTE · <b>${(payroll / 1e6).toFixed(1)}M</b> in salaries ·{" "}
+            {colorOf.size} duty titles
+          </Typography>
+          <SalarySkyline plan={plan} colorOf={colorOf} year={year} />
+        </>
+      )}
+    </Box>
   );
 }
