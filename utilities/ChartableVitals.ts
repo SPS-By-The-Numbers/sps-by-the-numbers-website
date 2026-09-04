@@ -1,7 +1,11 @@
 import * as aq from "arquero";
 import { op } from "arquero";
 
-import { toChartableDataset, toFacetedCharatbleDataset, getDataColumnNames } from "utilities/ChartableMetrics";
+import {
+  toChartableDataset,
+  toFacetedCharatbleDataset,
+  getDataColumnNames,
+} from "utilities/ChartableMetrics";
 import DistrictData from "utilities/DistrictData";
 
 import type { ColumnTable } from "arquero";
@@ -10,6 +14,28 @@ import type { SortOrder, SortType } from "utilities/ChartOptions";
 import type { DistrictDataMap } from "app/finance/_providers/DistrictDataProvider";
 import type { VitalsSettings } from "app/finance/vitals/VitalsDashboard";
 import type { CurrencyNormalization } from "utilities/normalizations";
+
+// Datasets this module reads; see METRICS_DATASETS in ChartableMetrics for
+// why the declaration lives beside the code rather than in each dashboard.
+//
+// Worked out transitively, not from the accessors' own bodies: balances()
+// and cashflow() both reach budgetary_comparison through revisedGfSummary().
+//
+// staffingSummary -> budget_items, budgeted_fte, s275_summary;
+// compensation -> gf_expenditures;
+// cashflow -> gf_expenditures, gf_revenues, budgetary_comparison;
+// balances -> actuals_items, budget_items, budgetary_comparison;
+// fundedEnrollmentSummary -> budget_items, fundedEnrollment.
+export const VITALS_DATASETS = [
+  "budget_items",
+  "budgeted_fte",
+  "s275_summary",
+  "gf_expenditures",
+  "gf_revenues",
+  "actuals_items",
+  "fundedEnrollment",
+  "budgetary_comparison",
+] as const;
 
 function extractRawVitals(districtData, ccddd) {
   return districtData
@@ -91,14 +117,14 @@ function extractFacetsSortedByLatestAmount(
   facetColumn: string,
   sortColumn: string,
   sortOrder: SortOrder,
-) : Array<FacetInfo> {
+): Array<FacetInfo> {
   const facetCodeColumn = `${facetColumn}_code`;
   const sorted = df
-    .filter(d => d.class_of === op.max(d.class_of))  // Only get latest year.
+    .filter((d) => d.class_of === op.max(d.class_of)) // Only get latest year.
     .groupby(facetColumn, facetCodeColumn)
     .params({ sortCol: sortColumn })
-    .rollup({ sortval: (d, $) => op.sum(d[$.sortCol]) })  // Sum up across non-facet categories
-    .orderby(aq.desc('sortval'));
+    .rollup({ sortval: (d, $) => op.sum(d[$.sortCol]) }) // Sum up across non-facet categories
+    .orderby(aq.desc("sortval"));
 
   const facetInfo = sorted
     .derive({
@@ -116,7 +142,7 @@ function extractFacetsSortedByAbsMedianVariance(
   df: ColumnTable,
   facetColumn: string,
   sortOrder: SortOrder,
-) : Array<FacetInfo> {
+): Array<FacetInfo> {
   const facetCodeColumn = `${facetColumn}_code`;
 
   // Calculate variance for sort order.
@@ -160,18 +186,21 @@ export function extractFacets(
   districtDataMap,
   allSettings,
   facet,
-  sortType : SortType,
-  sortOrder : SortOrder,
+  sortType: SortType,
+  sortOrder: SortOrder,
   extractor = DistrictData.prototype.filteredExpenditures,
   dataTransform = toFacetedCharatbleDataset,
-  valueColumn : string = "amount",
+  valueColumn: string = "amount",
   skipVitalsContext = false,
 ) {
   const allDatasets = new Array<ColumnTable>();
   let fullFacetOrder;
   for (const expenditureSettings of allSettings) {
     const districtData = districtDataMap[expenditureSettings.ccddd];
-    const filteredExpenditures = extractor.call(districtData, expenditureSettings);
+    const filteredExpenditures = extractor.call(
+      districtData,
+      expenditureSettings,
+    );
 
     const data = dataTransform(
       districtData,
@@ -182,7 +211,7 @@ export function extractFacets(
 
     allDatasets.push(data);
     if (fullFacetOrder === undefined) {
-      if (sortType === 'variance') {
+      if (sortType === "variance") {
         fullFacetOrder = extractFacetsSortedByAbsMedianVariance(
           filteredExpenditures,
           facet,
@@ -229,8 +258,9 @@ export function extractFacets(
   // straight line across them. We only fill the interior — older years
   // unique to one dataset (e.g. vitals back to 2002) stay excluded by
   // the inner join above.
-  const years = (data.array("class_of") as Array<number | null>)
-    .filter((y): y is number => y !== null && y !== undefined);
+  const years = (data.array("class_of") as Array<number | null>).filter(
+    (y): y is number => y !== null && y !== undefined,
+  );
   if (years.length > 0) {
     const minYear = Math.min(...years);
     const maxYear = Math.max(...years);
@@ -250,4 +280,3 @@ export function extractFacets(
 
   return { data, fullFacetOrder };
 }
-

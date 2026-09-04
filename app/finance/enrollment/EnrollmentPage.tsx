@@ -15,7 +15,13 @@ import type { SettingsConfig } from "app/finance/_settings/base_settings";
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 import type { Facet } from "./EnrollmentDashboard";
 import type { CommonFacetContextSettings } from "app/finance/_settings/common_context_settings";
-import type { SchoolFilters, GradeLevelFilters, StudentGroupFilters } from "utilities/DistrictData";
+import type {
+  SchoolFilters,
+  GradeLevelFilters,
+  StudentGroupFilters,
+} from "utilities/DistrictData";
+import { METRICS_DATASETS } from "utilities/ChartableMetrics";
+import { VITALS_DATASETS } from "utilities/ChartableVitals";
 
 // When on, force diploma_year as an extra series dim regardless of
 // breakdown selection — overlays cohort lines on top of any breakdown.
@@ -24,13 +30,14 @@ import type { SchoolFilters, GradeLevelFilters, StudentGroupFilters } from "util
 function makeEnrollmentCohortLinesSerializeConfig(context?): SettingsConfig {
   return [
     [
-      "cohortLines", {
+      "cohortLines",
+      {
         serializerType: "custom",
         urlVar: "ecl",
-        serialize: (settings, key) => settings[key] ? "1" : "0",
+        serialize: (settings, key) => (settings[key] ? "1" : "0"),
         deserialize: (settings, s) => s === "1",
       },
-    ]
+    ],
   ];
 }
 
@@ -41,13 +48,14 @@ function makeEnrollmentCohortLinesSerializeConfig(context?): SettingsConfig {
 function makeEnrollmentDeltaModeSerializeConfig(context?): SettingsConfig {
   return [
     [
-      "deltaMode", {
+      "deltaMode",
+      {
         serializerType: "custom",
         urlVar: "edm",
-        serialize: (settings, key) => settings[key] ? "1" : "0",
+        serialize: (settings, key) => (settings[key] ? "1" : "0"),
         deserialize: (settings, s) => s === "1",
       },
-    ]
+    ],
   ];
 }
 
@@ -60,7 +68,8 @@ export const ENROLLMENT_CLASS_OF_MAX = 2030;
 function makeEnrollmentClassOfRangeSerializeConfig(context?): SettingsConfig {
   return [
     [
-      "classOfMin", {
+      "classOfMin",
+      {
         serializerType: "custom",
         urlVar: "ecmn",
         serialize: (settings, key) => String(settings[key]),
@@ -69,8 +78,10 @@ function makeEnrollmentClassOfRangeSerializeConfig(context?): SettingsConfig {
           return Number.isFinite(n) ? n : ENROLLMENT_CLASS_OF_MIN;
         },
       },
-    ], [
-      "classOfMax", {
+    ],
+    [
+      "classOfMax",
+      {
         serializerType: "custom",
         urlVar: "ecmx",
         serialize: (settings, key) => String(settings[key]),
@@ -79,7 +90,7 @@ function makeEnrollmentClassOfRangeSerializeConfig(context?): SettingsConfig {
           return Number.isFinite(n) ? n : ENROLLMENT_CLASS_OF_MAX;
         },
       },
-    ]
+    ],
   ];
 }
 
@@ -117,26 +128,34 @@ export function deserializeEnrollmentBreakdown(s: string): EnrollmentBreakdown {
 function makeEnrollmentBreakdownSerializeConfig(context?): SettingsConfig {
   return [
     [
-      "breakdown", {
+      "breakdown",
+      {
         serializerType: "custom",
         urlVar: "ebd",
-        serialize: (settings, key) => serializeEnrollmentBreakdown(settings[key]),
-          deserialize: (settings, s) => deserializeEnrollmentBreakdown(s),
+        serialize: (settings, key) =>
+          serializeEnrollmentBreakdown(settings[key]),
+        deserialize: (settings, s) => deserializeEnrollmentBreakdown(s),
       },
-    ]
+    ],
   ];
 }
 
 // codeColumn name on the enrollment frame for each breakdown choice.
 // "none" maps to null so the dashboard skips per-series splitting.
-export const ENROLLMENT_BREAKDOWN_CODE_COLUMNS: Record<EnrollmentBreakdown, string | null> = {
+export const ENROLLMENT_BREAKDOWN_CODE_COLUMNS: Record<
+  EnrollmentBreakdown,
+  string | null
+> = {
   none: null,
   grade: "grade_level_code",
   grade_cohort: "grade_cohort_code",
 };
 
 // Display-label column for each breakdown choice (used in chart legends).
-export const ENROLLMENT_BREAKDOWN_LABEL_COLUMNS: Record<EnrollmentBreakdown, string | null> = {
+export const ENROLLMENT_BREAKDOWN_LABEL_COLUMNS: Record<
+  EnrollmentBreakdown,
+  string | null
+> = {
   none: null,
   grade: "grade_level",
   grade_cohort: "grade_cohort",
@@ -145,28 +164,33 @@ export const ENROLLMENT_BREAKDOWN_LABEL_COLUMNS: Record<EnrollmentBreakdown, str
 function makeEnrollmentGradeLevelSerializeConfig(context?): SettingsConfig {
   return [
     [
-      "gradeLevelCodes", {
+      "gradeLevelCodes",
+      {
         serializerType: "filter",
         urlVar: "egl",
         filter: EnrollmentGradeLevelFilter,
       },
-    ]
+    ],
   ];
 }
 
 function makeEnrollmentStudentGroupFilterConfig(context?): SettingsConfig {
   return [
     [
-      "studentGroupCodes", {
+      "studentGroupCodes",
+      {
         serializerType: "filter",
         urlVar: "esgf",
         filter: EnrollmentStudentGroupFilter,
       },
-    ]
+    ],
   ];
 }
 
-export type EnrollmentSettings = DatasetSettings & SchoolFilters & GradeLevelFilters & StudentGroupFilters;
+export type EnrollmentSettings = DatasetSettings &
+  SchoolFilters &
+  GradeLevelFilters &
+  StudentGroupFilters;
 
 const DEFAULT_DETAILED_ACTUALS_SETTINGS = DEFAULT_DATASET_SETTINGS.map((v) => ({
   ...v,
@@ -185,7 +209,7 @@ export type EnrollmentContextSettings = CommonFacetContextSettings<Facet> & {
   classOfMax: number;
 };
 
-const DEFAULT_DASHBOARD_SETTINGS : EnrollmentContextSettings = {
+const DEFAULT_DASHBOARD_SETTINGS: EnrollmentContextSettings = {
   ...DEFAULT_COMMON_FACET_CONTEXT_SETTINGS,
   sortType: "latest" as const,
   facet: "ms_assignment" as const,
@@ -204,7 +228,10 @@ export const SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS = [
 ];
 
 export const SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS = [
-  CommonContextSettingsAll.makeFacetSerializeConfigHelper<Facet>(serializeFacet, deserializeFacet),
+  CommonContextSettingsAll.makeFacetSerializeConfigHelper<Facet>(
+    serializeFacet,
+    deserializeFacet,
+  ),
   CommonContextSettingsAll.makeYScaleSerializeConfig,
   CommonContextSettingsAll.makeSchoolGroupingSerializeConfig,
   CommonContextSettingsAll.makeChartsEnabledSerializeConfig,
@@ -219,11 +246,15 @@ export default function EnrollmentPage() {
   return (
     <EnsureDistrictData
       defaultAllSettings={DEFAULT_DETAILED_ACTUALS_SETTINGS}
-      allSettingsConfigGenerators={SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS}
+      allSettingsConfigGenerators={
+        SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS
+      }
       defaultContextSettings={DEFAULT_DASHBOARD_SETTINGS}
-      contextSettingsConfigGenerators={SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS}
+      contextSettingsConfigGenerators={
+        SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS
+      }
       ContentComponent={EnrollmentDashboard}
+      datasets={[...METRICS_DATASETS, ...VITALS_DATASETS, "enrollment"]}
     />
   );
 }
-

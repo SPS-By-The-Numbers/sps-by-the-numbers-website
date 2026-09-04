@@ -16,6 +16,8 @@ import type {
   PAFilters,
   SchoolFilters,
 } from "utilities/DistrictData";
+import { METRICS_DATASETS } from "utilities/ChartableMetrics";
+import { VITALS_DATASETS } from "utilities/ChartableVitals";
 
 export type StaffingSettings = DatasetSettings &
   PAFilters &
@@ -120,6 +122,7 @@ export default function StaffingPage() {
         SERIALIZE_STAFFING_CONTEXT_SETTINGS_GENERATORS
       }
       ContentComponent={StaffingDashboard}
+      datasets={[...METRICS_DATASETS, ...VITALS_DATASETS]}
     />
   );
 }

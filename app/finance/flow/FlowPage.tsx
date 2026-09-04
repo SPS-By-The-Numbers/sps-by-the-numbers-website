@@ -16,6 +16,13 @@ export default function FlowPage() {
       defaultContextSettings={DEFAULT_COMMON_CONTEXT_SETTINGS}
       contextSettingsConfigGenerators={[]}
       ContentComponent={FlowDashboard}
+      datasets={[
+        "enrollment",
+        "gf_expenditures",
+        "gf_revenues",
+        // all_class_ofs() spans three frames, this being the third.
+        "fundedEnrollment",
+      ]}
     />
   );
 }

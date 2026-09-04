@@ -4,22 +4,32 @@ import { DEFAULT_DATASET_SETTINGS } from "app/finance/_settings/dataset_settings
 import * as CommonContextSettings from "app/finance/_settings/common_context_settings";
 import * as CommonSettings from "app/finance/_settings/common_settings";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
-import { makeDefaultPaoSettings, makeDefaultDatasetSettings } from "app/finance/_settings/common_settings";
+import {
+  makeDefaultPaoSettings,
+  makeDefaultDatasetSettings,
+} from "app/finance/_settings/common_settings";
 import ExpendituresDashboard from "./ExpendituresDashboard";
-import { DEFAULT_DASHBOARD_SETTINGS, serializeExpendituresDashbaordFacet, deserializeExpendituresDashbaordFacet } from "./ExpendituresContextSettings";
+import {
+  DEFAULT_DASHBOARD_SETTINGS,
+  serializeExpendituresDashbaordFacet,
+  deserializeExpendituresDashbaordFacet,
+} from "./ExpendituresContextSettings";
 
 import type { Facet } from "./ExpendituresContextSettings";
 
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 import type { PAOFilters } from "utilities/DistrictData";
 import type { SettingsConfig } from "app/finance/_settings/base_settings";
+import { METRICS_DATASETS } from "utilities/ChartableMetrics";
+import { VITALS_DATASETS } from "utilities/ChartableVitals";
 
-export type ExpendituresSettings = DatasetSettings & PAOFilters & {
-  overridePrimaryFilter: boolean;
-};
+export type ExpendituresSettings = DatasetSettings &
+  PAOFilters & {
+    overridePrimaryFilter: boolean;
+  };
 
 export const DEFAULT_EXPENDITURES_SETTINGS = DEFAULT_DATASET_SETTINGS.map(
-  v => ({
+  (v) => ({
     ...v,
     overridePrimaryFilter: false,
     ...makeDefaultDatasetSettings(v.ccddd),
@@ -27,7 +37,7 @@ export const DEFAULT_EXPENDITURES_SETTINGS = DEFAULT_DATASET_SETTINGS.map(
   }),
 );
 
-function makeExpenditreDatasetSerializeConfig(context?) : SettingsConfig {
+function makeExpenditreDatasetSerializeConfig(context?): SettingsConfig {
   return [
     [
       "overridePrimaryFilter",
@@ -35,8 +45,8 @@ function makeExpenditreDatasetSerializeConfig(context?) : SettingsConfig {
         serializerType: "custom",
         urlVar: "of",
         serialize: (settings, key) => (settings[key] ? "1" : "0"),
-          deserialize: (settings, s) => (s === "1" ? true : false)
-      }
+        deserialize: (settings, s) => (s === "1" ? true : false),
+      },
     ],
   ];
 }
@@ -50,7 +60,8 @@ export const SERIALIZE_EXPENDITURES_SETTINGS_GENERATORS = [
 export const SERIALIZE_EXPENDITURES_CONTEXT_SETTINGS_GENERATORS = [
   CommonContextSettings.makeFacetSerializeConfigHelper<Facet>(
     serializeExpendituresDashbaordFacet,
-    deserializeExpendituresDashbaordFacet),
+    deserializeExpendituresDashbaordFacet,
+  ),
   CommonContextSettings.makeSortOrderSerializeConfig,
   CommonContextSettings.makeYScaleSerializeConfig,
   CommonContextSettings.makeChartsEnabledSerializeConfig,
@@ -62,8 +73,11 @@ export default function ExpendituresPage() {
       defaultAllSettings={DEFAULT_EXPENDITURES_SETTINGS}
       allSettingsConfigGenerators={SERIALIZE_EXPENDITURES_SETTINGS_GENERATORS}
       defaultContextSettings={DEFAULT_DASHBOARD_SETTINGS}
-      contextSettingsConfigGenerators={SERIALIZE_EXPENDITURES_CONTEXT_SETTINGS_GENERATORS}
+      contextSettingsConfigGenerators={
+        SERIALIZE_EXPENDITURES_CONTEXT_SETTINGS_GENERATORS
+      }
       ContentComponent={ExpendituresDashboard}
+      datasets={[...METRICS_DATASETS, ...VITALS_DATASETS]}
     />
   );
 }

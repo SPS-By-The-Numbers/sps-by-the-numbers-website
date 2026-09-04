@@ -24,6 +24,7 @@ import type {
   RevenueAccountFilters,
   PFilters,
 } from "utilities/DistrictData";
+import { VITALS_DATASETS } from "utilities/ChartableVitals";
 
 export type RevenuesSettings = DatasetSettings &
   RevenueCategoryFilters &
@@ -63,6 +64,7 @@ export default function RevenuesPage() {
         SERIALIZE_REVENUES_CONTEXT_SETTINGS_GENERATORS
       }
       ContentComponent={RevenuesDashboard}
+      datasets={[...VITALS_DATASETS]}
     />
   );
 }

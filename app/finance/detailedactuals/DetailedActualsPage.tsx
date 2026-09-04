@@ -13,19 +13,33 @@ import DetailedActualsDashboard from "./DetailedActualsDashboard";
 import type { DatasetSettings } from "app/finance/_settings/dataset_settings";
 import type { Facet } from "./DetailedActualsDashboard";
 import type { CommonFacetContextSettings } from "app/finance/_settings/common_context_settings";
-import type { SortOrder, SortType, YScale, FacetLimit } from "utilities/ChartOptions";
-import type { PAOFilters, SchoolFilters, NcesFilters } from "utilities/DistrictData";
+import type {
+  SortOrder,
+  SortType,
+  YScale,
+  FacetLimit,
+} from "utilities/ChartOptions";
+import type {
+  PAOFilters,
+  SchoolFilters,
+  NcesFilters,
+} from "utilities/DistrictData";
+import { METRICS_DATASETS } from "utilities/ChartableMetrics";
+import { VITALS_DATASETS } from "utilities/ChartableVitals";
 
-export type DetailedActualsSettings = DatasetSettings & PAOFilters & SchoolFilters & NcesFilters;
+export type DetailedActualsSettings = DatasetSettings &
+  PAOFilters &
+  SchoolFilters &
+  NcesFilters;
 
 const DEFAULT_DETAILED_ACTUALS_SETTINGS = DEFAULT_DATASET_SETTINGS.map((v) => ({
   ...v,
-  ...makeDefaultSettings(v.ccddd)
+  ...makeDefaultSettings(v.ccddd),
 }));
 
 export type DetailedActualsContextSettings = CommonFacetContextSettings<Facet>;
 
-const DEFAULT_DASHBOARD_SETTINGS : DetailedActualsContextSettings = {
+const DEFAULT_DASHBOARD_SETTINGS: DetailedActualsContextSettings = {
   ...DEFAULT_COMMON_FACET_CONTEXT_SETTINGS,
   facet: "nces",
 };
@@ -39,7 +53,10 @@ export const SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS = [
 ];
 
 export const SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS = [
-  CommonContextSettingsAll.makeFacetSerializeConfigHelper<Facet>(serializeFacet, deserializeFacet),
+  CommonContextSettingsAll.makeFacetSerializeConfigHelper<Facet>(
+    serializeFacet,
+    deserializeFacet,
+  ),
   CommonContextSettingsAll.makeSortOrderSerializeConfig,
   CommonContextSettingsAll.makeSortOrderSerializeConfig,
   CommonContextSettingsAll.makeYScaleSerializeConfig,
@@ -51,11 +68,15 @@ export default function DetailedActualsPage() {
   return (
     <EnsureDistrictData
       defaultAllSettings={DEFAULT_DETAILED_ACTUALS_SETTINGS}
-      allSettingsConfigGenerators={SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS}
+      allSettingsConfigGenerators={
+        SERIALIZE_DETAILED_ACTUALS_SETTINGS_GENERATORS
+      }
       defaultContextSettings={DEFAULT_DASHBOARD_SETTINGS}
-      contextSettingsConfigGenerators={SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS}
+      contextSettingsConfigGenerators={
+        SERIALIZE_DETAILED_ACTUALS_CONTEXT_SETTINGS_GENERATORS
+      }
       ContentComponent={DetailedActualsDashboard}
+      datasets={[...METRICS_DATASETS, ...VITALS_DATASETS]}
     />
   );
 }
-

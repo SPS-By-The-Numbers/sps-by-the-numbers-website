@@ -4,7 +4,10 @@ import { DEFAULT_COMMON_FACET_CONTEXT_SETTINGS } from "app/finance/_settings/com
 import { DEFAULT_DATASET_SETTINGS } from "app/finance/_settings/dataset_settings";
 import { DUMMY_BASE_SETTINGS } from "app/finance/_settings/base_settings";
 import { EnsureDistrictData } from "app/finance/_providers/DistrictDataProvider";
-import { makeDefaultDatasetSettings, makeDefaultAssessmentFilterSettings } from "app/finance/_settings/common_settings";
+import {
+  makeDefaultDatasetSettings,
+  makeDefaultAssessmentFilterSettings,
+} from "app/finance/_settings/common_settings";
 import { makeSchoolFilter } from "app/finance/_filteritems/school";
 import { serializeFacet, deserializeFacet } from "./AssessmentDashboard";
 import * as CommonContextSettingsAll from "app/finance/_settings/common_context_settings";
@@ -22,10 +25,11 @@ export type CovidYears = (typeof ALL_COVID_YEARS)[number];
 export const ALL_DISCLOSURE_AVOIDANCE = ["best_guess", "drop"] as const;
 export type DisclosureAvoidance = (typeof ALL_DISCLOSURE_AVOIDANCE)[number];
 
-const DISCLOSURE_AVOIDANCE_SERIALIZE_MAP: Record<DisclosureAvoidance, string> = {
-  best_guess: "0",
-  drop: "1",
-};
+const DISCLOSURE_AVOIDANCE_SERIALIZE_MAP: Record<DisclosureAvoidance, string> =
+  {
+    best_guess: "0",
+    drop: "1",
+  };
 const DISCLOSURE_AVOIDANCE_DESERIALIZE_MAP = Object.fromEntries(
   Object.entries(DISCLOSURE_AVOIDANCE_SERIALIZE_MAP).map(([k, v]) => [v, k]),
 ) as Record<string, DisclosureAvoidance>;
@@ -40,21 +44,24 @@ export function deserializeDisclosureAvoidance(s: string): DisclosureAvoidance {
 
 // Maps a disclosure-avoidance choice to the BigQuery column the chart
 // should source pct_met_standard from.
-export const DISCLOSURE_AVOIDANCE_METRIC: Record<DisclosureAvoidance, string> = {
-  best_guess: "pct_met_standard_withdat",
-  drop: "pct_met_standard_nodat",
-};
+export const DISCLOSURE_AVOIDANCE_METRIC: Record<DisclosureAvoidance, string> =
+  {
+    best_guess: "pct_met_standard_withdat",
+    drop: "pct_met_standard_nodat",
+  };
 
 function makeDisclosureAvoidanceSerializeConfig(context?): SettingsConfig {
   return [
     [
-      "disclosureAvoidance", {
+      "disclosureAvoidance",
+      {
         serializerType: "custom",
         urlVar: "da",
-        serialize: (settings, key) => serializeDisclosureAvoidance(settings[key]),
-          deserialize: (settings, s) => deserializeDisclosureAvoidance(s),
+        serialize: (settings, key) =>
+          serializeDisclosureAvoidance(settings[key]),
+        deserialize: (settings, s) => deserializeDisclosureAvoidance(s),
       },
-    ]
+    ],
   ];
 }
 
@@ -77,19 +84,38 @@ export function deserializeCovidYears(s: string): CovidYears {
 function makeCovidYearsSerializeConfig(context?): SettingsConfig {
   return [
     [
-      "covidYears", {
+      "covidYears",
+      {
         serializerType: "custom",
         urlVar: "cy",
         serialize: (settings, key) => serializeCovidYears(settings[key]),
-          deserialize: (settings, s) => deserializeCovidYears(s),
+        deserialize: (settings, s) => deserializeCovidYears(s),
       },
-    ]
+    ],
   ];
 }
-import type { SortOrder, SortType, YScale, FacetLimit } from "utilities/ChartOptions";
-import type { SchoolFilters, GradeLevelFilters, TestAdministrationFilters, StudentGroupFilters, TestSubjectFilters } from "utilities/DistrictData";
+import type {
+  SortOrder,
+  SortType,
+  YScale,
+  FacetLimit,
+} from "utilities/ChartOptions";
+import type {
+  SchoolFilters,
+  GradeLevelFilters,
+  TestAdministrationFilters,
+  StudentGroupFilters,
+  TestSubjectFilters,
+} from "utilities/DistrictData";
+import { METRICS_DATASETS } from "utilities/ChartableMetrics";
+import { VITALS_DATASETS } from "utilities/ChartableVitals";
 
-export type AssessmentSettings = DatasetSettings & SchoolFilters & GradeLevelFilters & TestAdministrationFilters & StudentGroupFilters & TestSubjectFilters;
+export type AssessmentSettings = DatasetSettings &
+  SchoolFilters &
+  GradeLevelFilters &
+  TestAdministrationFilters &
+  StudentGroupFilters &
+  TestSubjectFilters;
 
 const DEFAULT_ASSESSMENTS_SETTINGS = DEFAULT_DATASET_SETTINGS.map((v) => ({
   ...v,
@@ -103,7 +129,7 @@ export type AssessmentContextSettings = CommonFacetContextSettings<Facet> & {
   disclosureAvoidance: DisclosureAvoidance;
 };
 
-const DEFAULT_DASHBOARD_SETTINGS : AssessmentContextSettings = {
+const DEFAULT_DASHBOARD_SETTINGS: AssessmentContextSettings = {
   ...DEFAULT_COMMON_FACET_CONTEXT_SETTINGS,
   sortType: "latest" as const,
   yScale: "fixed" as const,
@@ -122,7 +148,10 @@ export const SERIALIZE_ASSESSMENTS_SETTINGS_GENERATORS = [
 ];
 
 export const SERIALIZE_ASSESSMENTS_CONTEXT_SETTINGS_GENERATORS = [
-  CommonContextSettingsAll.makeFacetSerializeConfigHelper<Facet>(serializeFacet, deserializeFacet),
+  CommonContextSettingsAll.makeFacetSerializeConfigHelper<Facet>(
+    serializeFacet,
+    deserializeFacet,
+  ),
   CommonContextSettingsAll.makeSortOrderSerializeConfig,
   CommonContextSettingsAll.makeSortOrderSerializeConfig,
   CommonContextSettingsAll.makeYScaleSerializeConfig,
@@ -138,9 +167,11 @@ export default function AssessmentPage() {
       defaultAllSettings={DEFAULT_ASSESSMENTS_SETTINGS}
       allSettingsConfigGenerators={SERIALIZE_ASSESSMENTS_SETTINGS_GENERATORS}
       defaultContextSettings={DEFAULT_DASHBOARD_SETTINGS}
-      contextSettingsConfigGenerators={SERIALIZE_ASSESSMENTS_CONTEXT_SETTINGS_GENERATORS}
+      contextSettingsConfigGenerators={
+        SERIALIZE_ASSESSMENTS_CONTEXT_SETTINGS_GENERATORS
+      }
       ContentComponent={AssessmentDashboard}
+      datasets={[...METRICS_DATASETS, ...VITALS_DATASETS, "assessment"]}
     />
   );
 }
-

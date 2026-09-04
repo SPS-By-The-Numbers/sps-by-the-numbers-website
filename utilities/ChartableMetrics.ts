@@ -4,7 +4,27 @@ import { op } from "arquero";
 import type { ColumnTable } from "arquero";
 import type { SortOrder } from "utilities/ChartOptions";
 import type DistrictData from "utilities/DistrictData";
-import type { CurrencyNormalization, StaffingNormalization } from "utilities/normalizations";
+import type {
+  CurrencyNormalization,
+  StaffingNormalization,
+} from "utilities/normalizations";
+
+// Datasets this module reads, so a dashboard using it can declare
+// `...METRICS_DATASETS` instead of hand-listing frames it never names. Keep
+// this next to the code that reads them: if a new accessor is used below, the
+// dataset belongs here, and every dashboard picks it up automatically.
+//
+// expenditures + compensation -> gf_expenditures; revenues -> gf_revenues;
+// staffingSummary -> budget_items, budgeted_fte, s275_summary;
+// all_class_ofs -> fundedEnrollment, gf_expenditures, gf_revenues.
+export const METRICS_DATASETS = [
+  "gf_expenditures",
+  "gf_revenues",
+  "budget_items",
+  "budgeted_fte",
+  "s275_summary",
+  "fundedEnrollment",
+] as const;
 
 export type FacetInfo = {
   code: string;
@@ -204,7 +224,10 @@ export function extractRawExpenditures(df: ColumnTable, facetColumn: string) {
   return data;
 }
 
-export function extractRawS275Staffing(df: ColumnTable, facetColumn: string = "duty_root") {
+export function extractRawS275Staffing(
+  df: ColumnTable,
+  facetColumn: string = "duty_root",
+) {
   const facetCodeColumn = `${facetColumn}_code`;
   const data = df.groupby("class_of", facetCodeColumn).rollup({
     finalSalary: (d) => op.sum(d.c_est_total_final_salary),
@@ -232,14 +255,7 @@ export function toFacetedCharatbleDataset(
     .select(aq.not(aq.startswith("_pivot_name_hack_")));
 
   const names = getDataColumnNames(pdata);
-  return toChartableDataset(
-    districtData,
-    pdata,
-    settings,
-    [],
-    names,
-    [],
-  );
+  return toChartableDataset(districtData, pdata, settings, [], names, []);
 }
 
 function extractRawEnrollment(
@@ -294,7 +310,12 @@ export function toFacetedCharatbleEnrollmentDataset(
     breakdownCodeColumn !== facetCodeColumn &&
     breakdownCodeColumn !== "student_group_code";
   const df = extractRawEnrollment(
-    filteredDf, facet, metricColumn, breakdownCodeColumn, xColumn, extraSeriesDimCol,
+    filteredDf,
+    facet,
+    metricColumn,
+    breakdownCodeColumn,
+    xColumn,
+    extraSeriesDimCol,
   );
 
   // composite_key shape:
@@ -307,7 +328,7 @@ export function toFacetedCharatbleEnrollmentDataset(
   // appending `<seriesCode>` after the facet code, where the seriesCode
   // is the rest of the composite_key after the leading facet segment.
   const withComposite = df
-    .filter(d => d.grade != "All Grades")
+    .filter((d) => d.grade != "All Grades")
     .derive({ _metric: aq.escape((d) => d[metricColumn]) })
     .derive({
       composite_key: aq.escape((d) => {
@@ -368,19 +389,21 @@ export function toFacetedCharatbleAssessmentDataset(
   metricColumn: string = "pct_met_standard_withdat",
 ) {
   const facetCodeColumn = `${facet}_code`;
-  const seriesCodeColumns = ASSESSMENT_CODE_COLUMNS.filter(c => c !== facetCodeColumn);
+  const seriesCodeColumns = ASSESSMENT_CODE_COLUMNS.filter(
+    (c) => c !== facetCodeColumn,
+  );
 
   // Stage the chosen metric under a known name so the rollup expression
   // can reference it without depending on dynamic column-name parsing.
   // Then create the composite pivot key: facet code first, then the
   // remaining dimensions.
-  const withComposite = filteredDf
-    .derive({
-      _metric: aq.escape((d) => d[metricColumn]),
-      composite_key: aq.escape(d =>
-        `${d[facetCodeColumn]}_${seriesCodeColumns.map(c => d[c]).join("_")}`
-      ),
-    });
+  const withComposite = filteredDf.derive({
+    _metric: aq.escape((d) => d[metricColumn]),
+    composite_key: aq.escape(
+      (d) =>
+        `${d[facetCodeColumn]}_${seriesCodeColumns.map((c) => d[c]).join("_")}`,
+    ),
+  });
 
   // Pivot by composite key, averaging the chosen metric per group.
   // Multiply by 100 so the chart axis renders as a percent. The output
@@ -395,12 +418,5 @@ export function toFacetedCharatbleAssessmentDataset(
     .select(aq.not(aq.startswith("_pivot_name_hack_")));
 
   const names = getDataColumnNames(pdata);
-  return toChartableDataset(
-    districtData,
-    pdata,
-    settings,
-    [],
-    names,
-    [],
-  );
+  return toChartableDataset(districtData, pdata, settings, [], names, []);
 }

@@ -1,6 +1,15 @@
 import { op } from "arquero";
 import * as aq from "arquero";
-import { fetchDataset } from "utilities/client/FetchData";
+
+import {
+  loadDatasets,
+  registerNormalizer,
+} from "utilities/client/DistrictDatasets";
+
+import type {
+  DatasetBundle,
+  DatasetName,
+} from "utilities/client/DistrictDatasets";
 import ALL_ASSESSMENT_TYPES from "utilities/domain/assessment_types";
 import ALL_ENROLLMENT_STUDENT_GROUPS from "utilities/domain/enrollment_student_groups";
 import ALL_GRADE_LEVELS from "utilities/domain/grade_levels";
@@ -256,7 +265,8 @@ function deriveStaffClassColumns(df) {
       employmentClassCodeForDutyRoot(d.duty_root_code),
     ),
     employment_class: aq.escape(
-      (d) => EMPLOYMENT_CLASS_LABEL[employmentClassForDutyRoot(d.duty_root_code)],
+      (d) =>
+        EMPLOYMENT_CLASS_LABEL[employmentClassForDutyRoot(d.duty_root_code)],
     ),
     staff_category_code: aq.escape((d) =>
       staffCategoryCodeForDutyRoot(d.duty_root_code),
@@ -293,70 +303,85 @@ function combineCommonActivities(df, combiner) {
 // groupings of information and calculations.
 //
 // Data is joinable on the 'class_of' and 'data_type' columns.
+// Per-dataset normalization, registered with the dataset cache so it runs once
+// per district-dataset rather than once per DistrictData. Synthetic activity
+// codes collapse categories that OSPI split over the years; the staff-class
+// columns are derived from the duty root so both the S-275 actuals and the
+// F-195 budget can be filtered and faceted the same way.
+registerNormalizer("gf_expenditures", (df) =>
+  combineCommonActivities(df, combineActivitiesF19x),
+);
+registerNormalizer("s275_summary", (df) =>
+  deriveStaffClassColumns(combineCommonActivities(df, combineActivitiesS275)),
+);
+registerNormalizer("budgeted_fte", (df) =>
+  deriveStaffClassColumns(
+    combineCommonActivities(df, combineActivitiesBudgetedFte),
+  ),
+);
+
 export default class DistrictData {
-  private enrollment_df: ColumnTable;
-  private fundedEnrollment_df: ColumnTable;
-  private assessment_df: ColumnTable;
-  private sqss_df: ColumnTable;
-  private gf_expenditure_df: ColumnTable;
-  private gf_revenue_df: ColumnTable;
-  private budget_items_df: ColumnTable;
-  private actuals_items_df: ColumnTable;
-  private s275_summary_df: ColumnTable;
-  private budgeted_fte_df: ColumnTable;
-  private budgetary_comparison_df: ColumnTable;
-  private all_class_ofs_df: ColumnTable;
+  private bundle: DatasetBundle;
+  private all_class_ofs_cache: ColumnTable | null = null;
 
-  constructor(
-    enrollment_df,
-    fundedEnrollment_df,
-    assessment_df,
-    sqss_df,
-    gf_expenditure_df,
-    gf_revenue_df,
-    budget_items_df,
-    actuals_items_df,
-    s275_summary_df,
-    budgeted_fte_df,
-    budgetary_comparison_df,
-  ) {
-    this.enrollment_df = enrollment_df;
-    this.fundedEnrollment_df = fundedEnrollment_df;
-    this.assessment_df = assessment_df;
-    this.sqss_df = sqss_df;
-    this.gf_expenditure_df = gf_expenditure_df;
-    this.gf_revenue_df = gf_revenue_df;
-    this.budget_items_df = budget_items_df;
-    this.actuals_items_df = actuals_items_df;
-    this.s275_summary_df = s275_summary_df;
-    this.budgeted_fte_df = budgeted_fte_df;
-    this.budgetary_comparison_df = budgetary_comparison_df;
+  constructor(bundle: DatasetBundle) {
+    this.bundle = bundle;
+  }
 
-    // Create synthetic activities for categories that have split over the
-    // years such as Teaching + Professional Learning. In this case, it
-    // replaces the activity code 27 and 34 with their summation labeled
-    // with a synthetic activity code.
-    this.gf_expenditure_df = combineCommonActivities(
-      this.gf_expenditure_df,
-      combineActivitiesF19x,
-    );
-    this.s275_summary_df = combineCommonActivities(
-      this.s275_summary_df,
-      combineActivitiesS275,
-    );
-    this.budgeted_fte_df = combineCommonActivities(
-      this.budgeted_fte_df,
-      combineActivitiesBudgetedFte,
-    );
+  // A dashboard reaching for a dataset it did not declare is a bug in its
+  // declaration, and the failure has to be loud: falling back to an empty
+  // frame would draw a plausible-looking chart with nothing in it, which is
+  // far harder to notice than a crash.
+  private require(name: DatasetName): ColumnTable {
+    const df = this.bundle[name];
+    if (!df) {
+      throw new Error(
+        `DistrictData needs the "${name}" dataset, which this dashboard did ` +
+          `not declare. Add it to the dashboard's datasets list (or to the ` +
+          `DATASETS constant of the helper that reads it).`,
+      );
+    }
+    return df;
+  }
 
-    // Derive employment class (certificated/classified, 2-way -- the Staffing
-    // FILTER) and staff category (the finer 6-way OSPI breakdown -- the Staffing
-    // "Staff Category" FACET) from the duty ROOT code (OSPI's authoritative rule
-    // -- see utilities/domain/duty_roots). Both the S-275 actuals and the F-195
-    // budget carry duty_root_code, so these are filterable AND facetable
-    // dimensions on the Staffing dashboard for both.
-    this.s275_summary_df = deriveStaffClassColumns(this.s275_summary_df);
-    this.budgeted_fte_df = deriveStaffClassColumns(this.budgeted_fte_df);
+  // Getters rather than fields so every method below reads unchanged while
+  // the underlying frames stay lazily required.
+  private get enrollment_df() {
+    return this.require("enrollment");
+  }
+  private get fundedEnrollment_df() {
+    return this.require("fundedEnrollment");
+  }
+  private get assessment_df() {
+    return this.require("assessment");
+  }
+  private get gf_expenditure_df() {
+    return this.require("gf_expenditures");
+  }
+  private get gf_revenue_df() {
+    return this.require("gf_revenues");
+  }
+  private get budget_items_df() {
+    return this.require("budget_items");
+  }
+  private get actuals_items_df() {
+    return this.require("actuals_items");
+  }
+  private get s275_summary_df() {
+    return this.require("s275_summary");
+  }
+  private get budgeted_fte_df() {
+    return this.require("budgeted_fte");
+  }
+  private get budgetary_comparison_df() {
+    return this.require("budgetary_comparison");
+  }
+
+  private get all_class_ofs_df(): ColumnTable {
+    // Computed on demand: it spans three datasets, so eagerly deriving it
+    // would drag them into every dashboard whether or not it asks for a year
+    // list. Cached because callers hit it per render.
+    if (this.all_class_ofs_cache) return this.all_class_ofs_cache;
 
     const minMaxDf = minMaxClassOf(this.fundedEnrollment_df)
       .concat(minMaxClassOf(this.gf_expenditure_df))
@@ -371,72 +396,24 @@ export default class DistrictData {
       all_class_ofs.push(year);
     }
 
-    this.all_class_ofs_df = aq.table({ class_of: all_class_ofs });
+    this.all_class_ofs_cache = aq.table({ class_of: all_class_ofs });
+    return this.all_class_ofs_cache;
   }
 
-  static async loadFromGcs(ccddd) {
-    const [
-      enrollment_df,
-      fundedEnrollment_df,
-      assessment_df,
-      sqss_df,
-      gf_expenditure_df,
-      gf_revenue_df,
-      budget_items_df,
-      actuals_items_df,
-      s275_summary_df,
-      budgeted_fte_df,
-      budgetary_comparison_df,
-    ] = await Promise.all([
-      fetchDataset(ccddd, "enrollment"),
-      fetchDataset(ccddd, "fundedEnrollment"),
-      fetchDataset(ccddd, "assessment"),
-      fetchDataset(ccddd, "sqss"),
-      fetchDataset(ccddd, "gf_expenditures"),
-      fetchDataset(ccddd, "gf_revenues"),
-      fetchDataset(ccddd, "budget_items"),
-      fetchDataset(ccddd, "actuals_items"),
-      fetchDataset(ccddd, "s275_summary"),
-      // Budgeted FTE (F-195) is a newer dataset. Degrade gracefully if it can't
-      // be fetched (e.g. the Cloud Function hasn't been deployed yet, or a
-      // district has no F-195 filing) with an empty, correctly-shaped frame so
-      // the rest of the finance data still loads -- the Staffing dashboard then
-      // simply shows no Budget overlay rather than breaking every dashboard.
-      fetchDataset(ccddd, "budgeted_fte").catch(() =>
-        aq.table({
-          class_of: [],
-          program_code: [],
-          activity_code: [],
-          duty_root_code: [],
-          fte: [],
-        }),
-      ),
-      // Mid-year revised budget (F-196 Budgetary Comparison) is a newer
-      // dataset. Same graceful degrade as budgeted_fte: an empty frame just
-      // means no Revised Budget series on the charts.
-      fetchDataset(ccddd, "budgetary_comparison").catch(() =>
-        aq.table({
-          class_of: [],
-          fund: [],
-          section: [],
-          item_code: [],
-          amount: [],
-        }),
-      ),
-    ]);
-    return new DistrictData(
-      enrollment_df,
-      fundedEnrollment_df,
-      assessment_df,
-      sqss_df,
-      gf_expenditure_df,
-      gf_revenue_df,
-      budget_items_df,
-      actuals_items_df,
-      s275_summary_df,
-      budgeted_fte_df,
-      budgetary_comparison_df,
-    );
+  static async loadFromGcs(ccddd: number, datasets: readonly DatasetName[]) {
+    return new DistrictData(await loadDatasets(ccddd, datasets));
+  }
+
+  /**
+   * Whether every named dataset is present in this instance.
+   *
+   * The provider rebuilds DistrictData as dashboards ask for wider dataset
+   * sets, so a district being "loaded" is not the same as being loaded with
+   * what the current dashboard needs -- switching from a narrower tab would
+   * otherwise render against a bundle missing a frame.
+   */
+  hasAll(names: readonly DatasetName[]): boolean {
+    return names.every((n) => this.bundle[n] !== undefined);
   }
 
   // Direct accessors
