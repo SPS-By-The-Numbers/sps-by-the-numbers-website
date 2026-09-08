@@ -1,4 +1,10 @@
 import { Filter, makeInternalNode, makeLeafNode } from "utilities/filter";
+import {
+  S275_ONLY_CODE_ASB,
+  S275_ONLY_CODE_BAD,
+  S275_ONLY_CODE_CP,
+  S275_ONLY_LABELS,
+} from "utilities/domain/packed_codes";
 const ITEM_PREFIX = "prog";
 
 const PROG_1 = makeLeafNode(ITEM_PREFIX, 1, "Basic Education");
@@ -12,7 +18,11 @@ const PROG_3 = makeLeafNode(
   3,
   "Basic Education - Dropout Reengagement",
 );
-const PROG_75 = makeLeafNode(ITEM_PREFIX, 75, "Professional Development - State");
+const PROG_75 = makeLeafNode(
+  ITEM_PREFIX,
+  75,
+  "Professional Development - State",
+);
 const PROG_21 = makeLeafNode(
   ITEM_PREFIX,
   21,
@@ -43,7 +53,11 @@ const PROG_26 = makeLeafNode(
   26,
   "Special Education - Institutions - State",
 );
-const PROG_29 = makeLeafNode(ITEM_PREFIX, 29, "Special Education - Other - Federal");
+const PROG_29 = makeLeafNode(
+  ITEM_PREFIX,
+  29,
+  "Special Education - Other - Federal",
+);
 const PROG_51 = makeLeafNode(ITEM_PREFIX, 51, "ESEA Disadvantaged - Federal");
 const PROG_52 = makeLeafNode(
   ITEM_PREFIX,
@@ -61,14 +75,22 @@ const PROG_57 = makeLeafNode(
   57,
   "State Institutions - Neglected and Delinquent - Federal",
 );
-const PROG_58 = makeLeafNode(ITEM_PREFIX, 58, "Special and Pilot Programs - State");
+const PROG_58 = makeLeafNode(
+  ITEM_PREFIX,
+  58,
+  "Special and Pilot Programs - State",
+);
 const PROG_61 = makeLeafNode(ITEM_PREFIX, 61, "Head Start - Federal");
 const PROG_64 = makeLeafNode(
   ITEM_PREFIX,
   64,
   "Limited English Proficiency - Federal",
 );
-const PROG_68 = makeLeafNode(ITEM_PREFIX, 68, "Indian Education - Federal - ED");
+const PROG_68 = makeLeafNode(
+  ITEM_PREFIX,
+  68,
+  "Indian Education - Federal - ED",
+);
 const PROG_69 = makeLeafNode(ITEM_PREFIX, 69, "Compensatory - Other");
 const PROG_54 = makeLeafNode(ITEM_PREFIX, 54, "Reading First - Federal");
 const PROG_59 = makeLeafNode(
@@ -81,7 +103,11 @@ const PROG_62 = makeLeafNode(
   62,
   "Math and Science - Professional Development - Federal",
 );
-const PROG_67 = makeLeafNode(ITEM_PREFIX, 67, "Indian Education - Federal - JOM");
+const PROG_67 = makeLeafNode(
+  ITEM_PREFIX,
+  67,
+  "Indian Education - Federal - JOM",
+);
 const PROG_97 = makeLeafNode(ITEM_PREFIX, 97, "Districtwide Support");
 const PROG_99 = makeLeafNode(ITEM_PREFIX, 99, "Pupil Transportation");
 const PROG_98 = makeLeafNode(ITEM_PREFIX, 98, "School Food Services");
@@ -107,7 +133,11 @@ const PROG_14 = makeLeafNode(
   14,
   "Special Purpose - ESSER III - Learning Loss",
 );
-const PROG_19 = makeLeafNode(ITEM_PREFIX, 19, "Special Purpose - CARES Act Other");
+const PROG_19 = makeLeafNode(
+  ITEM_PREFIX,
+  19,
+  "Special Purpose - CARES Act Other",
+);
 const PROG_81 = makeLeafNode(ITEM_PREFIX, 81, "Public Radio and Television");
 const PROG_89 = makeLeafNode(ITEM_PREFIX, 89, "Other Community Services");
 const PROG_88 = makeLeafNode(ITEM_PREFIX, 88, "Child Care");
@@ -118,7 +148,11 @@ const PROG_79 = makeLeafNode(ITEM_PREFIX, 79, "Instructional Programs - Other");
 const PROG_71 = makeLeafNode(ITEM_PREFIX, 71, "Traffic Safety");
 const PROG_45 = makeLeafNode(ITEM_PREFIX, 45, "Skills Center - Basic - State");
 const PROG_46 = makeLeafNode(ITEM_PREFIX, 46, "Skills Center - Federal");
-const PROG_47 = makeLeafNode(ITEM_PREFIX, 47, "Skills Center - Facility Upgrades");
+const PROG_47 = makeLeafNode(
+  ITEM_PREFIX,
+  47,
+  "Skills Center - Facility Upgrades",
+);
 const PROG_31 = makeLeafNode(ITEM_PREFIX, 31, "Vocational - Basic - State");
 const PROG_34 = makeLeafNode(
   ITEM_PREFIX,
@@ -127,7 +161,11 @@ const PROG_34 = makeLeafNode(
 );
 const PROG_39 = makeLeafNode(ITEM_PREFIX, 39, "Vocational - Other Categorical");
 const PROG_38 = makeLeafNode(ITEM_PREFIX, 38, "Vocational - Federal");
-const PROG_78 = makeLeafNode(ITEM_PREFIX, 78, "Youth Training Programs - Federal");
+const PROG_78 = makeLeafNode(
+  ITEM_PREFIX,
+  78,
+  "Youth Training Programs - Federal",
+);
 const PROG_83 = makeLeafNode(
   ITEM_PREFIX,
   83,
@@ -143,7 +181,11 @@ const PROG_85 = makeLeafNode(
   85,
   "Adult Job Training, Federal - deleted FY 00-01",
 );
-const PROG_92 = makeLeafNode(ITEM_PREFIX, 92, "Debt Service - deleted FY 00-01");
+const PROG_92 = makeLeafNode(
+  ITEM_PREFIX,
+  92,
+  "Debt Service - deleted FY 00-01",
+);
 const PROG_27 = makeLeafNode(ITEM_PREFIX, 27, "Deleted");
 const PROG_28 = makeLeafNode(ITEM_PREFIX, 28, "Deleted");
 const PROG_77 = makeLeafNode(
@@ -178,6 +220,28 @@ const PROG_66 = makeLeafNode(
 );
 
 // Groupings match the OSPI Accounting Manual.
+// Programs that only ever appear in the S-275, never in the F-19x reporting
+// these categories otherwise mirror. The S-275 codes them as a packed
+// two-letter fund rather than a number (see utilities/domain/packed_codes),
+// so they carry positive stand-in codes here.
+const S275_ONLY_PROGRAMS = makeInternalNode("s275-only", "S-275 Only", [
+  makeLeafNode(
+    ITEM_PREFIX,
+    S275_ONLY_CODE_CP,
+    S275_ONLY_LABELS[S275_ONLY_CODE_CP],
+  ),
+  makeLeafNode(
+    ITEM_PREFIX,
+    S275_ONLY_CODE_ASB,
+    S275_ONLY_LABELS[S275_ONLY_CODE_ASB],
+  ),
+  makeLeafNode(
+    ITEM_PREFIX,
+    S275_ONLY_CODE_BAD,
+    S275_ONLY_LABELS[S275_ONLY_CODE_BAD],
+  ),
+]);
+
 const ProgramFilterTree = makeInternalNode("program", "All Programs", [
   makeInternalNode("regular-instruction", "Regular Instruction", [
     PROG_1,
@@ -264,6 +328,7 @@ const ProgramFilterTree = makeInternalNode("program", "All Programs", [
     PROG_49,
     PROG_66,
   ]),
+  S275_ONLY_PROGRAMS,
 ]);
 
 const ProgramFilter = new Filter(ProgramFilterTree, ITEM_PREFIX);

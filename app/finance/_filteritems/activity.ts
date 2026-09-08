@@ -1,4 +1,10 @@
 import { Filter, makeInternalNode, makeLeafNode } from "utilities/filter";
+import {
+  S275_ONLY_CODE_ASB,
+  S275_ONLY_CODE_BAD,
+  S275_ONLY_CODE_CP,
+  S275_ONLY_LABELS,
+} from "utilities/domain/packed_codes";
 import * as DistrictData from "utilities/DistrictData";
 const ITEM_PREFIX = "act";
 
@@ -35,8 +41,16 @@ const ACT_73 = makeLeafNode(ITEM_PREFIX, 73, "Printing");
 const ACT_74 = makeLeafNode(ITEM_PREFIX, 74, "Warehousing and Distribution");
 const ACT_75 = makeLeafNode(ITEM_PREFIX, 75, "Motor pool");
 const ACT_91 = makeLeafNode(ITEM_PREFIX, 91, "Public Activities");
-const ACT_9991 = makeLeafNode(ITEM_PREFIX, DistrictData.SYNTH_ACT_CODE_PRINCIPAL_OFFICE, DistrictData.SYNTH_ACT_PRINCPAL_OFFICE);
-const ACT_9990 = makeLeafNode(ITEM_PREFIX, DistrictData.SYNTH_ACT_CODE_TEACHING, DistrictData.SYNTH_ACT_TEACHING);
+const ACT_9991 = makeLeafNode(
+  ITEM_PREFIX,
+  DistrictData.SYNTH_ACT_CODE_PRINCIPAL_OFFICE,
+  DistrictData.SYNTH_ACT_PRINCPAL_OFFICE,
+);
+const ACT_9990 = makeLeafNode(
+  ITEM_PREFIX,
+  DistrictData.SYNTH_ACT_CODE_TEACHING,
+  DistrictData.SYNTH_ACT_TEACHING,
+);
 const ACT_28 = makeLeafNode(ITEM_PREFIX, 28, "Extracurricular");
 const ACT_22 = makeLeafNode(ITEM_PREFIX, 22, "Learning Resources");
 const ACT_24 = makeLeafNode(ITEM_PREFIX, 24, "Guidance and Counseling");
@@ -57,6 +71,27 @@ const ACT_83 = makeLeafNode(ITEM_PREFIX, 83, "Interest");
 const ACT_53 = makeLeafNode(ITEM_PREFIX, 53, "Maintenance - Transportation");
 const ACT_29 = makeLeafNode(ITEM_PREFIX, 29, "Payments to School Districts");
 const ACT_49 = makeLeafNode(ITEM_PREFIX, 49, "Transfers - Food Service");
+
+// Activities that only ever appear in the S-275. Same story as the program
+// side: the S-275 codes these as a packed two-letter fund rather than a
+// number, so they carry positive stand-in codes here.
+const S275_ONLY_ACTIVITIES = makeInternalNode("s275-only", "S-275 Only", [
+  makeLeafNode(
+    ITEM_PREFIX,
+    S275_ONLY_CODE_CP,
+    S275_ONLY_LABELS[S275_ONLY_CODE_CP],
+  ),
+  makeLeafNode(
+    ITEM_PREFIX,
+    S275_ONLY_CODE_ASB,
+    S275_ONLY_LABELS[S275_ONLY_CODE_ASB],
+  ),
+  makeLeafNode(
+    ITEM_PREFIX,
+    S275_ONLY_CODE_BAD,
+    S275_ONLY_LABELS[S275_ONLY_CODE_BAD],
+  ),
+]);
 
 const ActivityFilterTree = makeInternalNode("activity", "All Activities", [
   makeInternalNode("teaching", "Teaching", [ACT_9990, ACT_28]),
@@ -113,6 +148,7 @@ const ActivityFilterTree = makeInternalNode("activity", "All Activities", [
       ACT_49,
     ]),
   ]),
+  S275_ONLY_ACTIVITIES,
 ]);
 
 const SpsActivityFilterTree = makeInternalNode("activity", "All Activities", [
@@ -166,6 +202,7 @@ const SpsActivityFilterTree = makeInternalNode("activity", "All Activities", [
     ACT_29,
     ACT_49,
   ]),
+  S275_ONLY_ACTIVITIES,
 ]);
 
 const ActivityFilter = new Filter(ActivityFilterTree, ITEM_PREFIX);

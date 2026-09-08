@@ -44,3 +44,39 @@ export function packedCodeLabel(
   if (decoded === null) return null;
   return LABELS[decoded] ?? `"${decoded}" (unrecognized code)`;
 }
+
+// The filter trees and the URL encoder both work in non-negative integers
+// (utilities/number_set.ts encodes [0, 2^31), no sign bit), so the packed
+// codes cannot go into a filter as themselves. Each gets a positive stand-in
+// in the same 99xx range the synthetic activity codes already use, well clear
+// of real program codes (<= 99) and activity codes (<= 91).
+export const S275_ONLY_CODE_CP = 9980;
+export const S275_ONLY_CODE_ASB = 9981;
+export const S275_ONLY_CODE_BAD = 9982;
+
+const S275_ONLY_BY_PACKED: Record<string, number> = {
+  CP: S275_ONLY_CODE_CP,
+  SB: S275_ONLY_CODE_ASB,
+  "!!": S275_ONLY_CODE_BAD,
+};
+
+/**
+ * Map a raw S-275 program or activity code to the code its filter uses.
+ *
+ * Packed codes become their positive stand-in so they can be selected like
+ * anything else; everything else passes through untouched.
+ */
+export function toFilterableCode(code: number | null | undefined) {
+  const decoded = decodePackedCode(code);
+  if (decoded === null) return code;
+  return S275_ONLY_BY_PACKED[decoded] ?? code;
+}
+
+/** Label for a stand-in code, for the filter tree. */
+export const S275_ONLY_LABELS: Record<number, string> = {
+  [S275_ONLY_CODE_CP]: "Capital Projects (CP)",
+  [S275_ONLY_CODE_ASB]: "ASB (Associated Student Body)",
+  // Kept visible on purpose: this is a known error in the source file, and a
+  // filter entry that names it is easier to notice than a silent omission.
+  [S275_ONLY_CODE_BAD]: 'Bad data ("!!")',
+};

@@ -27,7 +27,7 @@ import {
 } from "app/finance/_settings/common_settings";
 import { fetchDataset } from "utilities/client/FetchData";
 import { toSynthActivityCode } from "utilities/DistrictData";
-import { packedCodeLabel } from "utilities/domain/packed_codes";
+import { toFilterableCode } from "utilities/domain/packed_codes";
 import ActivityFilter from "app/finance/_filteritems/activity";
 import DutyRootFilter from "app/finance/_filteritems/duty_root";
 import ProgramFilter from "app/finance/_filteritems/program";
@@ -147,12 +147,20 @@ export default function SalariesDashboard({
         (r) =>
           r.school_year === year &&
           passes(r.duty_root_code, settings.dutyRootCodes, dutyDomain) &&
-          passes(r.program_code, settings.programCodes, programDomain) &&
+          // toFilterableCode swaps the S-275's packed two-letter funds
+          // (-8656 "CP", -10690 "SB") for the positive stand-ins the filter
+          // tree carries under "S-275 Only", so they can be selected like any
+          // other program.
+          passes(
+            toFilterableCode(r.program_code),
+            settings.programCodes,
+            programDomain,
+          ) &&
           // Mapped, not raw: the domain has the combined 9990/9991 nodes, so a
           // teacher on activity 27 would otherwise never match the Teaching
           // selection -- and unmapped would silently drop 4,520 people.
           passes(
-            toSynthActivityCode(r.activity_code),
+            toFilterableCode(toSynthActivityCode(r.activity_code)),
             settings.activityCodes,
             activityDomain,
           ),
@@ -185,22 +193,6 @@ export default function SalariesDashboard({
 
   const payroll = people.reduce((sum, p) => sum + p.salary, 0);
   const fte = people.reduce((sum, p) => sum + p.fte, 0);
-
-  // People the program/activity filters cannot reach, named rather than left
-  // as a mystery. Their codes are the S-275's packed two-letter form (-8656 is
-  // "CP", Capital Projects), which has no node in the numeric filter trees, so
-  // they stay visible whatever is selected -- and now say why.
-  const unreachable = useMemo(() => {
-    if (!rows || !year) return [];
-    const counts = new Map<string, number>();
-    for (const r of rows) {
-      if (r.school_year !== year) continue;
-      const label =
-        packedCodeLabel(r.program_code) ?? packedCodeLabel(r.activity_code);
-      if (label) counts.set(label, (counts.get(label) ?? 0) + 1);
-    }
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]);
-  }, [rows, year]);
 
   // The year selector can only offer what the loaded data actually has, so it
   // is bound here rather than in the settings module.
@@ -282,20 +274,6 @@ export default function SalariesDashboard({
             FTE · <b>${(payroll / 1e6).toFixed(1)}M</b> in salaries ·{" "}
             {colorOf.size} duty titles · {year}
           </Typography>
-          {unreachable.length > 0 && (
-            <Typography
-              variant="caption"
-              sx={{ color: "text.secondary", display: "block", mb: 1.5 }}
-            >
-              Includes{" "}
-              {unreachable
-                .map(([label, n]) => `${n.toLocaleString()} in ${label}`)
-                .join(", ")}
-              . The S-275 codes those as a two-letter fund rather than a
-              numbered program or activity, so they have no entry in those
-              filters and stay shown whatever is selected.
-            </Typography>
-          )}
           <SalarySkyline plan={plan} colorOf={colorOf} year={year} />
         </>
       )}
