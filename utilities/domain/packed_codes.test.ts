@@ -35,7 +35,7 @@ describe("decodePackedCode", () => {
 describe("packedCodeLabel", () => {
   it("names the funds it knows", () => {
     expect(packedCodeLabel(-8656)).toBe("Capital Projects");
-    expect(packedCodeLabel(-10690)).toContain("SB");
+    expect(packedCodeLabel(-10690)).toBe("ASB (Associated Student Body)");
   });
 
   it("still renders an unrecognized pair rather than hiding it", () => {

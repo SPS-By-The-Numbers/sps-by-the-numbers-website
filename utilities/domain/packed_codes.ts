@@ -3,7 +3,7 @@
 // negated, so -((hi << 7) | lo) where hi and lo are ASCII.
 //
 //   -8656  -> (8656 >> 7, 8656 & 127) = (67, 80)  = "CP"  Capital Projects
-//   -10690 -> (83, 66)                            = "SB"
+//   -10690 -> (83, 66)                            = "SB"  the ASB fund
 //   -4257  -> (33, 33)                            = "!!"  a source data error
 //
 // Decoding is deliberately faithful rather than forgiving: "!!" is a real
@@ -26,9 +26,9 @@ export function decodePackedCode(
 
 const LABELS: Record<string, string> = {
   CP: "Capital Projects",
-  // The other non-General-Fund source staff are charged to. Left abbreviated
-  // because the S-275 only carries the two letters.
-  SB: "SB (student activities)",
+  // The other non-General-Fund source staff are charged to. The S-275 carries
+  // only the trailing two letters of ASB.
+  SB: "ASB (Associated Student Body)",
 };
 
 /**
