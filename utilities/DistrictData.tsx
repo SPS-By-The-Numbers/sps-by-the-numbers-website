@@ -277,6 +277,26 @@ function deriveStaffClassColumns(df) {
   });
 }
 
+// The activity pairs that combineCommonActivities folds together, as a plain
+// code->code map for callers holding raw S-275 rows rather than a dataframe.
+//
+// The filter domains (app/finance/_filteritems/activity.ts) carry the
+// synthetic codes, not their parts: there is no node for 27 or 34, only the
+// combined 9990. A raw activity code therefore has to be mapped before it can
+// be matched against a selection, or Teaching matches nothing.
+const SYNTH_ACTIVITY_BY_PART = new Map<number, number>([
+  [27, SYNTH_ACT_CODE_TEACHING],
+  [34, SYNTH_ACT_CODE_TEACHING],
+  [84, SYNTH_ACT_CODE_PRINCIPAL_OFFICE],
+  [23, SYNTH_ACT_CODE_PRINCIPAL_OFFICE],
+]);
+
+/** Fold a raw activity code into the synthetic code the filters use. */
+export function toSynthActivityCode(code: number | null | undefined) {
+  if (code === null || code === undefined) return code;
+  return SYNTH_ACTIVITY_BY_PART.get(code) ?? code;
+}
+
 function combineCommonActivities(df, combiner) {
   df = combiner(
     df,

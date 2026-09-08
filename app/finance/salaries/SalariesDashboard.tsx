@@ -26,6 +26,10 @@ import {
   serializeOneSetting,
 } from "app/finance/_settings/common_settings";
 import { fetchDataset } from "utilities/client/FetchData";
+import { toSynthActivityCode } from "utilities/DistrictData";
+import ActivityFilter from "app/finance/_filteritems/activity";
+import DutyRootFilter from "app/finance/_filteritems/duty_root";
+import ProgramFilter from "app/finance/_filteritems/program";
 
 import SalarySkyline from "./SalarySkyline";
 import {
@@ -115,15 +119,42 @@ export default function SalariesDashboard({
 
   const people: Person[] = useMemo(() => {
     if (!rows || !year) return [];
-    const passes = (code: number | null | undefined, codes: Set<number>) =>
-      code === null || code === undefined || codes.has(code);
+
+    // A filter may only exclude a row whose code it could actually offer.
+    //
+    // These are raw S-275 assignment codes, while the filter trees are the
+    // F-19x domains, and the two do not fully overlap: 2,138 SPS staff in
+    // 2024-25 sit on program codes with no node in the tree at all (1,746 on
+    // program 21 alone, plus a -8656 sentinel). Excluding a code the user has
+    // no way to select is silent data loss, so an unknown code passes.
+    const passes = (
+      code: number | null | undefined,
+      selected: Set<number>,
+      domain: Set<number>,
+    ) =>
+      code === null ||
+      code === undefined ||
+      !domain.has(code) ||
+      selected.has(code);
+
+    const dutyDomain = DutyRootFilter.allCodes();
+    const programDomain = ProgramFilter.allCodes();
+    const activityDomain = ActivityFilter.allCodes();
+
     return rows
       .filter(
         (r) =>
           r.school_year === year &&
-          passes(r.duty_root_code, settings.dutyRootCodes) &&
-          passes(r.program_code, settings.programCodes) &&
-          passes(r.activity_code, settings.activityCodes),
+          passes(r.duty_root_code, settings.dutyRootCodes, dutyDomain) &&
+          passes(r.program_code, settings.programCodes, programDomain) &&
+          // Mapped, not raw: the domain has the combined 9990/9991 nodes, so a
+          // teacher on activity 27 would otherwise never match the Teaching
+          // selection -- and unmapped would silently drop 4,520 people.
+          passes(
+            toSynthActivityCode(r.activity_code),
+            settings.activityCodes,
+            activityDomain,
+          ),
       )
       .map((r) => ({
         duty: r.duty_root ?? `Duty ${r.duty_root_code ?? "unknown"}`,
