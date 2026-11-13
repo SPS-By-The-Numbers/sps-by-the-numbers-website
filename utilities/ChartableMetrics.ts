@@ -281,7 +281,12 @@ function extractRawEnrollment(
     breakdownCodeColumn &&
     breakdownCodeColumn !== facetCodeColumn &&
     breakdownCodeColumn !== "student_group_code";
-  const staged = df.derive({ _metric: aq.escape((d) => d[metricColumn]) });
+  // Drop the K-12 / PK-12 rollup rows here, while is_grade_rollup is still
+  // on the frame: the rollup below keeps only the group columns, and summing
+  // a rollup row alongside the per-grade rows would double count.
+  const staged = df
+    .filter((d) => !d.is_grade_rollup)
+    .derive({ _metric: aq.escape((d) => d[metricColumn]) });
   const groupCols = [xColumn, "grade", facetCodeColumn, "student_group_code"];
   if (useBreakdown) {
     groupCols.push(breakdownCodeColumn);
@@ -328,7 +333,6 @@ export function toFacetedCharatbleEnrollmentDataset(
   // appending `<seriesCode>` after the facet code, where the seriesCode
   // is the rest of the composite_key after the leading facet segment.
   const withComposite = df
-    .filter((d) => !d.is_grade_rollup)
     .derive({ _metric: aq.escape((d) => d[metricColumn]) })
     .derive({
       composite_key: aq.escape((d) => {
