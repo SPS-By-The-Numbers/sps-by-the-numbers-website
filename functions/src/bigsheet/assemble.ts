@@ -54,6 +54,20 @@ function nse(a: string, b: string): string {
   return `(${a} = ${b} OR (${a} IS NULL AND ${b} IS NULL))`;
 }
 
+/** An SPS pivot family with zero enumerated columns means its
+ * bigsheet_inputs external table read as empty (the backing CSV under
+ * gs://sps-by-the-numbers-public/static/bigsheet-inputs/ is missing). Fail
+ * here with a pointer to the fix; otherwise BigQuery rejects the generated
+ * SQL with the opaque "SELECT .* expands to zero columns after applying
+ * EXCEPT" (the <family>_wide CTE would carry only its key columns). */
+function assertPivotFamilyNonEmpty(table: string, cols: PivotColumn[]): void {
+  if (cols.length > 0) return;
+  throw new Error(
+    `bigsheet_inputs.${table} enumerated zero pivot combos: the external ` +
+    `table is empty. Re-run data-tools scripts/publish_bigsheet_inputs.sh ` +
+    `and scripts/create_bigsheet_input_tables.sh.`);
+}
+
 export function buildBigsheetPlan(
     ccddd: number, combos: BigsheetCombos): BigsheetPlan {
   const isSps = ccddd === SEATTLE_CCDDD;
@@ -62,6 +76,11 @@ export function buildBigsheetPlan(
   const mapHcCols = isSps ? mapColumns('map_hc', MAP_HC_VALUES, combos.mapHc || []) : [];
   const mapNonhcCols = isSps ? mapColumns('map_nonhc', MAP_NONHC_VALUES, combos.mapNonhc || []) : [];
   const sqssCols = isSps ? sqssColumns(combos.sqss || []) : [];
+  if (isSps) {
+    assertPivotFamilyNonEmpty('map_hc', mapHcCols);
+    assertPivotFamilyNonEmpty('map_nonhc', mapNonhcCols);
+    assertPivotFamilyNonEmpty('sqss', sqssCols);
+  }
 
   const ctes: string[] = [buildVitalsCtes(ccddd)];
 

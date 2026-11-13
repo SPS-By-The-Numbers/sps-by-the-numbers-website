@@ -7,7 +7,9 @@
         },
         "condition": {
           "age": 1,
-          "matchesPrefix": "cache/scratch/"
+          "matchesPrefix": [
+            "cache/scratch/"
+          ]
         }
       },
       {
@@ -16,10 +18,11 @@
         },
         "condition": {
           "age": 30,
-          "matchesPrefix": "cache/prod/"
+          "matchesPrefix": [
+            "cache/prod/"
+          ]
         }
       }
     ]
   }
 }
-

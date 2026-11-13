@@ -236,6 +236,19 @@ describe('buildBigsheetPlan / assembleBigsheetSql', () => {
       !['churn', 'map_hc', 'map_nonhc', 'bex', 'bldg', 'income', 'sqss']
           .includes(c.source))).toBe(true);
   });
+  it('rejects an empty SPS pivot family with a pointer to the input tables', () => {
+    expect(() => buildBigsheetPlan(17001, { ...COMBOS, mapHc: [] }))
+        .toThrow(/bigsheet_inputs\.map_hc .*publish_bigsheet_inputs\.sh/);
+    expect(() => buildBigsheetPlan(17001, { ...COMBOS, mapNonhc: [] }))
+        .toThrow(/bigsheet_inputs\.map_nonhc/);
+    // every sqss combo filtered out by the measure whitelist counts as empty
+    expect(() => buildBigsheetPlan(17001,
+        { ...COMBOS, sqss: [['Not A Real Measure', 'All Students']] }))
+        .toThrow(/bigsheet_inputs\.sqss/);
+    // non-SPS districts never have these families, so no error
+    expect(() => buildBigsheetPlan(27010, { assessment: COMBOS.assessment }))
+        .not.toThrow();
+  });
   it('uses SAFE_DIVIDE (NULL, not inf, on zero denominators)', () => {
     expect(plan.sql).toContain('SAFE_DIVIDE(m.staff_class_teacher_fte, m.enroll_total)');
     expect(plan.sql).toContain('SAFE_DIVIDE(m.enroll_total, MAX(m.enroll_total) OVER ())');
