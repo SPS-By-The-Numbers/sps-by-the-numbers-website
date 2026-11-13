@@ -3,10 +3,11 @@
 // The .sql files are the editable sources; the .ts modules are what the
 // bundler embeds. Backticks are banned in the .sql (BigQuery accepts dashed
 // project paths unquoted) so the strings stay JSON-stringifiable verbatim.
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const DIR = path.join(__dirname, '..', 'src', 'bigsheet', 'sql');
+const DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'src', 'bigsheet', 'sql');
 const MODULES = [
   ['vitals.sql', 'vitalsSql.ts', 'RAW_VITALS_SQL'],
   ['assessment.sql', 'assessmentSql.ts', 'RAW_ASSESSMENT_SQL'],

@@ -1,5 +1,5 @@
 -- Vitals CTE chain for the bigsheet endpoint: per-school enrollment &
--- demographics (OSPI report card), per-program spend (SAFS F-196) and
+-- demographics (OSPI report card, K-12), per-program spend (SAFS F-196) and
 -- staffing/salary/experience (SAFS S-275), one row per (school_code,
 -- class_of) including the district-total rows (NULL school_code).
 --
@@ -20,40 +20,91 @@
 --      empirical CDF reaches q) — not APPROX_QUANTILES, whose sketch returns
 --      a neighbouring order statistic on some group sizes.
 
+-- ========================= enrollment (OSPI report card) ===================
+-- OSPI's "All Grades" row INCLUDES PK. Every enrollment column the sheet
+-- exposes is K-12: OSPI's row minus the PK row, column by column. The two
+-- rollups get the same suppression treatment, so the subtraction stays
+-- consistent across every column (a sum of per-grade rows would not). A
+-- school with no PK row has K-12 = PK-12; a PK row with a suppressed (NULL)
+-- cell yields NULL for that cell. The PK-12 headcount survives as
+-- all_students_pk12.
+
+enrollment_rows AS (
+  SELECT *
+  FROM {project}.ospi.rc_enrollment
+  WHERE ccddd = {ccddd}
+),
+
+enrollment_k12 AS (
+  SELECT
+    ag.ccddd,
+    ag.school_code,
+    ag.school_name,
+    ag.school_year,
+    ag.class_of,
+    ag.all_students AS all_students_pk12,
+    IF(pk.class_of IS NULL, ag.all_students, ag.all_students - pk.all_students) AS all_students_k12,
+    IF(pk.class_of IS NULL, ag.military_parent, ag.military_parent - pk.military_parent) AS military_parent_k12,
+    IF(pk.class_of IS NULL, ag.migrant, ag.migrant - pk.migrant) AS migrant_k12,
+    IF(pk.class_of IS NULL, ag.low_income, ag.low_income - pk.low_income) AS low_income_k12,
+    IF(pk.class_of IS NULL, ag.homeless, ag.homeless - pk.homeless) AS homeless_k12,
+    IF(pk.class_of IS NULL, ag.foster_care, ag.foster_care - pk.foster_care) AS foster_care_k12,
+    IF(pk.class_of IS NULL, ag.mobile, ag.mobile - pk.mobile) AS mobile_k12,
+    IF(pk.class_of IS NULL, ag.section_504, ag.section_504 - pk.section_504) AS section_504_k12,
+    IF(pk.class_of IS NULL, ag.highly_capable, ag.highly_capable - pk.highly_capable) AS highly_capable_k12,
+    IF(pk.class_of IS NULL, ag.english_language_learners, ag.english_language_learners - pk.english_language_learners) AS english_language_learners_k12,
+    IF(pk.class_of IS NULL, ag.students_with_disabilities, ag.students_with_disabilities - pk.students_with_disabilities) AS students_with_disabilities_k12,
+    IF(pk.class_of IS NULL, ag.female, ag.female - pk.female) AS female_k12,
+    IF(pk.class_of IS NULL, ag.male, ag.male - pk.male) AS male_k12,
+    IF(pk.class_of IS NULL, ag.gender_x, ag.gender_x - pk.gender_x) AS gender_x_k12,
+    IF(pk.class_of IS NULL, ag.white, ag.white - pk.white) AS white_k12,
+    IF(pk.class_of IS NULL, ag.black_african_american, ag.black_african_american - pk.black_african_american) AS black_african_american_k12,
+    IF(pk.class_of IS NULL, ag.native_hawaiian_other_pacific, ag.native_hawaiian_other_pacific - pk.native_hawaiian_other_pacific) AS native_hawaiian_other_pacific_k12,
+    IF(pk.class_of IS NULL, ag.hispanic_latino_of_any_race, ag.hispanic_latino_of_any_race - pk.hispanic_latino_of_any_race) AS hispanic_latino_of_any_race_k12,
+    IF(pk.class_of IS NULL, ag.american_indian_alaskan_native, ag.american_indian_alaskan_native - pk.american_indian_alaskan_native) AS american_indian_alaskan_native_k12,
+    IF(pk.class_of IS NULL, ag.asian, ag.asian - pk.asian) AS asian_k12,
+    IF(pk.class_of IS NULL, ag.two_or_more_races, ag.two_or_more_races - pk.two_or_more_races) AS two_or_more_races_k12,
+  FROM enrollment_rows ag
+  LEFT JOIN enrollment_rows pk
+    ON (pk.grade = 'PK'
+        AND pk.class_of = ag.class_of
+        AND (pk.school_code = ag.school_code
+             OR (pk.school_code IS NULL AND ag.school_code IS NULL)))
+  WHERE ag.grade = 'All Grades'
+),
+
 demographics_by_school AS (
   SELECT
     t.*,
 
     -- Living situation
-    t.military_parent / NULLIF(t.all_students, 0) pct_military_parent,
-    t.migrant / NULLIF(t.all_students, 0) pct_migrant,
-    t.low_income / NULLIF(t.all_students, 0) pct_low_income,
-    t.homeless / NULLIF(t.all_students, 0) pct_homeless,
-    t.foster_care / NULLIF(t.all_students, 0) pct_foster_care,
-    t.mobile / NULLIF(t.all_students, 0) pct_mobile,
-    t.section_504 / NULLIF(t.all_students, 0) pct_section_504,
+    t.military_parent_k12 / NULLIF(t.all_students_k12, 0) pct_military_parent_k12,
+    t.migrant_k12 / NULLIF(t.all_students_k12, 0) pct_migrant_k12,
+    t.low_income_k12 / NULLIF(t.all_students_k12, 0) pct_low_income_k12,
+    t.homeless_k12 / NULLIF(t.all_students_k12, 0) pct_homeless_k12,
+    t.foster_care_k12 / NULLIF(t.all_students_k12, 0) pct_foster_care_k12,
+    t.mobile_k12 / NULLIF(t.all_students_k12, 0) pct_mobile_k12,
+    t.section_504_k12 / NULLIF(t.all_students_k12, 0) pct_section_504_k12,
 
     -- Learning type
-    t.highly_capable / NULLIF(t.all_students, 0) pct_highly_capable,
-    t.english_language_learners / NULLIF(t.all_students, 0) pct_english_language_learners,
-    t.students_with_disabilities / NULLIF(t.all_students, 0) pct_students_with_disabilities,
+    t.highly_capable_k12 / NULLIF(t.all_students_k12, 0) pct_highly_capable_k12,
+    t.english_language_learners_k12 / NULLIF(t.all_students_k12, 0) pct_english_language_learners_k12,
+    t.students_with_disabilities_k12 / NULLIF(t.all_students_k12, 0) pct_students_with_disabilities_k12,
 
     -- Gender
-    t.female / NULLIF(t.all_students, 0) pct_female,
-    t.male / NULLIF(t.all_students, 0) pct_male,
-    t.gender_x / NULLIF(t.all_students, 0) pct_gender_x,
+    t.female_k12 / NULLIF(t.all_students_k12, 0) pct_female_k12,
+    t.male_k12 / NULLIF(t.all_students_k12, 0) pct_male_k12,
+    t.gender_x_k12 / NULLIF(t.all_students_k12, 0) pct_gender_x_k12,
 
     -- Race
-    t.white / NULLIF(t.all_students, 0) pct_white,
-    t.black_african_american / NULLIF(t.all_students, 0) pct_black_african_american,
-    t.native_hawaiian_other_pacific / NULLIF(t.all_students, 0) pct_native_hawaiian_other_pacific,
-    t.american_indian_alaskan_native / NULLIF(t.all_students, 0) pct_american_indian_alaskan_native,
-    t.hispanic_latino_of_any_race / NULLIF(t.all_students, 0) pct_hispanic_latino_of_any_race,
-    t.asian / NULLIF(t.all_students, 0) pct_asian,
-    t.two_or_more_races / NULLIF(t.all_students, 0) pct_two_or_more_races,
-  FROM {project}.ospi.rc_enrollment t
-  WHERE ccddd = {ccddd}
-    AND grade = 'All Grades'
+    t.white_k12 / NULLIF(t.all_students_k12, 0) pct_white_k12,
+    t.black_african_american_k12 / NULLIF(t.all_students_k12, 0) pct_black_african_american_k12,
+    t.native_hawaiian_other_pacific_k12 / NULLIF(t.all_students_k12, 0) pct_native_hawaiian_other_pacific_k12,
+    t.hispanic_latino_of_any_race_k12 / NULLIF(t.all_students_k12, 0) pct_hispanic_latino_of_any_race_k12,
+    t.american_indian_alaskan_native_k12 / NULLIF(t.all_students_k12, 0) pct_american_indian_alaskan_native_k12,
+    t.asian_k12 / NULLIF(t.all_students_k12, 0) pct_asian_k12,
+    t.two_or_more_races_k12 / NULLIF(t.all_students_k12, 0) pct_two_or_more_races_k12,
+  FROM enrollment_k12 t
 ),
 
 -- ===================== per-program spend (SAFS F-196) ======================
@@ -368,19 +419,19 @@ SELECT
   (e.comp_amount_other + e.non_comp_amount_other) total_spend_other,
   (e.comp_amount_voc + e.non_comp_amount_voc) total_spend_voc,
 
-  (e.comp_amount + e.non_comp_amount) / NULLIF(t.all_students, 0) spend_per_pupil,
-  (e.comp_amount_gen_ed + e.non_comp_amount_gen_ed) / NULLIF(t.all_students, 0) spend_gen_ed_per_pupil,
-  (e.comp_amount_spec_ed + e.non_comp_amount_spec_ed) / NULLIF(t.all_students, 0) spend_spec_ed_per_pupil,
-  (e.comp_amount_compensatory + e.non_comp_amount_compensatory) / NULLIF(t.all_students, 0) spend_compensatory_per_pupil,
-  (e.comp_amount_lap + e.non_comp_amount_lap) / NULLIF(t.all_students, 0) spend_lap_per_pupil,
-  (e.comp_amount_title1 + e.non_comp_amount_title1) / NULLIF(t.all_students, 0) spend_title1_per_pupil,
-  (e.comp_amount_ble + e.non_comp_amount_ble) / NULLIF(t.all_students, 0) spend_ble_per_pupil,
-  (e.comp_amount_instr_other + e.non_comp_amount_instr_other) / NULLIF(t.all_students, 0) spend_instr_other_per_pupil,
-  (e.comp_amount_district_support + e.non_comp_amount_district_support) / NULLIF(t.all_students, 0) spend_district_support_per_pupil,
-  (e.comp_amount_other + e.non_comp_amount_other) / NULLIF(t.all_students, 0) spend_other_per_pupil,
-  (e.comp_amount_voc + e.non_comp_amount_voc) / NULLIF(t.all_students, 0) spend_voc_per_pupil,
+  (e.comp_amount + e.non_comp_amount) / NULLIF(t.all_students_k12, 0) spend_per_pupil_k12,
+  (e.comp_amount_gen_ed + e.non_comp_amount_gen_ed) / NULLIF(t.all_students_k12, 0) spend_gen_ed_per_pupil_k12,
+  (e.comp_amount_spec_ed + e.non_comp_amount_spec_ed) / NULLIF(t.all_students_k12, 0) spend_spec_ed_per_pupil_k12,
+  (e.comp_amount_compensatory + e.non_comp_amount_compensatory) / NULLIF(t.all_students_k12, 0) spend_compensatory_per_pupil_k12,
+  (e.comp_amount_lap + e.non_comp_amount_lap) / NULLIF(t.all_students_k12, 0) spend_lap_per_pupil_k12,
+  (e.comp_amount_title1 + e.non_comp_amount_title1) / NULLIF(t.all_students_k12, 0) spend_title1_per_pupil_k12,
+  (e.comp_amount_ble + e.non_comp_amount_ble) / NULLIF(t.all_students_k12, 0) spend_ble_per_pupil_k12,
+  (e.comp_amount_instr_other + e.non_comp_amount_instr_other) / NULLIF(t.all_students_k12, 0) spend_instr_other_per_pupil_k12,
+  (e.comp_amount_district_support + e.non_comp_amount_district_support) / NULLIF(t.all_students_k12, 0) spend_district_support_per_pupil_k12,
+  (e.comp_amount_other + e.non_comp_amount_other) / NULLIF(t.all_students_k12, 0) spend_other_per_pupil_k12,
+  (e.comp_amount_voc + e.non_comp_amount_voc) / NULLIF(t.all_students_k12, 0) spend_voc_per_pupil_k12,
 
-  (ss.fte) / NULLIF(t.all_students, 0) fte_per_pupil,
+  (ss.fte) / NULLIF(t.all_students_k12, 0) fte_per_pupil_k12,
   t.* except (ccddd, school_code, class_of),
   e.* except (school_code, class_of),
   ss.* except (school_code, class_of)

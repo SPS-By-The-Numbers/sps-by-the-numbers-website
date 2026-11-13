@@ -3,11 +3,11 @@ import ALL_GRADE_LEVELS from "utilities/domain/grade_levels";
 
 import type { FilterDomainTree } from "utilities/filter";
 
-// rc_enrollment data has both per-grade rows and synthetic "All Grades"
-// rollups. The dashboard sums per-grade rows itself, so exposing the
-// "All Grades" rollup as a selectable bucket would just produce a noisy
-// double-count. This filter omits code 99 and adds PK (code 97), which
-// only appears in enrollment data.
+// rc_enrollment data has both per-grade rows and the K-12 (96) / PK-12 (95)
+// rollup rows (see utilities/domain/grade_levels.ts). The dashboard sums
+// per-grade rows itself, so exposing a rollup as a selectable bucket would
+// just produce a noisy double-count. This filter omits the rollup codes and
+// adds PK (code 97), which only appears in enrollment data.
 const ITEM_PREFIX = "egl";
 
 function makeLeaf(d) {

@@ -1,5 +1,5 @@
 import { Filter, makeInternalNode, makeLeafNode } from "utilities/filter";
-import ALL_GRADE_LEVELS from "utilities/domain/grade_levels";
+import ALL_GRADE_LEVELS, { GRADE_LEVEL_CODE_ALL_GRADES } from "utilities/domain/grade_levels";
 
 import type { FilterDomainTree } from "utilities/filter";
 
@@ -14,7 +14,9 @@ function byCode(code: number) {
 }
 
 function makeGradeLevelTree() {
-  const allGrades = makeLeaf(byCode(99));
+  // Assessment data: OSPI's "All Grades" rollup spans the tested grades
+  // only, so unlike enrollment there is no PK ambiguity to name away.
+  const allGrades = makeLeaf(byCode(GRADE_LEVEL_CODE_ALL_GRADES));
 
   const k5 = makeInternalNode("k5", "K-5", [
     makeLeaf(byCode(98)),

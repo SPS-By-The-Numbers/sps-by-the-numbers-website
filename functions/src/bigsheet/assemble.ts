@@ -28,7 +28,7 @@ import {
 
 // Bump to force cache invalidation on a pure logic fix (combo changes already
 // invalidate via the enumerated pivot columns embedded in the SQL text).
-export const BIGSHEET_SQL_VERSION = '2026-07-25.2';
+export const BIGSHEET_SQL_VERSION = '2026-11-13.1';
 
 export interface BigsheetCombos {
   assessment: Combo[];

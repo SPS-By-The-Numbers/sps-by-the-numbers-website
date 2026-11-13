@@ -236,6 +236,24 @@ describe('buildBigsheetPlan / assembleBigsheetSql', () => {
       !['churn', 'map_hc', 'map_nonhc', 'bex', 'bldg', 'income', 'sqss']
           .includes(c.source))).toBe(true);
   });
+  it('names every enrollment-derived column by grade span (K-12 default, PK-12 explicit)', () => {
+    const names = plan.columns.map((c) => c.name);
+    const enroll = names.filter((n) => n.startsWith('enroll_'));
+    expect(enroll).toContain('enroll_total_k12');
+    expect(enroll).toContain('enroll_total_pk12');
+    expect(enroll.filter((n) => !/_k12(_normalized)?$/.test(n))).toEqual(['enroll_total_pk12']);
+    // nothing per-pupil is left without a span suffix
+    expect(names.filter((n) => n.endsWith('_per_pupil'))).toEqual([]);
+    expect(names).toContain('spend_per_pupil_k12');
+    expect(names).toContain('staff_all_fte_per_pupil_k12');
+    // K-12 is OSPI's All Grades row minus the PK row, and PK-12 is the row as published
+    expect(plan.sql).toContain("WHERE ag.grade = 'All Grades'");
+    expect(plan.sql).toContain("pk.grade = 'PK'");
+    expect(plan.sql).toContain('IF(pk.class_of IS NULL, ag.all_students, ag.all_students - pk.all_students) AS all_students_k12');
+    expect(plan.sql).toContain('ag.all_students AS all_students_pk12');
+    expect(plan.sql).toContain('NULLIF(t.all_students_k12, 0) spend_per_pupil_k12');
+    expect(plan.sql).not.toContain('NULLIF(t.all_students, 0)');
+  });
   it('rejects an empty SPS pivot family with a pointer to the input tables', () => {
     expect(() => buildBigsheetPlan(17001, { ...COMBOS, mapHc: [] }))
         .toThrow(/bigsheet_inputs\.map_hc .*publish_bigsheet_inputs\.sh/);
@@ -250,8 +268,8 @@ describe('buildBigsheetPlan / assembleBigsheetSql', () => {
         .not.toThrow();
   });
   it('uses SAFE_DIVIDE (NULL, not inf, on zero denominators)', () => {
-    expect(plan.sql).toContain('SAFE_DIVIDE(m.staff_class_teacher_fte, m.enroll_total)');
-    expect(plan.sql).toContain('SAFE_DIVIDE(m.enroll_total, MAX(m.enroll_total) OVER ())');
+    expect(plan.sql).toContain('SAFE_DIVIDE(m.staff_class_teacher_fte, m.enroll_total_k12)');
+    expect(plan.sql).toContain('SAFE_DIVIDE(m.enroll_total_k12, MAX(m.enroll_total_k12) OVER ())');
     expect(plan.sql).not.toContain('IEEE_DIVIDE');
   });
   it('uses null-safe join conditions and versions the SQL', () => {

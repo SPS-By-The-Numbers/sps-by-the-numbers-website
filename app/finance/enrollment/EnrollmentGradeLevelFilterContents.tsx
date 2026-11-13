@@ -10,8 +10,8 @@ interface Props<T extends BaseSettings> {
   setSettings: (x: T) => void;
 }
 
-// Grade-level filter scoped to enrollment: excludes the synthetic
-// "All Grades" rollup (would double-count) and includes PK.
+// Grade-level filter scoped to enrollment: excludes the K-12 / PK-12
+// rollup rows (would double-count) and includes PK.
 export default function EnrollmentGradeLevelFilterContents({
   settings,
   setSettings,

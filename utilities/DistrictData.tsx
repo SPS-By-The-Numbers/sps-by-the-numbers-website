@@ -12,7 +12,10 @@ import type {
 } from "utilities/client/DistrictDatasets";
 import ALL_ASSESSMENT_TYPES from "utilities/domain/assessment_types";
 import ALL_ENROLLMENT_STUDENT_GROUPS from "utilities/domain/enrollment_student_groups";
-import ALL_GRADE_LEVELS from "utilities/domain/grade_levels";
+import ALL_GRADE_LEVELS, {
+  GRADE_LEVEL_CODE_K12,
+  isGradeRollupCode,
+} from "utilities/domain/grade_levels";
 import ALL_STUDENT_GROUPS from "utilities/domain/student_groups";
 import ALL_TEST_SUBJECTS from "utilities/domain/test_subjects";
 import {
@@ -441,15 +444,18 @@ export default class DistrictData {
     return this.fundedEnrollment_df;
   }
 
-  // Per-school total enrollment for a class_of, as school_code -> headcount,
-  // read from OSPI rc_enrollment's "All Grades" (grade_level_code 99),
-  // all_students row. Empty when the year isn't covered -- rc_enrollment does
-  // not reach as far back as the expenditure history -- which lets callers fall
-  // back (see the Expenditure Flow school-size coloring).
+  // Per-school K-12 enrollment for a class_of, as school_code -> headcount,
+  // read from the synthetic "K-12" rollup row (OSPI's All Grades row minus
+  // its PK row; see finance.ts getEnrollment), all_students column. Empty
+  // when the year isn't covered -- rc_enrollment does not reach as far back
+  // as the expenditure history -- which lets callers fall back (see the
+  // Expenditure Flow school-size coloring).
   schoolEnrollmentTotals(classOf: number): Map<number, number> {
     const rows = this.enrollment_df
-      .params({ classOf })
-      .filter((d, $) => d.class_of === $.classOf && d.grade_level_code === 99)
+      .params({ classOf, k12: GRADE_LEVEL_CODE_K12 })
+      .filter(
+        (d, $) => d.class_of === $.classOf && d.grade_level_code === $.k12,
+      )
       .groupby("school_code")
       .rollup({ enrollment: op.sum("all_students") })
       .objects() as Array<{ school_code: number; enrollment: number }>;
@@ -987,6 +993,13 @@ export default class DistrictData {
     // facet by the standard grade-cohort buckets (PreK, K-2, 3-5, 6-8,
     // 9-12). Cohort codes are >= 9000 so makeFacetCodeText suppresses
     // them in chart titles.
+    //
+    // is_grade_rollup flags the grade-span rollup rows (K-12 and PK-12;
+    // see utilities/domain/grade_levels.ts). Anything that sums or
+    // facets the per-grade rows must drop them or it double counts.
+    results = results.derive({
+      is_grade_rollup: aq.escape((d) => isGradeRollupCode(d.grade_level_code)),
+    });
     return results.derive({
       grade_level: (d) => d.grade,
       grade_cohort: (d) =>
@@ -1034,10 +1047,10 @@ export default class DistrictData {
       // Projected high-school diploma year. Grade 12 students
       // graduate in class_of itself; each grade below adds another
       // year (Grade 11 → +1, …, Grade 1 → +11, K → +12, PK → +13).
-      // The "All Grades" rollup row gets null since it isn't a
+      // The K-12 / PK-12 rollup rows get null since they aren't a
       // single grade level.
       diploma_year: (d) =>
-        d.grade_level_code === 99
+        d.is_grade_rollup
           ? null
           : d.grade_level_code === 98
             ? d.class_of + 12
@@ -1045,7 +1058,7 @@ export default class DistrictData {
               ? d.class_of + 13
               : d.class_of + (12 - d.grade_level_code),
       diploma_year_code: (d) =>
-        d.grade_level_code === 99
+        d.is_grade_rollup
           ? null
           : d.grade_level_code === 98
             ? d.class_of + 12
@@ -1053,7 +1066,7 @@ export default class DistrictData {
               ? d.class_of + 13
               : d.class_of + (12 - d.grade_level_code),
       years_to_diploma: (d) =>
-        d.grade_level_code === 99
+        d.is_grade_rollup
           ? null
           : d.grade_level_code === 98
             ? 12

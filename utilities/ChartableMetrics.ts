@@ -328,7 +328,7 @@ export function toFacetedCharatbleEnrollmentDataset(
   // appending `<seriesCode>` after the facet code, where the seriesCode
   // is the rest of the composite_key after the leading facet segment.
   const withComposite = df
-    .filter((d) => d.grade != "All Grades")
+    .filter((d) => !d.is_grade_rollup)
     .derive({ _metric: aq.escape((d) => d[metricColumn]) })
     .derive({
       composite_key: aq.escape((d) => {

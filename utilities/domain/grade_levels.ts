@@ -4,12 +4,48 @@ export type GradeLevelInfo = {
   grade_level: string;
 };
 
-// Keep in sync with CASE statement in functions/src/finance.ts getAssessment()
+// Grade-span rollup codes. OSPI publishes one "All Grades" row per school,
+// and in the ENROLLMENT file that row includes PK, so the enrollment data
+// never exposes it under that name: functions/src/finance.ts getEnrollment()
+// relabels OSPI's row "PK-12" and derives a "K-12" row by subtracting the PK
+// row from it. The ASSESSMENT "All Grades" row spans the tested grades only
+// (there are no PK tests), so it keeps OSPI's name and its own code.
+export const GRADE_LEVEL_CODE_K12 = 96;
+export const GRADE_LEVEL_CODE_PK12 = 95;
+export const GRADE_LEVEL_CODE_ALL_GRADES = 99;
+
+const GRADE_ROLLUP_CODES = new Set<number>([
+  GRADE_LEVEL_CODE_K12,
+  GRADE_LEVEL_CODE_PK12,
+  GRADE_LEVEL_CODE_ALL_GRADES,
+]);
+
+/** True for the grade-span rollup rows (K-12, PK-12, assessment All Grades),
+ * which must never be summed alongside the per-grade rows. */
+export function isGradeRollupCode(code: number | null | undefined): boolean {
+  return code !== null && code !== undefined && GRADE_ROLLUP_CODES.has(code);
+}
+
+// Keep in sync with the CASE statements in functions/src/finance.ts
+// getEnrollment() and getAssessment().
 const ALL_GRADE_LEVELS : Array<GradeLevelInfo> = [
   {
-    grade_level_code: 99,
+    // Assessments only: OSPI's rollup over the tested grades.
+    grade_level_code: GRADE_LEVEL_CODE_ALL_GRADES,
     db_grade_level_code: "All Grades",
     grade_level: "All Grades",
+  },
+  {
+    // Enrollment only, synthetic: OSPI's All Grades row minus its PK row.
+    grade_level_code: GRADE_LEVEL_CODE_K12,
+    db_grade_level_code: "K-12",
+    grade_level: "K-12",
+  },
+  {
+    // Enrollment only: OSPI's All Grades row as published (includes PK).
+    grade_level_code: GRADE_LEVEL_CODE_PK12,
+    db_grade_level_code: "PK-12",
+    grade_level: "PK-12",
   },
   {
     grade_level_code: 98,

@@ -42,9 +42,9 @@ drift.
 | Prefix | Source (refresh unit) | Pattern |
 |---|---|---|
 | *(none)* | school identity (report card + SPS `d_school`) | `class_of`, `school_code`, `school_name`, `school_year`, `type`, `is_regular`, `region`, `ms_assignment[_code]`, dummies `type_*`, `region_*`, `ms_<school>`, derived `at_or_after_2021`, `*_normalized` |
-| `enroll_` | OSPI report-card enrollment | `enroll_total`, `enroll_<group>`, `enroll_pct_<group>`, `enroll_log_total`, `enroll_total_normalized` |
-| `spend_` | SAFS F-196 expenditures | `spend_<category>_{total,comp,noncomp,per_pupil}`; all-category `spend_{total,comp,noncomp,per_pupil}`; groups `spend_grp_*_per_pupil` |
-| `staff_` | SAFS S-275 personnel | `staff_<role>_{salary,fte,est_compensation,est_final_salary}`; teacher/principal stats `staff_<role>_{exp_p50,exp_p80,exp_avg,count[,_bachelors,_masters,_doctors]}`; derived `*_per_pupil`, `pct_ge/gt_bachelors` |
+| `enroll_` | OSPI report-card enrollment | `enroll_total_k12`, `enroll_total_pk12`, `enroll_<group>_k12`, `enroll_pct_<group>_k12`, `enroll_log_total_k12`, `enroll_total_k12_normalized` |
+| `spend_` | SAFS F-196 expenditures | `spend_<category>_{total,comp,noncomp,per_pupil_k12}`; all-category `spend_{total,comp,noncomp,per_pupil_k12}`; groups `spend_grp_*_per_pupil_k12` |
+| `staff_` | SAFS S-275 personnel | `staff_<role>_{salary,fte,est_compensation,est_final_salary}`; teacher/principal stats `staff_<role>_{exp_p50,exp_p80,exp_avg,count[,_bachelors,_masters,_doctors]}`; derived `*_per_pupil_k12`, `pct_ge/gt_bachelors` |
 | `churn_` | staff building transitions (S-275 derivative CSV) | `churn_{transfer_in,transfer_out,hire,depart,added,lost,net}` |
 | `map_hc_`, `map_nonhc_` | SPS MAP extracts | `map_<cohort>_<subject>_g<grade>_<season>_{rit_avg,rit_sd,n_students}` |
 | `bex_` | SPS BEX-VI building scores | `bex_composite_score_<year>`, `bex_bca_score_<year>`, `bex_<dimension>_{raw,scaled}`, … |
@@ -72,16 +72,36 @@ metric), not source-row-appearance. Rows stay ordered by
 - the pandas row index (unnamed first CSV column)
 - `school`, `school_1` — join-duplicated school-name columns; `school_name`
   is the survivor
-- `grade`, `grade_level` — constant `'All Grades'` by construction
+- `grade`, `grade_level` — constant `'All Grades'` by construction (the
+  enrollment side is now K-12 / PK-12 by name; see below)
+
+## K-12 vs PK-12
+
+OSPI's report-card enrollment "All Grades" row **includes PK**, so a bare
+"total" is ambiguous. The grade span is therefore always in the column name:
+
+- `enroll_total_k12`, `enroll_<group>_k12`, `enroll_pct_<group>_k12`, and
+  every `*_per_pupil_k12` denominator are **K-12**: OSPI's All Grades row
+  minus the PK row, column by column. Subtracting the two rollups (rather
+  than summing per-grade rows) keeps the result consistent under OSPI's
+  suppression, which treats both rollups alike. A school with no PK row has
+  K-12 = PK-12; a PK row with a suppressed (NULL) cell yields NULL.
+- `enroll_total_pk12` is the only **PK-12** column: OSPI's All Grades
+  headcount as published.
+- The assessment `asmt_*` family still reads OSPI's assessment "All Grades"
+  row, which spans the tested grades only (no PK), so it needs no suffix.
 
 ## Semantics changed on purpose
+
+- **K-12 enrollment denominators** (above): the legacy sheet's
+  `all_students` and every per-pupil ratio were PK-12.
 
 - **Spelling-variant merge** (above): merged columns coalesce the variant
   cells via `MAX(IF(...))`; verified against the current sqss.csv that no two
   spellings of one group ever co-occur at the same (year, school, measure)
   grain (0 of 21,228 cells), so the merge is lossless.
 - **`SAFE_DIVIDE` everywhere** for derived ratios: division by zero (one
-  Seattle row has `enroll_total = 0`) now yields NULL instead of the
+  Seattle row has `enroll_total_k12 = 0`) now yields NULL instead of the
   legacy numpy `inf`.
 - Everything else is value-identical to the migrated pipeline: exact
   order-statistic experience percentiles, null-safe joins for district-total

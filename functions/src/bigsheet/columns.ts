@@ -24,7 +24,7 @@ export type SourceKey =
 
 export const SOURCE_LABELS: Record<SourceKey, string> = {
   identity: 'School identity (OSPI report card; SPS domain table d_school)',
-  enroll: 'OSPI report card enrollment (ospi.rc_enrollment, All Grades rows)',
+  enroll: 'OSPI report card enrollment (ospi.rc_enrollment; K-12 = OSPI All Grades row minus the PK row)',
   spend: 'SAFS F-196 general-fund expenditures (safs_f19x, actuals, school-attributed only)',
   staff: 'SAFS S-275 personnel reports (safs_s275)',
   churn: 'Staff building transitions (data-tools S-275 derivative, bigsheet_inputs.building_transitions)',
@@ -157,25 +157,30 @@ function staffMoneyColumns(): ScalarColumn[] {
 }
 
 function enrollColumns(): ScalarColumn[] {
-  const cols: ScalarColumn[] = [{
-    name: 'enroll_total', from: 'all_students', source: 'enroll',
-    doc: 'Total enrolled students (All Grades row).',
-  }];
+  // Grade span is always in the name: every enroll_ column is K-12 (OSPI's
+  // "All Grades" row minus its PK row, column by column) except the one
+  // explicit PK-12 headcount. See NAMING.md "K-12 vs PK-12".
+  const cols: ScalarColumn[] = [
+    { name: 'enroll_total_k12', from: 'all_students_k12', source: 'enroll',
+      doc: 'Total enrolled students, K-12 (OSPI All Grades row minus the PK row).' },
+    { name: 'enroll_total_pk12', from: 'all_students_pk12', source: 'enroll',
+      doc: 'Total enrolled students, PK-12 (OSPI All Grades row as published, which includes PK).' },
+  ];
   for (const [g, desc] of ENROLL_GROUPS) {
-    cols.push({ name: `enroll_${g}`, from: g, source: 'enroll',
-      doc: `Enrolled ${desc}.` });
+    cols.push({ name: `enroll_${g}_k12`, from: `${g}_k12`, source: 'enroll',
+      doc: `Enrolled ${desc}, K-12.` });
   }
   for (const [g, desc] of ENROLL_GROUPS) {
-    cols.push({ name: `enroll_pct_${g}`, from: `pct_${g}`, source: 'enroll',
-      doc: `Share of enrolled students who are ${desc}.` });
+    cols.push({ name: `enroll_pct_${g}_k12`, from: `pct_${g}_k12`, source: 'enroll',
+      doc: `Share of K-12 enrolled students who are ${desc}.` });
   }
   cols.push(
-    { name: 'enroll_log_total', source: 'enroll',
-      mergedExpr: 'IF(vb.enroll_total > 0, LN(vb.enroll_total), NULL)',
-      doc: 'Natural log of total enrollment (NULL when enrollment is 0).' },
-    { name: 'enroll_total_normalized', source: 'enroll',
-      normExpr: 'SAFE_DIVIDE(m.enroll_total, MAX(m.enroll_total) OVER ())',
-      doc: 'Total enrollment scaled by the district-wide maximum (modeling feature).' },
+    { name: 'enroll_log_total_k12', source: 'enroll',
+      mergedExpr: 'IF(vb.enroll_total_k12 > 0, LN(vb.enroll_total_k12), NULL)',
+      doc: 'Natural log of K-12 enrollment (NULL when enrollment is 0).' },
+    { name: 'enroll_total_k12_normalized', source: 'enroll',
+      normExpr: 'SAFE_DIVIDE(m.enroll_total_k12, MAX(m.enroll_total_k12) OVER ())',
+      doc: 'K-12 enrollment scaled by the district-wide maximum (modeling feature).' },
   );
   return cols;
 }
@@ -189,8 +194,8 @@ function spendColumns(): ScalarColumn[] {
       doc: `Compensation spend (objects 2-4), all program categories. ${excl}` },
     { name: 'spend_noncomp', from: 'non_comp_amount', source: 'spend',
       doc: `Non-compensation spend, all program categories. ${excl}` },
-    { name: 'spend_per_pupil', from: 'spend_per_pupil', source: 'spend',
-      doc: 'Total spend divided by total enrollment.' },
+    { name: 'spend_per_pupil_k12', from: 'spend_per_pupil_k12', source: 'spend',
+      doc: 'Total spend divided by K-12 enrollment.' },
   ];
   for (const [cat, desc] of SPEND_CATEGORIES) {
     cols.push(
@@ -200,23 +205,23 @@ function spendColumns(): ScalarColumn[] {
         doc: `Compensation spend (objects 2-4): ${desc}.` },
       { name: `spend_${cat}_noncomp`, from: `non_comp_amount_${cat}`, source: 'spend',
         doc: `Non-compensation spend: ${desc}.` },
-      { name: `spend_${cat}_per_pupil`, from: `spend_${cat}_per_pupil`, source: 'spend',
-        doc: `Per-pupil spend: ${desc}.` },
+      { name: `spend_${cat}_per_pupil_k12`, from: `spend_${cat}_per_pupil_k12`, source: 'spend',
+        doc: `Per-K-12-pupil spend: ${desc}.` },
     );
   }
   cols.push(
-    { name: 'spend_grp_ex_ell_speced_comp_per_pupil', source: 'spend',
-      vitalsExpr: 'COALESCE(vo.spend_gen_ed_per_pupil, 0) + COALESCE(vo.spend_instr_other_per_pupil, 0)' +
-        ' + COALESCE(vo.spend_district_support_per_pupil, 0) + COALESCE(vo.spend_other_per_pupil, 0)',
-      doc: 'Per-pupil spend group: everything except ELL, special ed and compensatory ' +
+    { name: 'spend_grp_ex_ell_speced_comp_per_pupil_k12', source: 'spend',
+      vitalsExpr: 'COALESCE(vo.spend_gen_ed_per_pupil_k12, 0) + COALESCE(vo.spend_instr_other_per_pupil_k12, 0)' +
+        ' + COALESCE(vo.spend_district_support_per_pupil_k12, 0) + COALESCE(vo.spend_other_per_pupil_k12, 0)',
+      doc: 'Per-K-12-pupil spend group: everything except ELL, special ed and compensatory ' +
         '(gen_ed + instr_other + district_support + other; missing categories count as 0).' },
-    { name: 'spend_grp_spec_ed_per_pupil', source: 'spend',
-      vitalsExpr: 'COALESCE(vo.spend_spec_ed_per_pupil, 0) + COALESCE(vo.spend_compensatory_per_pupil, 0)',
-      doc: 'Per-pupil spend group: special ed + compensatory (missing categories count as 0).' },
-    { name: 'spend_grp_title1_lap_ble_per_pupil', source: 'spend',
-      vitalsExpr: 'COALESCE(vo.spend_title1_per_pupil, 0) + COALESCE(vo.spend_lap_per_pupil, 0)' +
-        ' + COALESCE(vo.spend_ble_per_pupil, 0)',
-      doc: 'Per-pupil spend group: Title I + LAP + bilingual (missing categories count as 0).' },
+    { name: 'spend_grp_spec_ed_per_pupil_k12', source: 'spend',
+      vitalsExpr: 'COALESCE(vo.spend_spec_ed_per_pupil_k12, 0) + COALESCE(vo.spend_compensatory_per_pupil_k12, 0)',
+      doc: 'Per-K-12-pupil spend group: special ed + compensatory (missing categories count as 0).' },
+    { name: 'spend_grp_title1_lap_ble_per_pupil_k12', source: 'spend',
+      vitalsExpr: 'COALESCE(vo.spend_title1_per_pupil_k12, 0) + COALESCE(vo.spend_lap_per_pupil_k12, 0)' +
+        ' + COALESCE(vo.spend_ble_per_pupil_k12, 0)',
+      doc: 'Per-K-12-pupil spend group: Title I + LAP + bilingual (missing categories count as 0).' },
   );
   return cols;
 }
@@ -224,17 +229,17 @@ function spendColumns(): ScalarColumn[] {
 function staffColumns(): ScalarColumn[] {
   const cols: ScalarColumn[] = staffMoneyColumns();
   cols.push(
-    { name: 'staff_all_fte_per_pupil', from: 'fte_per_pupil', source: 'staff',
-      doc: 'Total staff FTE divided by total enrollment.' },
-    { name: 'staff_class_teacher_fte_per_pupil', source: 'staff',
-      normExpr: 'SAFE_DIVIDE(m.staff_class_teacher_fte, m.enroll_total)',
-      doc: 'Classroom-teacher FTE per enrolled student (NULL when enrollment is 0).' },
-    { name: 'staff_other_teacher_fte_per_pupil', source: 'staff',
-      normExpr: 'SAFE_DIVIDE(m.staff_other_teacher_fte, m.enroll_total)',
-      doc: 'Other-teacher FTE per enrolled student (NULL when enrollment is 0).' },
-    { name: 'staff_asst_principal_fte_per_pupil', source: 'staff',
-      normExpr: 'SAFE_DIVIDE(m.staff_asst_principal_fte, m.enroll_total)',
-      doc: 'Assistant-principal FTE per enrolled student (NULL when enrollment is 0).' },
+    { name: 'staff_all_fte_per_pupil_k12', from: 'fte_per_pupil_k12', source: 'staff',
+      doc: 'Total staff FTE divided by K-12 enrollment.' },
+    { name: 'staff_class_teacher_fte_per_pupil_k12', source: 'staff',
+      normExpr: 'SAFE_DIVIDE(m.staff_class_teacher_fte, m.enroll_total_k12)',
+      doc: 'Classroom-teacher FTE per K-12 enrolled student (NULL when enrollment is 0).' },
+    { name: 'staff_other_teacher_fte_per_pupil_k12', source: 'staff',
+      normExpr: 'SAFE_DIVIDE(m.staff_other_teacher_fte, m.enroll_total_k12)',
+      doc: 'Other-teacher FTE per K-12 enrolled student (NULL when enrollment is 0).' },
+    { name: 'staff_asst_principal_fte_per_pupil_k12', source: 'staff',
+      normExpr: 'SAFE_DIVIDE(m.staff_asst_principal_fte, m.enroll_total_k12)',
+      doc: 'Assistant-principal FTE per K-12 enrolled student (NULL when enrollment is 0).' },
     { name: 'staff_class_teacher_pct_ge_bachelors', source: 'staff',
       normExpr: 'SAFE_DIVIDE(m.staff_class_teacher_count_bachelors + ' +
         'm.staff_class_teacher_count_masters + m.staff_class_teacher_count_doctors, ' +

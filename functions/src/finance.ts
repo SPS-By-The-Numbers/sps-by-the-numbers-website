@@ -18,8 +18,70 @@ const bigqueryClient = new BigQuery();
 // under the old hash are orphaned in the bucket. Worth a sweep of
 // gs://sps-by-the-numbers-public/cache/scratch/ after changing one.
 
+// Every headcount column in ospi.rc_enrollment (all_students + each student
+// group). The K-12 rollup subtracts the PK row from OSPI's "All Grades" row
+// column by column, so the list must cover every count column.
+const ENROLLMENT_COUNT_COLUMNS = [
+  'all_students',
+  'military_parent',
+  'migrant',
+  'low_income',
+  'homeless',
+  'foster_care',
+  'mobile',
+  'section_504',
+  'highly_capable',
+  'english_language_learners',
+  'students_with_disabilities',
+  'female',
+  'male',
+  'gender_x',
+  'white',
+  'black_african_american',
+  'native_hawaiian_other_pacific',
+  'hispanic_latino_of_any_race',
+  'american_indian_alaskan_native',
+  'asian',
+  'two_or_more_races',
+];
+
 function getEnrollment(ccddd) {
+  // OSPI's "All Grades" row INCLUDES PK. It is exposed as 'PK-12' (code 95)
+  // and a synthetic 'K-12' row (code 96) is derived by subtracting the PK
+  // row. Subtracting the two rollups is preferred to summing per-grade rows:
+  // both rollups get the same suppression treatment, so the result stays
+  // consistent across every column. A school with no PK row has K-12 =
+  // PK-12; a PK row with a suppressed (NULL) cell yields NULL for that cell.
+  // Keep the codes in sync with utilities/domain/grade_levels.ts.
+  const k12Counts = ENROLLMENT_COUNT_COLUMNS
+      .map((c) => `IF(pk.class_of IS NULL, ag.${c}, ag.${c} - pk.${c}) AS ${c}`)
+      .join(',\n        ');
   return `
+  WITH enrollment_src AS (
+    SELECT *
+    FROM sps-btn-data.ospi.rc_enrollment
+    WHERE ccddd=${ccddd}
+  ),
+  enrollment_k12 AS (
+    SELECT
+      ag.* REPLACE (
+        'K-12' AS grade,
+        ${k12Counts}
+      )
+    FROM enrollment_src ag
+    LEFT JOIN enrollment_src pk ON (
+      pk.grade = 'PK'
+      AND pk.class_of = ag.class_of
+      AND (pk.school_code = ag.school_code
+           OR (pk.school_code IS NULL AND ag.school_code IS NULL)))
+    WHERE ag.grade = 'All Grades'
+  ),
+  enrollment_rows AS (
+    SELECT * REPLACE (IF(grade = 'All Grades', 'PK-12', grade) AS grade)
+    FROM enrollment_src
+    UNION ALL
+    SELECT * FROM enrollment_k12
+  )
   SELECT
     * EXCEPT (school_name),
     school_name school,
@@ -27,7 +89,8 @@ function getEnrollment(ccddd) {
     -- Numeric grade_level_code so the dashboard can reuse the existing
     -- GradeLevelFilter. Keep in sync with utilities/domain/grade_levels.ts.
     CASE grade
-      WHEN 'All Grades' THEN 99
+      WHEN 'K-12' THEN 96
+      WHEN 'PK-12' THEN 95
       WHEN 'K' THEN 98
       WHEN 'PK' THEN 97
       WHEN '1' THEN 1
@@ -44,8 +107,7 @@ function getEnrollment(ccddd) {
       WHEN '12' THEN 12
     END AS grade_level_code
   FROM
-    sps-btn-data.ospi.rc_enrollment
-  WHERE ccddd=${ccddd}
+    enrollment_rows
   `;
 }
 
@@ -74,7 +136,9 @@ function getAssessment(ccddd) {
     a.student_group,
     a.student_group_type,
 
-    -- Keep in sync with utilities/domain/grade_levels.ts
+    -- Keep in sync with utilities/domain/grade_levels.ts. OSPI's assessment
+    -- 'All Grades' row spans the tested grades only (no PK), so it keeps its
+    -- own code; enrollment uses K-12 (96) / PK-12 (95) instead.
     CASE a.grade_level
       WHEN 'All Grades' THEN 99
       WHEN 'KG' THEN 98

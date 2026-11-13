@@ -282,7 +282,7 @@ export default function EnrollmentDashboard({
       const firstFiltered = filteredEnrollmentWithSchoolDomain.call(
         districtDataMap[allSettings[0].ccddd],
         allSettings[0],
-      ).filter((d) => d.grade != "All Grades");
+      ).filter((d) => !d.is_grade_rollup);
       const facetArr = firstFiltered.array(facetCodeColumn) as Array<number | null>;
       const studentGroupArr = firstFiltered.array("student_group_code") as Array<number | null>;
       const studentGroupNameArr = firstFiltered.array("student_group") as Array<string | null>;
@@ -320,7 +320,7 @@ export default function EnrollmentDashboard({
         const breakdownCode = breakdownArr ? String(breakdownArr[i]) : null;
         const extraCode = extraArr ? String(extraArr[i]) : null;
         // Skip rows with a null/undefined extra-dim value (e.g. the
-        // "All Grades" rollup has null years_to_diploma → null
+        // K-12 / PK-12 rollups have null years_to_diploma → null
         // diploma_year). Otherwise it materializes a "null" series.
         if (extraArr && (extraArr[i] === null || extraArr[i] === undefined)) continue;
 
@@ -410,10 +410,12 @@ export default function EnrollmentDashboard({
       // Inject a district-wide total-enrollment column into the data so
       // augmentContextComponents below can render a Total Enrollment
       // context graph alongside the funded-enrollment / cashflow ones
-      // already supplied by makeChartableVitals.
+      // already supplied by makeChartableVitals. Sums the per-grade rows
+      // (PK included, matching the grade filter's default selection), so
+      // the K-12 / PK-12 rollup rows must be dropped or they double count.
       const totalEnrollmentDf = firstDistrictData
         .filteredEnrollment({ studentGroupCodes: new Set<number>([1]) })
-        .filter((d) => d.grade != "All Grades")
+        .filter((d) => !d.is_grade_rollup)
         .groupby("class_of")
         .rollup({
           context_amount_totalEnrollment_actuals: (d) => op.sum(d.amount),
